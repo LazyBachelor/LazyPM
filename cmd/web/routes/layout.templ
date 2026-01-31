@@ -1,0 +1,30 @@
+package routes
+
+import "beadstest/cmd/web/components"
+
+var baseLayout = components.LayoutProps{
+    Title:       "Beads Test Application",
+    Description: "A sample application using Beads storage service",
+    Head: components.HeadProps{
+        Links: []components.Link{
+            {Href: "/assets/css/styles.css", Rel: "stylesheet"},
+            {Href: "/assets/manifest.json", Rel: "manifest"},
+        },
+        Scripts: []components.Script{
+            {Src: "/assets/js/htmx.min.js", Defer: true},
+            {Src: "/assets/js/ajax.min.js", Defer: true},
+        },
+    },
+    Header: components.HeaderProps{
+        // Add header properties if needed
+    },
+    Footer: components.FooterProps{
+        // Add footer properties if needed
+    },
+}
+
+templ BaseLayout(){
+    @components.Layout(baseLayout){
+        { children... }
+    }
+}
