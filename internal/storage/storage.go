@@ -1,17 +1,54 @@
 package storage
 
-type StatisticsStorage struct {
-	Path string
+import (
+	"encoding/json"
+	"os"
+	"sync"
+)
+
+type Storage[T any] struct {
+	path string
+	mu   sync.RWMutex
+	Data *T
 }
 
-func NewStatisticsStorage(path string) *StatisticsStorage {
-	return &StatisticsStorage{Path: path}
+func NewJsonStorage[T any](path string, defaultData *T) *Storage[T] {
+	return &Storage[T]{
+		path: path,
+		Data: defaultData,
+	}
 }
 
-func (s *StatisticsStorage) Save(stats any) error {
-	return nil
+func (s *Storage[T]) Save() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	data, err := json.MarshalIndent(s.Data, "", "  ")
+	if err != nil {
+		return err
+	}
+
+	return os.WriteFile(s.path, data, 0644)
 }
 
-func (s *StatisticsStorage) Load() (any, error) {
-	return nil, nil
+func (s *Storage[T]) Load() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	bytes, err := os.ReadFile(s.path)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return nil
+		}
+		return err
+	}
+
+	return json.Unmarshal(bytes, s.Data)
+}
+
+func (s *Storage[T]) Init() error {
+	if _, err := os.Stat(s.path); os.IsNotExist(err) {
+		return s.Save()
+	}
+	return s.Load()
 }

@@ -3,13 +3,16 @@ package main
 import (
 	"beadstest/cmd/web/routes"
 	"beadstest/cmd/web/server"
+	"beadstest/internal/models"
 	"beadstest/internal/service"
 	"beadstest/internal/storage"
 	"context"
 	"embed"
 	"fmt"
 	"os"
+	"time"
 
+	"github.com/google/uuid"
 	"github.com/steveyegge/beads"
 )
 
@@ -27,15 +30,19 @@ func main() {
 	handleError(err, "Error initializing Beads service")
 	defer beadSvc.Close()
 
-	statStore := storage.NewStatisticsStorage("./stats.json")
-	statSvc := service.NewStatisticsService(statStore)
+	statStore := storage.NewJsonStorage("./.pm/stats.json", &models.Statistics{
+		ID:        uuid.New(),
+		StartTime: time.Now(),
+	})
 
-	_ = statSvc // To avoid unused variable error; remove if statSvc is used
+	statSvc, err := service.NewStatisticsService(statStore)
+	handleError(err, "Error initializing Statistics service")
 
 	server := server.NewServer(server.Server{
-		Port:    8080,
-		Assets:  assets,
-		Service: beadSvc,
+		Port:              8080,
+		Assets:            assets,
+		Service:           beadSvc,
+		StatisticsService: statSvc,
 		Routes: []server.Route{
 			{Pattern: "/", Component: routes.Index()},
 		},

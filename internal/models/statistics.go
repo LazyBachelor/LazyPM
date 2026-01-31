@@ -21,4 +21,9 @@ type Statistics struct {
 
 	InterfaceType  InterfaceType `json:"interface_type"`
 	TasksCompleted int           `json:"tasks_completed"`
+	ButtonClicks   ButtonClicks  `json:"button_clicks"`
+}
+
+type ButtonClicks struct {
+	Clicks int `json:"clicks"`
 }

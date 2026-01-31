@@ -3,7 +3,7 @@ tidy:
 
 clean:
 	go clean
-	
+
 cli:
 	go run ./cmd/cli
 
@@ -14,4 +14,4 @@ web:
 	go run ./cmd/web
 
 dev:
-	templ generate -watch -cmd "go run ./cmd/web"
+	go tool templ generate -watch -cmd "go run ./cmd/web"

@@ -1,6 +1,7 @@
 package server
 
 import (
+	"beadstest/internal/service"
 	"embed"
 	"fmt"
 	"net/http"
@@ -10,10 +11,11 @@ import (
 )
 
 type Server struct {
-	Port    int
-	Assets  embed.FS
-	Routes  []Route
-	Service beads.Storage
+	Port              int
+	Assets            embed.FS
+	Routes            []Route
+	Service           beads.Storage
+	StatisticsService *service.StatisticsService
 }
 
 // NewServer creates and configures a new HTTP server instance.

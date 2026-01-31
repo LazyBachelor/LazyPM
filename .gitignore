@@ -1,3 +1,4 @@
 .pm
 *.db
 *_templ.go
+*.ext
