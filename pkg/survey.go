@@ -1,8 +1,9 @@
 package pkg
 
 import (
-	"github.com/LazyBachelor/LazyPM/internal/service"
 	"context"
+
+	"github.com/LazyBachelor/LazyPM/internal/service"
 )
 
 type SurveyConfig = service.Config

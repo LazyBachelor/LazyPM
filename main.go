@@ -48,4 +48,11 @@ func main() {
 		fmt.Printf("Issue ID: %s, Title: %s, Status: %s\n", iss.ID, iss.Title, iss.Status)
 	}
 
+	stats, err := svc.Statistics.GetStatistics()
+	if err != nil {
+		fmt.Println("Error:", err)
+		os.Exit(1)
+	}
+
+	fmt.Printf("\nStatistics: %v\n", stats)
 }
