@@ -1,9 +1,11 @@
 package service
 
 import (
+	"context"
+	"errors"
+
 	"github.com/LazyBachelor/LazyPM/internal/models"
 	"github.com/LazyBachelor/LazyPM/internal/storage"
-	"errors"
 )
 
 type StatisticsService struct {
@@ -17,6 +19,14 @@ func NewStatisticsService(storage *storage.Storage[models.Statistics]) (*Statist
 	return &StatisticsService{
 		storage: storage,
 	}, nil
+}
+
+func (s *StatisticsService) Load(ctx context.Context) error {
+	return s.storage.Load()
+}
+
+func (s *StatisticsService) Save(ctx context.Context) error {
+	return s.storage.Save()
 }
 
 func (s *StatisticsService) GetStatistics() (models.Statistics, error) {
