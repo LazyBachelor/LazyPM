@@ -1,23 +1,51 @@
 package main
 
 import (
-	"github.com/LazyBachelor/LazyPM/internal/models"
-	"github.com/LazyBachelor/LazyPM/internal/storage"
+	"context"
 	"fmt"
 	"os"
-	"time"
 
-	"github.com/google/uuid"
+	"github.com/LazyBachelor/LazyPM/internal/models"
+	"github.com/LazyBachelor/LazyPM/internal/service"
 )
 
 func main() {
-	statStore := storage.NewJsonStorage("./.pm/test.json", &models.Statistics{
-		ID:        uuid.New(),
-		StartTime: time.Now(),
-	})
+	ctx := context.Background()
 
-	if err := statStore.Init(); err != nil {
+	config := service.Config{
+		IssuePrefix:           "pm",
+		BeadsDBPath:           "./.pm/db.db",
+		StatisticsStoragePath: "./.pm/stats.json",
+	}
+	svc, cancel, err := service.NewServices(ctx, config)
+	if err != nil {
 		fmt.Println("Error:", err)
 		os.Exit(1)
 	}
+	defer cancel()
+
+	issue := &models.Issue{
+		IssueType:   models.TypeTask,
+		Title:       "Sample Issue",
+		Description: "This is a sample issue created for testing.",
+		Status:      models.StatusOpen,
+	}
+
+	err = svc.Beads.CreateIssue(ctx, issue, "")
+	if err != nil {
+		fmt.Println("Error:", err)
+		os.Exit(1)
+	}
+
+	fetchedIssues, err := svc.Beads.SearchIssues(ctx, "", models.IssueFilter{})
+
+	if err != nil {
+		fmt.Println("Error:", err)
+		os.Exit(1)
+	}
+
+	for _, iss := range fetchedIssues {
+		fmt.Printf("Issue ID: %s, Title: %s, Status: %s\n", iss.ID, iss.Title, iss.Status)
+	}
+
 }
