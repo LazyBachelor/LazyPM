@@ -17,12 +17,12 @@ func main() {
 		BeadsDBPath:           "./.pm/db.db",
 		StatisticsStoragePath: "./.pm/stats.json",
 	}
-	svc, cancel, err := service.NewServices(ctx, config)
+	svc, cleanup, err := service.NewServices(ctx, config)
 	if err != nil {
 		fmt.Println("Error:", err)
 		os.Exit(1)
 	}
-	defer cancel()
+	defer cleanup()
 
 	issue := &models.Issue{
 		IssueType:   models.TypeTask,
