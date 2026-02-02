@@ -1,6 +1,8 @@
 # LazyPM
 
-A lazy project management tool for developers.
+A project management tool for developers. 
+
+Made for bachelor project, used for gathering and comparing data between interfaces.
 
 ## Overview
 
@@ -34,6 +36,10 @@ sudo pacman -S make
 
 Windows (Choco):
 ```bash
+# Install choco
+winget install --id chocolatey.chocolatey --source winget
+
+# Install make
 choco install make
 ```
 
