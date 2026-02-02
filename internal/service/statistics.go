@@ -1,8 +1,8 @@
 package service
 
 import (
-	"beadstest/internal/models"
-	"beadstest/internal/storage"
+	"github.com/LazyBachelor/LazyPM/internal/models"
+	"github.com/LazyBachelor/LazyPM/internal/storage"
 	"errors"
 )
 

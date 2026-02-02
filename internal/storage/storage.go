@@ -7,8 +7,8 @@ import (
 )
 
 type Storage[T any] struct {
-	path string
 	mu   sync.RWMutex
+	path string
 	Data *T
 }
 

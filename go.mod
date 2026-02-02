@@ -1,4 +1,4 @@
-module beadstest
+module github.com/LazyBachelor/LazyPM
 
 go 1.25.6
 

@@ -1,17 +1,18 @@
 package service
 
 import (
+	"github.com/LazyBachelor/LazyPM/internal/models"
 	"context"
 	"fmt"
 
 	"github.com/steveyegge/beads"
 )
 
-type Service struct {
+type BeadsService struct {
 	beads.Storage
 }
 
-func NewService(ctx context.Context, storage beads.Storage, prefix string) (*Service, error) {
+func NewBeadsService(ctx context.Context, storage beads.Storage, prefix string) (*BeadsService, error) {
 	issue_prefix, err := storage.GetConfig(ctx, "issue_prefix")
 	if err != nil || issue_prefix == "" {
 		if err := storage.SetConfig(ctx, "issue_prefix", prefix); err != nil {
@@ -20,7 +21,11 @@ func NewService(ctx context.Context, storage beads.Storage, prefix string) (*Ser
 		fmt.Println("Initialized with prefix:", prefix)
 	}
 
-	return &Service{
-		Storage:    storage,
+	return &BeadsService{
+		Storage: storage,
 	}, nil
+}
+
+func (s *BeadsService) AllIssues(ctx context.Context) ([]*models.Issue, error) {
+	return s.Storage.SearchIssues(ctx, "", models.IssueFilter{})
 }

@@ -1,11 +1,11 @@
 package commands
 
 import (
+	"github.com/LazyBachelor/LazyPM/internal/models"
 	"fmt"
 	"os"
 
 	"github.com/spf13/cobra"
-	"github.com/steveyegge/beads"
 )
 
 var createCmd = &cobra.Command{
@@ -16,15 +16,15 @@ var createCmd = &cobra.Command{
 }
 
 func runCreateCmd(cmd *cobra.Command, args []string) error {
-	issue := &beads.Issue{
+	issue := &models.Issue{
 		Title:       "test",
 		Description: "This is a test issue created by the CLI.",
-		Status:      beads.StatusOpen,
-		IssueType:   beads.TypeBug,
+		Status:      models.StatusOpen,
+		IssueType:   models.TypeBug,
 		Priority:    0,
 	}
 
-	err := svc.CreateIssue(cmd.Context(), issue, "test_actor")
+	err := svc.Beads.CreateIssue(cmd.Context(), issue, "test_actor")
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error creating issue: %v\n", err)
 		os.Exit(1)

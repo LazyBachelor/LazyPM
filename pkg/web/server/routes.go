@@ -7,13 +7,12 @@ import (
 	"time"
 
 	"github.com/NYTimes/gziphandler"
-	"github.com/a-h/templ"
 	"github.com/rs/cors"
 )
 
 type Route struct {
-	Pattern   string
-	Component templ.Component
+	Pattern  string
+	Handeler http.Handler
 }
 
 func (s *Server) RegisterRoutes(assets embed.FS, routes []Route) http.Handler {
@@ -22,7 +21,7 @@ func (s *Server) RegisterRoutes(assets embed.FS, routes []Route) http.Handler {
 	s.handleAssets(mux, assets)
 
 	for _, route := range routes {
-		mux.Handle(route.Pattern, templ.Handler(route.Component))
+		mux.Handle(route.Pattern, route.Handeler)
 	}
 
 	handler := cors.Default().Handler(mux)

@@ -1,31 +1,21 @@
 package main
 
 import (
-	"beadstest/cmd/cli/commands"
-	"beadstest/internal/service"
+	"github.com/LazyBachelor/LazyPM/internal/service"
+	"github.com/LazyBachelor/LazyPM/pkg/cli"
 	"context"
 	"fmt"
 	"os"
-
-	"github.com/steveyegge/beads"
 )
 
 func main() {
-	ctx := context.Background()
+	config := service.Config{
+		IssuePrefix:           "pm",
+		BeadsDBPath:           "./.pm/db.db",
+		StatisticsStoragePath: "./.pm/stats.json",
+	}
 
-	store, err := beads.NewSQLiteStorage(ctx, "./db.db")
-	handleError(err)
-	defer store.Close()
-
-	svc, err := service.NewService(ctx, store, "pm")
-	handleError(err)
-	defer svc.Close()
-
-	handleError(commands.Execute(svc))
-}
-
-func handleError(err error) {
-	if err != nil {
+	if err := cli.Run(context.Background(), config); err != nil {
 		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
 		os.Exit(1)
 	}

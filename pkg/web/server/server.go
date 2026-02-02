@@ -1,31 +1,27 @@
 package server
 
 import (
-	"beadstest/internal/service"
+	"github.com/LazyBachelor/LazyPM/internal/service"
 	"embed"
-	"fmt"
 	"net/http"
 	"time"
-
-	"github.com/steveyegge/beads"
 )
 
 type Server struct {
-	Port              int
-	Assets            embed.FS
-	Routes            []Route
-	Service           beads.Storage
-	StatisticsService *service.StatisticsService
+	Address  string
+	Assets   embed.FS
+	Routes   []Route
+	Services *service.Services
 }
 
 // NewServer creates and configures a new HTTP server instance.
 func NewServer(props Server) *http.Server {
-	if props.Port == 0 {
-		props.Port = 8080
+	if props.Address == "" {
+		props.Address = "localhost:8080"
 	}
 
 	return &http.Server{
-		Addr:         fmt.Sprintf(":%d", props.Port),
+		Addr:         props.Address,
 		Handler:      props.RegisterRoutes(props.Assets, props.Routes),
 		IdleTimeout:  time.Minute,
 		ReadTimeout:  time.Second * 10,

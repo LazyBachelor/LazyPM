@@ -1,12 +1,12 @@
 package commands
 
 import (
-	"beadstest/internal/service"
+	"github.com/LazyBachelor/LazyPM/internal/service"
 
 	"github.com/spf13/cobra"
 )
 
-var svc *service.Service
+var svc *service.Services
 
 var rootCmd = &cobra.Command{
 	Use:   "pm",
@@ -14,8 +14,8 @@ var rootCmd = &cobra.Command{
 	Long:  `Project Management CLI for managing issues and tasks.`,
 }
 
-func Execute(beadsService *service.Service) error {
-	svc = beadsService
+func Execute(services *service.Services) error {
+	svc = services
 	return rootCmd.Execute()
 }
 
