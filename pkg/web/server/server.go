@@ -1,16 +1,16 @@
 package server
 
 import (
-	"github.com/LazyBachelor/LazyPM/internal/service"
 	"embed"
 	"net/http"
 	"time"
+
+	"github.com/LazyBachelor/LazyPM/internal/service"
 )
 
 type Server struct {
 	Address  string
 	Assets   embed.FS
-	Routes   []Route
 	Services *service.Services
 }
 
@@ -20,9 +20,11 @@ func NewServer(props Server) *http.Server {
 		props.Address = "localhost:8080"
 	}
 
+	handler := props.RegisterRoutes(props.Assets)
+
 	return &http.Server{
 		Addr:         props.Address,
-		Handler:      props.RegisterRoutes(props.Assets, props.Routes),
+		Handler:      handler,
 		IdleTimeout:  time.Minute,
 		ReadTimeout:  time.Second * 10,
 		WriteTimeout: time.Second * 10,

@@ -1,15 +1,12 @@
 package web
 
 import (
-	"github.com/LazyBachelor/LazyPM/internal/service"
-	"github.com/LazyBachelor/LazyPM/pkg/web/handler"
-	"github.com/LazyBachelor/LazyPM/pkg/web/routes"
-	"github.com/LazyBachelor/LazyPM/pkg/web/server"
 	"context"
 	"embed"
 	"fmt"
 
-	"github.com/a-h/templ"
+	"github.com/LazyBachelor/LazyPM/internal/service"
+	"github.com/LazyBachelor/LazyPM/pkg/web/server"
 )
 
 type WebConfig = service.Config
@@ -25,16 +22,10 @@ func Run(ctx context.Context, config WebConfig) error {
 
 	defer cleanup()
 
-	handler := handler.NewIssuesHandler(svc)
-
 	server := server.NewServer(server.Server{
 		Address:  config.WebAddress,
 		Assets:   assets,
 		Services: svc,
-		Routes: []server.Route{
-			{Pattern: "/", Handeler: templ.Handler(routes.Index())},
-			{Pattern: "/issues", Handeler: handler.HandleGetAllIssues()},
-		},
 	})
 
 	fmt.Printf("Starting web server on %s...\n", config.WebAddress)

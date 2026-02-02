@@ -1,8 +1,19 @@
 package routes
 
-templ Index() {    
+import (
+	"github.com/LazyBachelor/LazyPM/internal/models"
+	"github.com/LazyBachelor/LazyPM/pkg/web/components"
+)
+
+type IndexProps struct {
+	Issues    []*models.Issue
+	IssueList components.IssueListProps
+}
+
+templ Index(props IndexProps) {
 	@BaseLayout() {
 		<h1>Welcome to the Beads Test Application</h1>
 		<p>Here are current issues:</p>
+		@components.IssueList(props.IssueList)
 	}
 }

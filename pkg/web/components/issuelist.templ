@@ -1,0 +1,19 @@
+package components
+
+import "github.com/LazyBachelor/LazyPM/internal/models"
+
+type IssueListProps struct {
+	Issues []*models.Issue
+}
+
+templ IssueList(props IssueListProps) {
+	<ul>
+		for _, issue := range props.Issues {
+			@IssueListItem(issue)
+		}
+	</ul>
+}
+
+templ IssueListItem(issue *models.Issue) {
+	<li>Issue ID: { issue.ID }, Title: { issue.Title } </li>
+}

@@ -6,22 +6,18 @@ import (
 	"strings"
 	"time"
 
+	"github.com/LazyBachelor/LazyPM/pkg/web/handler"
 	"github.com/NYTimes/gziphandler"
 	"github.com/rs/cors"
 )
 
-type Route struct {
-	Pattern  string
-	Handeler http.Handler
-}
-
-func (s *Server) RegisterRoutes(assets embed.FS, routes []Route) http.Handler {
+func (s *Server) RegisterRoutes(assets embed.FS) http.Handler {
 	mux := http.NewServeMux()
 
 	s.handleAssets(mux, assets)
 
-	for _, route := range routes {
-		mux.Handle(route.Pattern, route.Handeler)
+	for _, route := range handler.GetRoutes(s.Services) {
+		mux.Handle(route.Pattern, route.Handler)
 	}
 
 	handler := cors.Default().Handler(mux)
