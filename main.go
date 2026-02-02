@@ -18,10 +18,8 @@ func main() {
 		StatisticsStoragePath: "./.pm/stats.json",
 	}
 	svc, cleanup, err := service.NewServices(ctx, config)
-	if err != nil {
-		fmt.Println("Error:", err)
-		os.Exit(1)
-	}
+	checkErr(err)
+	
 	defer cleanup()
 
 	issue := &models.Issue{
@@ -32,27 +30,24 @@ func main() {
 	}
 
 	err = svc.Beads.CreateIssue(ctx, issue, "")
-	if err != nil {
-		fmt.Println("Error:", err)
-		os.Exit(1)
-	}
+	checkErr(err)
 
 	fetchedIssues, err := svc.Beads.SearchIssues(ctx, "", models.IssueFilter{})
-
-	if err != nil {
-		fmt.Println("Error:", err)
-		os.Exit(1)
-	}
+	checkErr(err)
 
 	for _, iss := range fetchedIssues {
 		fmt.Printf("Issue ID: %s, Title: %s, Status: %s\n", iss.ID, iss.Title, iss.Status)
 	}
 
 	stats, err := svc.Statistics.GetStatistics()
+	checkErr(err)
+
+	fmt.Printf("\nStatistics: %v\n", stats)
+}
+
+func checkErr(err error) {
 	if err != nil {
 		fmt.Println("Error:", err)
 		os.Exit(1)
 	}
-
-	fmt.Printf("\nStatistics: %v\n", stats)
 }
