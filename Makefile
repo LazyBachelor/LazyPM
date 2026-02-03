@@ -19,4 +19,12 @@ web:
 	go run ./cmd/web
 
 dev:
-	go tool templ generate -watch -cmd "go run ./cmd/web"
+	@go tool templ generate -watch -cmd "go run ./cmd/web"
+
+tw:
+	@npx --yes @tailwindcss/cli -i ./pkg/web/input.css -o ./pkg/web/assets/css/styles.css --watch
+
+watch:
+	@make -j2 dev tw
+
+.PHONY: tidy clean build cli tui web dev tw
