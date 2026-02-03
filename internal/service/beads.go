@@ -1,9 +1,10 @@
 package service
 
 import (
-	"github.com/LazyBachelor/LazyPM/internal/models"
 	"context"
 	"fmt"
+
+	"github.com/LazyBachelor/LazyPM/internal/models"
 
 	"github.com/steveyegge/beads"
 )
@@ -26,6 +27,22 @@ func NewBeadsService(ctx context.Context, storage beads.Storage, prefix string) 
 	}, nil
 }
 
-func (s *BeadsService) AllIssues(ctx context.Context) ([]*models.Issue, error) {
-	return s.Storage.SearchIssues(ctx, "", models.IssueFilter{})
+func (s *BeadsService) AllIssues(ctx context.Context) ([]models.Issue, error) {
+	issuesPtr, err := s.Storage.SearchIssues(ctx, "", models.IssueFilter{})
+	if err != nil {
+		return nil, err
+	}
+
+	if len(issuesPtr) == 0 {
+		return []models.Issue{}, nil
+	}
+
+	issues := make([]models.Issue, 0, len(issuesPtr))
+	for _, issuePtr := range issuesPtr {
+		if issuePtr != nil {
+			issues = append(issues, *issuePtr)
+		}
+	}
+
+	return issues, nil
 }

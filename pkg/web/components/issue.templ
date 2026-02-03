@@ -77,7 +77,7 @@ templ IssueForm(props IssueFormProps) {
 }
 
 type IssueTableProps struct {
-	Issues []*models.Issue
+	Issues []models.Issue
 }
 
 templ IssueTable(props IssueTableProps) {
@@ -96,7 +96,7 @@ templ IssueTable(props IssueTableProps) {
 	)
 }
 
-templ IssueRows(issues []*models.Issue) {
+templ IssueRows(issues []models.Issue) {
 	for _, issue := range issues {
 		<tr>
 			<td class="px-4 py-2 border">{ issue.ID }</td>
