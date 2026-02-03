@@ -1,8 +1,9 @@
 package tui
 
 import (
-	"github.com/LazyBachelor/LazyPM/internal/service"
 	"context"
+
+	"github.com/LazyBachelor/LazyPM/internal/service"
 )
 
 type TUIConfig = service.Config
@@ -15,4 +16,5 @@ func Run(ctx context.Context, config TUIConfig) error {
 	defer cleanup()
 
 	return nil
+
 }
