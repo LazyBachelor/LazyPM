@@ -15,6 +15,8 @@
         "templ": "html"
     },
     "files.associations": {
-        "*.css": "tailwindcss"
-    }
+        "*.css": "postcss"
+    },
+    "editor.colorDecorators": true,
+    "editor.defaultColorDecorators": "always"
 }
