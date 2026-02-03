@@ -2,6 +2,7 @@ package handler
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 
 	"github.com/LazyBachelor/LazyPM/internal/models"
@@ -22,25 +23,30 @@ func CreateIssue(svc *service.Services) http.HandlerFunc {
 			return
 		}
 
-		var issue models.Issue
-
-		err := json.NewDecoder(r.Body).Decode(&issue)
-		if err != nil {
-			http.Error(w, "Invalid request payload", http.StatusBadRequest)
+		// 1. Parse Form instead of JSON
+		if err := r.ParseForm(); err != nil {
+			http.Error(w, "Failed to parse form", http.StatusBadRequest)
 			return
 		}
 
-		defer r.Body.Close()
+		// 2. Map form values to your struct manually
+		// (Or use a library like 'gorilla/schema')
+		issue := models.Issue{
+			Title:       r.FormValue("title"),
+			Description: r.FormValue("description"),
+			Status:      models.Status(r.FormValue("status")),
+			IssueType:   models.IssueType(r.FormValue("issue_type")),
+		}
 
-		err = svc.Beads.CreateIssue(r.Context(), &issue, "")
+		err := svc.Beads.CreateIssue(r.Context(), &issue, "")
 		if err != nil {
-			http.Error(w, "Failed to create issue: "+err.Error(), http.StatusBadRequest)
+			http.Error(w, "Failed to create issue: "+err.Error(), http.StatusInternalServerError)
 			return
 		}
 
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusCreated)
-		json.NewEncoder(w).Encode(issue)
+		// 3. HTMX usually expects HTML back, not JSON
+		w.Header().Set("Content-Type", "text/html")
+		fmt.Fprintf(w, "<p>Created issue: %s</p>", issue.Title)
 	}
 }
 

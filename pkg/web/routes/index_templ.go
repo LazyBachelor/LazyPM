@@ -9,13 +9,11 @@ import "github.com/a-h/templ"
 import templruntime "github.com/a-h/templ/runtime"
 
 import (
-	"github.com/LazyBachelor/LazyPM/internal/models"
 	"github.com/LazyBachelor/LazyPM/pkg/web/components"
 )
 
 type IndexProps struct {
-	Issues    []*models.Issue
-	IssueList components.IssueListProps
+	IssueTable components.IssueTableProps
 }
 
 func Index(props IndexProps) templ.Component {
@@ -51,11 +49,28 @@ func Index(props IndexProps) templ.Component {
 				}()
 			}
 			ctx = templ.InitializeContext(ctx)
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<h1>Welcome to the Beads Test Application</h1><p>Here are current issues:</p>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div class=\"flex flex-col justify-center items-center gap-6 mb-12\"><h1>Create New Issue</h1>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = components.IssueList(props.IssueList).Render(ctx, templ_7745c5c3_Buffer)
+			templ_7745c5c3_Err = components.IssueForm(
+				components.IssueFormProps{
+					Action:      "/create-issue",
+					Class:       "mb-4",
+					Title:       "",
+					Description: "",
+					Status:      "open",
+					Priority:    0,
+					IssueType:   "task",
+				}).Render(ctx, templ_7745c5c3_Buffer)
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "</div>")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = components.IssueTable(props.IssueTable).Render(ctx, templ_7745c5c3_Buffer)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}

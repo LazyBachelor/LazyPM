@@ -31,12 +31,10 @@ func IndexHandler(svc *service.Services) http.HandlerFunc {
 		}
 
 		props := routes.IndexProps{
-			Issues: issues,
-			IssueList: components.IssueListProps{
+			IssueTable: components.IssueTableProps{
 				Issues: issues,
 			},
 		}
-
 		routes.Index(props).Render(r.Context(), w)
 	}
 }
