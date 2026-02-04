@@ -1,13 +1,14 @@
 package main
 
 import (
+	"context"
+	"fmt"
+	"os"
+
 	"github.com/LazyBachelor/LazyPM/pkg"
 	"github.com/LazyBachelor/LazyPM/pkg/cli"
 	"github.com/LazyBachelor/LazyPM/pkg/tui"
 	"github.com/LazyBachelor/LazyPM/pkg/web"
-	"context"
-	"fmt"
-	"os"
 )
 
 func main() {
@@ -23,7 +24,7 @@ func main() {
 
 	switch os.Args[1] {
 	case "tui":
-		err = tui.Run(ctx, config)
+		_, err = tui.Run(ctx, config)
 	case "cli":
 		err = cli.Run(ctx, config)
 	case "web":
