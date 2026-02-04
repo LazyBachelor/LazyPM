@@ -16,7 +16,7 @@ var (
 )
 
 var createCmd = &cobra.Command{
-	Use:   "issue [title]",
+	Use:   "create [title]",
 	Short: "Create a new issue",
 	Long:  `Create a new issue with the specified details.`,
 	RunE:  runCreateCmd,
