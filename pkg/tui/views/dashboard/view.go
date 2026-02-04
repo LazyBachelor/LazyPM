@@ -3,7 +3,9 @@ package dashboard
 import (
 	"context"
 
+	"github.com/charmbracelet/bubbles/help"
 	"github.com/charmbracelet/bubbles/list"
+	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 
 	"github.com/LazyBachelor/LazyPM/internal/service"
@@ -33,10 +35,12 @@ func NewDashboard(svc *service.Services) Model {
 
 	issueList.Title = "Issues"
 	issueList.Styles.Title = styles.TitleStyle
+	issueList.SetShowHelp(false)
 
 	issueView := issue.NewIssueView(issue.Model{})
 
 	m := Model{
+		help:      help.New(),
 		issueView: issueView,
 		issueList: issueList,
 		keyMap:    defaultDashboardKeyMap,
@@ -48,6 +52,10 @@ func NewDashboard(svc *service.Services) Model {
 	return m
 }
 
+func (d Model) Init() tea.Cmd {
+	return nil
+}
+
 func (d Model) View() string {
 	issueView := d.issueView.View()
 
@@ -57,7 +65,9 @@ func (d Model) View() string {
 		issueView = styles.IssueStyle.Render(issueView)
 	}
 
-	str := lipgloss.JoinHorizontal(lipgloss.Left, styles.AppStyle.Render(d.issueList.View()), issueView)
+	help := d.help.View(d.keyMap)
+
+	str := lipgloss.JoinHorizontal(lipgloss.Left, styles.AppStyle.Render(d.issueList.View()), issueView) + "\n" + help
 
 	return str
 }
