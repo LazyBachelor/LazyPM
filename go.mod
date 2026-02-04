@@ -6,6 +6,7 @@ require (
 	github.com/Dicklesworthstone/beads_viewer v0.14.3
 	github.com/NYTimes/gziphandler v1.1.1
 	github.com/a-h/templ v0.3.977
+	github.com/charmbracelet/bubbles v0.21.1
 	github.com/charmbracelet/bubbletea v1.3.10
 	github.com/google/uuid v1.6.0
 	github.com/rs/cors v1.11.1
@@ -24,7 +25,6 @@ require (
 	github.com/aymerick/douceur v0.2.0 // indirect
 	github.com/catppuccin/go v0.3.0 // indirect
 	github.com/cenkalti/backoff/v4 v4.3.0 // indirect
-	github.com/charmbracelet/bubbles v0.21.1 // indirect
 	github.com/charmbracelet/colorprofile v0.4.1 // indirect
 	github.com/charmbracelet/glamour v0.10.0 // indirect
 	github.com/charmbracelet/huh v0.8.0 // indirect
