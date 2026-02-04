@@ -1,11 +1,17 @@
 package commands
 
 import (
-	"github.com/LazyBachelor/LazyPM/internal/models"
 	"fmt"
 	"os"
 
+	"github.com/LazyBachelor/LazyPM/internal/models"
+
 	"github.com/spf13/cobra"
+)
+
+var (
+	createTitle       string
+	createDescription string
 )
 
 var createCmd = &cobra.Command{
@@ -15,10 +21,16 @@ var createCmd = &cobra.Command{
 	RunE:  runCreateCmd,
 }
 
+func init() {
+	createCmd.Flags().StringVar(&createTitle, "title", "", "Issue title")
+	_ = createCmd.MarkFlagRequired("title")
+	createCmd.Flags().StringVar(&createDescription, "desc", "", "Issue description")
+}
+
 func runCreateCmd(cmd *cobra.Command, args []string) error {
 	issue := &models.Issue{
-		Title:       "test",
-		Description: "This is a test issue created by the CLI.",
+		Title:       createTitle,
+		Description: createDescription,
 		Status:      models.StatusOpen,
 		IssueType:   models.TypeBug,
 		Priority:    0,
