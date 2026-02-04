@@ -1,11 +1,10 @@
 package main
 
 import (
+	"context"
+
 	"github.com/LazyBachelor/LazyPM/internal/service"
 	"github.com/LazyBachelor/LazyPM/pkg/cli"
-	"context"
-	"fmt"
-	"os"
 )
 
 func main() {
@@ -16,7 +15,6 @@ func main() {
 	}
 
 	if err := cli.Run(context.Background(), config); err != nil {
-		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
-		os.Exit(1)
+		return
 	}
 }
