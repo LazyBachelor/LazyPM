@@ -2,3 +2,4 @@
 *.db
 *.ext
 bin
+.idea
