@@ -21,4 +21,5 @@ func Execute(services *service.Services) error {
 
 func init() {
 	rootCmd.AddCommand(createCmd)
+	rootCmd.CompletionOptions.DisableDefaultCmd = true
 }
