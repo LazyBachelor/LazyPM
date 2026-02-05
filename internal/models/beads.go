@@ -81,8 +81,10 @@ const (
 
 func IssuesPtrToIssues(issuePtr []*Issue) []Issue {
 	issues := make([]Issue, 0, len(issuePtr))
-	for _, issue := range issuePtr {
-		issues = append(issues, *issue)
+	for _, issuePtr := range issuePtr {
+		if issuePtr != nil {
+			issues = append(issues, *issuePtr)
+		}
 	}
 	return issues
 }

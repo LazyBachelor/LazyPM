@@ -37,12 +37,7 @@ func (s *BeadsService) AllIssues(ctx context.Context) ([]models.Issue, error) {
 		return []models.Issue{}, nil
 	}
 
-	issues := make([]models.Issue, 0, len(issuesPtr))
-	for _, issuePtr := range issuesPtr {
-		if issuePtr != nil {
-			issues = append(issues, *issuePtr)
-		}
-	}
+	issues := models.IssuesPtrToIssues(issuesPtr)
 
 	return issues, nil
 }
