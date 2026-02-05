@@ -24,6 +24,11 @@ func runGetCmd(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
+	if issue == nil {
+		cmd.Printf("Issue with ID '%s' not found\n", issueID)
+		return nil
+	}
+
 	cmd.Printf("Title: %s\n", issue.Title)
 	cmd.Printf("Description: %s\n", issue.Description)
 	cmd.Printf("Status: %s\n", issue.Status)
