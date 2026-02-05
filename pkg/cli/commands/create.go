@@ -2,6 +2,7 @@ package commands
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/LazyBachelor/LazyPM/internal/models"
 
@@ -19,8 +20,11 @@ var createCmd = &cobra.Command{
 	Use:   "create [title]",
 	Short: "Create a new issue",
 	Long:  `Create a new issue with the specified details.`,
-	RunE:  runCreateCmd,
-	Args:  cobra.ExactArgs(1),
+	Example: `pm create New issue -d "Description" -s open -t task -p 3
+pm create Fix bug --desc "Bug description" --status in_progress --type bug --priority 5`,
+	RunE:    runCreateCmd,
+	Aliases: []string{"add"},
+	Args:    cobra.MinimumNArgs(1),
 }
 
 func init() {
@@ -28,10 +32,22 @@ func init() {
 	createCmd.Flags().StringVarP(&createStatus, "status", "s", "open", "Issue status(open, closed, in_progress)")
 	createCmd.Flags().StringVarP(&createType, "type", "t", "task", "Issue type(bug, feature, task)")
 	createCmd.Flags().IntVarP(&createPriority, "priority", "p", 0, "Issue priority(0-5)")
+
+	createCmd.RegisterFlagCompletionFunc("type", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+		return []string{"bug", "feature", "task"}, cobra.ShellCompDirectiveDefault
+	})
+
+	createCmd.RegisterFlagCompletionFunc("status", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+		return []string{"open", "closed", "in_progress"}, cobra.ShellCompDirectiveDefault
+	})
+
+	createCmd.RegisterFlagCompletionFunc("priority", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+		return []string{"0", "1", "2", "3", "4", "5"}, cobra.ShellCompDirectiveDefault
+	})
 }
 
 func runCreateCmd(cmd *cobra.Command, args []string) error {
-	createTitle := args[0]
+	createTitle := strings.Join(args, " ")
 
 	if createTitle == "" {
 		return fmt.Errorf("issue title cannot be empty")
