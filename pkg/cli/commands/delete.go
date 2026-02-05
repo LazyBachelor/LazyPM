@@ -11,7 +11,7 @@ import (
 
 var deleteCmd = &cobra.Command{
 	Use:     "delete [id]",
-	Short:   "Delete existing issue",
+	Short:   "Delete an existing issue",
 	Long:    `Delete an existing issue by its ID.`,
 	Example: `pm delete issue_id`,
 	RunE:    runDeleteCmd,
