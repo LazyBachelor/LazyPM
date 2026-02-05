@@ -30,7 +30,7 @@ func ExecuteWithArgs(args []string) error {
 
 func init() {
 	rootCmd.AddCommand(createCmd)
-
+	rootCmd.AddCommand(deleteCmd)
 	rootCmd.CompletionOptions.DisableDefaultCmd = false
 	rootCmd.AddGroup(&cobra.Group{ID: "help", Title: "Helping Commands"})
 	rootCmd.SetCompletionCommandGroupID("help")
