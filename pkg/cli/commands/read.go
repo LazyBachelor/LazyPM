@@ -50,11 +50,9 @@ func completeIssues(cmd *cobra.Command, args []string, toComplete string) ([]str
 	var completions []string
 	for _, issue := range issues {
 
-		if strings.HasPrefix(issue.Title, toComplete) {
-			completions = append(completions, issue.ID)
-		}
-
 		if strings.HasPrefix(issue.ID, toComplete) {
+			completions = append(completions, issue.ID)
+		} else if strings.HasPrefix(issue.Title, toComplete) {
 			completions = append(completions, issue.ID)
 		}
 	}
