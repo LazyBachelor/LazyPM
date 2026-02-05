@@ -1,16 +1,18 @@
 package service
 
 import (
-	"github.com/LazyBachelor/LazyPM/internal/models"
-	"github.com/LazyBachelor/LazyPM/internal/storage"
 	"context"
 	"time"
+
+	"github.com/LazyBachelor/LazyPM/internal/models"
+	"github.com/LazyBachelor/LazyPM/internal/storage"
 
 	"github.com/google/uuid"
 	"github.com/steveyegge/beads"
 )
 
 type Config struct {
+	RootCmd               string
 	WebAddress            string
 	BeadsDBPath           string
 	IssuePrefix           string
