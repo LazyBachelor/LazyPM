@@ -21,5 +21,8 @@ func Execute(services *service.Services) error {
 
 func init() {
 	rootCmd.AddCommand(createCmd)
-	rootCmd.CompletionOptions.DisableDefaultCmd = true
+	rootCmd.CompletionOptions.DisableDefaultCmd = false
+	rootCmd.AddGroup(&cobra.Group{ID: "other", Title: "Helping Commands"})
+	rootCmd.SetCompletionCommandGroupID("other")
+	rootCmd.SetHelpCommandGroupID("other")
 }
