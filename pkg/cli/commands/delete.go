@@ -4,8 +4,6 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/LazyBachelor/LazyPM/internal/models"
-
 	"github.com/spf13/cobra"
 )
 
@@ -22,11 +20,7 @@ var deleteCmd = &cobra.Command{
 func runDeleteCmd(cmd *cobra.Command, args []string) error {
 	deleteID := strings.Join(args, " ")
 
-	issue := &models.Issue{
-		ID: deleteID,
-	}
-
-	err := svc.Beads.DeleteIssue(cmd.Context(), issue.ID)
+	err := svc.Beads.DeleteIssue(cmd.Context(), deleteID)
 	if err != nil {
 		return fmt.Errorf("error deleting issue: %w", err)
 	}
