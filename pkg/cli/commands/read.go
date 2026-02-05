@@ -9,8 +9,8 @@ import (
 var getIssueCmd = &cobra.Command{
 	Use:               "describe [issue ID]",
 	Aliases:           []string{"get", "read"},
-	Short:             "Gets issue details",
-	Long:              `Gets issue details by ID`,
+	Short:             "Get issue details",
+	Long:              `Get issue details by ID`,
 	RunE:              runGetCmd,
 	Args:              cobra.ExactArgs(1),
 	ValidArgsFunction: completeIssues,
