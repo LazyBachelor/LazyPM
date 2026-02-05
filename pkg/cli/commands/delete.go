@@ -37,10 +37,6 @@ func runDeleteCmd(cmd *cobra.Command, args []string) error {
 
 	str := fmt.Sprintf("Deleted issue with ID: %s\n", issue.ID)
 
-	if issue.Title != "" {
-		str += fmt.Sprintf("Title: %s\n", issue.Title)
-	}
-
 	fmt.Print(str)
 
 	return nil
