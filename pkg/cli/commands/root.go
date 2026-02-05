@@ -14,8 +14,17 @@ var rootCmd = &cobra.Command{
 }
 
 func Execute(services *service.Services) error {
+	SetServices(services)
+	return rootCmd.Execute()
+}
+
+func SetServices(services *service.Services) {
 	svc = services
 	rootCmd.Use = svc.Config.RootCmd
+}
+
+func ExecuteWithArgs(args []string) error {
+	rootCmd.SetArgs(args)
 	return rootCmd.Execute()
 }
 

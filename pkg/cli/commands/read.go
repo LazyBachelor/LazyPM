@@ -1,18 +1,20 @@
 package commands
 
 import (
+	"context"
 	"strings"
 
+	"github.com/LazyBachelor/LazyPM/internal/models"
 	"github.com/spf13/cobra"
 )
 
 var getIssueCmd = &cobra.Command{
 	Use:               "describe [issue ID]",
-	Aliases:           []string{"get", "read"},
 	Short:             "Get issue details",
 	Long:              `Get issue details by ID`,
-	RunE:              runGetCmd,
+	Aliases:           []string{"get", "read"},
 	Args:              cobra.ExactArgs(1),
+	RunE:              runGetCmd,
 	ValidArgsFunction: completeIssues,
 }
 
@@ -43,22 +45,30 @@ func init() {
 }
 
 func completeIssues(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+	issues, _ := GetIssueCompletions(cmd.Context(), toComplete)
+	var ids []string
+	for _, issue := range issues {
+		ids = append(ids, issue.ID)
+	}
+	return ids, cobra.ShellCompDirectiveNoFileComp
+}
+
+func GetIssueCompletions(ctx context.Context, toComplete string) ([]models.Issue, cobra.ShellCompDirective) {
 	if svc == nil {
 		return nil, cobra.ShellCompDirectiveNoFileComp
 	}
 
-	issues, err := svc.Beads.AllIssues(cmd.Context())
+	issues, err := svc.Beads.AllIssues(ctx)
 	if err != nil {
 		return nil, cobra.ShellCompDirectiveNoFileComp
 	}
 
-	var completions []string
+	var completions []models.Issue
 	for _, issue := range issues {
-
 		if strings.HasPrefix(issue.ID, toComplete) {
-			completions = append(completions, issue.ID)
+			completions = append(completions, issue)
 		} else if strings.HasPrefix(issue.Title, toComplete) {
-			completions = append(completions, issue.ID)
+			completions = append(completions, issue)
 		}
 	}
 
