@@ -1,6 +1,13 @@
 package models
 
-import "github.com/steveyegge/beads"
+import (
+	"fmt"
+	"os"
+	"text/tabwriter"
+
+	"github.com/muesli/reflow/truncate"
+	"github.com/steveyegge/beads"
+)
 
 type (
 	Issue            = beads.Issue
@@ -71,3 +78,37 @@ const (
 	EventLabelRemoved      = beads.EventLabelRemoved
 	EventCompacted         = beads.EventCompacted
 )
+
+func IssuesPtrToIssues(issuePtr []*Issue) []Issue {
+	issues := make([]Issue, 0, len(issuePtr))
+	for _, issuePtr := range issuePtr {
+		if issuePtr != nil {
+			issues = append(issues, *issuePtr)
+		}
+	}
+	return issues
+}
+
+func FormatIssueRow(issue Issue) string {
+	return fmt.Sprintf(
+		"%s\t%s\t%s\t%s\t%s\t%d",
+		truncate.String(issue.ID, 5),
+		truncate.StringWithTail(issue.Title, 25, "..."),
+		truncate.StringWithTail(issue.Description, 40, "..."),
+		issue.Status,
+		issue.IssueType,
+		issue.Priority,
+	)
+}
+
+func PrintIssues(issues []Issue) {
+	w := tabwriter.NewWriter(os.Stdout, 8, 10, 5, ' ', 0)
+
+	fmt.Fprintln(w, "ID\tTITLE\tDESCRIPTION\tSTATUS\tTYPE\tPRIORITY")
+
+	for _, issue := range issues {
+		fmt.Fprintln(w, FormatIssueRow(issue))
+	}
+
+	w.Flush()
+}
