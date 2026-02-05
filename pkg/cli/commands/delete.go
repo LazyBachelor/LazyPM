@@ -23,7 +23,7 @@ func runDeleteCmd(cmd *cobra.Command, args []string) error {
 	deleteID := strings.Join(args, " ")
 
 	if deleteID == "" {
-		return fmt.Errorf("issue title cannot be empty")
+		return fmt.Errorf("issue ID cannot be empty")
 	}
 
 	issue := &models.Issue{
