@@ -92,7 +92,7 @@ func IssuesPtrToIssues(issuePtr []*Issue) []Issue {
 func FormatIssueRow(issue Issue) string {
 	return fmt.Sprintf(
 		"%s\t%s\t%s\t%s\t%s\t%d",
-		truncate.String(issue.ID, 5),
+		truncate.String(issue.ID, 10),
 		truncate.StringWithTail(issue.Title, 25, "..."),
 		truncate.StringWithTail(issue.Description, 40, "..."),
 		issue.Status,
