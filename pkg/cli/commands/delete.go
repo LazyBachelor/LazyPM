@@ -25,7 +25,7 @@ func runDeleteCmd(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("error deleting issue: %w", err)
 	}
 
-	str := fmt.Sprintf("Deleted issue with ID: %s\n", issue.ID)
+	str := fmt.Sprintf("Deleted issue with ID: %s\n", deleteID)
 
 	fmt.Print(str)
 
