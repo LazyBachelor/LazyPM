@@ -1,7 +1,11 @@
 package commands
 
 import (
+	"context"
+	"os"
+
 	"github.com/LazyBachelor/LazyPM/internal/service"
+	"github.com/charmbracelet/fang"
 
 	"github.com/spf13/cobra"
 )
@@ -15,7 +19,9 @@ var rootCmd = &cobra.Command{
 
 func Execute(services *service.Services) error {
 	SetServices(services)
-	return rootCmd.Execute()
+	return fang.Execute(context.Background(), rootCmd,
+		fang.WithColorSchemeFunc(fang.AnsiColorScheme),
+		fang.WithNotifySignal(os.Interrupt, os.Kill))
 }
 
 func SetServices(services *service.Services) {
@@ -25,7 +31,8 @@ func SetServices(services *service.Services) {
 
 func ExecuteWithArgs(args []string) error {
 	rootCmd.SetArgs(args)
-	return rootCmd.Execute()
+	return fang.Execute(context.Background(), rootCmd,
+		fang.WithColorSchemeFunc(fang.AnsiColorScheme))
 }
 
 func init() {
