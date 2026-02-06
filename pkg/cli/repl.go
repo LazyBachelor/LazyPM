@@ -11,6 +11,7 @@ import (
 	"github.com/LazyBachelor/LazyPM/pkg"
 	"github.com/LazyBachelor/LazyPM/pkg/cli/commands"
 	"github.com/c-bata/go-prompt"
+	"github.com/charmbracelet/lipgloss"
 	"github.com/muesli/reflow/truncate"
 	"golang.org/x/term"
 )
@@ -29,13 +30,22 @@ func RunREPL(ctx context.Context, config pkg.SurveyConfig) error {
 
 	commands.SetServices(svc)
 
-	fmt.Printf("Welcome to Project Management CLI! Type 'pm help' for available commands.\n")
-	fmt.Printf("You can also run shell commands directly. Type 'exit' or 'quit' to leave.\n")
+	titleStyle := lipgloss.NewStyle().Align(lipgloss.Center).Bold(true).Border(lipgloss.RoundedBorder()).Padding(1).Foreground(lipgloss.Color("6"))
+
+	title := `Welcome to Project Management CLI! Type 'pm help' for available commands.
+You can also run shell commands directly. Type 'exit' or 'quit' to leave.`
+
+	fmt.Print("")
+	fmt.Println(titleStyle.Render(title))
+
+	// Create persistent history
+	var history []string
 
 	for {
 		input := prompt.Input(
 			"› ",
 			completer,
+			prompt.OptionPrefixTextColor(prompt.Cyan),
 			prompt.OptionMaxSuggestion(5),
 			prompt.OptionSuggestionBGColor(prompt.DefaultColor),
 			prompt.OptionSelectedSuggestionBGColor(prompt.DefaultColor),
@@ -43,6 +53,7 @@ func RunREPL(ctx context.Context, config pkg.SurveyConfig) error {
 			prompt.OptionSelectedDescriptionBGColor(prompt.DefaultColor),
 			prompt.OptionPreviewSuggestionBGColor(prompt.DefaultColor),
 			prompt.OptionScrollbarBGColor(prompt.DefaultColor),
+			prompt.OptionHistory(history),
 		)
 
 		input = strings.TrimSpace(input)
@@ -55,6 +66,19 @@ func RunREPL(ctx context.Context, config pkg.SurveyConfig) error {
 			fmt.Println("Goodbye!")
 			break
 		}
+
+		if input == "help" {
+			fmt.Println("Type 'pm help' for available PM commands.\nYou can also run shell commands directly. Type 'exit' or 'quit' to leave.")
+			continue
+		}
+
+		if input == "title" {
+			fmt.Println(titleStyle.Render(title))
+			continue
+		}
+
+		// Add to history
+		history = append(history, input)
 
 		// Check if it's a PM command (starts with "pm ")
 		if after, ok := strings.CutPrefix(input, "pm "); ok {
@@ -72,13 +96,25 @@ func RunREPL(ctx context.Context, config pkg.SurveyConfig) error {
 			}
 		} else {
 			// Execute as shell command
+			// Save terminal state before shell command
+			state, _ := term.GetState(int(os.Stdin.Fd()))
+
 			cmd := exec.Command("sh", "-c", input)
 			cmd.Stdout = os.Stdout
 			cmd.Stderr = os.Stderr
 			cmd.Stdin = os.Stdin
 
 			if err := cmd.Run(); err != nil {
+				// Restore terminal state even on error
+				if state != nil {
+					term.Restore(int(os.Stdin.Fd()), state)
+				}
 				continue
+			}
+
+			// Restore terminal state for go-prompt
+			if state != nil {
+				term.Restore(int(os.Stdin.Fd()), state)
 			}
 		}
 	}
@@ -95,9 +131,31 @@ func completer(d prompt.Document) []prompt.Suggest {
 	text := d.TextBeforeCursor()
 	words := strings.Fields(text)
 
-	// Only provide PM command completions if input starts with "pm"
 	if len(words) == 0 {
 		return nil
+	}
+
+	if words[0] != "pm" {
+		suggestions := []prompt.Suggest{
+			{Text: "pm", Description: "Project Management System"},
+			{Text: "exit", Description: "Exit pm CLI"},
+			{Text: "help", Description: "Show help information"},
+			{Text: "title", Description: "Print the welcome title"},
+			{Text: "git", Description: "Version control system"},
+		}
+
+		if len(words) == 0 {
+			return suggestions
+		}
+
+		var filtered []prompt.Suggest
+		for _, s := range suggestions {
+			if strings.HasPrefix(s.Text, words[0]) {
+				filtered = append(filtered, s)
+			}
+		}
+
+		return filtered
 	}
 
 	// If first word is "pm", provide PM command completions
@@ -120,14 +178,10 @@ func completer(d prompt.Document) []prompt.Suggest {
 func commandSuggestions(words []string) []prompt.Suggest {
 	suggestions := []prompt.Suggest{
 		{Text: "help", Description: "Show help information"},
-		{Text: "create", Description: "Create a new issue"},
+		{Text: "delete", Description: "Delete an issue by ID"},
+		{Text: "create", Description: "Create a new issue with title"},
 		{Text: "describe", Description: "Get issue details by ID"},
 		{Text: "list", Description: "List all issues"},
-		{Text: "ls", Description: "List all issues"},
-		{Text: "search", Description: "Alias for ls"},
-		{Text: "get", Description: "Alias for describe"},
-		{Text: "read", Description: "Alias for describe"},
-		{Text: "add", Description: "Alias for create"},
 	}
 
 	if len(words) == 0 {
@@ -173,6 +227,9 @@ func flagSuggestions(cmd string, words []string, text string) []prompt.Suggest {
 		return filterAndCompleteFlags(flagSuggests, lastWord, words)
 
 	case "describe", "get", "read":
+		return issueIdSuggestions(words)
+
+	case "delete":
 		return issueIdSuggestions(words)
 	}
 
