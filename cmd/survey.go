@@ -7,6 +7,7 @@ import (
 
 	"github.com/LazyBachelor/LazyPM/pkg"
 	"github.com/LazyBachelor/LazyPM/pkg/cli"
+	"github.com/LazyBachelor/LazyPM/pkg/cli/repl"
 	"github.com/LazyBachelor/LazyPM/pkg/tui"
 	"github.com/LazyBachelor/LazyPM/pkg/web"
 )
@@ -27,7 +28,9 @@ func main() {
 	case "tui":
 		err = tui.Run(ctx, config)
 	case "cli":
-		err = cli.RunREPL(ctx, config)
+		err = cli.RunWithArgs(ctx, config, os.Args[2:])
+	case "repl":
+		err = repl.RunREPL(ctx, config)
 	case "web":
 		err = web.Run(ctx, config)
 	default:
