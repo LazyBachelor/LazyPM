@@ -29,6 +29,8 @@ func RunREPL(ctx context.Context, config cli.CLIConfig) error {
 		return fmt.Errorf("failed to get terminal state: %w", err)
 	}
 
+	defer term.Restore(int(os.Stdin.Fd()), oldState)
+
 	svc, cleanup, err := service.NewServices(ctx, config)
 	if err != nil {
 		return fmt.Errorf("failed to initialize services: %w", err)
@@ -87,10 +89,7 @@ func RunREPL(ctx context.Context, config cli.CLIConfig) error {
 
 			args := strings.Fields(pmCmd)
 
-			output, err := commands.ExecuteArgsString(args)
-			if err != nil {
-				fmt.Fprintf(os.Stderr, "Error: %v\n", err)
-			}
+			output, _ := commands.ExecuteArgsString(args)
 
 			if output != "" {
 				fmt.Println(styles.CommandStyle.Render(output))
@@ -108,10 +107,6 @@ func RunREPL(ctx context.Context, config cli.CLIConfig) error {
 				fmt.Fprintf(os.Stderr, "%s", fmt.Sprintf("Error: %v", err))
 			}
 		}
-	}
-
-	if err := term.Restore(int(os.Stdin.Fd()), oldState); err != nil {
-		return fmt.Errorf("failed to restore terminal state: %w", err)
 	}
 
 	return nil
@@ -219,7 +214,7 @@ func flagSuggestions(cmd string, words []string, text string) []prompt.Suggest {
 	case "describe", "get", "read":
 		return issueIdSuggestions(words)
 
-	case "delete":
+	case "delete", "del", "rm", "remove":
 		return issueIdSuggestions(words)
 	}
 
