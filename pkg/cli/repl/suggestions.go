@@ -77,7 +77,7 @@ func flagSuggestions(cmd string, words []string, text string) []prompt.Suggest {
 	}
 
 	if cmd == "describe" || cmd == "delete" || cmd == "del" || cmd == "rm" || cmd == "remove" || cmd == "get" || cmd == "read" {
-		return issueIDSuggestions(words)
+		return issueIDSuggestions(lastWord)
 	}
 
 	var flags []prompt.Suggest
@@ -96,12 +96,7 @@ func flagSuggestions(cmd string, words []string, text string) []prompt.Suggest {
 	return filterByPrefix(flags, lastWord)
 }
 
-func issueIDSuggestions(words []string) []prompt.Suggest {
-	if len(words) < 2 {
-		return nil
-	}
-
-	partial := words[len(words)-1]
+func issueIDSuggestions(partial string) []prompt.Suggest {
 	issues, _ := commands.GetIssueCompletions(context.Background(), partial)
 
 	var suggestions []prompt.Suggest
