@@ -79,6 +79,18 @@ const (
 	EventCompacted         = beads.EventCompacted
 )
 
+func IssueString(issue Issue) string {
+	return fmt.Sprintf(
+		"ID: %s\nTitle: %s\nDescription: %s\nStatus: %s\nType: %s\nPriority: %d",
+		issue.ID,
+		issue.Title,
+		issue.Description,
+		issue.Status,
+		issue.IssueType,
+		issue.Priority,
+	)
+}
+
 func IssuesPtrToIssues(issuePtr []*Issue) []Issue {
 	issues := make([]Issue, 0, len(issuePtr))
 	for _, issuePtr := range issuePtr {
