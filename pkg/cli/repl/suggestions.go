@@ -95,7 +95,7 @@ func flagSuggestions(cmd string, words []string, text string) []prompt.Suggest {
 	// Update/edit: suggest issue IDs when typing the ID, flags after ID is provided
 	if cmd == "update" || cmd == "edit" {
 		if len(words) >= 2 && (lastWord == "" || strings.HasPrefix(lastWord, "-")) {
-			// ID already provided (trailing space) or typing a flag - suggest flags
+			// ID already provided (trailing space) or typing a flag -> suggest update flags
 			flags := updateFlags
 			if lastWord == "" {
 				return flags
