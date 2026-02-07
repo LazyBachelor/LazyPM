@@ -1,17 +1,20 @@
 package main
 
 import (
-	"github.com/LazyBachelor/LazyPM/pkg"
-	"github.com/LazyBachelor/LazyPM/pkg/cli"
-	"github.com/LazyBachelor/LazyPM/pkg/tui"
-	"github.com/LazyBachelor/LazyPM/pkg/web"
 	"context"
 	"fmt"
 	"os"
+
+	"github.com/LazyBachelor/LazyPM/pkg"
+	"github.com/LazyBachelor/LazyPM/pkg/cli"
+	"github.com/LazyBachelor/LazyPM/pkg/cli/repl"
+	"github.com/LazyBachelor/LazyPM/pkg/tui"
+	"github.com/LazyBachelor/LazyPM/pkg/web"
 )
 
 func main() {
 	config := pkg.SurveyConfig{
+		RootCmd:               "pm",
 		WebAddress:            "localhost:8080",
 		IssuePrefix:           "pm",
 		BeadsDBPath:           "./.pm/db.db",
@@ -25,7 +28,9 @@ func main() {
 	case "tui":
 		err = tui.Run(ctx, config)
 	case "cli":
-		err = cli.Run(ctx, config)
+		err = cli.RunWithArgs(ctx, config, os.Args[2:])
+	case "repl":
+		err = repl.RunREPL(ctx, config)
 	case "web":
 		err = web.Run(ctx, config)
 	default:

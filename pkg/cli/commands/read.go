@@ -1,66 +1,47 @@
 package commands
 
 import (
-	"strings"
-
+	"github.com/LazyBachelor/LazyPM/internal/models"
 	"github.com/spf13/cobra"
 )
 
+// getIssueCmd represents the get issue command.
 var getIssueCmd = &cobra.Command{
-	Use:               "describe [issue ID]",
-	Aliases:           []string{"get", "read"},
-	Short:             "Get issue details",
-	Long:              `Get issue details by ID`,
-	RunE:              runGetCmd,
-	Args:              cobra.ExactArgs(1),
+	Use:   "describe [issue ID]",
+	Short: "Get issue details",
+	Long:  `Get issue details by ID`,
+
 	ValidArgsFunction: completeIssues,
+
+	Aliases: []string{"get", "read"},
+	Args:    cobra.ExactArgs(1),
+	RunE:    runGetCmd,
 }
 
+// runGetCmd executes the get issue command logic,
+// which retrieves and displays issue details by its ID.
 func runGetCmd(cmd *cobra.Command, args []string) error {
 	issueID := args[0]
 
-	issue, err := svc.Beads.GetIssue(cmd.Context(), issueID)
+	// Fetch the issue details using the service layer.
+	issuePtr, err := svc.Beads.GetIssue(cmd.Context(), issueID)
 	if err != nil {
 		return err
 	}
 
-	if issue == nil {
-		cmd.Printf("Issue with ID '%s' not found\n", issueID)
+	// If the issue is not found, inform the user.
+	if issuePtr == nil {
+		cmd.Printf("Issue with ID %s not found\n", issueID)
 		return nil
 	}
 
-	cmd.Printf("Title: %s\n", issue.Title)
-	cmd.Printf("Description: %s\n", issue.Description)
-	cmd.Printf("Status: %s\n", issue.Status)
-	cmd.Printf("Type: %s\n", issue.IssueType)
-	cmd.Printf("Priority: %d\n", issue.Priority)
+	// Display the issue details to the user.
+	cmd.Println(models.IssueString(*issuePtr))
 
 	return nil
 }
 
+// init function to set up the get issue command.
 func init() {
 	rootCmd.AddCommand(getIssueCmd)
-}
-
-func completeIssues(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
-	if svc == nil {
-		return nil, cobra.ShellCompDirectiveNoFileComp
-	}
-
-	issues, err := svc.Beads.AllIssues(cmd.Context())
-	if err != nil {
-		return nil, cobra.ShellCompDirectiveNoFileComp
-	}
-
-	var completions []string
-	for _, issue := range issues {
-
-		if strings.HasPrefix(issue.ID, toComplete) {
-			completions = append(completions, issue.ID)
-		} else if strings.HasPrefix(issue.Title, toComplete) {
-			completions = append(completions, issue.ID)
-		}
-	}
-
-	return completions, cobra.ShellCompDirectiveNoFileComp
 }

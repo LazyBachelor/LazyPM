@@ -7,6 +7,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
+// Variables for get-issues command flags.
 var (
 	titleFlag       string
 	descriptionFlag string
@@ -23,18 +24,21 @@ pm ls --title "New feature" --desc "feature description"
 pm ls -p 1 -l 10`
 )
 
+// getIssuesCmd represents the get issues command.
 var getIssuesCmd = &cobra.Command{
 	Use:     "ls [search query]",
 	Short:   "List all issues",
 	Long:    `List all issues in the project management system.`,
-	Aliases: []string{"list", "search"},
 	Example: lsExamples,
+
+	Aliases: []string{"list", "search"},
 	Args:    cobra.MinimumNArgs(0),
 	RunE:    runGetIssuesCmd,
 }
 
+// runGetIssuesCmd executes the get issues command logic,
+// which retrieves and displays a list of issues based on the provided search query and filters.
 func runGetIssuesCmd(cmd *cobra.Command, args []string) error {
-
 	queryArg := strings.Join(args, " ")
 
 	filter := models.IssueFilter{
@@ -43,6 +47,8 @@ func runGetIssuesCmd(cmd *cobra.Command, args []string) error {
 		Limit:               limit,
 	}
 
+	// Only set filter fields if the corresponding flags
+	// were explicitly provided by the user.
 	if cmd.Flags().Changed("status") {
 		s := models.Status(statusFlag)
 		filter.Status = &s
@@ -55,18 +61,20 @@ func runGetIssuesCmd(cmd *cobra.Command, args []string) error {
 		filter.Priority = &priorityFlag
 	}
 
+	// Fetch issues based on the search query and filters.
 	issuesPtr, err := svc.Beads.SearchIssues(cmd.Context(), queryArg, filter)
 	if err != nil {
 		return err
 	}
 
+	// Convert the returned issue pointers to issue values and print them.
 	issues := models.IssuesPtrToIssues(issuesPtr)
-
 	models.PrintIssues(issues)
 
 	return nil
 }
 
+// init function to set up the get issues command and its flags.
 func init() {
 	getIssuesCmd.Flags().StringVar(&titleFlag, "title", "", "Filter issues by title")
 	getIssuesCmd.Flags().StringVarP(&descriptionFlag, "desc", "d", "", "Filter issues by description")
