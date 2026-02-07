@@ -21,6 +21,7 @@ var baseSuggestions = []prompt.Suggest{
 	{Text: "help", Description: "Show help information"},
 	{Text: "delete", Description: "Delete an issue by ID"},
 	{Text: "create", Description: "Create a new issue with title"},
+	{Text: "update", Description: "Update an existing issue by ID"},
 	{Text: "describe", Description: "Get issue details by ID"},
 	{Text: "list", Description: "List all issues"},
 }
@@ -30,6 +31,14 @@ var createFlags = []prompt.Suggest{
 	{Text: "--status", Description: "Issue status (open, closed, in_progress)"},
 	{Text: "--type", Description: "Issue type (bug, feature, task)"},
 	{Text: "--priority", Description: "Issue priority (0-5)"},
+}
+
+var updateFlags = []prompt.Suggest{
+	{Text: "--title", Description: "New issue title"},
+	{Text: "--desc", Description: "New issue description"},
+	{Text: "--status", Description: "New issue status (open, closed, in_progress)"},
+	{Text: "--type", Description: "New issue type (bug, feature, task)"},
+	{Text: "--priority", Description: "New issue priority (0-5)"},
 }
 
 var listFlags = []prompt.Suggest{
@@ -80,6 +89,19 @@ func flagSuggestions(cmd string, words []string, text string) []prompt.Suggest {
 		// For ID-oriented commands, pass the current partial argument (lastWord)
 		// so issueIDSuggestions can distinguish between completing the command
 		// name and completing the ID itself.
+		return issueIDSuggestions(lastWord, len(words) >= 2)
+	}
+
+	// Update/edit: suggest issue IDs when typing the ID, flags after ID is provided
+	if cmd == "update" || cmd == "edit" {
+		if len(words) >= 2 && (lastWord == "" || strings.HasPrefix(lastWord, "-")) {
+			// ID already provided (trailing space) or typing a flag - suggest flags
+			flags := updateFlags
+			if lastWord == "" {
+				return flags
+			}
+			return filterByPrefix(flags, lastWord)
+		}
 		return issueIDSuggestions(lastWord, len(words) >= 2)
 	}
 
