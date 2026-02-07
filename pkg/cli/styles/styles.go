@@ -4,8 +4,7 @@ package styles
 import "github.com/charmbracelet/lipgloss"
 
 var (
-	TitleStyle = lipgloss.NewStyle().
-			Bold(true).Padding(1)
+	TitleStyle = lipgloss.NewStyle().Bold(true).Padding(1)
 
 	CommandStyle = lipgloss.NewStyle().Padding(1)
 )
