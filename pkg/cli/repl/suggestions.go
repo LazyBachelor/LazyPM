@@ -77,7 +77,10 @@ func flagSuggestions(cmd string, words []string, text string) []prompt.Suggest {
 	}
 
 	if cmd == "describe" || cmd == "delete" || cmd == "del" || cmd == "rm" || cmd == "remove" || cmd == "get" || cmd == "read" {
-		return issueIDSuggestions(words)
+		// For ID-oriented commands, pass the current partial argument (lastWord)
+		// so issueIDSuggestions can distinguish between completing the command
+		// name and completing the ID itself.
+		return issueIDSuggestions(lastWord, len(words) >= 2)
 	}
 
 	var flags []prompt.Suggest
@@ -96,12 +99,12 @@ func flagSuggestions(cmd string, words []string, text string) []prompt.Suggest {
 	return filterByPrefix(flags, lastWord)
 }
 
-func issueIDSuggestions(words []string) []prompt.Suggest {
-	if len(words) < 2 {
+func issueIDSuggestions(partial string, hasCommand bool) []prompt.Suggest {
+	// Only show suggestions if we've typed the command already
+	if !hasCommand {
 		return nil
 	}
 
-	partial := words[len(words)-1]
 	issues, _ := commands.GetIssueCompletions(context.Background(), partial)
 
 	var suggestions []prompt.Suggest
