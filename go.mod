@@ -3,6 +3,7 @@ module github.com/LazyBachelor/LazyPM
 go 1.25.6
 
 require (
+	github.com/BurntSushi/toml v1.6.0
 	github.com/Dicklesworthstone/beads_viewer v0.14.3
 	github.com/NYTimes/gziphandler v1.1.1
 	github.com/a-h/templ v0.3.977
