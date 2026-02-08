@@ -9,6 +9,7 @@ import (
 	"github.com/muesli/reflow/truncate"
 )
 
+// rootSuggestions is a list of prompt suggestions for root-level commands.
 var rootSuggestions = []prompt.Suggest{
 	{Text: "pm", Description: "Project Management System"},
 	{Text: "exit", Description: "Exit pm CLI"},
@@ -17,6 +18,7 @@ var rootSuggestions = []prompt.Suggest{
 	{Text: "git", Description: "Version control system"},
 }
 
+// commandSuggestions is a list of prompt suggestions for PM commands.
 var baseSuggestions = []prompt.Suggest{
 	{Text: "help", Description: "Show help information"},
 	{Text: "delete", Description: "Delete an issue by ID"},
@@ -26,6 +28,7 @@ var baseSuggestions = []prompt.Suggest{
 	{Text: "list", Description: "List all issues"},
 }
 
+// createFlags is a list of prompt suggestions for the create command flags.
 var createFlags = []prompt.Suggest{
 	{Text: "--desc", Description: "Issue description"},
 	{Text: "--status", Description: "Issue status (open, closed, in_progress)"},
@@ -33,6 +36,7 @@ var createFlags = []prompt.Suggest{
 	{Text: "--priority", Description: "Issue priority (0-5)"},
 }
 
+// listFlags is a list of prompt suggestions for the list command flags.
 var listFlags = []prompt.Suggest{
 	{Text: "--title", Description: "Filter by title"},
 	{Text: "--desc", Description: "Filter by description"},
@@ -42,27 +46,42 @@ var listFlags = []prompt.Suggest{
 	{Text: "--limit", Description: "Limit number of results"},
 }
 
+// statusValues is a list of prompt suggestions for status types
 var statusValues = []prompt.Suggest{
 	{Text: "open", Description: "Open status"},
 	{Text: "closed", Description: "Closed status"},
 	{Text: "in_progress", Description: "In progress status"},
 }
 
+// typeValues is a list of prompt suggestions for issue types
 var typeValues = []prompt.Suggest{
 	{Text: "bug", Description: "Bug issue type"},
 	{Text: "feature", Description: "Feature issue type"},
 	{Text: "task", Description: "Task issue type"},
 }
 
+// priorityValues is a list of prompt suggestions for issue priority levels
 var priorityValues = []prompt.Suggest{
 	{Text: "0", Description: "Lowest priority"},
 	{Text: "1", Description: "Low priority"},
 	{Text: "2", Description: "Medium-low priority"},
 	{Text: "3", Description: "Medium priority"},
 	{Text: "4", Description: "High priority"},
-	{Text: "5", Description: "Highest priority"},
 }
 
+// isIDCommand maps command names to a boolean indicating whether they expect an issue ID as an argument.
+var isIDCommand = map[string]bool{
+	"describe": true,
+	"delete":   true,
+	"del":      true,
+	"rm":       true,
+	"remove":   true,
+	"get":      true,
+	"read":     true,
+	"close":    true,
+}
+
+// commandSuggestions returns a list of prompt suggestions based on the current input words.
 func commandSuggestions(words []string) []prompt.Suggest {
 	if len(words) == 0 {
 		return baseSuggestions
@@ -70,6 +89,7 @@ func commandSuggestions(words []string) []prompt.Suggest {
 	return filterByPrefix(baseSuggestions, words[0])
 }
 
+// flagSuggestions returns a list of prompt suggestions for command flags based on the current input.
 func flagSuggestions(cmd string, words []string, text string) []prompt.Suggest {
 	lastWord, prevWord := parseWords(words, text)
 
@@ -77,8 +97,7 @@ func flagSuggestions(cmd string, words []string, text string) []prompt.Suggest {
 		return filterByPrefix(values, lastWord)
 	}
 
-	if cmd == "describe" || cmd == "delete" || cmd == "del" ||
-		cmd == "rm" || cmd == "remove" || cmd == "get" || cmd == "read" || cmd == "close" {
+	if isIDCommand[cmd] {
 		// For ID-oriented commands, pass the current partial argument (lastWord)
 		// so issueIDSuggestions can distinguish between completing the command
 		// name and completing the ID itself.
@@ -101,6 +120,7 @@ func flagSuggestions(cmd string, words []string, text string) []prompt.Suggest {
 	return filterByPrefix(flags, lastWord)
 }
 
+// issueIDSuggestions returns a list of prompt suggestions for issue IDs based on the current partial input.
 func issueIDSuggestions(partial string, hasCommand bool) []prompt.Suggest {
 	// Only show suggestions if we've typed the command already
 	if !hasCommand {
@@ -119,6 +139,7 @@ func issueIDSuggestions(partial string, hasCommand bool) []prompt.Suggest {
 	return suggestions
 }
 
+// parseWords extracts the last and previous words from the input for flag suggestion logic.
 func parseWords(words []string, text string) (lastWord, prevWord string) {
 	if len(words) > 0 && !strings.HasSuffix(text, " ") {
 		lastWord = words[len(words)-1]
@@ -131,6 +152,7 @@ func parseWords(words []string, text string) (lastWord, prevWord string) {
 	return
 }
 
+// getFlagValues returns a list of prompt suggestions for flag values based on the given flag.
 func getFlagValues(flag string) []prompt.Suggest {
 	switch flag {
 	case "-s", "--status":
@@ -143,6 +165,7 @@ func getFlagValues(flag string) []prompt.Suggest {
 	return nil
 }
 
+// filterByPrefix filters a list of prompt suggestions based on a given prefix.
 func filterByPrefix(suggestions []prompt.Suggest, prefix string) []prompt.Suggest {
 	if prefix == "" {
 		return suggestions
