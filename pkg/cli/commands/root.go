@@ -16,6 +16,8 @@ var svc *service.Services
 
 type Flags struct {
 	interactive bool
+	limit       int
+
 	title       string
 	description string
 	status      string
