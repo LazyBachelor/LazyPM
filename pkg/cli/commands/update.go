@@ -116,7 +116,7 @@ func runUpdateCmd(cmd *cobra.Command, args []string) error {
 		str += fmt.Sprintf("Type: %s\n", updatedIssue.IssueType)
 	}
 
-	if updatedIssue.Priority != 0 {
+	if cmd.Flags().Changed("priority") {
 		str += fmt.Sprintf("Priority: %d\n", updatedIssue.Priority)
 	}
 
