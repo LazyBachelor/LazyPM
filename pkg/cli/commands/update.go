@@ -120,7 +120,7 @@ func runUpdateCmd(cmd *cobra.Command, args []string) error {
 		str += fmt.Sprintf("Priority: %d\n", updatedIssue.Priority)
 	}
 
-	fmt.Print(str)
+	cmd.Print(str)
 
 	return nil
 }
