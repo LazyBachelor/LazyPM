@@ -5,17 +5,13 @@ import (
 	"strings"
 
 	"github.com/LazyBachelor/LazyPM/internal/models"
+	"github.com/charmbracelet/huh"
 
 	"github.com/spf13/cobra"
 )
 
-// Variables to hold flag values for the create command.
-var (
-	createDescription string
-	createStatus      string
-	createType        string
-	createPriority    int
-)
+// createFlags holds the flag values for the create command
+var createFlags Flags
 
 const (
 	createCmdExample = `pm create New issue -d "Description" -s open -t task -p 3
@@ -29,25 +25,32 @@ var createCmd = &cobra.Command{
 	Long:    `Create a new issue with the specified details.`,
 	Example: createCmdExample,
 
+	Args:    cobra.MinimumNArgs(0),
 	Aliases: []string{"add"},
-	Args:    cobra.MinimumNArgs(1),
 	RunE:    runCreateCmd,
 }
 
 // runCreateCmd executes the create command logic,
 func runCreateCmd(cmd *cobra.Command, args []string) error {
-	createTitle := strings.Join(args, " ")
+	createFlags.title = strings.Join(args, " ")
 
-	if createTitle == "" {
+	// Run interactive if flag is set
+	if createFlags.interactive {
+		if err := runCreateInteractive(); err != nil {
+			return err
+		}
+	}
+
+	if createFlags.title == "" {
 		return fmt.Errorf("issue title cannot be empty")
 	}
 
 	issue := &models.Issue{
-		Title:       createTitle,
-		Description: createDescription,
-		Status:      models.Status(createStatus),
-		IssueType:   models.IssueType(createType),
-		Priority:    createPriority,
+		Title:       createFlags.title,
+		Description: createFlags.description,
+		Status:      models.Status(createFlags.status),
+		IssueType:   models.IssueType(createFlags.issueType),
+		Priority:    createFlags.priority,
 	}
 
 	// Create the issue using the service layer.
@@ -56,52 +59,61 @@ func runCreateCmd(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("error creating issue: %w", err)
 	}
 
-	// Build the output string with the created issue details.
-	str := fmt.Sprintf("Created issue with ID: %s\n", issue.ID)
-
-	if issue.Title != "" {
-		str += fmt.Sprintf("Title: %s\n", issue.Title)
-	}
-
-	if issue.Description != "" {
-		str += fmt.Sprintf("Description: %s\n", issue.Description)
-	}
-
-	if issue.Status != "" {
-		str += fmt.Sprintf("Status: %s\n", issue.Status)
-	}
-
-	if issue.IssueType != "" {
-		str += fmt.Sprintf("Type: %s\n", issue.IssueType)
-	}
-
-	if issue.Priority != 0 {
-		str += fmt.Sprintf("Priority: %d\n", issue.Priority)
-	}
-
-	cmd.Print(str)
+	// Display the created issue details to the user.
+	cmd.Printf("Created issue:\n%s", models.IssueString(*issue))
 
 	return nil
 }
 
+func runCreateInteractive() error {
+	form := huh.NewForm(
+
+		huh.NewGroup(
+			huh.NewInput().Value(&createFlags.title).Title("Title"),
+			huh.NewText().Value(&createFlags.description).Title("Description"),
+		).Title("Issue Details"),
+
+		huh.NewGroup(
+			huh.NewSelect[string]().
+				Options(
+					huh.NewOption("Open", "open"),
+					huh.NewOption("Closed", "closed"),
+					huh.NewOption("In Progress", "in_progress"),
+				).Value(&createFlags.status).Title("Status"),
+
+			huh.NewSelect[string]().
+				Options(
+					huh.NewOption("Bug", "bug"),
+					huh.NewOption("Feature", "feature"),
+					huh.NewOption("Task", "task"),
+				).Value(&createFlags.issueType).Title("Type"),
+
+			huh.NewSelect[int]().
+				Options(
+					huh.NewOption("0", 0),
+					huh.NewOption("1", 1),
+					huh.NewOption("2", 2),
+					huh.NewOption("3", 3),
+					huh.NewOption("4", 4),
+					huh.NewOption("5", 5),
+				).Value(&createFlags.priority).Title("Priority"),
+		).Title("Create New Issue").WithTheme(huh.ThemeBase()),
+	)
+
+	return form.Run()
+}
+
 // init function to set up the create command and its flags.
 func init() {
-	createCmd.Flags().StringVarP(&createDescription, "desc", "d", "", "Issue description")
-	createCmd.Flags().StringVarP(&createStatus, "status", "s", "open", "Issue status(open, closed, in_progress)")
-	createCmd.Flags().StringVarP(&createType, "type", "t", "task", "Issue type(bug, feature, task)")
-	createCmd.Flags().IntVarP(&createPriority, "priority", "p", 0, "Issue priority(0-5)")
+	createCmd.Flags().BoolVarP(&createFlags.interactive, "interactive", "i", false, "Create issue interactively")
+	createCmd.Flags().StringVarP(&createFlags.description, "desc", "d", "", "Issue description")
+	createCmd.Flags().StringVarP(&createFlags.status, "status", "s", "open", "Issue status(open, closed, in_progress)")
+	createCmd.Flags().StringVarP(&createFlags.issueType, "type", "t", "task", "Issue type(bug, feature, task)")
+	createCmd.Flags().IntVarP(&createFlags.priority, "priority", "p", 0, "Issue priority(0-5)")
 
-	createCmd.RegisterFlagCompletionFunc("type", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
-		return []string{"bug", "feature", "task"}, cobra.ShellCompDirectiveDefault
-	})
-
-	createCmd.RegisterFlagCompletionFunc("status", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
-		return []string{"open", "closed", "in_progress"}, cobra.ShellCompDirectiveDefault
-	})
-
-	createCmd.RegisterFlagCompletionFunc("priority", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
-		return []string{"0", "1", "2", "3", "4", "5"}, cobra.ShellCompDirectiveDefault
-	})
+	createCmd.RegisterFlagCompletionFunc("type", completionFunc(typeOptions))
+	createCmd.RegisterFlagCompletionFunc("status", completionFunc(statusOptions))
+	createCmd.RegisterFlagCompletionFunc("priority", completionFunc(priorityRange))
 
 	rootCmd.AddCommand(createCmd)
 }
