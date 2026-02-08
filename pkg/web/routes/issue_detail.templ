@@ -1,0 +1,37 @@
+package routes
+
+import "github.com/LazyBachelor/LazyPM/internal/models"
+
+type IssueDetailProps struct {
+	Issue models.Issue
+}
+
+templ IssueDetail(props IssueDetailProps) {
+	@BaseLayout() {
+		<div class="issue-detail">
+			<header class="issue-detail-header">
+				<a href="/issues" class="issue-detail-back">← Issues</a>
+				<h1 class="issue-detail-title">{ props.Issue.ID } { props.Issue.Title }</h1>
+			</header>
+
+			<div class="issue-detail-fields">
+				<div class="issue-detail-field">
+					<span class="issue-detail-field-label">Type</span>
+					<span class="issue-detail-field-value">{ models.TypeLabel(props.Issue.IssueType) }</span>
+				</div>
+				<div class="issue-detail-field">
+					<span class="issue-detail-field-label">State</span>
+					<span class="issue-detail-field-value">{ models.StateLabel(props.Issue.Status) }</span>
+				</div>
+				<div class="issue-detail-field">
+					<span class="issue-detail-field-label">Priority</span>
+					<span class={ "issue-detail-field-value issues-priority issues-priority--" + models.PriorityLabel(props.Issue.Priority) }>{ models.PriorityLabel(props.Issue.Priority) }</span>
+				</div>
+				<div class="issue-detail-field">
+					<span class="issue-detail-field-label">Description</span>
+					<p class="issue-detail-field-value issue-detail-description">{ props.Issue.Description }</p>
+				</div>
+			</div>
+		</div>
+	}
+}

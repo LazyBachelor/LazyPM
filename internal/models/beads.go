@@ -30,7 +30,6 @@ type (
 	EpicStatus       = beads.EpicStatus
 )
 
-// Status constants
 const (
 	StatusOpen       = beads.StatusOpen
 	StatusInProgress = beads.StatusInProgress
@@ -39,7 +38,6 @@ const (
 	StatusClosed     = beads.StatusClosed
 )
 
-// IssueType constants
 const (
 	TypeBug     = beads.TypeBug
 	TypeFeature = beads.TypeFeature
@@ -48,23 +46,20 @@ const (
 	TypeChore   = beads.TypeChore
 )
 
-// DependencyType constants
 const (
 	DepBlocks            = beads.DepBlocks
 	DepRelated           = beads.DepRelated
 	DepParentChild       = beads.DepParentChild
 	DepDiscoveredFrom    = beads.DepDiscoveredFrom
-	DepConditionalBlocks = beads.DepConditionalBlocks // B runs only if A fails (bd-kzda)
+	DepConditionalBlocks = beads.DepConditionalBlocks
 )
 
-// SortPolicy constants
 const (
 	SortPolicyHybrid   = beads.SortPolicyHybrid
 	SortPolicyPriority = beads.SortPolicyPriority
 	SortPolicyOldest   = beads.SortPolicyOldest
 )
 
-// EventType constants
 const (
 	EventCreated           = beads.EventCreated
 	EventUpdated           = beads.EventUpdated

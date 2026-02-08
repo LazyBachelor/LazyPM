@@ -1,0 +1,96 @@
+package routes
+
+import "github.com/LazyBachelor/LazyPM/internal/models"
+
+type IssuesProps struct {
+	Issues      []models.Issue
+	FilterPri   string
+	FilterState string
+	OpenCount   int
+	ClosedCount int
+}
+
+func filterToggleClass(btn, current string) string {
+	if btn == current {
+		return "issues-filter-toggle is-active"
+	}
+	return "issues-filter-toggle"
+}
+
+templ Issues(props IssuesProps) {
+	@BaseLayout() {
+		<div class="issues-page">
+			<header class="issues-header">
+				<h1 class="issues-title">Issues</h1>
+				<div class="issues-filters">
+					<div class="issues-filter-group">
+						<span class="issues-filter-label">Priority</span>
+						<div class="issues-filter-toggles">
+							<a href={ "/issues?state=" + props.FilterState } class={ filterToggleClass("", props.FilterPri) }>All</a>
+							<a href={ "/issues?pri=N&state=" + props.FilterState } class={ filterToggleClass("N", props.FilterPri) }>N</a>
+							<a href={ "/issues?pri=H&state=" + props.FilterState } class={ filterToggleClass("H", props.FilterPri) }>H</a>
+							<a href={ "/issues?pri=E&state=" + props.FilterState } class={ filterToggleClass("E", props.FilterPri) }>E</a>
+						</div>
+					</div>
+					<div class="issues-filter-group">
+						<span class="issues-filter-label">State</span>
+						<div class="issues-filter-toggles">
+							<a href={ "/issues?pri=" + props.FilterPri } class={ filterToggleClass("", props.FilterState) }>All</a>
+							<a href={ "/issues?pri=" + props.FilterPri + "&state=open" } class={ filterToggleClass("open", props.FilterState) }>Open ({ props.OpenCount })</a>
+							<a href={ "/issues?pri=" + props.FilterPri + "&state=closed" } class={ filterToggleClass("closed", props.FilterState) }>Closed ({ props.ClosedCount })</a>
+						</div>
+					</div>
+				</div>
+			</header>
+
+			<div class="issues-list-scroll">
+				if len(props.Issues) == 0 {
+					<p class="issues-empty">No issues match your filters.</p>
+				} else {
+					for _, issue := range props.Issues {
+						<div class="issues-item" data-issue-id={ issue.ID }>
+							<button type="button" class="issues-item-summary" data-toggle>
+								<span class={ "issues-priority-badge issues-priority--" + models.PriorityLabel(issue.Priority) }>{ models.PriorityLabel(issue.Priority) }</span>
+								<span class="issues-item-title">{ issue.ID } { issue.Title }</span>
+							</button>
+							<div class="issues-item-details">
+								<div class="issues-item-detail-row">
+									<span class="issues-item-detail-label">Type</span>
+									<span class="issues-item-detail-value">{ models.TypeLabel(issue.IssueType) }</span>
+								</div>
+								<div class="issues-item-detail-row">
+									<span class="issues-item-detail-label">State</span>
+									<span class="issues-item-detail-value">{ models.StateLabel(issue.Status) }</span>
+								</div>
+								<div class="issues-item-detail-row">
+									<span class="issues-item-detail-label">Priority</span>
+									<span class={ "issues-item-detail-value issues-priority issues-priority--" + models.PriorityLabel(issue.Priority) }>{ models.PriorityLabel(issue.Priority) }</span>
+								</div>
+								<div class="issues-item-detail-row">
+									<span class="issues-item-detail-label">Assignee</span>
+									<span class="issues-item-detail-value">—</span>
+								</div>
+								<div class="issues-item-detail-row">
+									<span class="issues-item-detail-label">Spent time</span>
+									<span class="issues-item-detail-value">—</span>
+								</div>
+								<a href={ "/issues/" + issue.ID } class="issues-item-view">View full details →</a>
+							</div>
+						</div>
+					}
+				}
+			</div>
+			<script>
+				(function(){
+					document.querySelectorAll('.issues-item-summary[data-toggle]').forEach(function(btn){
+						btn.addEventListener('click',function(){
+							var item=this.closest('.issues-item');
+							document.querySelectorAll('.issues-item.is-expanded').forEach(function(el){ if(el!==item)el.classList.remove('is-expanded'); });
+							item.classList.toggle('is-expanded');
+						});
+					});
+				})();
+			</script>
+		</div>
+	}
+}

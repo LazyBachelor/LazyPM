@@ -2,20 +2,75 @@ package components
 
 templ Layout(props LayoutProps){
     <!DOCTYPE html>
-    <html lang="en">
+    <html lang="en" data-theme="light">
     <head>
         <meta charset="UTF-8">
         <title>{props.Title}</title>
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
         <meta name="description" content={props.Description}>
         @Head(props.Head)
     </head>
-    <body>
-        @Header(props.Header)
-        <main>
-            { children... }
-        </main>
-        @Footer(props.Footer)
+    <body class="lazypm-app" style="display:flex;margin:0;padding:0;background:#f3f4f6;color:#111;">
+        <aside class="lazypm-sidebar" id="lazypm-sidebar" style="flex-shrink:0;display:flex;flex-direction:column;min-width:0;">
+            <div class="lazypm-sidebar-logo">{ props.Logo }</div>
+            @Header(props.Header)
+            <button type="button" class="lazypm-sidebar-toggle" id="lazypm-sidebar-toggle" aria-label="Collapse sidebar">
+                <span class="lazypm-sidebar-toggle-icon" aria-hidden="true">☰</span>
+                <span class="lazypm-sidebar-toggle-text">Collapse</span>
+            </button>
+        </aside>
+        <script>
+          document.addEventListener('DOMContentLoaded', function(){
+            var sidebar = document.getElementById('lazypm-sidebar');
+            var btn = document.getElementById('lazypm-sidebar-toggle');
+            var icon = btn && btn.querySelector('.lazypm-sidebar-toggle-icon');
+            var text = btn && btn.querySelector('.lazypm-sidebar-toggle-text');
+            var closed = localStorage.getItem('lazypm-sidebar-closed') === '1';
+            if (window.innerWidth <= 767 && !localStorage.getItem('lazypm-sidebar-closed')) closed = true;
+            if (closed && sidebar) sidebar.classList.add('lazypm-sidebar--closed');
+            function updateBtn(){
+              if (!sidebar || !btn) return;
+              var isClosed = sidebar.classList.contains('lazypm-sidebar--closed');
+              if (icon) icon.textContent = isClosed ? '\u2630' : '\u00AB';
+              if (text) text.textContent = isClosed ? '' : 'Collapse';
+              btn.setAttribute('aria-label', isClosed ? 'Expand sidebar' : 'Collapse sidebar');
+            }
+            updateBtn();
+            function toggleSidebar(){
+              if (!sidebar) return;
+              sidebar.classList.toggle('lazypm-sidebar--closed');
+              localStorage.setItem('lazypm-sidebar-closed', sidebar.classList.contains('lazypm-sidebar--closed') ? '1' : '0');
+              updateBtn();
+            }
+            if (btn) btn.addEventListener('click', toggleSidebar);
+            var hamburger = document.getElementById('lazypm-hamburger');
+            if (hamburger) hamburger.addEventListener('click', toggleSidebar);
+            var backdrop = document.getElementById('lazypm-sidebar-backdrop');
+            if (backdrop) backdrop.addEventListener('click', function(){ if (window.innerWidth <= 767 && sidebar) { sidebar.classList.add('lazypm-sidebar--closed'); localStorage.setItem('lazypm-sidebar-closed','1'); updateBtn(); } });
+          });
+        </script>
+        <div class="lazypm-sidebar-backdrop" id="lazypm-sidebar-backdrop" aria-hidden="true"></div>
+        <script>
+          (function(){ var p=window.location.pathname; document.querySelectorAll('.lazypm-nav-link').forEach(function(a){ var h=a.getAttribute('href'); if(h==='/'){ if(p==='/')a.classList.add('is-active'); }else if(p===h||p.startsWith(h+'/'))a.classList.add('is-active'); }); })();
+        </script>
+        <div class="lazypm-main-wrap" style="flex:1;display:flex;flex-direction:column;min-width:0;">
+            <header class="lazypm-topbar">
+                <button type="button" class="lazypm-topbar-hamburger" id="lazypm-hamburger" aria-label="Open menu">☰</button>
+                <span class="lazypm-topbar-project">{ props.ProjectName }</span>
+                <a href="/dashboards/new" class="lazypm-topbar-create" title="New dashboard">+ Create</a>
+                <div class="lazypm-topbar-spacer"></div>
+                <input type="search" placeholder="Search" class="lazypm-topbar-search" aria-label="Search">
+                <div class="lazypm-topbar-spacer"></div>
+                <div class="lazypm-topbar-right">
+                    <button type="button" class="lazypm-topbar-icon" aria-label="Notifications">🔔</button>
+                    <button type="button" class="lazypm-topbar-icon lazypm-topbar-user" aria-label="User menu">👤</button>
+                </div>
+            </header>
+            <main class="lazypm-main">
+                { children... }
+            </main>
+            @Footer(props.Footer)
+        </div>
     </body>
     </html>
 }
@@ -23,6 +78,8 @@ templ Layout(props LayoutProps){
 type LayoutProps struct {
     Title       string
     Description string
+    ProjectName string
+    Logo        string
     Head        HeadProps
     Header      HeaderProps
     Footer      FooterProps
@@ -54,13 +111,11 @@ type Script struct {
 }
 
 templ Header(props HeaderProps){
-    <header>
-        <nav>
-            for _, route := range props.Routes {
-                <a href={ route.Path }>{ route.Name }</a>
-            }
-        </nav>
-    </header>
+    <nav class="lazypm-nav">
+        for _, route := range props.Routes {
+            <a href={ route.Path } class="lazypm-nav-link">{ route.Name }</a>
+        }
+    </nav>
 }
 
 type HeaderProps struct {
@@ -73,7 +128,7 @@ type NavRoute struct {
 }
 
 templ Footer(props FooterProps){
-    
+    <footer class="lazypm-footer">LazyPM · Beads-backed</footer>
 }
 
 type FooterProps struct {

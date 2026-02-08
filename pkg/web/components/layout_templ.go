@@ -29,7 +29,7 @@ func Layout(props LayoutProps) templ.Component {
 			templ_7745c5c3_Var1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<!doctype html><html lang=\"en\"><head><meta charset=\"UTF-8\"><title>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<!doctype html><html lang=\"en\" data-theme=\"light\"><head><meta charset=\"UTF-8\"><title>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -42,7 +42,7 @@ func Layout(props LayoutProps) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "</title><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\"><meta name=\"description\" content=\"")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "</title><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0, viewport-fit=cover\"><meta name=\"description\" content=\"")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -63,7 +63,20 @@ func Layout(props LayoutProps) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, "</head><body>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, "</head><body class=\"lazypm-app\" style=\"display:flex;margin:0;padding:0;background:#f3f4f6;color:#111;\"><aside class=\"lazypm-sidebar\" id=\"lazypm-sidebar\" style=\"flex-shrink:0;display:flex;flex-direction:column;min-width:0;\"><div class=\"lazypm-sidebar-logo\">")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		var templ_7745c5c3_Var4 string
+		templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinStringErrs(props.Logo)
+		if templ_7745c5c3_Err != nil {
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/web/components/layout.templ`, Line: 15, Col: 57}
+		}
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var4))
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "</div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -71,7 +84,20 @@ func Layout(props LayoutProps) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "<main>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, "<button type=\"button\" class=\"lazypm-sidebar-toggle\" id=\"lazypm-sidebar-toggle\" aria-label=\"Collapse sidebar\"><span class=\"lazypm-sidebar-toggle-icon\" aria-hidden=\"true\">☰</span> <span class=\"lazypm-sidebar-toggle-text\">Collapse</span></button></aside><script>\n          document.addEventListener('DOMContentLoaded', function(){\n            var sidebar = document.getElementById('lazypm-sidebar');\n            var btn = document.getElementById('lazypm-sidebar-toggle');\n            var icon = btn && btn.querySelector('.lazypm-sidebar-toggle-icon');\n            var text = btn && btn.querySelector('.lazypm-sidebar-toggle-text');\n            var closed = localStorage.getItem('lazypm-sidebar-closed') === '1';\n            if (window.innerWidth <= 767 && !localStorage.getItem('lazypm-sidebar-closed')) closed = true;\n            if (closed && sidebar) sidebar.classList.add('lazypm-sidebar--closed');\n            function updateBtn(){\n              if (!sidebar || !btn) return;\n              var isClosed = sidebar.classList.contains('lazypm-sidebar--closed');\n              if (icon) icon.textContent = isClosed ? '\\u2630' : '\\u00AB';\n              if (text) text.textContent = isClosed ? '' : 'Collapse';\n              btn.setAttribute('aria-label', isClosed ? 'Expand sidebar' : 'Collapse sidebar');\n            }\n            updateBtn();\n            function toggleSidebar(){\n              if (!sidebar) return;\n              sidebar.classList.toggle('lazypm-sidebar--closed');\n              localStorage.setItem('lazypm-sidebar-closed', sidebar.classList.contains('lazypm-sidebar--closed') ? '1' : '0');\n              updateBtn();\n            }\n            if (btn) btn.addEventListener('click', toggleSidebar);\n            var hamburger = document.getElementById('lazypm-hamburger');\n            if (hamburger) hamburger.addEventListener('click', toggleSidebar);\n            var backdrop = document.getElementById('lazypm-sidebar-backdrop');\n            if (backdrop) backdrop.addEventListener('click', function(){ if (window.innerWidth <= 767 && sidebar) { sidebar.classList.add('lazypm-sidebar--closed'); localStorage.setItem('lazypm-sidebar-closed','1'); updateBtn(); } });\n          });\n        </script><div class=\"lazypm-sidebar-backdrop\" id=\"lazypm-sidebar-backdrop\" aria-hidden=\"true\"></div><script>\n          (function(){ var p=window.location.pathname; document.querySelectorAll('.lazypm-nav-link').forEach(function(a){ var h=a.getAttribute('href'); if(h==='/'){ if(p==='/')a.classList.add('is-active'); }else if(p===h||p.startsWith(h+'/'))a.classList.add('is-active'); }); })();\n        </script><div class=\"lazypm-main-wrap\" style=\"flex:1;display:flex;flex-direction:column;min-width:0;\"><header class=\"lazypm-topbar\"><button type=\"button\" class=\"lazypm-topbar-hamburger\" id=\"lazypm-hamburger\" aria-label=\"Open menu\">☰</button> <span class=\"lazypm-topbar-project\">")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		var templ_7745c5c3_Var5 string
+		templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.JoinStringErrs(props.ProjectName)
+		if templ_7745c5c3_Err != nil {
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/web/components/layout.templ`, Line: 59, Col: 71}
+		}
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var5))
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 7, "</span> <a href=\"/dashboards/new\" class=\"lazypm-topbar-create\" title=\"New dashboard\">+ Create</a><div class=\"lazypm-topbar-spacer\"></div><input type=\"search\" placeholder=\"Search\" class=\"lazypm-topbar-search\" aria-label=\"Search\"><div class=\"lazypm-topbar-spacer\"></div><div class=\"lazypm-topbar-right\"><button type=\"button\" class=\"lazypm-topbar-icon\" aria-label=\"Notifications\">🔔</button> <button type=\"button\" class=\"lazypm-topbar-icon lazypm-topbar-user\" aria-label=\"User menu\">👤</button></div></header><main class=\"lazypm-main\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -79,7 +105,7 @@ func Layout(props LayoutProps) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, "</main>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 8, "</main>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -87,7 +113,7 @@ func Layout(props LayoutProps) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 7, "</body></html>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 9, "</div></body></html>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -98,6 +124,8 @@ func Layout(props LayoutProps) templ.Component {
 type LayoutProps struct {
 	Title       string
 	Description string
+	ProjectName string
+	Logo        string
 	Head        HeadProps
 	Header      HeaderProps
 	Footer      FooterProps
@@ -119,71 +147,71 @@ func Head(props HeadProps) templ.Component {
 			}()
 		}
 		ctx = templ.InitializeContext(ctx)
-		templ_7745c5c3_Var4 := templ.GetChildren(ctx)
-		if templ_7745c5c3_Var4 == nil {
-			templ_7745c5c3_Var4 = templ.NopComponent
+		templ_7745c5c3_Var6 := templ.GetChildren(ctx)
+		if templ_7745c5c3_Var6 == nil {
+			templ_7745c5c3_Var6 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
 		for _, link := range props.Links {
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 8, "<link href=\"")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 10, "<link href=\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			var templ_7745c5c3_Var5 templ.SafeURL
-			templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.JoinURLErrs(link.Href)
+			var templ_7745c5c3_Var7 templ.SafeURL
+			templ_7745c5c3_Var7, templ_7745c5c3_Err = templ.JoinURLErrs(link.Href)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/web/components/layout.templ`, Line: 33, Col: 30}
-			}
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var5))
-			if templ_7745c5c3_Err != nil {
-				return templ_7745c5c3_Err
-			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 9, "\" rel=\"")
-			if templ_7745c5c3_Err != nil {
-				return templ_7745c5c3_Err
-			}
-			var templ_7745c5c3_Var6 string
-			templ_7745c5c3_Var6, templ_7745c5c3_Err = templ.JoinStringErrs(link.Rel)
-			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/web/components/layout.templ`, Line: 33, Col: 47}
-			}
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var6))
-			if templ_7745c5c3_Err != nil {
-				return templ_7745c5c3_Err
-			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 10, "\">")
-			if templ_7745c5c3_Err != nil {
-				return templ_7745c5c3_Err
-			}
-		}
-		for _, script := range props.Scripts {
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 11, "<script src=\"")
-			if templ_7745c5c3_Err != nil {
-				return templ_7745c5c3_Err
-			}
-			var templ_7745c5c3_Var7 string
-			templ_7745c5c3_Var7, templ_7745c5c3_Err = templ.JoinStringErrs(script.Src)
-			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/web/components/layout.templ`, Line: 37, Col: 32}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/web/components/layout.templ`, Line: 90, Col: 30}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var7))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 12, "\" defer=\"")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 11, "\" rel=\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var8 string
-			templ_7745c5c3_Var8, templ_7745c5c3_Err = templ.JoinStringErrs(script.Defer)
+			templ_7745c5c3_Var8, templ_7745c5c3_Err = templ.JoinStringErrs(link.Rel)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/web/components/layout.templ`, Line: 37, Col: 55}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/web/components/layout.templ`, Line: 90, Col: 47}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var8))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 13, "\"></script>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 12, "\">")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+		}
+		for _, script := range props.Scripts {
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 13, "<script src=\"")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			var templ_7745c5c3_Var9 string
+			templ_7745c5c3_Var9, templ_7745c5c3_Err = templ.JoinStringErrs(script.Src)
+			if templ_7745c5c3_Err != nil {
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/web/components/layout.templ`, Line: 94, Col: 32}
+			}
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var9))
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 14, "\" defer=\"")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			var templ_7745c5c3_Var10 string
+			templ_7745c5c3_Var10, templ_7745c5c3_Err = templ.JoinStringErrs(script.Defer)
+			if templ_7745c5c3_Err != nil {
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/web/components/layout.templ`, Line: 94, Col: 55}
+			}
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var10))
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 15, "\"></script>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -223,48 +251,48 @@ func Header(props HeaderProps) templ.Component {
 			}()
 		}
 		ctx = templ.InitializeContext(ctx)
-		templ_7745c5c3_Var9 := templ.GetChildren(ctx)
-		if templ_7745c5c3_Var9 == nil {
-			templ_7745c5c3_Var9 = templ.NopComponent
+		templ_7745c5c3_Var11 := templ.GetChildren(ctx)
+		if templ_7745c5c3_Var11 == nil {
+			templ_7745c5c3_Var11 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 14, "<header><nav>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 16, "<nav class=\"lazypm-nav\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		for _, route := range props.Routes {
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 15, "<a href=\"")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 17, "<a href=\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			var templ_7745c5c3_Var10 templ.SafeURL
-			templ_7745c5c3_Var10, templ_7745c5c3_Err = templ.JoinURLErrs(route.Path)
+			var templ_7745c5c3_Var12 templ.SafeURL
+			templ_7745c5c3_Var12, templ_7745c5c3_Err = templ.JoinURLErrs(route.Path)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/web/components/layout.templ`, Line: 60, Col: 36}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/web/components/layout.templ`, Line: 116, Col: 32}
 			}
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var10))
-			if templ_7745c5c3_Err != nil {
-				return templ_7745c5c3_Err
-			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 16, "\">")
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var12))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			var templ_7745c5c3_Var11 string
-			templ_7745c5c3_Var11, templ_7745c5c3_Err = templ.JoinStringErrs(route.Name)
-			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/web/components/layout.templ`, Line: 60, Col: 51}
-			}
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var11))
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 18, "\" class=\"lazypm-nav-link\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 17, "</a>")
+			var templ_7745c5c3_Var13 string
+			templ_7745c5c3_Var13, templ_7745c5c3_Err = templ.JoinStringErrs(route.Name)
+			if templ_7745c5c3_Err != nil {
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/web/components/layout.templ`, Line: 116, Col: 71}
+			}
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var13))
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 19, "</a>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 18, "</nav></header>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 20, "</nav>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -297,11 +325,15 @@ func Footer(props FooterProps) templ.Component {
 			}()
 		}
 		ctx = templ.InitializeContext(ctx)
-		templ_7745c5c3_Var12 := templ.GetChildren(ctx)
-		if templ_7745c5c3_Var12 == nil {
-			templ_7745c5c3_Var12 = templ.NopComponent
+		templ_7745c5c3_Var14 := templ.GetChildren(ctx)
+		if templ_7745c5c3_Var14 == nil {
+			templ_7745c5c3_Var14 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 21, "<footer class=\"lazypm-footer\">LazyPM · Beads-backed</footer>")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
 		return nil
 	})
 }

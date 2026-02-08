@@ -20,9 +20,8 @@ templ IssueForm(props IssueFormProps) {
 	<div class={ "w-full max-w-xs mx-auto ", props.Class }>
 		<form
 			class="form space-y-1"
-			hx-post={ props.Action }
-			hx-target="#result"
-			hx-swap="innerHTML"
+			action={ props.Action }
+			method="post"
 			{ props.Attrs... }
 		>
 			@base.Input(base.InputProps{
@@ -39,40 +38,41 @@ templ IssueForm(props IssueFormProps) {
 			})
 			@base.Select(base.SelectProps{
 				Name:     "status",
-				Label:    "Status",
+				Label:    "State",
 				Required: true,
 				Options: []base.SelectOption{
 					{Label: "Open", Value: "open", Selected: props.Status == "open"},
-					{Label: "In Progress", Value: "in_progress", Selected: props.Status == "in_progress"},
 					{Label: "Closed", Value: "closed", Selected: props.Status == "closed"},
 				},
 				Size: "md",
 			})
 			@base.Select(base.SelectProps{
 				Name:     "issue_type",
-				Label:    "Issue Type",
+				Label:    "Type",
 				Required: true,
 				Options: []base.SelectOption{
 					{Label: "Task", Value: "task", Selected: props.IssueType == "task"},
 					{Label: "Bug", Value: "bug", Selected: props.IssueType == "bug"},
-					{Label: "Feature", Value: "feature", Selected: props.IssueType == "feature"},
-					{Label: "Chore", Value: "chore", Selected: props.IssueType == "chore"},
+					{Label: "Story", Value: "feature", Selected: props.IssueType == "feature"},
+					{Label: "Epic", Value: "epic", Selected: props.IssueType == "epic"},
 				},
 				Size: "md",
 			})
-			@base.Range(base.RangeProps{
-				Name:  "priority",
-				Label: "Priority",
-				Min:   0,
-				Max:   5,
-				Value: props.Priority,
-				Step:  1,
+			@base.Select(base.SelectProps{
+				Name:     "priority",
+				Label:    "Priority",
+				Required: true,
+				Options: []base.SelectOption{
+					{Label: "N (Normal)", Value: "0", Selected: props.Priority == 0},
+					{Label: "H (High)", Value: "1", Selected: props.Priority == 1},
+					{Label: "E (Extreme)", Value: "2", Selected: props.Priority == 2},
+				},
+				Size: "md",
 			})
 			<button type="submit" class="btn btn-primary w-full mt-4">
 				Submit Issue
 			</button>
 		</form>
-		<div id="result"></div>
 	</div>
 }
 

@@ -1,5 +1,7 @@
 package web
 
+//go:generate templ generate .
+
 import (
 	"context"
 	"embed"

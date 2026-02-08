@@ -1,0 +1,58 @@
+package routes
+
+import "github.com/LazyBachelor/LazyPM/internal/models"
+
+type BoardsProps struct {
+	Todo       []models.Issue
+	InProgress []models.Issue
+	Done       []models.Issue
+}
+
+templ Boards(props BoardsProps) {
+	@BaseLayout() {
+		<div class="boards-page">
+			<header class="boards-header">
+				<h1 class="boards-title">Agile Board</h1>
+			</header>
+
+			<div class="boards-columns">
+				<div class="boards-col">
+					<h2 class="boards-col-title">To Do</h2>
+					<div class="boards-col-content">
+						if len(props.Todo) == 0 {
+							<p class="boards-empty">No issues</p>
+						} else {
+							for _, issue := range props.Todo {
+								<a href={ "/issues/" + issue.ID } class="boards-item">{ issue.ID } { issue.Title }</a>
+							}
+						}
+					</div>
+				</div>
+				<div class="boards-col">
+					<h2 class="boards-col-title">In Progress</h2>
+					<div class="boards-col-content">
+						if len(props.InProgress) == 0 {
+							<p class="boards-empty">No issues</p>
+						} else {
+							for _, issue := range props.InProgress {
+								<a href={ "/issues/" + issue.ID } class="boards-item">{ issue.ID } { issue.Title }</a>
+							}
+						}
+					</div>
+				</div>
+				<div class="boards-col">
+					<h2 class="boards-col-title">Done</h2>
+					<div class="boards-col-content">
+						if len(props.Done) == 0 {
+							<p class="boards-empty">No issues</p>
+						} else {
+							for _, issue := range props.Done {
+								<a href={ "/issues/" + issue.ID } class="boards-item">{ issue.ID } { issue.Title }</a>
+							}
+						}
+					</div>
+				</div>
+			</div>
+		</div>
+	}
+}

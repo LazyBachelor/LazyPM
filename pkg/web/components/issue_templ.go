@@ -63,20 +63,20 @@ func IssueForm(props IssueFormProps) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "\"><form class=\"form space-y-1\" hx-post=\"")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "\"><form class=\"form space-y-1\" action=\"")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		var templ_7745c5c3_Var4 string
-		templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinStringErrs(props.Action)
+		var templ_7745c5c3_Var4 templ.SafeURL
+		templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinURLErrs(props.Action)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/web/components/issue.templ`, Line: 23, Col: 25}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/web/components/issue.templ`, Line: 23, Col: 24}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var4))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "\" hx-target=\"#result\" hx-swap=\"innerHTML\"")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "\" method=\"post\"")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -108,11 +108,10 @@ func IssueForm(props IssueFormProps) templ.Component {
 		}
 		templ_7745c5c3_Err = base.Select(base.SelectProps{
 			Name:     "status",
-			Label:    "Status",
+			Label:    "State",
 			Required: true,
 			Options: []base.SelectOption{
 				{Label: "Open", Value: "open", Selected: props.Status == "open"},
-				{Label: "In Progress", Value: "in_progress", Selected: props.Status == "in_progress"},
 				{Label: "Closed", Value: "closed", Selected: props.Status == "closed"},
 			},
 			Size: "md",
@@ -122,31 +121,34 @@ func IssueForm(props IssueFormProps) templ.Component {
 		}
 		templ_7745c5c3_Err = base.Select(base.SelectProps{
 			Name:     "issue_type",
-			Label:    "Issue Type",
+			Label:    "Type",
 			Required: true,
 			Options: []base.SelectOption{
 				{Label: "Task", Value: "task", Selected: props.IssueType == "task"},
 				{Label: "Bug", Value: "bug", Selected: props.IssueType == "bug"},
-				{Label: "Feature", Value: "feature", Selected: props.IssueType == "feature"},
-				{Label: "Chore", Value: "chore", Selected: props.IssueType == "chore"},
+				{Label: "Story", Value: "feature", Selected: props.IssueType == "feature"},
+				{Label: "Epic", Value: "epic", Selected: props.IssueType == "epic"},
 			},
 			Size: "md",
 		}).Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = base.Range(base.RangeProps{
-			Name:  "priority",
-			Label: "Priority",
-			Min:   0,
-			Max:   5,
-			Value: props.Priority,
-			Step:  1,
+		templ_7745c5c3_Err = base.Select(base.SelectProps{
+			Name:     "priority",
+			Label:    "Priority",
+			Required: true,
+			Options: []base.SelectOption{
+				{Label: "N (Normal)", Value: "0", Selected: props.Priority == 0},
+				{Label: "H (High)", Value: "1", Selected: props.Priority == 1},
+				{Label: "E (Extreme)", Value: "2", Selected: props.Priority == 2},
+			},
+			Size: "md",
 		}).Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "<button type=\"submit\" class=\"btn btn-primary w-full mt-4\">Submit Issue</button></form><div id=\"result\"></div></div>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "<button type=\"submit\" class=\"btn btn-primary w-full mt-4\">Submit Issue</button></form></div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

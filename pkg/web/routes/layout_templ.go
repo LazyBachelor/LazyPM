@@ -11,8 +11,10 @@ import templruntime "github.com/a-h/templ/runtime"
 import "github.com/LazyBachelor/LazyPM/pkg/web/components"
 
 var baseLayout = components.LayoutProps{
-	Title:       "Beads Test Application",
-	Description: "A sample application using Beads storage service",
+	Title:       "LazyPM",
+	Description: "Project overview and issue tracking",
+	ProjectName: "LazyPM Dashboard",
+	Logo:        "LazyPM",
 	Head: components.HeadProps{
 		Links: []components.Link{
 			{Href: "/assets/css/styles.css", Rel: "stylesheet"},
@@ -23,7 +25,16 @@ var baseLayout = components.LayoutProps{
 			{Src: "/assets/js/ajax.min.js", Defer: true},
 		},
 	},
-	Header: components.HeaderProps{},
+	Header: components.HeaderProps{
+		Routes: []components.NavRoute{
+			{Name: "Dashboard", Path: "/"},
+			{Name: "Issues", Path: "/issues"},
+			{Name: "Agile Board", Path: "/boards"},
+			{Name: "Backlog", Path: "/backlog"},
+			{Name: "Reports", Path: "/reports"},
+			{Name: "Settings", Path: "/settings"},
+		},
+	},
 	Footer: components.FooterProps{},
 }
 
