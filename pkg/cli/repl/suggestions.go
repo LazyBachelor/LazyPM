@@ -20,6 +20,7 @@ var rootSuggestions = []prompt.Suggest{
 var baseSuggestions = []prompt.Suggest{
 	{Text: "help", Description: "Show help information"},
 	{Text: "delete", Description: "Delete an issue by ID"},
+	{Text: "close", Description: "Close an issue by ID"},
 	{Text: "create", Description: "Create a new issue with title"},
 	{Text: "describe", Description: "Get issue details by ID"},
 	{Text: "list", Description: "List all issues"},
@@ -76,7 +77,8 @@ func flagSuggestions(cmd string, words []string, text string) []prompt.Suggest {
 		return filterByPrefix(values, lastWord)
 	}
 
-	if cmd == "describe" || cmd == "delete" || cmd == "del" || cmd == "rm" || cmd == "remove" || cmd == "get" || cmd == "read" {
+	if cmd == "describe" || cmd == "delete" || cmd == "del" ||
+		cmd == "rm" || cmd == "remove" || cmd == "get" || cmd == "read" || cmd == "close" {
 		// For ID-oriented commands, pass the current partial argument (lastWord)
 		// so issueIDSuggestions can distinguish between completing the command
 		// name and completing the ID itself.
