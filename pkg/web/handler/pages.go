@@ -4,38 +4,18 @@ import (
 	"net/http"
 
 	"github.com/LazyBachelor/LazyPM/internal/service"
-	"github.com/LazyBachelor/LazyPM/pkg/web/components"
-	"github.com/LazyBachelor/LazyPM/pkg/web/routes"
 )
+
+const errRetrieveIssues = "Failed to retrieve issues"
 
 func PagesRoutes(svc *service.Services) []Route {
 	return []Route{
 		{Pattern: "/", Handler: IndexHandler(svc)},
-	}
-}
-
-func IndexHandler(svc *service.Services) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-
-		if r.URL.Path != "/" {
-			handleNotFound(w, r)
-			return
-		}
-
-		issues, err := svc.Beads.AllIssues(r.Context())
-
-		if err != nil {
-			http.Error(w, "Failed to retrieve issues",
-				http.StatusInternalServerError)
-			return
-		}
-
-		props := routes.IndexProps{
-			IssueTable: components.IssueTableProps{
-				Issues: issues,
-			},
-		}
-		routes.Index(props).Render(r.Context(), w)
+		{Pattern: "/boards", Handler: BoardsHandler(svc)},
+		{Pattern: "/create", Handler: CreateHandler()},
+		{Pattern: "/dashboards/new", Handler: NewDashboardHandler()},
+		{Pattern: "/issues", Handler: IssuesHandler(svc)},
+		{Pattern: "/issues/", Handler: IssueDetailHandler(svc)},
 	}
 }
 

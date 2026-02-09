@@ -1,0 +1,22 @@
+package routes
+
+import "github.com/LazyBachelor/LazyPM/pkg/web/components"
+
+templ CreatePage() {
+	@BaseLayout() {
+		<div class="create-page">
+			<h1 class="create-page-title">Create issue</h1>
+			<p class="create-page-desc">Add a new task, bug or feature.</p>
+			@components.IssueForm(
+				components.IssueFormProps{
+					Action:      "/create-issue",
+					Class:       "create-page-form",
+					Title:       "",
+					Description: "",
+					Status:      "open",
+					Priority:    0,
+					IssueType:   "task",
+				})
+		</div>
+	}
+}

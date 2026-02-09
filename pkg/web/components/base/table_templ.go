@@ -73,8 +73,6 @@ func Table(headers []templ.Component, rows []templ.Component, attrs templ.Attrib
 	})
 }
 
-// Component to use as plain text when
-// templ.Component is used as argument
 func PlainText(content string) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
@@ -99,7 +97,7 @@ func PlainText(content string) templ.Component {
 		var templ_7745c5c3_Var3 string
 		templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinStringErrs(content)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/web/components/base/table.templ`, Line: 27, Col: 10}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/web/components/base/table.templ`, Line: 25, Col: 10}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var3))
 		if templ_7745c5c3_Err != nil {

@@ -1,28 +1,211 @@
 package routes
 
-import (
-	"github.com/LazyBachelor/LazyPM/pkg/web/components"
-)
+import "github.com/LazyBachelor/LazyPM/internal/models"
+
+type TeamMember struct {
+	Name     string
+	Email    string
+	Initials string
+}
+
+type CalendarDay struct {
+	Date      string
+	Label     string
+	IsToday   bool
+	HasEvents bool
+}
 
 type IndexProps struct {
-	IssueTable components.IssueTableProps
+	OpenCount       int
+	ClosedCount     int
+	AssignedCount   int
+	DueSoonCount    int
+	RecentCount     int
+	TodayCount      int
+	WeekCount       int
+	TeamMembers     []TeamMember
+	RecentIssues    []models.Issue
+	CalendarRange   string
+	CalendarDays    []CalendarDay
+	CalendarPrevURL string
+	CalendarNextURL string
+}
+
+func calendarColClass(isToday bool) string {
+	if isToday {
+		return "dashboard-calendar-col-head dashboard-calendar-col-head--today"
+	}
+	return "dashboard-calendar-col-head"
+}
+
+func calendarCellClass(isToday bool) string {
+	if isToday {
+		return "dashboard-calendar-col dashboard-calendar-col--today"
+	}
+	return "dashboard-calendar-col"
+}
+
+templ DashboardWidgets(props IndexProps) {
+	<div class="dashboard-widgets-grid" id="lazypm-dashboard-widgets">
+		<section class="dashboard-widget dashboard-widget--issues">
+			<h2 class="dashboard-widget-title">Issues { len(props.RecentIssues) }</h2>
+			<div class="dashboard-issues-list">
+				if len(props.RecentIssues) == 0 {
+					<p class="dashboard-issues-empty">No issues</p>
+				} else {
+					for _, issue := range props.RecentIssues {
+						<a href={ "/issues/" + issue.ID } class="dashboard-issue-item">
+							<span class={ "dashboard-issue-priority dashboard-issue-priority--" + models.PriorityLabel(issue.Priority) }>{ models.PriorityLabel(issue.Priority) }</span>
+							<span class="dashboard-issue-id">{ issue.ID }</span>
+							<span class="dashboard-issue-title">{ issue.Title }</span>
+						</a>
+					}
+				}
+			</div>
+		</section>
+
+		<details class="dashboard-widget dashboard-widget--calendar" id="dashboard-calendar-details">
+			<summary class="dashboard-widget-title">Meetings Calendar</summary>
+			<div class="dashboard-calendar-controls">
+				<a href={ props.CalendarPrevURL } class="dashboard-calendar-nav" title="Previous week" hx-get={ props.CalendarPrevURL } hx-target="#lazypm-dashboard-widgets" hx-swap="outerHTML" hx-push-url="true">←</a>
+				<a href="/" class="dashboard-calendar-today" title="Today" hx-get="/" hx-target="#lazypm-dashboard-widgets" hx-swap="outerHTML" hx-push-url="true">Today</a>
+				<a href={ props.CalendarNextURL } class="dashboard-calendar-nav" title="Next week" hx-get={ props.CalendarNextURL } hx-target="#lazypm-dashboard-widgets" hx-swap="outerHTML" hx-push-url="true">→</a>
+				<span class="dashboard-calendar-range">{ props.CalendarRange }</span>
+				<div class="dashboard-calendar-views">
+					<button type="button" class="dashboard-calendar-view">Day</button>
+					<button type="button" class="dashboard-calendar-view is-active">Week</button>
+					<button type="button" class="dashboard-calendar-view">Month</button>
+				</div>
+			</div>
+			<div class="dashboard-calendar-grid">
+				for _, day := range props.CalendarDays {
+					<div class={ calendarColClass(day.IsToday) }>{ day.Label }</div>
+				}
+				for _, day := range props.CalendarDays {
+					<div class={ calendarCellClass(day.IsToday) }></div>
+				}
+			</div>
+		</details>
+
+		<details class="dashboard-widget dashboard-widget--notes" id="dashboard-notes-details">
+			<summary class="dashboard-widget-title">Quick Notes</summary>
+			<textarea id="lazypm-quick-notes" class="dashboard-notes-input" placeholder="Add a quick note..." rows="6"></textarea>
+		</details>
+
+		<details class="dashboard-widget dashboard-widget--team" id="dashboard-team-details">
+			<summary class="dashboard-widget-title">LazyPM Team { len(props.TeamMembers) }</summary>
+			<div class="dashboard-team-owner">
+				<span class="dashboard-team-label">PROJECT OWNER</span>
+				if len(props.TeamMembers) > 0 {
+					<div class="dashboard-team-member dashboard-team-member--owner">
+						<span class="dashboard-team-avatar">{ props.TeamMembers[0].Initials }</span>
+						<div>
+							<a href="#" class="dashboard-team-name">{ props.TeamMembers[0].Name }</a>
+							<span class="dashboard-team-email">{ props.TeamMembers[0].Email }</span>
+						</div>
+					</div>
+				}
+			</div>
+			<div class="dashboard-team-list">
+				<span class="dashboard-team-label">TEAM</span>
+				if len(props.TeamMembers) > 1 {
+					for _, m := range props.TeamMembers[1:] {
+						<div class="dashboard-team-member">
+							<span class="dashboard-team-avatar">{ m.Initials }</span>
+							<div>
+								<a href="#" class="dashboard-team-name">{ m.Name }</a>
+								<span class="dashboard-team-email">{ m.Email }</span>
+							</div>
+						</div>
+					}
+				}
+			</div>
+		</details>
+	</div>
+	<script type="text/javascript">
+		(function(){
+			var notes = document.getElementById('lazypm-quick-notes');
+			if (notes) {
+				try { notes.value = localStorage.getItem('lazypm-quick-notes') || ''; } catch(e){}
+				notes.addEventListener('input', function(){ try { localStorage.setItem('lazypm-quick-notes', notes.value); } catch(e){} });
+			}
+			if (window.innerWidth >= 1024) {
+				['dashboard-team-details','dashboard-calendar-details','dashboard-notes-details'].forEach(function(id){
+					var el = document.getElementById(id);
+					if (el) el.setAttribute('open','');
+				});
+			}
+		})();
+	</script>
 }
 
 templ Index(props IndexProps) {
 	@BaseLayout() {
-		<div class="flex flex-col justify-center items-center gap-6 mb-12">
-			<h1>Create New Issue</h1>
-			@components.IssueForm(
-				components.IssueFormProps{
-					Action:      "/create-issue",
-					Class:       "mb-4",
-					Title:       "",
-					Description: "",
-					Status:      "open",
-					Priority:    0,
-					IssueType:   "task",
-				})
+		<div class="dashboard-layout">
+			<aside class="context-rail">
+				<section class="context-rail-section">
+					<h2 class="context-rail-title">My Work</h2>
+					<ul class="context-rail-list">
+						<li><a href="/issues">Assigned to me</a> <span class="context-rail-count">{ props.AssignedCount }</span></li>
+						<li><a href="/issues">Due soon</a> <span class="context-rail-count">{ props.DueSoonCount }</span></li>
+						<li><a href="/issues">Recently updated</a> <span class="context-rail-count">{ props.RecentCount }</span></li>
+					</ul>
+				</section>
+
+				<section class="context-rail-section">
+					<h2 class="context-rail-title">Project Snapshot</h2>
+					<ul class="context-rail-list context-rail-list--stats">
+						<li><span class="context-rail-label">Open</span><span class="context-rail-value">{ props.OpenCount }</span></li>
+						<li><span class="context-rail-label">Closed</span><span class="context-rail-value">{ props.ClosedCount }</span></li>
+					</ul>
+				</section>
+
+				<section class="context-rail-section">
+					<h2 class="context-rail-title">Upcoming</h2>
+					<ul class="context-rail-list">
+						<li><a href="/issues">Today</a> <span class="context-rail-count">{ props.TodayCount }</span></li>
+						<li><a href="/issues">This week</a> <span class="context-rail-count">{ props.WeekCount }</span></li>
+					</ul>
+				</section>
+
+				<section class="context-rail-section">
+					<h2 class="context-rail-title">Quick Actions</h2>
+					<div class="context-rail-actions">
+						<a href="/create" class="context-rail-btn context-rail-btn--primary">Create issue</a>
+						<a href="/boards" class="context-rail-btn">Agile Board</a>
+						<a href="/issues" class="context-rail-btn">View all issues</a>
+					</div>
+				</section>
+			</aside>
+
+			<div class="dashboard-main">
+				<header class="dashboard-header">
+					<h1 class="dashboard-title">Dashboard</h1>
+				</header>
+				<div class="dashboard-content" id="lazypm-dashboard-content">
+					@DashboardWidgets(props)
+				</div>
+			</div>
 		</div>
-		@components.IssueTable(props.IssueTable)
+		<script>
+			(function(){
+				if (window.innerWidth >= 1024) {
+					['dashboard-team-details','dashboard-calendar-details','dashboard-notes-details'].forEach(function(id){
+						var el = document.getElementById(id);
+						if (el) el.setAttribute('open','');
+					});
+				}
+			})();
+		</script>
+		<script>
+			(function(){
+				var notes = document.getElementById('lazypm-quick-notes');
+				if (notes) {
+					try { notes.value = localStorage.getItem('lazypm-quick-notes') || ''; } catch(e){}
+					notes.addEventListener('input', function(){ try { localStorage.setItem('lazypm-quick-notes', notes.value); } catch(e){} });
+					notes.addEventListener('change', function(){ try { localStorage.setItem('lazypm-quick-notes', notes.value); } catch(e){} });
+				}
+			})();
+		</script>
 	}
 }
