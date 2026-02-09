@@ -8,6 +8,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
+// Variables for completion options and functions.
 var (
 	typeOptions   = []string{"bug", "feature", "task"}
 	statusOptions = []string{"open", "closed", "in_progress"}

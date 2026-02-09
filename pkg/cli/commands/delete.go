@@ -11,9 +11,11 @@ import (
 )
 
 // Variables for delete command flag.
-var confirmDelete bool
-var deleteIDs []string
-var deleteInteractive bool
+var (
+	confirmDelete     bool
+	deleteIDs         []string
+	deleteInteractive bool
+)
 
 // deleteCmd represents the delete command.
 var deleteCmd = &cobra.Command{
@@ -78,6 +80,8 @@ func runDeleteCmd(cmd *cobra.Command, args []string) error {
 	return nil
 }
 
+// runDeleteInteractive runs the interactive mode for deleting issues,
+// allowing users to select multiple issues for deletion.
 func runDeleteInteractive() error {
 	options := []huh.Option[string]{}
 

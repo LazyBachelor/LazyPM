@@ -14,6 +14,7 @@ import (
 // Must be called before executing any commands to ensure services are available.
 var svc *service.Services
 
+// Flags struct to hold command-line flag values for issues.
 type Flags struct {
 	interactive bool
 	limit       int

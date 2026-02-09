@@ -65,6 +65,8 @@ func runCreateCmd(cmd *cobra.Command, args []string) error {
 	return nil
 }
 
+// runCreateInteractive runs the interactive mode for creating issues,
+// allowing users to input issue details through a form.
 func runCreateInteractive() error {
 	form := huh.NewForm(
 
@@ -95,7 +97,6 @@ func runCreateInteractive() error {
 					huh.NewOption("2", 2),
 					huh.NewOption("3", 3),
 					huh.NewOption("4", 4),
-					huh.NewOption("5", 5),
 				).Value(&createFlags.priority).Title("Priority"),
 		).Title("Create New Issue").WithTheme(huh.ThemeBase()),
 	)
@@ -109,7 +110,7 @@ func init() {
 	createCmd.Flags().StringVarP(&createFlags.description, "desc", "d", "", "Issue description")
 	createCmd.Flags().StringVarP(&createFlags.status, "status", "s", "open", "Issue status(open, closed, in_progress)")
 	createCmd.Flags().StringVarP(&createFlags.issueType, "type", "t", "task", "Issue type(bug, feature, task)")
-	createCmd.Flags().IntVarP(&createFlags.priority, "priority", "p", 0, "Issue priority(0-5)")
+	createCmd.Flags().IntVarP(&createFlags.priority, "priority", "p", 0, "Issue priority(0-4)")
 
 	createCmd.RegisterFlagCompletionFunc("type", completionFunc(typeOptions))
 	createCmd.RegisterFlagCompletionFunc("status", completionFunc(statusOptions))
