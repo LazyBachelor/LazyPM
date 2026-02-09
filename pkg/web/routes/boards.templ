@@ -10,44 +10,44 @@ type BoardsProps struct {
 
 templ Boards(props BoardsProps) {
 	@BaseLayout() {
-		<div class="boards-page">
-			<header class="boards-header">
-				<h1 class="boards-title">Agile Board</h1>
+		<div class="flex min-h-0 w-full flex-1 flex-col overflow-hidden">
+			<header class="shrink-0 border-b border-base-300 px-5 py-4">
+				<h1 class="text-xl font-semibold">Agile Board</h1>
 			</header>
 
-			<div class="boards-columns">
-				<div class="boards-col">
-					<h2 class="boards-col-title">To Do</h2>
-					<div class="boards-col-content">
+			<div class="grid min-h-0 flex-1 grid-cols-3 gap-0 overflow-hidden p-5">
+				<div class="flex flex-col border-r border-base-300 px-4 last:border-r-0">
+					<h2 class="mb-3 text-[11px] font-semibold uppercase tracking-wider text-base-content/60">To Do</h2>
+					<div class="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto">
 						if len(props.Todo) == 0 {
-							<p class="boards-empty">No issues</p>
+							<p class="text-sm text-base-content/50">No issues</p>
 						} else {
 							for _, issue := range props.Todo {
-								<a href={ "/issues/" + issue.ID } class="boards-item">{ issue.ID } { issue.Title }</a>
+								<a href={ "/issues/" + issue.ID } class="block truncate rounded-lg border border-base-300 bg-base-200/50 px-3 py-2 text-sm text-primary transition hover:border-primary/30 hover:bg-base-200">{ issue.ID } { issue.Title }</a>
 							}
 						}
 					</div>
 				</div>
-				<div class="boards-col">
-					<h2 class="boards-col-title">In Progress</h2>
-					<div class="boards-col-content">
+				<div class="flex flex-col border-r border-base-300 px-4 last:border-r-0">
+					<h2 class="mb-3 text-[11px] font-semibold uppercase tracking-wider text-base-content/60">In Progress</h2>
+					<div class="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto">
 						if len(props.InProgress) == 0 {
-							<p class="boards-empty">No issues</p>
+							<p class="text-sm text-base-content/50">No issues</p>
 						} else {
 							for _, issue := range props.InProgress {
-								<a href={ "/issues/" + issue.ID } class="boards-item">{ issue.ID } { issue.Title }</a>
+								<a href={ "/issues/" + issue.ID } class="block truncate rounded-lg border border-base-300 bg-base-200/50 px-3 py-2 text-sm text-primary transition hover:border-primary/30 hover:bg-base-200">{ issue.ID } { issue.Title }</a>
 							}
 						}
 					</div>
 				</div>
-				<div class="boards-col">
-					<h2 class="boards-col-title">Done</h2>
-					<div class="boards-col-content">
+				<div class="flex flex-col border-r border-base-300 px-4 last:border-r-0">
+					<h2 class="mb-3 text-[11px] font-semibold uppercase tracking-wider text-base-content/60">Done</h2>
+					<div class="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto">
 						if len(props.Done) == 0 {
-							<p class="boards-empty">No issues</p>
+							<p class="text-sm text-base-content/50">No issues</p>
 						} else {
 							for _, issue := range props.Done {
-								<a href={ "/issues/" + issue.ID } class="boards-item">{ issue.ID } { issue.Title }</a>
+								<a href={ "/issues/" + issue.ID } class="block truncate rounded-lg border border-base-300 bg-base-200/50 px-3 py-2 text-sm text-primary transition hover:border-primary/30 hover:bg-base-200">{ issue.ID } { issue.Title }</a>
 							}
 						}
 					</div>

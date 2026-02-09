@@ -4,13 +4,13 @@ import "github.com/LazyBachelor/LazyPM/pkg/web/components"
 
 templ CreatePage() {
 	@BaseLayout() {
-		<div class="create-page">
-			<h1 class="create-page-title">Create issue</h1>
-			<p class="create-page-desc">Add a new task, bug or feature.</p>
+		<div class="mx-auto max-w-md px-5 py-6">
+			<h1 class="text-2xl font-semibold">Create issue</h1>
+			<p class="mt-1 text-sm text-base-content/70">Add a new task, bug or feature.</p>
 			@components.IssueForm(
 				components.IssueFormProps{
 					Action:      "/create-issue",
-					Class:       "create-page-form",
+					Class:       "mt-6",
 					Title:       "",
 					Description: "",
 					Status:      "open",

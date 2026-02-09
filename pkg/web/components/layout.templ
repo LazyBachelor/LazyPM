@@ -10,54 +10,36 @@ templ Layout(props LayoutProps){
         <meta name="description" content={props.Description}>
         @Head(props.Head)
     </head>
-    <body class="lazypm-app" style="display:flex;margin:0;padding:0;background:#f3f4f6;color:#111;">
-        <aside class="lazypm-sidebar" id="lazypm-sidebar" style="flex-shrink:0;display:flex;flex-direction:column;min-width:0;">
+    <body class="flex min-h-screen bg-base-200 text-base-content" x-data="layout()">
+        <aside
+            class="lazypm-sidebar flex shrink-0 flex-col border-r border-base-300 bg-base-100 transition-[width] duration-200 overflow-hidden relative"
+            :class="{ 'lazypm-sidebar--closed': closed }"
+        >
             <div class="lazypm-sidebar-logo">{ props.Logo }</div>
             @Header(props.Header)
-            <button type="button" class="lazypm-sidebar-toggle" id="lazypm-sidebar-toggle" aria-label="Collapse sidebar">
-                <span class="lazypm-sidebar-toggle-icon" aria-hidden="true">☰</span>
-                <span class="lazypm-sidebar-toggle-text">Collapse</span>
+            <button
+                type="button"
+                class="lazypm-sidebar-toggle"
+                aria-label="Collapse sidebar"
+                :aria-label="closed ? 'Expand sidebar' : 'Collapse sidebar'"
+                @click="toggleSidebar()"
+            >
+                <span class="lazypm-sidebar-toggle-icon" aria-hidden="true" x-text="closed ? '☰' : '«'"></span>
+                <span class="lazypm-sidebar-toggle-text" x-show="!closed">Collapse</span>
             </button>
         </aside>
-        <script>
-          document.addEventListener('DOMContentLoaded', function(){
-            var sidebar = document.getElementById('lazypm-sidebar');
-            var btn = document.getElementById('lazypm-sidebar-toggle');
-            var icon = btn && btn.querySelector('.lazypm-sidebar-toggle-icon');
-            var text = btn && btn.querySelector('.lazypm-sidebar-toggle-text');
-            var closed = localStorage.getItem('lazypm-sidebar-closed') === '1';
-            if (window.innerWidth <= 767 && !localStorage.getItem('lazypm-sidebar-closed')) closed = true;
-            if (closed && sidebar) sidebar.classList.add('lazypm-sidebar--closed');
-            function updateBtn(){
-              if (!sidebar || !btn) return;
-              var isClosed = sidebar.classList.contains('lazypm-sidebar--closed');
-              if (icon) icon.textContent = isClosed ? '\u2630' : '\u00AB';
-              if (text) text.textContent = isClosed ? '' : 'Collapse';
-              btn.setAttribute('aria-label', isClosed ? 'Expand sidebar' : 'Collapse sidebar');
-            }
-            updateBtn();
-            function toggleSidebar(){
-              if (!sidebar) return;
-              sidebar.classList.toggle('lazypm-sidebar--closed');
-              localStorage.setItem('lazypm-sidebar-closed', sidebar.classList.contains('lazypm-sidebar--closed') ? '1' : '0');
-              updateBtn();
-            }
-            if (btn) btn.addEventListener('click', toggleSidebar);
-            var hamburger = document.getElementById('lazypm-hamburger');
-            if (hamburger) hamburger.addEventListener('click', toggleSidebar);
-            var backdrop = document.getElementById('lazypm-sidebar-backdrop');
-            if (backdrop) backdrop.addEventListener('click', function(){ if (window.innerWidth <= 767 && sidebar) { sidebar.classList.add('lazypm-sidebar--closed'); localStorage.setItem('lazypm-sidebar-closed','1'); updateBtn(); } });
-          });
-        </script>
-        <div class="lazypm-sidebar-backdrop" id="lazypm-sidebar-backdrop" aria-hidden="true"></div>
-        <script>
-          (function(){ var p=window.location.pathname; document.querySelectorAll('.lazypm-nav-link').forEach(function(a){ var h=a.getAttribute('href'); if(h==='/'){ if(p==='/')a.classList.add('is-active'); }else if(p===h||p.startsWith(h+'/'))a.classList.add('is-active'); }); })();
-        </script>
-        <div class="lazypm-main-wrap" style="flex:1;display:flex;flex-direction:column;min-width:0;">
+        <div
+            class="lazypm-sidebar-backdrop fixed inset-0 bg-black/20 z-10 lg:hidden"
+            aria-hidden="true"
+            x-show="!closed"
+            x-transition
+            @click="closeOnMobile()"
+        ></div>
+        <div class="flex flex-1 flex-col min-w-0 bg-base-100">
             <header class="lazypm-topbar">
-                <button type="button" class="lazypm-topbar-hamburger" id="lazypm-hamburger" aria-label="Open menu">☰</button>
+                <button type="button" class="lazypm-topbar-hamburger lg:hidden" aria-label="Open menu" @click="toggleSidebar()">☰</button>
                 <span class="lazypm-topbar-project">{ props.ProjectName }</span>
-                <a href="/dashboards/new" class="lazypm-topbar-create" title="New dashboard">+ Create</a>
+                <a href="/create" class="lazypm-topbar-create" title="Create issue">+ Create</a>
                 <div class="lazypm-topbar-spacer"></div>
                 <input type="search" placeholder="Search" class="lazypm-topbar-search" aria-label="Search">
                 <div class="lazypm-topbar-spacer"></div>
@@ -71,6 +53,30 @@ templ Layout(props LayoutProps){
             </main>
             @Footer(props.Footer)
         </div>
+        <script type="text/javascript">
+          document.addEventListener('alpine:init', function(){
+            Alpine.data('layout', function(){
+              return {
+                closed: false,
+                init(){
+                  var stored = localStorage.getItem('lazypm-sidebar-closed') === '1';
+                  if (window.innerWidth <= 767 && localStorage.getItem('lazypm-sidebar-closed') === null) stored = true;
+                  this.closed = stored;
+                },
+                toggleSidebar(){
+                  this.closed = !this.closed;
+                  localStorage.setItem('lazypm-sidebar-closed', this.closed ? '1' : '0');
+                },
+                closeOnMobile(){
+                  if (window.innerWidth <= 767) { this.closed = true; localStorage.setItem('lazypm-sidebar-closed','1'); }
+                }
+              };
+            });
+          });
+        </script>
+        <script type="text/javascript">
+          (function(){ var p=window.location.pathname; document.querySelectorAll('.lazypm-nav-link').forEach(function(a){ var h=a.getAttribute('href'); if(h==='/'){ if(p==='/')a.classList.add('is-active'); }else if(p===h||p.startsWith(h+'/'))a.classList.add('is-active'); }); })();
+        </script>
     </body>
     </html>
 }

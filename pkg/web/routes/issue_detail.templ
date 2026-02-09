@@ -6,30 +6,41 @@ type IssueDetailProps struct {
 	Issue models.Issue
 }
 
+func issueDetailPriorityClass(label string) string {
+	switch label {
+	case "E":
+		return "badge-error"
+	case "H":
+		return "badge-warning"
+	default:
+		return "badge-ghost"
+	}
+}
+
 templ IssueDetail(props IssueDetailProps) {
 	@BaseLayout() {
-		<div class="issue-detail">
-			<header class="issue-detail-header">
-				<a href="/issues" class="issue-detail-back">← Issues</a>
-				<h1 class="issue-detail-title">{ props.Issue.ID } { props.Issue.Title }</h1>
+		<div class="mx-auto max-w-2xl px-5 py-6">
+			<header class="mb-6">
+				<a href="/issues" class="link link-primary mb-2 inline-block text-sm">← Issues</a>
+				<h1 class="text-xl font-semibold">{ props.Issue.ID } { props.Issue.Title }</h1>
 			</header>
 
-			<div class="issue-detail-fields">
-				<div class="issue-detail-field">
-					<span class="issue-detail-field-label">Type</span>
-					<span class="issue-detail-field-value">{ models.TypeLabel(props.Issue.IssueType) }</span>
+			<div class="flex flex-col gap-4">
+				<div class="flex flex-col gap-1">
+					<span class="text-[11px] font-semibold uppercase tracking-wider text-base-content/60">Type</span>
+					<span>{ models.TypeLabel(props.Issue.IssueType) }</span>
 				</div>
-				<div class="issue-detail-field">
-					<span class="issue-detail-field-label">State</span>
-					<span class="issue-detail-field-value">{ models.StateLabel(props.Issue.Status) }</span>
+				<div class="flex flex-col gap-1">
+					<span class="text-[11px] font-semibold uppercase tracking-wider text-base-content/60">State</span>
+					<span>{ models.StateLabel(props.Issue.Status) }</span>
 				</div>
-				<div class="issue-detail-field">
-					<span class="issue-detail-field-label">Priority</span>
-					<span class={ "issue-detail-field-value issues-priority issues-priority--" + models.PriorityLabel(props.Issue.Priority) }>{ models.PriorityLabel(props.Issue.Priority) }</span>
+				<div class="flex flex-col gap-1">
+					<span class="text-[11px] font-semibold uppercase tracking-wider text-base-content/60">Priority</span>
+					<span class={ "badge " + issueDetailPriorityClass(models.PriorityLabel(props.Issue.Priority)) }>{ models.PriorityLabel(props.Issue.Priority) }</span>
 				</div>
-				<div class="issue-detail-field">
-					<span class="issue-detail-field-label">Description</span>
-					<p class="issue-detail-field-value issue-detail-description">{ props.Issue.Description }</p>
+				<div class="flex flex-col gap-1">
+					<span class="text-[11px] font-semibold uppercase tracking-wider text-base-content/60">Description</span>
+					<p class="whitespace-pre-wrap text-sm">{ props.Issue.Description }</p>
 				</div>
 			</div>
 		</div>

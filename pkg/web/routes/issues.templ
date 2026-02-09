@@ -12,85 +12,76 @@ type IssuesProps struct {
 
 func filterToggleClass(btn, current string) string {
 	if btn == current {
-		return "issues-filter-toggle is-active"
+		return "btn btn-sm btn-active"
 	}
-	return "issues-filter-toggle"
+	return "btn btn-sm btn-ghost"
+}
+
+func issuesPriorityBadgeClass(label string) string {
+	switch label {
+	case "E":
+		return "badge badge-sm badge-error"
+	case "H":
+		return "badge badge-sm badge-warning"
+	default:
+		return "badge badge-sm badge-ghost"
+	}
 }
 
 templ Issues(props IssuesProps) {
 	@BaseLayout() {
-		<div class="issues-page">
-			<header class="issues-header">
-				<h1 class="issues-title">Issues</h1>
-				<div class="issues-filters">
-					<div class="issues-filter-group">
-						<span class="issues-filter-label">Priority</span>
-						<div class="issues-filter-toggles">
-							<a href={ "/issues?state=" + props.FilterState } class={ filterToggleClass("", props.FilterPri) }>All</a>
-							<a href={ "/issues?pri=N&state=" + props.FilterState } class={ filterToggleClass("N", props.FilterPri) }>N</a>
-							<a href={ "/issues?pri=H&state=" + props.FilterState } class={ filterToggleClass("H", props.FilterPri) }>H</a>
-							<a href={ "/issues?pri=E&state=" + props.FilterState } class={ filterToggleClass("E", props.FilterPri) }>E</a>
+		<div class="flex min-h-0 w-full flex-1 flex-col overflow-hidden">
+			<header class="flex shrink-0 flex-wrap items-center justify-between gap-4 border-b border-base-300 px-5 py-4">
+				<h1 class="text-xl font-semibold">Issues</h1>
+				<div class="flex flex-wrap items-center gap-4">
+					<div class="flex items-center gap-2">
+						<span class="text-sm font-medium text-base-content/70">Priority</span>
+						<div class="join">
+							<a href={ "/issues?state=" + props.FilterState } class={ "join-item " + filterToggleClass("", props.FilterPri) }>All</a>
+							<a href={ "/issues?pri=N&state=" + props.FilterState } class={ "join-item " + filterToggleClass("N", props.FilterPri) }>N</a>
+							<a href={ "/issues?pri=H&state=" + props.FilterState } class={ "join-item " + filterToggleClass("H", props.FilterPri) }>H</a>
+							<a href={ "/issues?pri=E&state=" + props.FilterState } class={ "join-item " + filterToggleClass("E", props.FilterPri) }>E</a>
 						</div>
 					</div>
-					<div class="issues-filter-group">
-						<span class="issues-filter-label">State</span>
-						<div class="issues-filter-toggles">
-							<a href={ "/issues?pri=" + props.FilterPri } class={ filterToggleClass("", props.FilterState) }>All</a>
-							<a href={ "/issues?pri=" + props.FilterPri + "&state=open" } class={ filterToggleClass("open", props.FilterState) }>Open ({ props.OpenCount })</a>
-							<a href={ "/issues?pri=" + props.FilterPri + "&state=closed" } class={ filterToggleClass("closed", props.FilterState) }>Closed ({ props.ClosedCount })</a>
+					<div class="flex items-center gap-2">
+						<span class="text-sm font-medium text-base-content/70">State</span>
+						<div class="join">
+							<a href={ "/issues?pri=" + props.FilterPri } class={ "join-item " + filterToggleClass("", props.FilterState) }>All</a>
+							<a href={ "/issues?pri=" + props.FilterPri + "&state=open" } class={ "join-item " + filterToggleClass("open", props.FilterState) }>Open ({ props.OpenCount })</a>
+							<a href={ "/issues?pri=" + props.FilterPri + "&state=closed" } class={ "join-item " + filterToggleClass("closed", props.FilterState) }>Closed ({ props.ClosedCount })</a>
 						</div>
 					</div>
 				</div>
 			</header>
 
-			<div class="issues-list-scroll">
+			<div class="min-h-0 flex-1 overflow-y-auto p-5">
 				if len(props.Issues) == 0 {
-					<p class="issues-empty">No issues match your filters.</p>
+					<p class="py-8 text-center text-base-content/60">No issues match your filters.</p>
 				} else {
 					for _, issue := range props.Issues {
-						<div class="issues-item" data-issue-id={ issue.ID }>
-							<button type="button" class="issues-item-summary" data-toggle>
-								<span class={ "issues-priority-badge issues-priority--" + models.PriorityLabel(issue.Priority) }>{ models.PriorityLabel(issue.Priority) }</span>
-								<span class="issues-item-title">{ issue.ID } { issue.Title }</span>
+						<div class="rounded-lg border border-base-300 bg-base-100 transition shadow-sm" x-data="{ expanded: false }" @click.outside="expanded = false">
+							<button
+								type="button"
+								class="flex w-full items-center gap-2 px-4 py-3 text-left text-sm hover:bg-base-200/50"
+								@click="expanded = !expanded"
+							>
+								<span class={ issuesPriorityBadgeClass(models.PriorityLabel(issue.Priority)) }>{ models.PriorityLabel(issue.Priority) }</span>
+								<span class="min-w-0 flex-1 truncate">{ issue.ID } { issue.Title }</span>
 							</button>
-							<div class="issues-item-details">
-								<div class="issues-item-detail-row">
-									<span class="issues-item-detail-label">Type</span>
-									<span class="issues-item-detail-value">{ models.TypeLabel(issue.IssueType) }</span>
+							<div class="border-t border-base-300 bg-base-200/30 px-4 py-3" x-show="expanded" x-transition>
+								<div class="flex flex-wrap gap-x-6 gap-y-1 text-sm">
+									<div class="flex gap-2"><span class="w-20 shrink-0 text-base-content/60">Type</span><span>{ models.TypeLabel(issue.IssueType) }</span></div>
+									<div class="flex gap-2"><span class="w-20 shrink-0 text-base-content/60">State</span><span>{ models.StateLabel(issue.Status) }</span></div>
+									<div class="flex gap-2"><span class="w-20 shrink-0 text-base-content/60">Priority</span><span class={ issuesPriorityBadgeClass(models.PriorityLabel(issue.Priority)) }>{ models.PriorityLabel(issue.Priority) }</span></div>
+									<div class="flex gap-2"><span class="w-20 shrink-0 text-base-content/60">Assignee</span><span>—</span></div>
+									<div class="flex gap-2"><span class="w-20 shrink-0 text-base-content/60">Spent time</span><span>—</span></div>
 								</div>
-								<div class="issues-item-detail-row">
-									<span class="issues-item-detail-label">State</span>
-									<span class="issues-item-detail-value">{ models.StateLabel(issue.Status) }</span>
-								</div>
-								<div class="issues-item-detail-row">
-									<span class="issues-item-detail-label">Priority</span>
-									<span class={ "issues-item-detail-value issues-priority issues-priority--" + models.PriorityLabel(issue.Priority) }>{ models.PriorityLabel(issue.Priority) }</span>
-								</div>
-								<div class="issues-item-detail-row">
-									<span class="issues-item-detail-label">Assignee</span>
-									<span class="issues-item-detail-value">—</span>
-								</div>
-								<div class="issues-item-detail-row">
-									<span class="issues-item-detail-label">Spent time</span>
-									<span class="issues-item-detail-value">—</span>
-								</div>
-								<a href={ "/issues/" + issue.ID } class="issues-item-view">View full details →</a>
+								<a href={ "/issues/" + issue.ID } class="link link-primary mt-2 inline-block text-sm">View full details →</a>
 							</div>
 						</div>
 					}
 				}
 			</div>
-			<script>
-				(function(){
-					document.querySelectorAll('.issues-item-summary[data-toggle]').forEach(function(btn){
-						btn.addEventListener('click',function(){
-							var item=this.closest('.issues-item');
-							document.querySelectorAll('.issues-item.is-expanded').forEach(function(el){ if(el!==item)el.classList.remove('is-expanded'); });
-							item.classList.toggle('is-expanded');
-						});
-					});
-				})();
-			</script>
 		</div>
 	}
 }
