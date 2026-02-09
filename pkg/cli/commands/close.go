@@ -2,7 +2,6 @@ package commands
 
 import (
 	"fmt"
-	"strings"
 
 	"github.com/charmbracelet/huh"
 	"github.com/spf13/cobra"
@@ -11,19 +10,21 @@ import (
 // closeCmd represents the close command,
 // which allows users to close an existing issue by its ID.
 var closeCmd = &cobra.Command{
-	Use:               "close [id]",
-	Short:             "Close an existing issue",
-	Long:              `Close an existing issue by its ID.`,
-	Example:           `pm close pm-abc`,
-	ValidArgsFunction: completeIssues,
+	Use:     "close [id]",
+	Short:   "Close an existing issue",
+	Long:    `Close an existing issue by its ID.`,
+	Example: `pm close pm-abc`,
 
+	Args: cobra.ExactArgs(1),
 	RunE: runCloseCmd,
+
+	ValidArgsFunction: completeIssues,
 }
 
 // runCloseCmd executes the close command logic,
 // which closes an issue by its ID after confirming with the user.
 func runCloseCmd(cmd *cobra.Command, args []string) error {
-	closeID := strings.Join(args, " ")
+	closeID := args[0]
 
 	if closeID == "" {
 		return fmt.Errorf("issue ID cannot be empty")
@@ -40,8 +41,10 @@ func runCloseCmd(cmd *cobra.Command, args []string) error {
 	}
 
 	// Ask for closing reason
-	huh.NewInput().Value(&issue.CloseReason).
-		Title("Reason for closing the issue?").WithTheme(huh.ThemeBase()).Run()
+	if err = huh.NewInput().Value(&issue.CloseReason).
+		Title("Reason for closing the issue?").WithTheme(huh.ThemeBase()).Run(); err != nil {
+		return fmt.Errorf("error getting close reason: %w", err)
+	}
 
 	// Close the issue.
 	err = svc.Beads.CloseIssue(cmd.Context(), closeID, issue.CloseReason, "", "")

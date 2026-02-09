@@ -24,8 +24,12 @@ func runUpdateCmd(cmd *cobra.Command, args []string) error {
 	issueID := args[0]
 
 	issue, err := svc.Beads.GetIssue(cmd.Context(), issueID)
-	if err != nil || issue == nil {
+	if err != nil {
 		return fmt.Errorf("error getting issue: %w", err)
+	}
+
+	if issue == nil {
+		return fmt.Errorf("issue with ID %s not found", issueID)
 	}
 
 	updates, err := getUpdateValues(cmd)

@@ -72,34 +72,32 @@ func runCreateInteractive() error {
 
 		huh.NewGroup(
 			huh.NewInput().Value(&createFlags.title).Title("Title"),
-			huh.NewText().Value(&createFlags.description).Title("Description"),
-		).Title("Issue Details"),
+			huh.NewText().Value(&createFlags.description).Title("Description")),
 
 		huh.NewGroup(
-			huh.NewSelect[string]().
+			huh.NewSelect[string]().Title("Status").
 				Options(
 					huh.NewOption("Open", "open"),
 					huh.NewOption("Closed", "closed"),
 					huh.NewOption("In Progress", "in_progress"),
-				).Value(&createFlags.status).Title("Status"),
+				).Value(&createFlags.status),
 
-			huh.NewSelect[string]().
+			huh.NewSelect[string]().Title("Type").
 				Options(
 					huh.NewOption("Bug", "bug"),
 					huh.NewOption("Feature", "feature"),
 					huh.NewOption("Task", "task"),
-				).Value(&createFlags.issueType).Title("Type"),
+				).Value(&createFlags.issueType),
 
-			huh.NewSelect[int]().
+			huh.NewSelect[int]().Title("Priority").
 				Options(
 					huh.NewOption("0", 0),
 					huh.NewOption("1", 1),
 					huh.NewOption("2", 2),
 					huh.NewOption("3", 3),
 					huh.NewOption("4", 4),
-				).Value(&createFlags.priority).Title("Priority"),
-		).Title("Create New Issue").WithTheme(huh.ThemeBase()),
-	)
+				).Value(&createFlags.priority),
+		)).WithTheme(huh.ThemeBase16())
 
 	return form.Run()
 }

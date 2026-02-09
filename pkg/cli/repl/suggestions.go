@@ -31,6 +31,7 @@ var baseSuggestions = []prompt.Suggest{
 
 // createFlags is a list of prompt suggestions for the create command flags.
 var createFlags = []prompt.Suggest{
+	{Text: "--interactive", Description: "Create issue interactively"},
 	{Text: "--desc", Description: "Issue description"},
 	{Text: "--status", Description: "Issue status (open, closed, in_progress)"},
 	{Text: "--type", Description: "Issue type (bug, feature, task)"},
@@ -54,6 +55,11 @@ var listFlags = []prompt.Suggest{
 	{Text: "--type", Description: "Filter by type (bug, feature, task)"},
 	{Text: "--priority", Description: "Filter by priority (0-5)"},
 	{Text: "--limit", Description: "Limit number of results"},
+}
+
+var deleteFlags = []prompt.Suggest{
+	{Text: "--yes", Description: "Confirm deletion without prompt"},
+	{Text: "--interactive", Description: "Select issues to delete interactively"},
 }
 
 // statusValues is a list of prompt suggestions for status types
@@ -101,6 +107,10 @@ var commandFlags = map[string][]prompt.Suggest{
 	"list":   listFlags,
 	"ls":     listFlags,
 	"search": listFlags,
+	"delete": deleteFlags,
+	"del":    deleteFlags,
+	"rm":     deleteFlags,
+	"remove": deleteFlags,
 }
 
 // commandSuggestions returns a list of prompt suggestions based on the current input words.

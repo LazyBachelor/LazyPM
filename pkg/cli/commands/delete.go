@@ -36,7 +36,7 @@ func runDeleteCmd(cmd *cobra.Command, args []string) error {
 	deleteID := strings.Join(args, " ")
 
 	if deleteInteractive {
-		if err := runDeleteInteractive(); err != nil {
+		if err := runDeleteInteractive(cmd.Context()); err != nil {
 			return err
 		}
 		return nil
@@ -82,10 +82,10 @@ func runDeleteCmd(cmd *cobra.Command, args []string) error {
 
 // runDeleteInteractive runs the interactive mode for deleting issues,
 // allowing users to select multiple issues for deletion.
-func runDeleteInteractive() error {
+func runDeleteInteractive(ctx context.Context) error {
 	options := []huh.Option[string]{}
 
-	issues, err := svc.Beads.SearchIssues(context.Background(), "", models.IssueFilter{})
+	issues, err := svc.Beads.SearchIssues(ctx, "", models.IssueFilter{})
 	if err != nil {
 		return fmt.Errorf("error fetching issues: %w", err)
 	}
@@ -97,7 +97,7 @@ func runDeleteInteractive() error {
 
 	form := huh.NewForm(
 		huh.NewGroup(
-			huh.NewMultiSelect[string]().Value(&deleteIDs).
+			huh.NewMultiSelect[string]().
 				Options(options...).Value(&deleteIDs).
 				Title("Select issues to delete"))).WithTheme(huh.ThemeBase())
 
@@ -110,7 +110,7 @@ func runDeleteInteractive() error {
 	}
 
 	for _, id := range deleteIDs {
-		err := svc.Beads.DeleteIssue(context.Background(), id)
+		err := svc.Beads.DeleteIssue(ctx, id)
 		if err != nil {
 			return fmt.Errorf("error deleting issue with ID %s: %w", id, err)
 		}
