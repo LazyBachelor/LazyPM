@@ -3,16 +3,11 @@ package commands
 import (
 	"fmt"
 
+	"github.com/LazyBachelor/LazyPM/internal/models"
 	"github.com/spf13/cobra"
 )
 
-var (
-	updateDescription string
-	updateStatus      string
-	updateType        string
-	updatePriority    int
-	updateTitle       string
-)
+var updateFlags Flags
 
 var updateCmd = &cobra.Command{
 	Use:               "update [issue ID]",
@@ -25,67 +20,17 @@ var updateCmd = &cobra.Command{
 	ValidArgsFunction: completeIssues,
 }
 
-func init() {
-	updateCmd.Flags().StringVar(&updateTitle, "title", "", "New issue title")
-	updateCmd.Flags().StringVarP(&updateDescription, "desc", "d", "", "New issue description")
-	updateCmd.Flags().StringVarP(&updateStatus, "status", "s", "", "New issue status(open, closed, in_progress)")
-	updateCmd.Flags().StringVarP(&updateType, "type", "", "", "New issue type(bug, feature, task)")
-	updateCmd.Flags().IntVarP(&updatePriority, "priority", "p", -1, "New issue priority(0-5)")
-
-	updateCmd.RegisterFlagCompletionFunc("type", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
-		return []string{"bug", "feature", "task"}, cobra.ShellCompDirectiveDefault
-	})
-
-	updateCmd.RegisterFlagCompletionFunc("status", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
-		return []string{"open", "closed", "in_progress"}, cobra.ShellCompDirectiveDefault
-	})
-
-	updateCmd.RegisterFlagCompletionFunc("priority", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
-		return []string{"0", "1", "2", "3", "4", "5"}, cobra.ShellCompDirectiveDefault
-	})
-
-	rootCmd.AddCommand(updateCmd)
-}
-
 func runUpdateCmd(cmd *cobra.Command, args []string) error {
 	issueID := args[0]
 
-	updates := make(map[string]interface{})
-
-	if cmd.Flags().Changed("title") {
-		if updateTitle == "" {
-			return fmt.Errorf("issue title cannot be empty")
-		}
-		updates["title"] = updateTitle
-	}
-
-	if cmd.Flags().Changed("desc") {
-		updates["description"] = updateDescription
-	}
-
-	if cmd.Flags().Changed("status") {
-		updates["status"] = updateStatus
-	}
-
-	if cmd.Flags().Changed("type") {
-		updates["issue_type"] = updateType
-	}
-
-	if cmd.Flags().Changed("priority") {
-		updates["priority"] = updatePriority
-	}
-
-	if len(updates) == 0 {
-		return fmt.Errorf("no updates specified")
-	}
-
 	issue, err := svc.Beads.GetIssue(cmd.Context(), issueID)
-	if err != nil {
+	if err != nil || issue == nil {
 		return fmt.Errorf("error getting issue: %w", err)
 	}
 
-	if issue == nil {
-		return fmt.Errorf("issue with ID '%s' not found", issueID)
+	updates, err := getUpdateValues(cmd)
+	if err != nil {
+		return fmt.Errorf("error getting update values: %w", err)
 	}
 
 	err = svc.Beads.UpdateIssue(cmd.Context(), issueID, updates, "test_actor")
@@ -98,29 +43,54 @@ func runUpdateCmd(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("error getting updated issue: %w", err)
 	}
 
-	str := fmt.Sprintf("Updated issue with ID: %s\n", issueID)
+	cmd.Printf("Updated issue to:\n%s", models.IssueString(*updatedIssue))
 
-	if updatedIssue.Title != "" {
-		str += fmt.Sprintf("Title: %s\n", updatedIssue.Title)
+	return nil
+}
+
+func init() {
+	updateCmd.Flags().StringVar(&updateFlags.title, "title", "", "New issue title")
+	updateCmd.Flags().StringVarP(&updateFlags.description, "desc", "d", "", "New issue description")
+	updateCmd.Flags().StringVarP(&updateFlags.status, "status", "s", "", "New issue status(open, closed, in_progress)")
+	updateCmd.Flags().StringVarP(&updateFlags.issueType, "type", "t", "", "New issue type(bug, feature, task)")
+	updateCmd.Flags().IntVarP(&updateFlags.priority, "priority", "p", 0, "New issue priority(0-5)")
+
+	updateCmd.RegisterFlagCompletionFunc("type", completionFunc(typeOptions))
+	updateCmd.RegisterFlagCompletionFunc("status", completionFunc(statusOptions))
+	updateCmd.RegisterFlagCompletionFunc("priority", completionFunc(priorityRange))
+
+	rootCmd.AddCommand(updateCmd)
+}
+
+func getUpdateValues(cmd *cobra.Command) (map[string]interface{}, error) {
+	updates := make(map[string]interface{})
+
+	if cmd.Flags().Changed("title") {
+		if updateFlags.title == "" {
+			return updates, fmt.Errorf("issue title cannot be empty")
+		}
+		updates["title"] = updateFlags.title
 	}
 
-	if updatedIssue.Description != "" {
-		str += fmt.Sprintf("Description: %s\n", updatedIssue.Description)
+	if cmd.Flags().Changed("desc") {
+		updates["description"] = updateFlags.description
 	}
 
-	if updatedIssue.Status != "" {
-		str += fmt.Sprintf("Status: %s\n", updatedIssue.Status)
+	if cmd.Flags().Changed("status") {
+		updates["status"] = updateFlags.status
 	}
 
-	if updatedIssue.IssueType != "" {
-		str += fmt.Sprintf("Type: %s\n", updatedIssue.IssueType)
+	if cmd.Flags().Changed("type") {
+		updates["issue_type"] = updateFlags.issueType
 	}
 
 	if cmd.Flags().Changed("priority") {
-		str += fmt.Sprintf("Priority: %d\n", updatedIssue.Priority)
+		updates["priority"] = updateFlags.priority
 	}
 
-	cmd.Print(str)
+	if len(updates) == 0 {
+		return updates, fmt.Errorf("no updates specified")
+	}
 
-	return nil
+	return updates, nil
 }
