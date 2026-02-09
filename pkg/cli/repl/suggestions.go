@@ -25,7 +25,6 @@ var baseSuggestions = []prompt.Suggest{
 	{Text: "close", Description: "Close an issue by ID"},
 	{Text: "create", Description: "Create a new issue with title"},
 	{Text: "update", Description: "Update an existing issue by ID"},
-	{Text: "update", Description: "Update an existing issue by ID"},
 	{Text: "describe", Description: "Get issue details by ID"},
 	{Text: "list", Description: "List all issues"},
 }
