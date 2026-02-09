@@ -1,3 +1,4 @@
+// Package cli provides the command-line interface for the PM System.
 package cli
 
 import (
@@ -7,7 +8,7 @@ import (
 	"github.com/LazyBachelor/LazyPM/pkg/cli/commands"
 )
 
-// CLIConfig is an alias for service.Config, which contains all the necessary
+// CLIConfig is an alias for service.Config, used to configure the CLI.
 type CLIConfig = service.Config
 
 // Run initializes the services and executes the CLI commands.

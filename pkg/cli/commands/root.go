@@ -14,6 +14,18 @@ import (
 // Must be called before executing any commands to ensure services are available.
 var svc *service.Services
 
+// Flags struct to hold command-line flag values for issues.
+type Flags struct {
+	interactive bool
+	limit       int
+
+	title       string
+	description string
+	status      string
+	issueType   string
+	priority    int
+}
+
 // rootCmd is the base command for the CLI application.
 var rootCmd = &cobra.Command{
 	Short: "Project Management CLI",
@@ -56,7 +68,7 @@ func ExecuteArgsString(args []string) (string, error) {
 
 // init function to set up the command hierarchy and options.
 func init() {
-	rootCmd.CompletionOptions.DisableDefaultCmd = true
+	rootCmd.CompletionOptions.DisableDefaultCmd = false
 	rootCmd.AddGroup(&cobra.Group{ID: "help", Title: "Helping Commands"})
 	rootCmd.SetCompletionCommandGroupID("help")
 	rootCmd.SetHelpCommandGroupID("help")

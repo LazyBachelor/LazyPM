@@ -7,12 +7,12 @@ clean:
 	go clean
 
 build:
-	go build -o ./bin/cli ./cmd/cli
+	go build -o ./bin/pm ./cmd/pm
 	go build -o ./bin/tui ./cmd/tui
 	go build -o ./bin/web ./cmd/web
 
 cli:
-	go run ./cmd/cli
+	go run ./cmd/pm
 
 tui: 
 	go run ./cmd/tui

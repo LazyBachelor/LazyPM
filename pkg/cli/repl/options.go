@@ -5,13 +5,8 @@ import "github.com/c-bata/go-prompt"
 const PromptPrefix = "> "
 const OptionMaxSuggestions = 5
 
-const (
-	ReplHelp = `Type 'pm help' for available PM commands.
-You can also run shell commands directly. Type 'exit' or 'quit' to leave.`
-
-	ReplTitle = "Welcome to Project Management CLI! " + ReplHelp
-)
-
+// promptOptions returns a slice of prompt.Option
+// to configure the behavior and appearance of the REPL prompt.
 func promptOptions(history []string) []prompt.Option {
 	return []prompt.Option{
 		prompt.OptionPrefixTextColor(prompt.Cyan),
