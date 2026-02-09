@@ -25,11 +25,14 @@ func CreateIssue(svc *service.Services) http.HandlerFunc {
 			return
 		}
 
+		// 1. Parse Form instead of JSON
 		if err := r.ParseForm(); err != nil {
 			http.Error(w, "Failed to parse form", http.StatusBadRequest)
 			return
 		}
 
+		// 2. Map form values to your struct manually
+		// (Or use a library like 'gorilla/schema')
 		priority, _ := strconv.Atoi(r.FormValue("priority"))
 		issue := models.Issue{
 			Title:       r.FormValue("title"),
