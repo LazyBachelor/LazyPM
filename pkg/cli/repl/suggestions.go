@@ -37,6 +37,7 @@ var createFlags = []prompt.Suggest{
 	{Text: "--priority", Description: "Issue priority (0-5)"},
 }
 
+// updateFlags is a list of prompt suggestions for the update command flags.
 var updateFlags = []prompt.Suggest{
 	{Text: "--title", Description: "New issue title"},
 	{Text: "--desc", Description: "New issue description"},
@@ -88,6 +89,18 @@ var isIDCommand = map[string]bool{
 	"get":      true,
 	"read":     true,
 	"close":    true,
+	"update":   true,
+	"edit":     true,
+}
+
+var commandFlags = map[string][]prompt.Suggest{
+	"create": createFlags,
+	"add":    createFlags,
+	"update": updateFlags,
+	"edit":   updateFlags,
+	"list":   listFlags,
+	"ls":     listFlags,
+	"search": listFlags,
 }
 
 // commandSuggestions returns a list of prompt suggestions based on the current input words.
@@ -106,39 +119,15 @@ func flagSuggestions(cmd string, words []string, text string) []prompt.Suggest {
 		return filterByPrefix(values, lastWord)
 	}
 
+	flags := commandFlags[cmd]
+
 	if isIDCommand[cmd] {
-		// For ID-oriented commands, pass the current partial argument (lastWord)
-		// so issueIDSuggestions can distinguish between completing the command
-		// name and completing the ID itself.
-		return issueIDSuggestions(lastWord, len(words) >= 2)
-	}
-
-	// Update/edit: suggest issue IDs when typing the ID, flags after ID is provided
-	if cmd == "update" || cmd == "edit" {
-		if len(words) >= 2 && (lastWord == "" || strings.HasPrefix(lastWord, "-")) {
-			// ID already provided (trailing space) or typing a flag -> suggest update flags
-			flags := updateFlags
-			if lastWord == "" {
-				return flags
-			}
-			return filterByPrefix(flags, lastWord)
+		if len(words) < 2 && !strings.HasPrefix(lastWord, "-") {
+			return issueIDSuggestions(lastWord, true)
 		}
-		return issueIDSuggestions(lastWord, len(words) >= 2)
+		return filterByPrefix(flags, lastWord)
 	}
 
-	var flags []prompt.Suggest
-	switch cmd {
-	case "create", "add":
-		flags = createFlags
-	case "list", "ls", "search":
-		flags = listFlags
-	default:
-		return nil
-	}
-
-	if lastWord == "" {
-		return flags
-	}
 	return filterByPrefix(flags, lastWord)
 }
 
