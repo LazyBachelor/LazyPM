@@ -41,34 +41,22 @@ var defaultDashboardKeyMap = DashboardKeyMap{
 	),
 }
 
-func (m DashboardKeyMap) ShortHelp() []key.Binding {
-	return []key.Binding{m.ScrollDown, m.ScrollUp, m.Quit, m.Help}
-}
-
-func (m DashboardKeyMap) FullHelp() [][]key.Binding {
-	return [][]key.Binding{
-		{m.SelectIssue, m.BackToList},
-		{m.ScrollUp, m.ScrollDown},
-		{m.Help, m.Quit},
-	}
-}
-
 func (d *Model) handleKeyMsg(msg tea.KeyMsg) tea.Cmd {
 	var cmd tea.Cmd
 
 	switch {
 	case key.Matches(msg, d.keyMap.Help):
-		d.help.ShowAll = !d.help.ShowAll
+		d.helpBar.ToggleHelp()
 	case key.Matches(msg, d.keyMap.Quit):
 		return tea.Quit
-	case !d.focusedOnIssue && key.Matches(msg, d.keyMap.SelectIssue):
-		d.focusedOnIssue = true
-	case d.focusedOnIssue && key.Matches(msg, d.keyMap.BackToList):
-		d.focusedOnIssue = false
-	case d.focusedOnIssue && key.Matches(msg, d.keyMap.ScrollUp):
-		d.issueView.Viewport.ScrollUp(1)
-	case d.focusedOnIssue && key.Matches(msg, d.keyMap.ScrollDown):
-		d.issueView.Viewport.ScrollDown(1)
+	case d.IsFocusedOnList() && key.Matches(msg, d.keyMap.SelectIssue):
+		d.FocusDetail()
+	case d.IsFocusedOnDetail() && key.Matches(msg, d.keyMap.BackToList):
+		d.FocusList()
+	case d.IsFocusedOnDetail() && key.Matches(msg, d.keyMap.ScrollUp):
+		d.issueDetail.ScrollUp(1)
+	case d.IsFocusedOnDetail() && key.Matches(msg, d.keyMap.ScrollDown):
+		d.issueDetail.ScrollDown(1)
 	}
 
 	return cmd
