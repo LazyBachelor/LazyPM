@@ -3,28 +3,78 @@ package styles
 import "github.com/charmbracelet/lipgloss"
 
 var (
-	AppStyle = lipgloss.NewStyle().Padding(3, 3)
+	Primary   = lipgloss.AdaptiveColor{Light: "#5A56E0", Dark: "#7571F9"}
+	Secondary = lipgloss.AdaptiveColor{Light: "#02BA84", Dark: "#02BF87"}
 
-	TitleStyle = lipgloss.NewStyle().
-			Foreground(lipgloss.Color("12")).
-			Padding(0, 1).Bold(true).Border(lipgloss.NormalBorder())
+	Success = lipgloss.AdaptiveColor{Light: "#02BA84", Dark: "#02BF87"}
+	Warning = lipgloss.AdaptiveColor{Light: "#F59E0B", Dark: "#F59E0B"}
+	Error   = lipgloss.AdaptiveColor{Light: "#FE5F86", Dark: "#FE5F86"}
 
-	SelectedItemStyle = lipgloss.NewStyle().
-				Border(lipgloss.NormalBorder(), false, false, false, true).
-				Foreground(lipgloss.Color("2")).
-				Padding(0, 0, 0, 1)
+	PrimaryText   = lipgloss.AdaptiveColor{Light: "#1A1A1A", Dark: "#E0E0E0"}
+	SecondaryText = lipgloss.AdaptiveColor{Light: "#666666", Dark: "#999999"}
+	FaintText     = lipgloss.AdaptiveColor{Light: "#999999", Dark: "#666666"}
 
-	ItemStyle = lipgloss.NewStyle().
-			Foreground(lipgloss.Color("7")).
-			Padding(0, 0, 0, 2)
+	PrimaryBorder   = lipgloss.AdaptiveColor{Light: "#5A56E0", Dark: "#7571F9"}
+	SecondaryBorder = lipgloss.AdaptiveColor{Light: "#CCCCCC", Dark: "#444444"}
 
-	IssueStyle = lipgloss.NewStyle().
-			Border(lipgloss.NormalBorder()).
-			BorderForeground(lipgloss.Color("8")).
-			Padding(1)
-
-	FocusedIssueStyle = lipgloss.NewStyle().
-				Border(lipgloss.NormalBorder()).
-				BorderForeground(lipgloss.Color("2")).
-				Padding(1)
+	SelectedBackground = lipgloss.AdaptiveColor{Light: "#E8E8E8", Dark: "#333333"}
 )
+
+const (
+	ListViewRatio     = 70 // Percentage of total width allocated to the list view
+	LabelWidth        = 14
+	MarginBottomSmall = 1
+)
+
+var DefaultBorder = lipgloss.ThickBorder()
+
+var (
+	HeaderStyle      = lipgloss.NewStyle().Foreground(Primary).Padding(0, 1).Bold(true)
+	HeaderTitleStyle = lipgloss.NewStyle().Foreground(Primary).Bold(true).Padding(0)
+)
+
+var ContainerStyle = lipgloss.NewStyle().
+	Border(DefaultBorder, true, false, false, false).
+	BorderForeground(SecondaryBorder).
+	Padding(1)
+
+var DetailsContainerStyle = lipgloss.NewStyle().
+	Border(DefaultBorder, true, false, false, true).
+	BorderForeground(SecondaryBorder).
+	Padding(1)
+
+var (
+	RowStyle       = lipgloss.NewStyle().MarginBottom(MarginBottomSmall)
+	TitleStyle     = lipgloss.NewStyle().Foreground(Primary).Bold(true)
+	LabelStyle     = lipgloss.NewStyle().Foreground(SecondaryText)
+	ValueStyle     = lipgloss.NewStyle().Foreground(PrimaryText)
+	IssueTypeStyle = lipgloss.NewStyle().Foreground(Primary).Bold(true)
+)
+
+var (
+	FilterStyle       = lipgloss.NewStyle().Foreground(Primary).Bold(true).Padding(0, 1)
+	FilterInputStyle  = lipgloss.NewStyle().Foreground(PrimaryText).Padding(0, 1)
+	FilterPromptStyle = lipgloss.NewStyle().Foreground(Primary).Bold(true)
+)
+
+func StatusStyle(status string) lipgloss.Style {
+	style := lipgloss.NewStyle().Bold(true)
+	switch status {
+	case "open":
+		return style.Foreground(Secondary)
+	case "closed":
+		return style.Foreground(FaintText)
+	case "in_progress":
+		return style.Foreground(Warning)
+	default:
+		return style.Foreground(SecondaryText)
+	}
+}
+
+func HighlightKey(key string) string {
+	return lipgloss.NewStyle().
+		Foreground(Primary).
+		Bold(true).
+		Padding(0, 1).
+		Render(key)
+}
