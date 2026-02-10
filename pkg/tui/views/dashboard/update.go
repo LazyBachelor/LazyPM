@@ -2,12 +2,13 @@ package dashboard
 
 import (
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/bubbles/list"
 )
 
 func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
-		if m.issueList.FilterState() == 1 {
+		if m.issueList.FilterState() == list.Filtering {
 			cmd, _ := m.issueList.Update(msg)
 			return m, cmd
 		}
