@@ -79,10 +79,10 @@ func (h HelpBar) fullHelp() string {
 }
 
 func (h HelpBar) Height() int {
-	if h.showAll {
-		return 3
+	if h.width == 0 {
+		return 0
 	}
-	return 1
+	return lipgloss.Height(h.View())
 }
 
 func (h HelpBar) IsExpanded() bool {
