@@ -76,14 +76,13 @@ func renderHeaders(cols []TableColumn) string {
 
 func NewIssueList(svc *service.Services, width, height int) IssueList {
 	issues, err := svc.Beads.AllIssues(context.Background())
+	if err != nil {
+		return IssueList{}
+	}
 
 	listIssues := []ListIssue{}
 	for _, issue := range issues {
 		listIssues = append(listIssues, ListIssue{Issue: issue})
-	}
-
-	if err != nil {
-		listIssues = []ListIssue{}
 	}
 
 	items := make([]list.Item, len(listIssues))
