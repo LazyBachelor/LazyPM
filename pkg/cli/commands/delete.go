@@ -1,0 +1,129 @@
+package commands
+
+import (
+	"context"
+	"fmt"
+	"strings"
+
+	"github.com/LazyBachelor/LazyPM/internal/models"
+	"github.com/charmbracelet/huh"
+	"github.com/spf13/cobra"
+)
+
+// Variables for delete command flag.
+var (
+	confirmDelete     bool
+	deleteIDs         []string
+	deleteInteractive bool
+)
+
+// deleteCmd represents the delete command.
+var deleteCmd = &cobra.Command{
+	Use:     "delete [id]",
+	Short:   "Delete an existing issue",
+	Long:    `Delete an existing issue by its ID.`,
+	Example: `pm delete pm-abc`,
+
+	ValidArgsFunction: completeIssues,
+
+	Aliases: []string{"del", "remove", "rm"},
+	RunE:    runDeleteCmd,
+}
+
+// runDeleteCmd executes the delete command logic,
+// which deletes an issue by its ID after confirming with the user.
+func runDeleteCmd(cmd *cobra.Command, args []string) error {
+	deleteID := strings.Join(args, " ")
+
+	if deleteInteractive {
+		if err := runDeleteInteractive(cmd.Context()); err != nil {
+			return err
+		}
+		return nil
+	}
+
+	if deleteID == "" {
+		return fmt.Errorf("issue ID cannot be empty")
+	}
+
+	// Fetch the issue to ensure it exists before deletion.
+	issue, err := svc.Beads.GetIssue(cmd.Context(), deleteID)
+	if err != nil {
+		return fmt.Errorf("error fetching issue: %w", err)
+	}
+
+	if issue == nil {
+		return fmt.Errorf("issue with ID %s not found", deleteID)
+	}
+
+	// Prompt for confirmation if not already confirmed via flag.
+	if !cmd.Flags().Changed("yes") {
+		huh.NewConfirm().Value(&confirmDelete).
+			Title("You want to delete this issue?").
+			Inline(true).WithTheme(huh.ThemeBase()).Run()
+	}
+
+	// If user did not confirm, cancel deletion.
+	if !confirmDelete {
+		cmd.Println("Deletion cancelled.")
+		return nil
+	}
+
+	// Delete the issue.
+	err = svc.Beads.DeleteIssue(cmd.Context(), deleteID)
+	if err != nil {
+		return fmt.Errorf("error deleting issue: %w", err)
+	}
+
+	cmd.Println("Deleted issue with ID:", deleteID)
+
+	return nil
+}
+
+// runDeleteInteractive runs the interactive mode for deleting issues,
+// allowing users to select multiple issues for deletion.
+func runDeleteInteractive(ctx context.Context) error {
+	options := []huh.Option[string]{}
+
+	issues, err := svc.Beads.SearchIssues(ctx, "", models.IssueFilter{})
+	if err != nil {
+		return fmt.Errorf("error fetching issues: %w", err)
+	}
+
+	for _, issue := range issues {
+		desc := fmt.Sprintf("%s: %s", issue.ID, issue.Title)
+		options = append(options, huh.NewOption(desc, issue.ID))
+	}
+
+	form := huh.NewForm(
+		huh.NewGroup(
+			huh.NewMultiSelect[string]().
+				Options(options...).Value(&deleteIDs).
+				Title("Select issues to delete"))).WithTheme(huh.ThemeBase())
+
+	if err := form.Run(); err != nil {
+		return fmt.Errorf("error running interactive form: %w", err)
+	}
+
+	if len(deleteIDs) == 0 {
+		return fmt.Errorf("no issues selected for deletion")
+	}
+
+	for _, id := range deleteIDs {
+		err := svc.Beads.DeleteIssue(ctx, id)
+		if err != nil {
+			return fmt.Errorf("error deleting issue with ID %s: %w", id, err)
+		}
+		fmt.Printf("Deleted issue with ID: %s\n", id)
+	}
+
+	return nil
+}
+
+// init function to set up the delete command and its flags.
+func init() {
+	deleteCmd.Flags().BoolVarP(&deleteInteractive, "interactive", "i", false, "Delete issues interactively")
+	deleteCmd.Flags().BoolVarP(&confirmDelete, "yes", "y", true, "Confirm deletion without prompt")
+
+	rootCmd.AddCommand(deleteCmd)
+}
