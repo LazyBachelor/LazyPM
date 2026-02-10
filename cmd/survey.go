@@ -5,10 +5,6 @@ import (
 	"fmt"
 	"os"
 
-	"context"
-	"fmt"
-	"os"
-
 	"github.com/LazyBachelor/LazyPM/pkg"
 	"github.com/LazyBachelor/LazyPM/pkg/cli"
 	"github.com/LazyBachelor/LazyPM/pkg/cli/repl"
