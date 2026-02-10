@@ -28,5 +28,5 @@ func (h Header) View(width int) string {
 }
 
 func (h Header) Height() int {
-	return 2
+	return 1
 }
