@@ -26,7 +26,7 @@ func main() {
 
 	switch os.Args[1] {
 	case "tui":
-		err = tui.Run(ctx, config)
+		_, err = tui.Run(ctx, config)
 	case "cli":
 		err = cli.RunWithArgs(ctx, config, os.Args[2:])
 	case "repl":

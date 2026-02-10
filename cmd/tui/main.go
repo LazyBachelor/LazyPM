@@ -13,7 +13,7 @@ func main() {
 		IssuePrefix:           "pm",
 	}
 
-	if err := tui.Run(context.Background(), config); err != nil {
+	if _, err := tui.Run(context.Background(), config); err != nil {
 		panic(err)
 	}
 }
