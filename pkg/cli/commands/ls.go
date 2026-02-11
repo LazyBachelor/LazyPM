@@ -8,30 +8,23 @@ import (
 )
 
 // Variables for get-issues command flags.
-var (
-	titleFlag       string
-	descriptionFlag string
-	statusFlag      string
-	typeFlag        string
-	priorityFlag    int
-	limit           int = 25
-)
+var listFlags Flags
 
 const (
-	lsExamples = `pm ls [id|title|description]
-pm ls --status open --type bug
-pm ls --title "New feature" --desc "feature description"
-pm ls -p 1 -l 10`
+	lsExamples = `pm list [id|title|description]
+pm list --status open --type bug
+pm list --title "New feature" --desc "feature description"
+pm list -p 1 -l 10`
 )
 
 // getIssuesCmd represents the get issues command.
 var getIssuesCmd = &cobra.Command{
-	Use:     "ls [search query]",
+	Use:     "list [search query]",
 	Short:   "List all issues",
 	Long:    `List all issues in the project management system.`,
 	Example: lsExamples,
 
-	Aliases: []string{"list", "search"},
+	Aliases: []string{"ls", "search"},
 	Args:    cobra.MinimumNArgs(0),
 	RunE:    runGetIssuesCmd,
 }
@@ -42,23 +35,23 @@ func runGetIssuesCmd(cmd *cobra.Command, args []string) error {
 	queryArg := strings.Join(args, " ")
 
 	filter := models.IssueFilter{
-		TitleSearch:         titleFlag,
-		DescriptionContains: descriptionFlag,
-		Limit:               limit,
+		TitleSearch:         listFlags.title,
+		DescriptionContains: listFlags.description,
+		Limit:               listFlags.limit,
 	}
 
 	// Only set filter fields if the corresponding flags
 	// were explicitly provided by the user.
 	if cmd.Flags().Changed("status") {
-		s := models.Status(statusFlag)
+		s := models.Status(listFlags.status)
 		filter.Status = &s
 	}
 	if cmd.Flags().Changed("type") {
-		t := models.IssueType(typeFlag)
+		t := models.IssueType(listFlags.issueType)
 		filter.IssueType = &t
 	}
 	if cmd.Flags().Changed("priority") {
-		filter.Priority = &priorityFlag
+		filter.Priority = &listFlags.priority
 	}
 
 	// Fetch issues based on the search query and filters.
@@ -76,24 +69,17 @@ func runGetIssuesCmd(cmd *cobra.Command, args []string) error {
 
 // init function to set up the get issues command and its flags.
 func init() {
-	getIssuesCmd.Flags().StringVar(&titleFlag, "title", "", "Filter issues by title")
-	getIssuesCmd.Flags().StringVarP(&descriptionFlag, "desc", "d", "", "Filter issues by description")
-	getIssuesCmd.Flags().StringVarP(&statusFlag, "status", "s", "", "Filter issues by status (open, closed, in_progress)")
-	getIssuesCmd.Flags().StringVarP(&typeFlag, "type", "t", "", "Filter issues by type (bug, feature, task)")
-	getIssuesCmd.Flags().IntVarP(&priorityFlag, "priority", "p", 0, "Filter issues by priority (0-5)")
-	getIssuesCmd.Flags().IntVarP(&limit, "limit", "l", 25, "Limit the number of issues returned")
+	getIssuesCmd.Flags().StringVar(&listFlags.title, "title", "", "Filter issues by title")
+	getIssuesCmd.Flags().StringVarP(&listFlags.description, "desc", "d", "", "Filter issues by description")
+	getIssuesCmd.Flags().StringVarP(&listFlags.status, "status", "s", "", "Filter issues by status (open, closed, in_progress)")
+	getIssuesCmd.Flags().StringVarP(&listFlags.issueType, "type", "t", "", "Filter issues by type (bug, feature, task)")
+	getIssuesCmd.Flags().IntVarP(&listFlags.priority, "priority", "p", 0, "Filter issues by priority (0-4)")
 
-	getIssuesCmd.RegisterFlagCompletionFunc("status", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
-		return []string{"open", "closed", "in_progress"}, cobra.ShellCompDirectiveDefault
-	})
+	getIssuesCmd.Flags().IntVarP(&listFlags.limit, "limit", "l", 25, "Limit the number of issues returned")
 
-	getIssuesCmd.RegisterFlagCompletionFunc("type", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
-		return []string{"bug", "feature", "task"}, cobra.ShellCompDirectiveDefault
-	})
-
-	getIssuesCmd.RegisterFlagCompletionFunc("priority", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
-		return []string{"0", "1", "2", "3", "4", "5"}, cobra.ShellCompDirectiveDefault
-	})
+	getIssuesCmd.RegisterFlagCompletionFunc("status", completionFunc(statusOptions))
+	getIssuesCmd.RegisterFlagCompletionFunc("type", completionFunc(typeOptions))
+	getIssuesCmd.RegisterFlagCompletionFunc("priority", completionFunc(priorityRange))
 
 	rootCmd.AddCommand(getIssuesCmd)
 }

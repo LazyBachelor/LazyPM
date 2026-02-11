@@ -59,7 +59,7 @@ func main() {
 		err = web.Run(ctx, config)
 	case "tui":
 		fmt.Println("Starting TUI Interface...")
-		err = tui.Run(ctx, config)
+		_, err = tui.Run(ctx, config)
 	default:
 		fmt.Println("Invalid selection. Exiting.")
 	}
