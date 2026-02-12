@@ -3,61 +3,67 @@ package main
 import (
 	"context"
 	"fmt"
-	"os"
+	"log"
+	"math/rand"
+	"time"
 
 	"github.com/LazyBachelor/LazyPM/cmd/survey/tasks"
 	"github.com/LazyBachelor/LazyPM/internal/service"
-	"github.com/LazyBachelor/LazyPM/pkg/cli/repl"
-	"github.com/LazyBachelor/LazyPM/pkg/tui"
-	"github.com/LazyBachelor/LazyPM/pkg/web"
 )
 
 func main() {
+	rand.Seed(time.Now().UnixNano())
 	ctx := context.Background()
 
 	svc, close, err := initializeServices(ctx)
 	if err != nil {
-		fatal("Failed to initialize services: %v\n", err)
+		log.Fatalf("Failed to initialize services: %v\n", err)
 	}
 	defer close()
 
-	tui := tui.NewTui()
-	web := web.NewWeb()
-	repl := repl.NewRepl()
+	tasks := initTasks()
+	interfaces := initInterfaces()
 
-	createIssueTask := tasks.NewCreateIssueTask(web)
-
-	task := createIssueTask
-
-	task.SetInterface(tui)
-	task.SetInterface(repl)
-
-	task.MigrateToTask(ctx, svc, task)
-
-	if err := task.IntroduceTask(); err != nil {
-		fatal("Failed to introduce task: %v\n", err)
-	}
-
-	if err := task.StartInterface(ctx, svc.Config); err != nil {
-		fatal("Failed to start interface: %v\n", err)
-	}
-
-	if err := task.StartQuestionnaire(); err != nil {
-		fatal("Failed to start questionnaire: %v\n", err)
+	if err := taskLoop(ctx, svc, tasks, interfaces); err != nil {
+		log.Fatalf("Task loop failed: %v\n", err)
 	}
 }
 
-func initializeServices(ctx context.Context) (*service.Services, func(), error) {
-	config := service.Config{
-		IssuePrefix:           "pm",
-		BeadsDBPath:           "./.pm/db.db",
-		StatisticsStoragePath: "./.pm/stats.json",
-		WebAddress:            "localhost:8080",
-	}
-	return service.NewServices(ctx, config)
-}
+func taskLoop(ctx context.Context, svc *service.Services, tasks []*tasks.Task, interfaces []tasks.Interface) error {
+	interfaceIndex := rand.Int() % len(interfaces)
 
-func fatal(format string, args ...interface{}) {
-	fmt.Fprintf(os.Stderr, format, args...)
-	os.Exit(1)
+	for _, task := range tasks {
+
+		task.SetInterface(interfaces[interfaceIndex])
+
+		if err := task.Initialize(ctx, svc); err != nil {
+			return fmt.Errorf("Failed to initialize task: %w", err)
+		}
+
+		if err := task.IntroduceTask(); err != nil {
+			return fmt.Errorf("failed to display task introduction screen: %w", err)
+		}
+
+		if err := task.StartInterface(ctx, task.Config); err != nil {
+			return fmt.Errorf("failed to start task interface: %w", err)
+		}
+
+		ok, err := task.Validate(ctx, svc)
+		if err != nil {
+			return fmt.Errorf("validation error: %w", err)
+		}
+		if !ok {
+			return fmt.Errorf("task validation failed: task did not meet requirements")
+		}
+
+		if err := task.StartQuestionnaire(); err != nil {
+			return fmt.Errorf("failed to start questionnaire: %w", err)
+		}
+
+		interfaceIndex++
+		if interfaceIndex >= len(interfaces) {
+			interfaceIndex = 0
+		}
+	}
+	return nil
 }
