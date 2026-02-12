@@ -26,12 +26,9 @@ func (s *Server) RegisterRoutes(assets embed.FS) http.Handler {
 }
 
 func (s *Server) handleAssets(mux *http.ServeMux, assets embed.FS) {
-	fileServer := http.FileServer(http.FS(assets))
-	mux.Handle("/assets/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// Optionally set long-term caching headers for static assets
-		//w.Header().Set("Cache-Control", "public, max-age=31536000, immutable")
-		fileServer.ServeHTTP(w, r)
-	}))
+	mux.Handle("/assets/",
+		http.StripPrefix("/assets/",
+			http.FileServer(http.Dir("pkg/web/assets"))))
 
 	mux.HandleFunc("/robots.txt", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Cache-Control", "no-cache")
