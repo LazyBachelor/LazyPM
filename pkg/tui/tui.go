@@ -19,7 +19,7 @@ func NewTui() *Tui {
 func (t *Tui) Run(ctx context.Context, config TUIConfig) error {
 	svc, cleanup, err := service.NewServices(ctx, config)
 	if err != nil {
-		return nil
+		return err
 	}
 
 	defer cleanup()
