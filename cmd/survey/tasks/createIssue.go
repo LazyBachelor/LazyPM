@@ -76,7 +76,7 @@ func createIssueValidate(ctx context.Context, svc *service.Services) (ok bool, e
 	}
 
 	if len(issues) == 0 {
-		return false, errors.New("No issues found. Please create an issue to proceed.")
+		return false, errors.New("no issues found. Please create an issue to proceed.")
 	}
 
 	return true, nil
