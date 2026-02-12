@@ -21,18 +21,18 @@ func main() {
 	}
 	defer close()
 
-	tasks := initTasks()
+	surveyTasks := initTasks()
 	interfaces := initInterfaces()
 
-	if err := taskLoop(ctx, svc, tasks, interfaces); err != nil {
+	if err := taskLoop(ctx, svc, surveyTasks, interfaces); err != nil {
 		log.Fatalf("Task loop failed: %v\n", err)
 	}
 }
 
-func taskLoop(ctx context.Context, svc *service.Services, tasks []*tasks.Task, interfaces []tasks.Interface) error {
+func taskLoop(ctx context.Context, svc *service.Services, surveyTasks []*tasks.Task, interfaces []tasks.Interface) error {
 	interfaceIndex := rand.Int() % len(interfaces)
 
-	for _, task := range tasks {
+	for _, task := range surveyTasks {
 
 		task.SetInterface(interfaces[interfaceIndex])
 
