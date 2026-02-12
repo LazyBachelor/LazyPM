@@ -6,16 +6,15 @@ templ Layout(props LayoutProps){
     <head>
         <meta charset="UTF-8">
         <title>{props.Title}</title>
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
         <meta name="description" content={props.Description}>
         @Head(props.Head)
     </head>
-    <body>
+    <body style="margin:0;padding:0;background:#f5f5f5;color:#111;font-family:system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;">
         @Header(props.Header)
-        <main>
+        <main style="padding:16px;background:#ffffff;">
             { children... }
         </main>
-        @Footer(props.Footer)
     </body>
     </html>
 }
@@ -54,17 +53,71 @@ type Script struct {
 }
 
 templ Header(props HeaderProps){
-    <header>
-        <nav>
-            for _, route := range props.Routes {
-                <a href={ route.Path }>{ route.Name }</a>
-            }
-        </nav>
+    @Topbar(){
+        @TopbarBrand(props.BrandName)
+        @TopbarCreateButton(props.CreateLabel, props.CreateHref)
+        @TopbarSpacer()
+        @TopbarSearch(props.SearchPlaceholder)
+        @TopbarSpacer()
+        @TopbarActions(){
+            @TopbarIconButton("Notifications"){ @IconBell() }
+            @TopbarIconButton("User menu"){ @IconUser() }
+        }
+    }
+}
+
+templ Topbar(){
+    <header style="position:sticky;top:0;z-index:10;display:flex;align-items:center;gap:12px;height:48px;padding:0 20px;background:#0969da;color:#fff;flex-shrink:0;">
+        { children... }
     </header>
 }
 
+templ TopbarBrand(brandName string){
+    <span style="font-weight:600;font-size:15px;white-space:nowrap;">{ brandName }</span>
+}
+
+templ TopbarCreateButton(label string, href string){
+    if href != "" {
+        <a href={ href } style="padding:6px 12px;font-size:13px;background:#fff;color:#0969da;border:none;border-radius:4px;cursor:pointer;text-decoration:none;display:inline-block;">{ label }</a>
+    } else {
+        <button type="button" style="padding:6px 12px;font-size:13px;background:#fff;color:#0969da;border:none;border-radius:4px;cursor:pointer;">{ label }</button>
+    }
+}
+
+templ TopbarSpacer(){
+    <div style="flex:1;min-width:0;"></div>
+}
+
+templ TopbarSearch(placeholder string){
+    <input type="search" placeholder={ placeholder } aria-label="Search" style="width:100%;max-width:280px;padding:6px 10px;font-size:13px;border:1px solid rgba(255,255,255,0.5);border-radius:4px;background:rgba(255,255,255,0.2);color:#fff;">
+}
+
+templ TopbarActions(){
+    <div style="flex:0 0 auto;display:flex;align-items:center;gap:4px;margin-left:12px;">
+        { children... }
+    </div>
+}
+
+templ TopbarIconButton(ariaLabel string){
+    <button type="button" aria-label={ariaLabel} style="width:32px;height:32px;display:flex;align-items:center;justify-content:center;background:transparent;border:none;cursor:pointer;color:#fff;">
+        { children... }
+    </button>
+}
+
+templ IconBell(){
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+}
+
+templ IconUser(){
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+}
+
 type HeaderProps struct {
-    Routes []NavRoute
+    BrandName         string
+    CreateLabel       string
+    CreateHref        string
+    SearchPlaceholder string
+    Routes            []NavRoute
 }
 
 type NavRoute struct {
