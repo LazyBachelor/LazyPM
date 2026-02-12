@@ -10,27 +10,36 @@ import (
 	"github.com/charmbracelet/huh"
 )
 
-func NewCreateIssueTask(interfaceType Interface) *Task {
+func NewCreateIssueTask() *Task {
 	aboutScreen := ui.NewTaskModel(createIssueDetails())
-	questionare := ui.NewQuestionnaireModel(createIssueQuestionare())
+	questionnaire := ui.NewQuestionnaireModel(createIssueQuestionnaire())
 
-	task := NewTask(interfaceType, aboutScreen, questionare)
+	task := NewTask(aboutScreen, questionnaire)
+	task.SetConfigFunc(createIssueConfig)
 	task.SetDbStateFunc(createIssueDbState)
 	task.SetValidateFunc(createIssueValidate)
-
 	return task
+}
+
+func createIssueConfig() TaskConfig {
+	return TaskConfig{
+		IssuePrefix:           "pm",
+		BeadsDBPath:           "./.pm/db.db",
+		StatisticsStoragePath: "./.pm/task-1-stats.json",
+		WebAddress:            "localhost:8080",
+	}
 }
 
 func createIssueDetails() ui.TaskDetails {
 	return ui.TaskDetails{
 		Title:          "Create Issue Task",
-		Description:    `Description for create issue task`,
+		Description:    "Create a new issue in the project management system to test the issue creation workflow.",
 		TimeToComplete: "15m",
 		Difficulty:     "Hard",
 	}
 }
 
-func createIssueQuestionare() ui.Questions {
+func createIssueQuestionnaire() ui.Questions {
 	return ui.Questions{
 		huh.NewGroup(
 			huh.NewConfirm().Title("Was this good"),
