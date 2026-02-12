@@ -2,71 +2,62 @@ package main
 
 import (
 	"context"
-	"embed"
 	"fmt"
 	"os"
 
-	"github.com/LazyBachelor/LazyPM/cmd/survey/forms"
-	"github.com/LazyBachelor/LazyPM/pkg"
+	"github.com/LazyBachelor/LazyPM/cmd/survey/tasks"
+	"github.com/LazyBachelor/LazyPM/internal/service"
 	"github.com/LazyBachelor/LazyPM/pkg/cli/repl"
 	"github.com/LazyBachelor/LazyPM/pkg/tui"
 	"github.com/LazyBachelor/LazyPM/pkg/web"
-	"github.com/charmbracelet/huh"
 )
 
-//go:embed assets/*
-var assetsFS embed.FS
-
 func main() {
-	intro, err := forms.NewIntroduction(assetsFS)
+	ctx := context.Background()
+
+	svc, close, err := initializeServices(ctx)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Error loading introduction: %v\n", err)
-		os.Exit(1)
+		fatal("Failed to initialize services: %v\n", err)
+	}
+	defer close()
+
+	tui := tui.NewTui()
+	web := web.NewWeb()
+	repl := repl.NewRepl()
+
+	createIssueTask := tasks.NewCreateIssueTask(web)
+
+	task := createIssueTask
+
+	task.SetInterface(tui)
+	task.SetInterface(repl)
+
+	task.MigrateToTask(ctx, svc, task)
+
+	if err := task.IntroduceTask(); err != nil {
+		fatal("Failed to introduce task: %v\n", err)
 	}
 
-	if err := intro.Run(); err != nil {
-		fmt.Fprintf(os.Stderr, "Error running introduction: %v\n", err)
-		os.Exit(1)
+	if err := task.StartInterface(ctx, svc.Config); err != nil {
+		fatal("Failed to start interface: %v\n", err)
 	}
 
-	var selected string
-	prompt := huh.NewSelect[string]().Options(
-		huh.NewOption("Start CLI in REPL Mode", "repl"),
-		huh.NewOption("Start Web Interface", "web"),
-		huh.NewOption("Start TUI Interface", "tui"),
-	).Value(&selected).WithTheme(huh.ThemeBase16())
-
-	if err := prompt.Run(); err != nil {
-		fmt.Fprintf(os.Stderr, "Error running prompt: %v\n", err)
-		os.Exit(1)
+	if err := task.StartQuestionnaire(); err != nil {
+		fatal("Failed to start questionnaire: %v\n", err)
 	}
+}
 
-	config := pkg.SurveyConfig{
-		RootCmd:               "pm",
+func initializeServices(ctx context.Context) (*service.Services, func(), error) {
+	config := service.Config{
 		IssuePrefix:           "pm",
 		BeadsDBPath:           "./.pm/db.db",
 		StatisticsStoragePath: "./.pm/stats.json",
 		WebAddress:            "localhost:8080",
 	}
+	return service.NewServices(ctx, config)
+}
 
-	ctx := context.Background()
-	switch selected {
-	case "repl":
-		fmt.Println("Starting CLI in REPL mode...")
-		err = repl.RunREPL(ctx, config)
-	case "web":
-		fmt.Println("Starting Web Interface...")
-		err = web.Run(ctx, config)
-	case "tui":
-		fmt.Println("Starting TUI Interface...")
-		_, err = tui.Run(ctx, config)
-	default:
-		fmt.Println("Invalid selection. Exiting.")
-	}
-
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "Error running selected interface: %v\n", err)
-		os.Exit(1)
-	}
-
+func fatal(format string, args ...interface{}) {
+	fmt.Fprintf(os.Stderr, format, args...)
+	os.Exit(1)
 }
