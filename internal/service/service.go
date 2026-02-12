@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
 	"os"
 	"time"
@@ -24,6 +25,7 @@ type Config struct {
 
 type Services struct {
 	Config     Config
+	DB         *sql.DB
 	Beads      *BeadsService
 	Statistics *StatisticsService
 }
@@ -35,6 +37,12 @@ func NewServices(ctx context.Context, config Config) (*Services, func(), error) 
 		fmt.Println("PM is not initialized")
 		os.Exit(0)
 	}
+
+	db, err := sql.Open("sqlite3", config.BeadsDBPath)
+	if err != nil {
+		return nil, nil, err
+	}
+	cleanupFuncs = append(cleanupFuncs, func() { db.Close() })
 
 	store, err := beads.NewSQLiteStorage(ctx, config.BeadsDBPath)
 	if err != nil {
@@ -59,6 +67,7 @@ func NewServices(ctx context.Context, config Config) (*Services, func(), error) 
 	}
 
 	return &Services{
+		DB:         db,
 		Beads:      beadsSvc,
 		Statistics: statSvc,
 		Config:     config,
@@ -91,4 +100,14 @@ func initialized(beadsPath string) bool {
 		}
 	}
 	return true
+}
+
+func (s *Services) DeleteIssues() error {
+
+	var deleteIssues = "DELETE FROM issues;"
+
+	if _, err := s.DB.Exec(deleteIssues); err != nil {
+		return err
+	}
+	return nil
 }
