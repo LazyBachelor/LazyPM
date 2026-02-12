@@ -10,16 +10,24 @@ import (
 
 type TUIConfig = service.Config
 
-func Run(ctx context.Context, config TUIConfig) (tea.Model, error) {
+type Tui struct{}
+
+func NewTui() *Tui {
+	return &Tui{}
+}
+
+func (t *Tui) Run(ctx context.Context, config TUIConfig) error {
 	svc, cleanup, err := service.NewServices(ctx, config)
 	if err != nil {
-		return nil, err
+		return nil
 	}
 
 	defer cleanup()
 
-	app := tea.NewProgram(views.NewDashboardView(svc),
-		tea.WithAltScreen(), tea.WithMouseAllMotion())
+	if _, err := tea.NewProgram(views.NewDashboardView(svc),
+		tea.WithAltScreen(), tea.WithMouseAllMotion()).Run(); err != nil {
+		return err
+	}
 
-	return app.Run()
+	return nil
 }

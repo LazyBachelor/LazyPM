@@ -11,8 +11,14 @@ import (
 // CLIConfig is an alias for service.Config, used to configure the CLI.
 type CLIConfig = service.Config
 
+type CLI struct{}
+
+func NewCli() *CLI {
+	return &CLI{}
+}
+
 // Run initializes the services and executes the CLI commands.
-func Run(ctx context.Context, config CLIConfig) error {
+func (c *CLI) Run(ctx context.Context, config CLIConfig) error {
 	svc, cleanup, err := service.NewServices(ctx, config)
 	if err != nil {
 		return err
@@ -30,7 +36,7 @@ func Run(ctx context.Context, config CLIConfig) error {
 }
 
 // RunWithArgs initializes the services and executes the CLI commands with the provided arguments.
-func RunWithArgs(ctx context.Context, config CLIConfig, args []string) error {
+func (c *CLI) RunWithArgs(ctx context.Context, config CLIConfig, args []string) error {
 	svc, cleanup, err := service.NewServices(ctx, config)
 	if err != nil {
 		return err
