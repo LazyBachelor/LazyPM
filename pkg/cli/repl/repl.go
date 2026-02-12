@@ -28,7 +28,7 @@ func NewRepl() *REPL {
 	return &REPL{}
 }
 
-// RunREPL starts the interactive Read-Eval-Print Loop for the PM CLI.
+// Run starts the interactive Read-Eval-Print Loop for the PM CLI.
 func (r *REPL) Run(ctx context.Context, config cli.CLIConfig) error {
 	// Set terminal to raw mode to capture input properly in the REPL.
 	// This allows us to handle input character by character and provide a better user experience.
