@@ -1,6 +1,8 @@
 package ui
 
 import (
+	"fmt"
+
 	"charm.land/lipgloss/v2"
 	"github.com/charmbracelet/bubbles/help"
 	"github.com/charmbracelet/bubbles/key"
@@ -19,19 +21,19 @@ func (m TaskModel) Init() tea.Cmd {
 	return nil
 }
 
-func (t TaskModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (m TaskModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
-		t.SetSize(msg.Width, msg.Height)
+		m.SetSize(msg.Width, msg.Height)
 	case tea.KeyMsg:
 		switch {
-		case key.Matches(msg, t.keys.Quit):
-			return t, tea.Quit
-		case key.Matches(msg, t.keys.Continue):
-			return t, tea.Quit
+		case key.Matches(msg, m.keys.Quit):
+			return m, tea.Quit
+		case key.Matches(msg, m.keys.Continue):
+			return m, tea.Quit
 		}
 	}
-	return t, nil
+	return m, nil
 }
 
 func (m TaskModel) View() string {
@@ -50,8 +52,9 @@ func (m TaskModel) View() string {
 
 	helpHeigh := lipgloss.Height(helpView)
 
+	detailsText := fmt.Sprintf("Time to complete: %s | Difficulty: %s", m.TimeToComplete, m.Difficulty)
 	details := lipgloss.NewStyle().Align(lipgloss.Center).
-		Width(m.width).PaddingBottom(1).Render("Time to complete:", m.TimeToComplete, "Difficulty:", m.Difficulty)
+		Width(m.width).PaddingBottom(1).Render(detailsText)
 
 	detailsHeight := lipgloss.Height(details)
 
