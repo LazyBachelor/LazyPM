@@ -13,7 +13,9 @@ func main() {
 		IssuePrefix:           "pm",
 	}
 
-	if _, err := tui.Run(context.Background(), config); err != nil {
+	tui := tui.NewTui()
+
+	if err := tui.Run(context.Background(), config); err != nil {
 		panic(err)
 	}
 }

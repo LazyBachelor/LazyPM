@@ -14,6 +14,8 @@ func main() {
 		StatisticsStoragePath: "./.pm/stats.json",
 	}
 
+	cli := cli.NewCli()
+
 	if err := cli.Run(context.Background(), config); err != nil {
 		return
 	}
