@@ -37,7 +37,7 @@ func taskLoop(ctx context.Context, svc *service.Services, tasks []*tasks.Task, i
 		task.SetInterface(interfaces[interfaceIndex])
 
 		if err := task.Initialize(ctx, svc); err != nil {
-			return fmt.Errorf("Failed to initialize task: %w", err)
+			return fmt.Errorf("failed to initialize task: %w", err)
 		}
 
 		if err := task.IntroduceTask(); err != nil {
