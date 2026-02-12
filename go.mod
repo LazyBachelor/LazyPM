@@ -3,7 +3,7 @@ module github.com/LazyBachelor/LazyPM
 go 1.25.6
 
 require (
-	github.com/BurntSushi/toml v1.6.0
+	charm.land/lipgloss/v2 v2.0.0-beta.3.0.20251106193318-19329a3e8410
 	github.com/google/uuid v1.6.0
 	github.com/muesli/reflow v0.3.0
 	github.com/steveyegge/beads v0.49.6
@@ -29,7 +29,6 @@ require (
 )
 
 require (
-	charm.land/lipgloss/v2 v2.0.0-beta.3.0.20251106193318-19329a3e8410 // indirect
 	github.com/a-h/parse v0.0.0-20250122154542-74294addb73e // indirect
 	github.com/andybalholm/brotli v1.2.0 // indirect
 	github.com/atotto/clipboard v0.1.4 // indirect
