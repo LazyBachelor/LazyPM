@@ -11,16 +11,10 @@ import (
 
 type WebConfig = service.Config
 
-type Web struct{}
-
-func NewWeb() *Web {
-	return &Web{}
-}
-
 //go:embed assets/*
 var assets embed.FS
 
-func (w *Web) Run(ctx context.Context, config WebConfig) error {
+func Run(ctx context.Context, config WebConfig) error {
 	svc, cleanup, err := service.NewServices(ctx, config)
 	if err != nil {
 		return err
