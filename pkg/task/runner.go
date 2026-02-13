@@ -1,10 +1,9 @@
-package tasks
+package task
 
 import (
 	"context"
 	"fmt"
 
-	"github.com/LazyBachelor/LazyPM/internal/service"
 	tea "github.com/charmbracelet/bubbletea"
 )
 
@@ -16,7 +15,7 @@ func (t *Task) IntroduceTask() error {
 	return err
 }
 
-func (t *Task) StartInterface(ctx context.Context, cfg service.Config) error {
+func (t *Task) StartInterface(ctx context.Context, cfg TaskConfig) error {
 	if t.interfaceType == nil {
 		return fmt.Errorf("interfaceType is not set")
 	}

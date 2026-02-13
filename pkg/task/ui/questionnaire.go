@@ -1,14 +1,15 @@
-package ui
+package taskui
 
 import (
 	"charm.land/lipgloss/v2"
+	"github.com/LazyBachelor/LazyPM/internal/style"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/huh"
 )
 
 func NewQuestionnaireModel(questions Questions) *QuestionnaireModel {
 	form := huh.NewForm(questions...).
-		WithTheme(theme()).WithLayout(huh.LayoutGrid(1, 1))
+		WithTheme(style.HuhCenterTheme()).WithLayout(huh.LayoutGrid(1, 1))
 
 	return &QuestionnaireModel{
 		Questions: questions,

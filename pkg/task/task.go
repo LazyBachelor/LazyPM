@@ -1,5 +1,4 @@
-// task.go
-package tasks
+package task
 
 import (
 	"context"

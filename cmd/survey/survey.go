@@ -5,14 +5,12 @@ import (
 	"fmt"
 	"log"
 	"math/rand"
-	"time"
 
-	"github.com/LazyBachelor/LazyPM/cmd/survey/tasks"
 	"github.com/LazyBachelor/LazyPM/internal/service"
+	"github.com/LazyBachelor/LazyPM/pkg/task"
 )
 
 func main() {
-	rand.Seed(time.Now().UnixNano())
 	ctx := context.Background()
 
 	svc, close, err := initializeServices(ctx)
@@ -29,7 +27,7 @@ func main() {
 	}
 }
 
-func taskLoop(ctx context.Context, svc *service.Services, surveyTasks []*tasks.Task, interfaces []tasks.Interface) error {
+func taskLoop(ctx context.Context, svc *service.Services, surveyTasks []*task.Task, interfaces []task.Interface) error {
 	interfaceIndex := rand.Int() % len(interfaces)
 
 	for _, task := range surveyTasks {

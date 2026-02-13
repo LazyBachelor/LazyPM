@@ -1,4 +1,4 @@
-package ui
+package taskui
 
 import "github.com/charmbracelet/bubbles/key"
 

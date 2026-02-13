@@ -4,25 +4,26 @@ import (
 	"context"
 	"errors"
 
-	"github.com/LazyBachelor/LazyPM/cmd/survey/ui"
 	"github.com/LazyBachelor/LazyPM/internal/models"
 	"github.com/LazyBachelor/LazyPM/internal/service"
+	"github.com/LazyBachelor/LazyPM/pkg/task"
+	ui "github.com/LazyBachelor/LazyPM/pkg/task/ui"
 	"github.com/charmbracelet/huh"
 )
 
-func NewCreateIssueTask() *Task {
+func NewCreateIssueTask() *task.Task {
 	aboutScreen := ui.NewTaskModel(createIssueDetails())
 	questionnaire := ui.NewQuestionnaireModel(createIssueQuestionnaire())
 
-	task := NewTask(aboutScreen, questionnaire)
+	task := task.NewTask(aboutScreen, questionnaire)
 	task.SetConfigFunc(createIssueConfig)
 	task.SetDbStateFunc(createIssueDbState)
 	task.SetValidateFunc(createIssueValidate)
 	return task
 }
 
-func createIssueConfig() TaskConfig {
-	return TaskConfig{
+func createIssueConfig() task.TaskConfig {
+	return task.TaskConfig{
 		IssuePrefix:           "pm",
 		BeadsDBPath:           "./.pm/db.db",
 		StatisticsStoragePath: "./.pm/task-1-stats.json",

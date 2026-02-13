@@ -6,6 +6,7 @@ import (
 	"github.com/LazyBachelor/LazyPM/cmd/survey/tasks"
 	"github.com/LazyBachelor/LazyPM/internal/service"
 	"github.com/LazyBachelor/LazyPM/pkg/cli/repl"
+	"github.com/LazyBachelor/LazyPM/pkg/task"
 	"github.com/LazyBachelor/LazyPM/pkg/tui"
 	"github.com/LazyBachelor/LazyPM/pkg/web"
 )
@@ -20,13 +21,13 @@ func initializeServices(ctx context.Context) (*service.Services, func(), error) 
 	return service.NewServices(ctx, config)
 }
 
-func initTasks() []*tasks.Task {
-	return []*tasks.Task{
+func initTasks() []*task.Task {
+	return []*task.Task{
 		tasks.NewCreateIssueTask(),
 		tasks.NewCreateIssueTask(),
 	}
 }
 
-func initInterfaces() []tasks.Interface {
-	return []tasks.Interface{repl.NewRepl(), tui.NewTui(), web.NewWeb()}
+func initInterfaces() []task.Interface {
+	return []task.Interface{repl.NewRepl(), tui.NewTui(), web.NewWeb()}
 }
