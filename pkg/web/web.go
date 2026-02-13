@@ -20,7 +20,7 @@ func NewWeb() *Web {
 //go:embed assets/*
 var assets embed.FS
 
-func (w Web) Run(ctx context.Context, config WebConfig) error {
+func (w *Web) Run(ctx context.Context, config WebConfig) error {
 	svc, cleanup, err := service.NewServices(ctx, config)
 	if err != nil {
 		return err
