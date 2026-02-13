@@ -24,7 +24,6 @@ func initializeServices(ctx context.Context) (*service.Services, func(), error) 
 func initTasks() []*task.Task {
 	return []*task.Task{
 		tasks.NewCreateIssueTask(),
-		tasks.NewCreateIssueTask(),
 	}
 }
 
