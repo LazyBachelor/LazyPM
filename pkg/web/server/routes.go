@@ -35,7 +35,7 @@ func (s *Server) RegisterRoutes(assets embed.FS) http.Handler {
 		r.Route("/{id}", func(r chi.Router) {
 			r.Use(handler.IssueCtx)
 			r.Get("/", handler.GetIssue)
-			r.Put("/", handler.UpdateIssue)
+			r.Patch("/", handler.UpdateIssue)
 			r.Delete("/", handler.DeleteIssue)
 		})
 	})
