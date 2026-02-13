@@ -1,0 +1,54 @@
+package taskui
+
+import (
+	"charm.land/lipgloss/v2"
+	"github.com/LazyBachelor/LazyPM/internal/style"
+	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/huh"
+)
+
+func NewQuestionnaireModel(questions Questions) *QuestionnaireModel {
+	form := huh.NewForm(questions...).
+		WithTheme(style.HuhCenterTheme()).WithLayout(huh.LayoutGrid(1, 1))
+
+	return &QuestionnaireModel{
+		Questions: questions,
+		form:      form,
+	}
+}
+
+func (q *QuestionnaireModel) Init() tea.Cmd {
+	return q.form.Init()
+}
+
+func (q *QuestionnaireModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	switch msg := msg.(type) {
+	case tea.WindowSizeMsg:
+		q.SetSize(msg.Width, msg.Height)
+	case tea.KeyMsg:
+		switch msg.String() {
+		case "q", "ctrl+c":
+			return q, tea.Quit
+		}
+	}
+
+	form, cmd := q.form.Update(msg)
+	if f, ok := form.(*huh.Form); ok {
+		q.form = f
+	}
+	return q, cmd
+}
+
+func (q *QuestionnaireModel) View() string {
+	form := lipgloss.NewStyle().
+		Width(q.width).Align(lipgloss.Center).
+		Render(q.form.View())
+
+	return lipgloss.Place(
+		q.width, q.height, lipgloss.Center, lipgloss.Center, form,
+	)
+}
+
+func (q *QuestionnaireModel) SetSize(width, height int) {
+	q.width, q.height = width, height
+}
