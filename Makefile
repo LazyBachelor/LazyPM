@@ -24,7 +24,7 @@ web:
 dev:
 	@go tool templ generate -watch -cmd "go run ./cmd/web"
 tw:
-	@npx --yes @tailwindcss/cli -i ./pkg/web/input.css -o ./pkg/web/assets/css/styles.css --watch
+	@npx --yes @tailwindcss/cli -i ./pkg/web/input.css -o ./pkg/web/assets/css/styles.css --watch --minify
 
 
 completions:

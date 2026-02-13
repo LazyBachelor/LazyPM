@@ -24,10 +24,9 @@ templ Textarea(props TextareaProps) {
 		}
 		<textarea
 			{ props.Attrs... }
-			if props.ID != "" {
-				id={ props.ID }
-			}
+			id={ props.Name }
 			name={ props.Name }
+			aria-label={ props.Label }
 			placeholder={ props.Placeholder }
 			class={
 				"textarea",

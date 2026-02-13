@@ -43,8 +43,13 @@ func (s *Server) RegisterRoutes(assets embed.FS) http.Handler {
 }
 
 func (s *Server) handleAssets(r chi.Router, assets embed.FS) {
-	r.Handle("/assets/*", http.StripPrefix("/assets/",
-		http.FileServer(http.Dir("pkg/web/assets"))))
+	fileServer := http.FileServer(http.Dir("pkg/web/assets"))
+
+	r.Handle("/assets/*",
+		http.StripPrefix("/assets/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			w.Header().Set("Cache-Control", "public, max-age=31536000, immutable")
+			fileServer.ServeHTTP(w, r)
+		})))
 
 	r.Get("/robots.txt", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Cache-Control", "no-cache")

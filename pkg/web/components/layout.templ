@@ -1,81 +1,79 @@
 package components
 
-templ Layout(props LayoutProps){
-    <!DOCTYPE html>
-    <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <title>{props.Title}</title>
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <meta name="description" content={props.Description}>
-        @Head(props.Head)
-    </head>
-    <body>
-        @Header(props.Header)
-        <main>
-            { children... }
-        </main>
-        @Footer(props.Footer)
-    </body>
-    </html>
+templ Layout(props LayoutProps) {
+	<!DOCTYPE html>
+	<html lang="en">
+		<head>
+			<meta charset="UTF-8"/>
+			<title>{ props.Title }</title>
+			<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+			<meta name="description" content={ props.Description }/>
+			@Head(props.Head)
+		</head>
+		<body>
+			@Header(props.Header)
+			<main>
+				{ children... }
+			</main>
+			@Footer(props.Footer)
+		</body>
+	</html>
 }
 
 type LayoutProps struct {
-    Title       string
-    Description string
-    Head        HeadProps
-    Header      HeaderProps
-    Footer      FooterProps
+	Title       string
+	Description string
+	Head        HeadProps
+	Header      HeaderProps
+	Footer      FooterProps
 }
 
-templ Head(props HeadProps){
-    for _, link := range props.Links {
-        <link href={ link.Href } rel={ link.Rel }>
-    }
-
-    for _, script := range props.Scripts {
-        <script src={ script.Src } defer={ script.Defer }></script>
-    }
+templ Head(props HeadProps) {
+	for _, link := range props.Links {
+		<link href={ link.Href } rel={ link.Rel } as={ link.As }/>
+	}
+	for _, script := range props.Scripts {
+		<script src={ script.Src } defer={ script.Defer }></script>
+	}
 }
 
 type HeadProps struct {
-    Links []Link
-    Scripts []Script
+	Links   []Link
+	Scripts []Script
 }
 
 type Link struct {
-    Href string
-    Rel  string
+	Href string
+	Rel  string
+	As   string
 }
 
 type Script struct {
-    Src string
-    Defer bool
+	Src   string
+	Defer bool
 }
 
-templ Header(props HeaderProps){
-    <header>
-        <nav>
-            for _, route := range props.Routes {
-                <a href={ route.Path }>{ route.Name }</a>
-            }
-        </nav>
-    </header>
+templ Header(props HeaderProps) {
+	<header>
+		<nav>
+			for _, route := range props.Routes {
+				<a href={ route.Path }>{ route.Name }</a>
+			}
+		</nav>
+	</header>
 }
 
 type HeaderProps struct {
-    Routes []NavRoute
+	Routes []NavRoute
 }
 
 type NavRoute struct {
-    Name string
-    Path string
+	Name string
+	Path string
 }
 
-templ Footer(props FooterProps){
-    
+templ Footer(props FooterProps) {
 }
 
 type FooterProps struct {
-    
 }
