@@ -8,6 +8,8 @@ import (
 	"github.com/go-chi/chi/v5"
 )
 
+const issueKey = "issue"
+
 type IssueForm struct {
 	Title       string           `form:"title" validate:"required,max=255"`
 	Description string           `form:"description" validate:"required,max=2000"`
@@ -87,21 +89,21 @@ func IssueCtx(next http.Handler) http.Handler {
 			return
 		}
 
-		ctx := context.WithValue(r.Context(), "issue", issue)
+		ctx := context.WithValue(r.Context(), issueKey, issue)
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 
 }
 
 func GetIssue(w http.ResponseWriter, r *http.Request) {
-	issue := r.Context().Value("issue").(*models.Issue)
+	issue := r.Context().Value(issueKey).(*models.Issue)
 	hx := HTMX(r)
 
 	hx.WriteJSON(issue)
 }
 
 func UpdateIssue(w http.ResponseWriter, r *http.Request) {
-	issue := r.Context().Value("issue").(*models.Issue)
+	issue := r.Context().Value(issueKey).(*models.Issue)
 	svc := Services(r)
 	hx := HTMX(r)
 
@@ -122,7 +124,7 @@ func UpdateIssue(w http.ResponseWriter, r *http.Request) {
 }
 
 func DeleteIssue(w http.ResponseWriter, r *http.Request) {
-	issue := r.Context().Value("issue").(*models.Issue)
+	issue := r.Context().Value(issueKey).(*models.Issue)
 
 	svc := Services(r)
 	if err := svc.Beads.DeleteIssue(r.Context(), issue.ID); err != nil {
