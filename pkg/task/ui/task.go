@@ -50,7 +50,7 @@ func (m TaskModel) View() string {
 		Width(m.width).Align(lipgloss.Center).
 		Render(m.help.View(m.keys))
 
-	helpHeigh := lipgloss.Height(helpView)
+	helpHeight := lipgloss.Height(helpView)
 
 	detailsText := fmt.Sprintf("Time to complete: %s | Difficulty: %s", m.TimeToComplete, m.Difficulty)
 	details := lipgloss.NewStyle().Align(lipgloss.Center).
@@ -59,7 +59,7 @@ func (m TaskModel) View() string {
 	detailsHeight := lipgloss.Height(details)
 
 	content := lipgloss.NewStyle().
-		Width(m.width).Height(m.height-headerHeight-helpHeigh-detailsHeight).
+		Width(m.width).Height(m.height-headerHeight-helpHeight-detailsHeight).
 		Align(lipgloss.Center, lipgloss.Center).
 		Render(m.Description)
 
