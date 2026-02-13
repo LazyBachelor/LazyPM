@@ -46,7 +46,7 @@ func (s *Server) handleAssets(r chi.Router, assets embed.FS) {
 	r.Handle("/assets/*", http.StripPrefix("/assets/",
 		http.FileServer(http.Dir("pkg/web/assets"))))
 
-	r.HandleFunc("GET /robots.txt", func(w http.ResponseWriter, r *http.Request) {
+	r.Get("/robots.txt", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Cache-Control", "no-cache")
 		http.ServeContent(w, r, "robots.txt", time.Now(), strings.NewReader("User-agent: *\nAllow: /"))
 	})
