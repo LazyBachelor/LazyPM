@@ -8,9 +8,7 @@ package routes
 import "github.com/a-h/templ"
 import templruntime "github.com/a-h/templ/runtime"
 
-import (
-	"github.com/LazyBachelor/LazyPM/pkg/web/components"
-)
+import "github.com/LazyBachelor/LazyPM/pkg/web/components"
 
 type IndexProps struct {
 	IssueTable components.IssueTableProps
@@ -49,13 +47,13 @@ func Index(props IndexProps) templ.Component {
 				}()
 			}
 			ctx = templ.InitializeContext(ctx)
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div class=\"flex flex-col justify-center items-center gap-6 mb-12\"><h1>Create New Issue</h1>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div class=\"flex flex-col justify-center items-center gap-6 m-5\"><h1 class=\"text-2xl text-primary\">Create New Issue</h1>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			templ_7745c5c3_Err = components.IssueForm(
 				components.IssueFormProps{
-					Action:      "/create-issue",
+					Action:      "/issues",
 					Class:       "mb-4",
 					Title:       "",
 					Description: "",
@@ -66,11 +64,11 @@ func Index(props IndexProps) templ.Component {
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "</div>")
+			templ_7745c5c3_Err = components.IssueTable(props.IssueTable).Render(ctx, templ_7745c5c3_Buffer)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = components.IssueTable(props.IssueTable).Render(ctx, templ_7745c5c3_Buffer)
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "</div>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
