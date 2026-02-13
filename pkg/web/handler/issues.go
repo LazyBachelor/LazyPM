@@ -37,11 +37,10 @@ func CreateIssue(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := ValidateForm(form); err != nil {
-		w.WriteHeader(http.StatusUnprocessableEntity)
 		if hx.IsHxRequest() {
-			hx.WriteString("<div class='alert alert-error'>Please fix the form errors</div>")
+			hx.WriteString("<div>Please fix the form errors</div>")
 		} else {
-			hx.WriteJSON(map[string]interface{}{"error": err.Error()})
+			http.Error(w, "Validation error: "+err.Error(), http.StatusUnprocessableEntity)
 		}
 		return
 	}
@@ -115,7 +114,6 @@ func UpdateIssue(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := ValidateForm(form); err != nil {
-		w.WriteHeader(http.StatusUnprocessableEntity)
 		if hx.IsHxRequest() {
 			hx.WriteString("<div>Please fix the form errors</div>")
 		} else {
