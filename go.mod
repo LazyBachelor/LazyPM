@@ -25,6 +25,10 @@ require (
 require (
 	github.com/NYTimes/gziphandler v1.1.1
 	github.com/a-h/templ v0.3.977
+	github.com/donseba/go-htmx v1.12.1
+	github.com/go-chi/chi/v5 v5.2.5
+	github.com/go-playground/form/v4 v4.3.0
+	github.com/go-playground/validator/v10 v10.30.1
 	github.com/rs/cors v1.11.1
 )
 
@@ -47,17 +51,13 @@ require (
 	github.com/cli/browser v1.3.0 // indirect
 	github.com/clipperhouse/displaywidth v0.10.0 // indirect
 	github.com/clipperhouse/uax29/v2 v2.6.0 // indirect
-	github.com/donseba/go-htmx v1.12.1 // indirect
 	github.com/dustin/go-humanize v1.0.1 // indirect
 	github.com/erikgeiser/coninput v0.0.0-20211004153227-1c3628e74d0f // indirect
 	github.com/fatih/color v1.18.0 // indirect
 	github.com/fsnotify/fsnotify v1.9.0 // indirect
 	github.com/gabriel-vasile/mimetype v1.4.12 // indirect
-	github.com/go-chi/chi/v5 v5.2.5 // indirect
-	github.com/go-playground/form/v4 v4.3.0 // indirect
 	github.com/go-playground/locales v0.14.1 // indirect
 	github.com/go-playground/universal-translator v0.18.1 // indirect
-	github.com/go-playground/validator/v10 v10.30.1 // indirect
 	github.com/go-viper/mapstructure/v2 v2.5.0 // indirect
 	github.com/haatos/goshipit v0.0.0-20260206030541-056850f43320 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
