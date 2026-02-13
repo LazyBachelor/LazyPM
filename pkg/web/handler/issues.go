@@ -18,14 +18,12 @@ type IssueForm struct {
 	Priority    int              `form:"priority" validate:"gte=0,lte=4"`
 }
 
-func (f *IssueForm) ToIssue() models.Issue {
-	return models.Issue{
-		Title:       f.Title,
-		Description: f.Description,
-		Status:      f.Status,
-		IssueType:   f.IssueType,
-		Priority:    f.Priority,
-	}
+type UpdateIssueForm struct {
+	Title       *string           `form:"title" validate:"omitempty,max=255"`
+	Description *string           `form:"description" validate:"omitempty,max=2000"`
+	Status      *models.Status    `form:"status" validate:"omitempty,oneof=open in_progress closed"`
+	IssueType   *models.IssueType `form:"issue_type" validate:"omitempty,oneof=task bug feature chore"`
+	Priority    *int              `form:"priority" validate:"omitempty,gte=0,lte=4"`
 }
 
 func CreateIssue(w http.ResponseWriter, r *http.Request) {
@@ -48,7 +46,7 @@ func CreateIssue(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	issue := form.ToIssue()
+	issue := form.toIssue()
 	if err := svc.Beads.CreateIssue(r.Context(), &issue, ""); err != nil {
 		http.Error(w, "Failed to create issue: "+err.Error(), http.StatusInternalServerError)
 		return
@@ -59,10 +57,8 @@ func CreateIssue(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	hx.WriteJSON(map[string]any{
-		"title":  issue.Title,
-		"status": issue.Status,
-	})
+	w.Header().Set("Content-Type", "application/json")
+	hx.WriteJSON(issue)
 }
 
 func ListIssues(w http.ResponseWriter, r *http.Request) {
@@ -75,6 +71,7 @@ func ListIssues(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	w.Header().Set("Content-Type", "application/json")
 	hx.WriteJSON(issues)
 }
 
@@ -85,6 +82,10 @@ func IssueCtx(next http.Handler) http.Handler {
 		id := chi.URLParam(r, "id")
 		issue, err := svc.Beads.GetIssue(r.Context(), id)
 		if err != nil {
+			http.Error(w, "Error getting issue: "+err.Error(), http.StatusNotFound)
+			return
+		}
+		if issue == nil {
 			http.Error(w, "Issue not found", http.StatusNotFound)
 			return
 		}
@@ -107,19 +108,36 @@ func UpdateIssue(w http.ResponseWriter, r *http.Request) {
 	svc := Services(r)
 	hx := HTMX(r)
 
-	changes := make(map[string]any)
+	form, err := ParseForm[UpdateIssueForm](r)
+	if err != nil {
+		http.Error(w, "Failed to parse form", http.StatusBadRequest)
+		return
+	}
+
+	if err := ValidateForm(form); err != nil {
+		w.WriteHeader(http.StatusUnprocessableEntity)
+		if hx.IsHxRequest() {
+			hx.WriteString("<div>Please fix the form errors</div>")
+		} else {
+			http.Error(w, "Validation error: "+err.Error(), http.StatusUnprocessableEntity)
+		}
+		return
+	}
+
+	changes := form.toChanges()
 
 	if err := svc.Beads.UpdateIssue(r.Context(), issue.ID, changes, ""); err != nil {
 		http.Error(w, "Failed to update issue", http.StatusInternalServerError)
 		return
 	}
 
-	issue, err := svc.Beads.GetIssue(r.Context(), issue.ID)
+	issue, err = svc.Beads.GetIssue(r.Context(), issue.ID)
 	if err != nil {
 		http.Error(w, "Failed to retrieve updated issue", http.StatusInternalServerError)
 		return
 	}
 
+	w.Header().Set("Content-Type", "application/json")
 	hx.WriteJSON(issue)
 }
 
@@ -132,5 +150,36 @@ func DeleteIssue(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusNoContent)
+}
+
+func (f *IssueForm) toIssue() models.Issue {
+	return models.Issue{
+		Title:       f.Title,
+		Description: f.Description,
+		Status:      f.Status,
+		IssueType:   f.IssueType,
+		Priority:    f.Priority,
+	}
+}
+
+func (f *UpdateIssueForm) toChanges() map[string]any {
+	changes := make(map[string]any)
+	if f.Title != nil {
+		changes["title"] = *f.Title
+	}
+	if f.Description != nil {
+		changes["description"] = *f.Description
+	}
+	if f.Status != nil {
+		changes["status"] = *f.Status
+	}
+	if f.IssueType != nil {
+		changes["issue_type"] = *f.IssueType
+	}
+	if f.Priority != nil {
+		changes["priority"] = *f.Priority
+	}
+	return changes
 }
