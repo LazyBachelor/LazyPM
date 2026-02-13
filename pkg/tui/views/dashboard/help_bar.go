@@ -33,6 +33,9 @@ func (h HelpBar) shortHelp() string {
 	keys := []string{
 		styles.HighlightKey("↑/k") + " up",
 		styles.HighlightKey("↓/j") + " down",
+		styles.HighlightKey("a") + " add",
+		styles.HighlightKey("e") + " edit",
+		styles.HighlightKey("x") + " delete",
 		styles.HighlightKey("q") + " quit",
 		styles.HighlightKey("?") + " help",
 	}
@@ -67,7 +70,9 @@ func (h HelpBar) fullHelp() string {
 	rows := []string{
 		renderRow("↑/k", "up", "enter", "view issue"),
 		renderRow("↓/j", "down", "b", "back to list"),
-		renderRow("?", "help", "q", "quit"),
+		renderRow("a", "add issue", "e", "edit title"),
+		renderRow("x", "delete issue", "?", "help"),
+		renderRow("q", "quit", "", ""),
 	}
 	content := lipgloss.JoinVertical(lipgloss.Left, rows...)
 	return lipgloss.NewStyle().

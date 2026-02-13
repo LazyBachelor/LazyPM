@@ -12,6 +12,9 @@ type DashboardKeyMap struct {
 	BackToList  key.Binding
 	ScrollUp    key.Binding
 	ScrollDown  key.Binding
+	EditTitle   key.Binding
+	AddIssue    key.Binding
+	DeleteIssue key.Binding
 }
 
 var defaultDashboardKeyMap = DashboardKeyMap{
@@ -39,6 +42,18 @@ var defaultDashboardKeyMap = DashboardKeyMap{
 		key.WithKeys("down", "j"),
 		key.WithHelp("↓/j", "down"),
 	),
+	EditTitle: key.NewBinding(
+		key.WithKeys("e"),
+		key.WithHelp("e", "edit title"),
+	),
+	AddIssue: key.NewBinding(
+		key.WithKeys("a"),
+		key.WithHelp("a", "add issue"),
+	),
+	DeleteIssue: key.NewBinding(
+		key.WithKeys("x"),
+		key.WithHelp("x", "delete issue"),
+	),
 }
 
 func (d *Model) handleKeyMsg(msg tea.KeyMsg) tea.Cmd {
@@ -57,6 +72,19 @@ func (d *Model) handleKeyMsg(msg tea.KeyMsg) tea.Cmd {
 		d.issueDetail.ScrollUp(1)
 	case d.IsFocusedOnDetail() && key.Matches(msg, d.keyMap.ScrollDown):
 		d.issueDetail.ScrollDown(1)
+	case !d.editingTitle && !d.creatingIssue && key.Matches(msg, d.keyMap.EditTitle):
+		// just to check if an issue is selected before trying to edit
+		if selected := d.issueList.SelectedItem(); selected.ID != "" {
+			d.startEditTitle(selected)
+			cmd = d.titleInput.Focus()
+		}
+	case !d.editingTitle && !d.creatingIssue && key.Matches(msg, d.keyMap.AddIssue):
+		d.startCreateIssue()
+		cmd = d.createTitleInput.Focus()
+	case !d.editingTitle && !d.creatingIssue && !d.confirmingDelete && key.Matches(msg, d.keyMap.DeleteIssue):
+		if selected := d.issueList.SelectedItem(); selected.ID != "" {
+			d.startConfirmDelete(selected.ID, d.issueList.Index())
+		}
 	}
 
 	return cmd

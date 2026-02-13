@@ -2,19 +2,30 @@ package dashboard
 
 import (
 	"github.com/LazyBachelor/LazyPM/internal/service"
+	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
 )
 
 type Model struct {
-	header      Header
-	issueList   IssueList
-	issueDetail IssueDetail
-	helpBar     HelpBar
-	keyMap      DashboardKeyMap
-	svc         *service.Services
-	width       int
-	height      int
-	focusedPane int // 0 = list, 1 = detail
+	header          Header
+	issueList       IssueList
+	issueDetail     IssueDetail
+	helpBar         HelpBar
+	keyMap          DashboardKeyMap
+	svc             *service.Services
+	width           int
+	height          int
+	focusedPane     int // 0 = list, 1 = detail
+	
+	editingTitle    bool // should be true while we are editing a title
+	titleInput      textinput.Model
+	editingIssueID  string
+	creatingIssue    bool // should be true while we are creating a new issue
+	createTitleInput textinput.Model
+
+	confirmingDelete   bool
+	deleteConfirmID    string
+	deleteConfirmIndex int
 }
 
 func NewDashboard(svc *service.Services) *Model {
@@ -31,11 +42,40 @@ func NewDashboard(svc *service.Services) *Model {
 	m.issueDetail = NewIssueDetail()
 	m.helpBar = NewHelpBar(m.keyMap)
 
+	ti := textinput.New()
+	ti.Placeholder = "Issue title ..."
+	ti.CharLimit = 256
+	m.titleInput = ti
+
+	createTi := textinput.New()
+	createTi.Placeholder = "New issue title ..."
+	createTi.CharLimit = 256
+	m.createTitleInput = createTi
+
 	if selected := m.issueList.SelectedItem(); selected.ID != "" {
 		m.issueDetail.SetIssue(selected.Issue)
 	}
 
 	return m
+}
+
+func (m *Model) startEditTitle(selected ListIssue) {
+	m.editingTitle = true
+	m.editingIssueID = selected.ID
+	m.titleInput.SetValue(selected.Issue.Title)
+	m.titleInput.CursorEnd()
+}
+
+func (m *Model) startCreateIssue() {
+	m.creatingIssue = true
+	m.createTitleInput.SetValue("")
+	m.createTitleInput.Reset()
+}
+
+func (m *Model) startConfirmDelete(issueID string, index int) {
+	m.confirmingDelete = true
+	m.deleteConfirmID = issueID
+	m.deleteConfirmIndex = index
 }
 
 func (m *Model) Init() tea.Cmd {

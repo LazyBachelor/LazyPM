@@ -32,5 +32,49 @@ func (m *Model) View() string {
 
 	content := lipgloss.JoinHorizontal(lipgloss.Left, listView, detailView)
 
-	return lipgloss.JoinVertical(lipgloss.Left, header, content, bottomView)
+	// return lipgloss.JoinVertical(lipgloss.Left, header, content, bottomView)
+	mainView := lipgloss.JoinVertical(lipgloss.Left, header, content, bottomView)
+
+	if m.editingTitle {
+		editBoxWidth := min(60, m.width-4)
+		m.titleInput.Width = editBoxWidth - 2
+		editContent := lipgloss.JoinVertical(lipgloss.Left,
+			styles.LabelStyle.Render("Edit title (Enter to save, Esc to cancel):"),
+			m.titleInput.View(),
+		)
+		editBox := styles.ContainerStyle.
+			Width(editBoxWidth).
+			BorderForeground(styles.PrimaryBorder).
+			Render(editContent)
+		return lipgloss.Place(m.width, m.height, lipgloss.Center, lipgloss.Center, editBox)
+	}
+
+	if m.creatingIssue {
+		createBoxWidth := min(60, m.width-4)
+		m.createTitleInput.Width = createBoxWidth - 2
+		createContent := lipgloss.JoinVertical(lipgloss.Left,
+			styles.LabelStyle.Render("New issue (Enter to create, Esc to cancel):"),
+			m.createTitleInput.View(),
+		)
+		createBox := styles.ContainerStyle.
+			Width(createBoxWidth).
+			BorderForeground(styles.PrimaryBorder).
+			Render(createContent)
+		return lipgloss.Place(m.width, m.height, lipgloss.Center, lipgloss.Center, createBox)
+	}
+
+	if m.confirmingDelete {
+		confirmContent := lipgloss.JoinVertical(lipgloss.Left,
+			styles.LabelStyle.Render("Delete issue "+m.deleteConfirmID+"?"),
+			lipgloss.NewStyle().Foreground(styles.FaintText).Render("Press y to delete, n or Esc to cancel"),
+		)
+		confirmBoxWidth := min(50, m.width-4)
+		confirmBox := styles.ContainerStyle.
+			Width(confirmBoxWidth).
+			BorderForeground(styles.PrimaryBorder).
+			Render(confirmContent)
+		return lipgloss.Place(m.width, m.height, lipgloss.Center, lipgloss.Center, confirmBox)
+	}
+
+	return mainView
 }
