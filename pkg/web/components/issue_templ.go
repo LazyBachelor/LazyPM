@@ -45,7 +45,7 @@ func IssueForm(props IssueFormProps) templ.Component {
 			templ_7745c5c3_Var1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		var templ_7745c5c3_Var2 = []any{"w-full max-w-xs mx-auto ", props.Class}
+		var templ_7745c5c3_Var2 = []any{"w-full max-w-lg mx-auto ", props.Class}
 		templ_7745c5c3_Err = templ.RenderCSSItems(ctx, templ_7745c5c3_Buffer, templ_7745c5c3_Var2...)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
@@ -92,6 +92,7 @@ func IssueForm(props IssueFormProps) templ.Component {
 			Name:     "title",
 			Label:    "Title",
 			Value:    props.Title,
+			Class:    "w-full",
 			Required: true,
 		}).Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
@@ -101,6 +102,7 @@ func IssueForm(props IssueFormProps) templ.Component {
 			Name:     "description",
 			Label:    "Description",
 			Value:    props.Description,
+			Class:    "w-full",
 			Required: true,
 		}).Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
@@ -138,8 +140,9 @@ func IssueForm(props IssueFormProps) templ.Component {
 		templ_7745c5c3_Err = base.Range(base.RangeProps{
 			Name:  "priority",
 			Label: "Priority",
+			Class: "flex-1",
 			Min:   0,
-			Max:   5,
+			Max:   4,
 			Value: props.Priority,
 			Step:  1,
 		}).Render(ctx, templ_7745c5c3_Buffer)
@@ -228,7 +231,7 @@ func IssueRows(issues []models.Issue) templ.Component {
 			var templ_7745c5c3_Var7 string
 			templ_7745c5c3_Var7, templ_7745c5c3_Err = templ.JoinStringErrs(issue.ID)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/web/components/issue.templ`, Line: 102, Col: 42}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/web/components/issue.templ`, Line: 105, Col: 42}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var7))
 			if templ_7745c5c3_Err != nil {
@@ -241,7 +244,7 @@ func IssueRows(issues []models.Issue) templ.Component {
 			var templ_7745c5c3_Var8 string
 			templ_7745c5c3_Var8, templ_7745c5c3_Err = templ.JoinStringErrs(issue.Title)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/web/components/issue.templ`, Line: 103, Col: 45}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/web/components/issue.templ`, Line: 106, Col: 45}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var8))
 			if templ_7745c5c3_Err != nil {
@@ -254,7 +257,7 @@ func IssueRows(issues []models.Issue) templ.Component {
 			var templ_7745c5c3_Var9 string
 			templ_7745c5c3_Var9, templ_7745c5c3_Err = templ.JoinStringErrs(issue.Status)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/web/components/issue.templ`, Line: 104, Col: 46}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/web/components/issue.templ`, Line: 107, Col: 46}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var9))
 			if templ_7745c5c3_Err != nil {
@@ -267,7 +270,7 @@ func IssueRows(issues []models.Issue) templ.Component {
 			var templ_7745c5c3_Var10 string
 			templ_7745c5c3_Var10, templ_7745c5c3_Err = templ.JoinStringErrs(issue.IssueType)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/web/components/issue.templ`, Line: 105, Col: 49}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/web/components/issue.templ`, Line: 108, Col: 49}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var10))
 			if templ_7745c5c3_Err != nil {
@@ -280,7 +283,7 @@ func IssueRows(issues []models.Issue) templ.Component {
 			var templ_7745c5c3_Var11 string
 			templ_7745c5c3_Var11, templ_7745c5c3_Err = templ.JoinStringErrs(issue.Priority)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/web/components/issue.templ`, Line: 106, Col: 48}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/web/components/issue.templ`, Line: 109, Col: 48}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var11))
 			if templ_7745c5c3_Err != nil {
