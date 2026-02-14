@@ -3,6 +3,7 @@ package dashboard
 import (
 	"github.com/LazyBachelor/LazyPM/internal/service"
 	"github.com/charmbracelet/bubbles/textinput"
+	"github.com/charmbracelet/bubbles/textarea"
 	tea "github.com/charmbracelet/bubbletea"
 )
 
@@ -17,15 +18,22 @@ type Model struct {
 	height          int
 	focusedPane     int // 0 = list, 1 = detail
 	
-	editingTitle    bool // should be true while we are editing a title
-	titleInput      textinput.Model
-	editingIssueID  string
-	creatingIssue    bool // should be true while we are creating a new issue
-	createTitleInput textinput.Model
+	editingTitle       bool // true while we are editing a title
+	titleInput         textinput.Model
+	editingIssueID     string
 
-	confirmingDelete   bool
+	editingDescription bool // true while editing a description
+	descriptionInput   textarea.Model
+	editingDescIssueID string
+	creatingIssue      bool // true while creating a new issue
+	createTitleInput   textinput.Model
+
+	confirmingDelete   bool // true while confirming a delete
 	deleteConfirmID    string
 	deleteConfirmIndex int
+
+	choosingStatus bool
+	statusIssueID  string
 }
 
 func NewDashboard(svc *service.Services) *Model {
@@ -52,6 +60,12 @@ func NewDashboard(svc *service.Services) *Model {
 	createTi.CharLimit = 256
 	m.createTitleInput = createTi
 
+	descTa := textarea.New()
+	descTa.Placeholder = "Issue description..."
+	descTa.SetWidth(56)
+	descTa.SetHeight(8)
+	m.descriptionInput = descTa
+
 	if selected := m.issueList.SelectedItem(); selected.ID != "" {
 		m.issueDetail.SetIssue(selected.Issue)
 	}
@@ -66,6 +80,13 @@ func (m *Model) startEditTitle(selected ListIssue) {
 	m.titleInput.CursorEnd()
 }
 
+func (m *Model) startEditDescription(selected ListIssue) {
+	m.editingDescription = true
+	m.editingDescIssueID = selected.ID
+	m.descriptionInput.SetValue(selected.Issue.Description)
+	m.descriptionInput.CursorEnd()
+}
+
 func (m *Model) startCreateIssue() {
 	m.creatingIssue = true
 	m.createTitleInput.SetValue("")
@@ -76,6 +97,11 @@ func (m *Model) startConfirmDelete(issueID string, index int) {
 	m.confirmingDelete = true
 	m.deleteConfirmID = issueID
 	m.deleteConfirmIndex = index
+}
+
+func (m *Model) startChooseStatus(selected ListIssue) {
+	m.choosingStatus = true
+	m.statusIssueID = selected.ID
 }
 
 func (m *Model) Init() tea.Cmd {

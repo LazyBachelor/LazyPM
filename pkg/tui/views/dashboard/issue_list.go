@@ -201,7 +201,6 @@ func (l *IssueList) SetIssues(issues []models.Issue) tea.Cmd {
 	return l.list.SetItems(listIssues)
 }
 
-// SelectIssueID sets the list selection to the issue with the given ID, if present.
 func (l *IssueList) SelectIssueID(issueID string) {
 	items := l.list.Items()
 	for i := 0; i < len(items); i++ {

@@ -49,6 +49,21 @@ func (m *Model) View() string {
 		return lipgloss.Place(m.width, m.height, lipgloss.Center, lipgloss.Center, editBox)
 	}
 
+	if m.editingDescription {
+		editBoxWidth := min(60, m.width-4)
+		m.descriptionInput.SetWidth(editBoxWidth - 2)
+		m.descriptionInput.SetHeight(10)
+		editContent := lipgloss.JoinVertical(lipgloss.Left,
+			styles.LabelStyle.Render("Edit description (Ctrl+S to save, Esc to cancel):"),
+			m.descriptionInput.View(),
+		)
+		editBox := styles.ContainerStyle.
+			Width(editBoxWidth).
+			BorderForeground(styles.PrimaryBorder).
+			Render(editContent)
+		return lipgloss.Place(m.width, m.height, lipgloss.Center, lipgloss.Center, editBox)
+	}
+
 	if m.creatingIssue {
 		createBoxWidth := min(60, m.width-4)
 		m.createTitleInput.Width = createBoxWidth - 2
@@ -74,6 +89,20 @@ func (m *Model) View() string {
 			BorderForeground(styles.PrimaryBorder).
 			Render(confirmContent)
 		return lipgloss.Place(m.width, m.height, lipgloss.Center, lipgloss.Center, confirmBox)
+	}
+
+	if m.choosingStatus {
+		statusContent := lipgloss.JoinVertical(lipgloss.Left,
+			styles.LabelStyle.Render("Change status for "+m.statusIssueID+":"),
+			lipgloss.NewStyle().Foreground(styles.FaintText).Render("o = open   i = in_progress   c = closed"),
+			lipgloss.NewStyle().Foreground(styles.FaintText).Render("Esc = cancel"),
+		)
+		statusBoxWidth := min(50, m.width-4)
+		statusBox := styles.ContainerStyle.
+			Width(statusBoxWidth).
+			BorderForeground(styles.PrimaryBorder).
+			Render(statusContent)
+		return lipgloss.Place(m.width, m.height, lipgloss.Center, lipgloss.Center, statusBox)
 	}
 
 	return mainView

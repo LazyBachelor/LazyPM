@@ -12,9 +12,11 @@ type DashboardKeyMap struct {
 	BackToList  key.Binding
 	ScrollUp    key.Binding
 	ScrollDown  key.Binding
-	EditTitle   key.Binding
-	AddIssue    key.Binding
-	DeleteIssue key.Binding
+	EditTitle       key.Binding
+	EditDescription key.Binding
+	ChangeStatus    key.Binding
+	AddIssue        key.Binding
+	DeleteIssue     key.Binding
 }
 
 var defaultDashboardKeyMap = DashboardKeyMap{
@@ -46,6 +48,14 @@ var defaultDashboardKeyMap = DashboardKeyMap{
 		key.WithKeys("e"),
 		key.WithHelp("e", "edit title"),
 	),
+	EditDescription: key.NewBinding(
+		key.WithKeys("d"),
+		key.WithHelp("d", "edit description"),
+	),
+	ChangeStatus: key.NewBinding(
+		key.WithKeys("s"),
+		key.WithHelp("s", "change status"),
+	),
 	AddIssue: key.NewBinding(
 		key.WithKeys("a"),
 		key.WithHelp("a", "add issue"),
@@ -72,16 +82,24 @@ func (d *Model) handleKeyMsg(msg tea.KeyMsg) tea.Cmd {
 		d.issueDetail.ScrollUp(1)
 	case d.IsFocusedOnDetail() && key.Matches(msg, d.keyMap.ScrollDown):
 		d.issueDetail.ScrollDown(1)
-	case !d.editingTitle && !d.creatingIssue && key.Matches(msg, d.keyMap.EditTitle):
-		// just to check if an issue is selected before trying to edit
+	case !d.editingTitle && !d.creatingIssue && !d.editingDescription && key.Matches(msg, d.keyMap.EditTitle):
 		if selected := d.issueList.SelectedItem(); selected.ID != "" {
 			d.startEditTitle(selected)
 			cmd = d.titleInput.Focus()
 		}
+	case !d.editingTitle && !d.creatingIssue && !d.editingDescription && key.Matches(msg, d.keyMap.EditDescription):
+		if selected := d.issueList.SelectedItem(); selected.ID != "" {
+			d.startEditDescription(selected)
+			cmd = d.descriptionInput.Focus()
+		}
+	case !d.editingTitle && !d.creatingIssue && !d.editingDescription && !d.choosingStatus && key.Matches(msg, d.keyMap.ChangeStatus):
+		if selected := d.issueList.SelectedItem(); selected.ID != "" {
+			d.startChooseStatus(selected)
+		}
 	case !d.editingTitle && !d.creatingIssue && key.Matches(msg, d.keyMap.AddIssue):
 		d.startCreateIssue()
 		cmd = d.createTitleInput.Focus()
-	case !d.editingTitle && !d.creatingIssue && !d.confirmingDelete && key.Matches(msg, d.keyMap.DeleteIssue):
+	case !d.editingTitle && !d.creatingIssue && !d.editingDescription && !d.choosingStatus && !d.confirmingDelete && key.Matches(msg, d.keyMap.DeleteIssue):
 		if selected := d.issueList.SelectedItem(); selected.ID != "" {
 			d.startConfirmDelete(selected.ID, d.issueList.Index())
 		}

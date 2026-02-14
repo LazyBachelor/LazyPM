@@ -34,7 +34,7 @@ func (h HelpBar) shortHelp() string {
 		styles.HighlightKey("↑/k") + " up",
 		styles.HighlightKey("↓/j") + " down",
 		styles.HighlightKey("a") + " add",
-		styles.HighlightKey("e") + " edit",
+		styles.HighlightKey("e/d/s") + " edit",
 		styles.HighlightKey("x") + " delete",
 		styles.HighlightKey("q") + " quit",
 		styles.HighlightKey("?") + " help",
@@ -71,6 +71,7 @@ func (h HelpBar) fullHelp() string {
 		renderRow("↑/k", "up", "enter", "view issue"),
 		renderRow("↓/j", "down", "b", "back to list"),
 		renderRow("a", "add issue", "e", "edit title"),
+		renderRow("d", "edit desc", "s", "change status"),
 		renderRow("x", "delete issue", "?", "help"),
 		renderRow("q", "quit", "", ""),
 	}

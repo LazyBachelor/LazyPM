@@ -14,6 +14,16 @@ type issueTitleUpdatedMsg struct {
 	Err     error
 }
 
+type issueDescriptionUpdatedMsg struct {
+	IssueID string
+	Err     error
+}
+
+type issueStatusUpdatedMsg struct {
+	IssueID string
+	Err     error
+}
+
 type selectIssueMsg struct {
 	IssueID string
 }
@@ -34,6 +44,22 @@ func updateIssueTitleCmd(svc *service.Services, issueID, newTitle string) tea.Cm
 		updates := map[string]interface{}{"title": newTitle}
 		err := svc.Beads.UpdateIssue(context.Background(), issueID, updates, "tui")
 		return issueTitleUpdatedMsg{IssueID: issueID, Err: err}
+	}
+}
+
+func updateIssueDescriptionCmd(svc *service.Services, issueID, newDescription string) tea.Cmd {
+	return func() tea.Msg {
+		updates := map[string]interface{}{"description": newDescription}
+		err := svc.Beads.UpdateIssue(context.Background(), issueID, updates, "tui")
+		return issueDescriptionUpdatedMsg{IssueID: issueID, Err: err}
+	}
+}
+
+func updateIssueStatusCmd(svc *service.Services, issueID, status string) tea.Cmd {
+	return func() tea.Msg {
+		updates := map[string]interface{}{"status": status}
+		err := svc.Beads.UpdateIssue(context.Background(), issueID, updates, "tui")
+		return issueStatusUpdatedMsg{IssueID: issueID, Err: err}
 	}
 }
 
@@ -65,7 +91,26 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if msg.Err != nil {
 			return m, nil
 		}
-		// reload issues and keep selection on the updated issue
+		issues, err := m.svc.Beads.AllIssues(context.Background())
+		if err != nil {
+			return m, nil
+		}
+		setItemsCmd := m.issueList.SetIssues(issues)
+		for _, issue := range issues {
+			if issue.ID == msg.IssueID {
+				m.issueDetail.SetIssue(issue)
+				break
+			}
+		}
+		return m, tea.Sequence(setItemsCmd, func() tea.Msg { return selectIssueMsg{IssueID: msg.IssueID} })
+
+	case issueDescriptionUpdatedMsg:
+		m.editingDescription = false
+		m.editingDescIssueID = ""
+		m.descriptionInput.Blur()
+		if msg.Err != nil {
+			return m, nil
+		}
 		issues, err := m.svc.Beads.AllIssues(context.Background())
 		if err != nil {
 			return m, nil
@@ -78,6 +123,25 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 		}
 		// after list is updated, select the edited issue again
+		return m, tea.Sequence(setItemsCmd, func() tea.Msg { return selectIssueMsg{IssueID: msg.IssueID} })
+
+	case issueStatusUpdatedMsg:
+		m.choosingStatus = false
+		m.statusIssueID = ""
+		if msg.Err != nil {
+			return m, nil
+		}
+		issues, err := m.svc.Beads.AllIssues(context.Background())
+		if err != nil {
+			return m, nil
+		}
+		setItemsCmd := m.issueList.SetIssues(issues)
+		for _, issue := range issues {
+			if issue.ID == msg.IssueID {
+				m.issueDetail.SetIssue(issue)
+				break
+			}
+		}
 		return m, tea.Sequence(setItemsCmd, func() tea.Msg { return selectIssueMsg{IssueID: msg.IssueID} })
 
 	case selectIssueMsg:
@@ -138,6 +202,30 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 		}
 
+		if m.choosingStatus {
+			switch msg.String() {
+			case "o":
+				issueID := m.statusIssueID
+				m.choosingStatus = false
+				m.statusIssueID = ""
+				return m, updateIssueStatusCmd(m.svc, issueID, "open")
+			case "i":
+				issueID := m.statusIssueID
+				m.choosingStatus = false
+				m.statusIssueID = ""
+				return m, updateIssueStatusCmd(m.svc, issueID, "in_progress")
+			case "c":
+				issueID := m.statusIssueID
+				m.choosingStatus = false
+				m.statusIssueID = ""
+				return m, updateIssueStatusCmd(m.svc, issueID, "closed")
+			case "esc":
+				m.choosingStatus = false
+				m.statusIssueID = ""
+				return m, nil
+			}
+		}
+
 		if m.creatingIssue {
 			if msg.String() == "enter" {
 				title := m.createTitleInput.Value()
@@ -159,7 +247,6 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if m.editingTitle {
 			if msg.String() == "enter" {
 				newTitle := m.titleInput.Value()
-				// dont update if its empty or same as the original
 				if newTitle != "" {
 					return m, updateIssueTitleCmd(m.svc, m.editingIssueID, newTitle)
 				}
@@ -172,6 +259,26 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 			var cmd tea.Cmd
 			m.titleInput, cmd = m.titleInput.Update(msg)
+			return m, cmd
+		}
+
+		if m.editingDescription {
+			if msg.String() == "ctrl+s" {
+				issueID := m.editingDescIssueID
+				newDesc := m.descriptionInput.Value()
+				m.editingDescription = false
+				m.editingDescIssueID = ""
+				m.descriptionInput.Blur()
+				return m, updateIssueDescriptionCmd(m.svc, issueID, newDesc)
+			}
+			if msg.String() == "esc" {
+				m.editingDescription = false
+				m.editingDescIssueID = ""
+				m.descriptionInput.Blur()
+				return m, nil
+			}
+			var cmd tea.Cmd
+			m.descriptionInput, cmd = m.descriptionInput.Update(msg)
 			return m, cmd
 		}
 
