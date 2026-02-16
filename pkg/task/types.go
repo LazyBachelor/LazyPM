@@ -2,9 +2,12 @@ package task
 
 import (
 	"context"
+	"errors"
 
 	"github.com/LazyBachelor/LazyPM/internal/service"
 )
+
+var ErrUserQuit = errors.New("user quit")
 
 type TaskConfig = service.Config
 

@@ -1,6 +1,7 @@
 package taskui
 
 import (
+	"errors"
 	"fmt"
 
 	"charm.land/lipgloss/v2"
@@ -8,6 +9,23 @@ import (
 	"github.com/charmbracelet/bubbles/key"
 	tea "github.com/charmbracelet/bubbletea"
 )
+
+var ErrUserQuit = errors.New("user quit")
+
+type TaskDetails struct {
+	Title          string
+	Description    string
+	TimeToComplete string
+	Difficulty     string
+}
+
+type TaskModel struct {
+	TaskDetails
+	keys          TaskHelpKeys
+	help          help.Model
+	width, height int
+	userQuit      bool
+}
 
 func NewTaskModel(details TaskDetails) TaskModel {
 	return TaskModel{
@@ -28,6 +46,7 @@ func (m TaskModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.KeyMsg:
 		switch {
 		case key.Matches(msg, m.keys.Quit):
+			m.userQuit = true
 			return m, tea.Quit
 		case key.Matches(msg, m.keys.Continue):
 			return m, tea.Quit
@@ -69,4 +88,8 @@ func (m TaskModel) View() string {
 
 func (m *TaskModel) SetSize(width, height int) {
 	m.width, m.height = width, height
+}
+
+func (m TaskModel) GetUserQuit() bool {
+	return m.userQuit
 }

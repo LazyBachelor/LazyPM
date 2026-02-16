@@ -11,8 +11,14 @@ func (t *Task) IntroduceTask() error {
 	if t.aboutScreen == nil {
 		return fmt.Errorf("aboutScreen is not set")
 	}
-	_, err := tea.NewProgram(t.aboutScreen, tea.WithAltScreen()).Run()
-	return err
+	model, err := tea.NewProgram(t.aboutScreen, tea.WithAltScreen()).Run()
+	if err != nil {
+		return err
+	}
+	if m, ok := model.(interface{ GetUserQuit() bool }); ok && m.GetUserQuit() {
+		return ErrUserQuit
+	}
+	return nil
 }
 
 func (t *Task) StartInterface(ctx context.Context, cfg TaskConfig) error {
@@ -27,6 +33,12 @@ func (t *Task) StartQuestionnaire() error {
 	if t.questionnaire == nil {
 		return fmt.Errorf("questionnaire is not set")
 	}
-	_, err := tea.NewProgram(t.questionnaire, tea.WithAltScreen()).Run()
-	return err
+	model, err := tea.NewProgram(t.questionnaire, tea.WithAltScreen()).Run()
+	if err != nil {
+		return err
+	}
+	if m, ok := model.(interface{ GetUserQuit() bool }); ok && m.GetUserQuit() {
+		return ErrUserQuit
+	}
+	return nil
 }

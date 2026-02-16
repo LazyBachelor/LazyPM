@@ -1,10 +1,12 @@
 package main
 
 import (
-	"github.com/LazyBachelor/LazyPM/internal/style"
+	"errors"
+
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/huh"
 )
+
+var ErrUserQuit = errors.New("user quit")
 
 const (
 	IntroTitle = "Welcome to the Task Survey!"
@@ -21,54 +23,60 @@ By participating, you consent to the collection and use of your data as describe
 )
 
 type introModel struct {
-	form          *huh.Form
+	stage         int
 	width, height int
+	userQuit      bool
 }
 
 func newIntroModel() introModel {
 	return introModel{
-		form: huh.NewForm(
-			huh.NewGroup(
-				huh.NewNote().Title(IntroTitle).Description(IntroductionText),
-			),
-			huh.NewGroup(
-				huh.NewNote().Title("Disclaimer").Description(Disclaimer),
-			),
-		),
+		stage: 0,
 	}
 }
 
 func (m introModel) Init() tea.Cmd {
-	m.form.Init()
 	return nil
 }
 
 func (m introModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
-	case tea.KeyMsg:
-		switch msg.Type {
-			case tea.KeyEsc, tea.KeyCtrlC:
-			return m, tea.Quit
-		}
 	case tea.WindowSizeMsg:
 		m.SetSize(msg.Width, msg.Height)
+	case tea.KeyMsg:
+		switch msg.Type {
+		case tea.KeyEnter, tea.KeySpace:
+			m.stage++
+			if m.stage > 1 {
+				return m, tea.Quit
+			}
+		case tea.KeyEsc, tea.KeyCtrlC:
+			m.userQuit = true
+			return m, tea.Quit
+		}
 	}
 
-	form, cmd := m.form.Update(msg)
-	if f, ok := form.(*huh.Form); ok {
-		m.form = f
-	}
-
-	return m, cmd
+	return m, nil
 }
 
 func (m introModel) View() string {
-	return m.form.WithTheme(style.HuhCenterTheme()).View()
+	switch m.stage {
+	case 0:
+		return IntroductionText
+	case 1:
+		return Disclaimer
+	}
+	return ""
 }
 
 func (m introModel) Run() error {
-	_, err := tea.NewProgram(m, tea.WithAltScreen()).Run()
-	return err
+	model, err := tea.NewProgram(m, tea.WithAltScreen()).Run()
+	if err != nil {
+		return err
+	}
+	if m, ok := model.(introModel); ok && m.userQuit {
+		return ErrUserQuit
+	}
+	return nil
 }
 
 func (m *introModel) SetSize(width, height int) {
