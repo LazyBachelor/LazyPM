@@ -95,14 +95,15 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if err != nil {
 			return m, nil
 		}
-		setItemsCmd := m.issueList.SetIssues(issues)
+		setItemsCmd := m.issueList.SetIssues(OpenAndInProgressOnly(issues))
+		closedSetCmd := m.closedIssueList.SetIssues(ClosedOnly(issues))
 		for _, issue := range issues {
 			if issue.ID == msg.IssueID {
 				m.issueDetail.SetIssue(issue)
 				break
 			}
 		}
-		return m, tea.Sequence(setItemsCmd, func() tea.Msg { return selectIssueMsg{IssueID: msg.IssueID} })
+		return m, tea.Sequence(setItemsCmd, closedSetCmd, func() tea.Msg { return selectIssueMsg{IssueID: msg.IssueID} })
 
 	case issueDescriptionUpdatedMsg:
 		m.editingDescription = false
@@ -115,15 +116,15 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if err != nil {
 			return m, nil
 		}
-		setItemsCmd := m.issueList.SetIssues(issues)
+		setItemsCmd := m.issueList.SetIssues(OpenAndInProgressOnly(issues))
+		closedSetCmd := m.closedIssueList.SetIssues(ClosedOnly(issues))
 		for _, issue := range issues {
 			if issue.ID == msg.IssueID {
 				m.issueDetail.SetIssue(issue)
 				break
 			}
 		}
-		// after list is updated, select the edited issue again
-		return m, tea.Sequence(setItemsCmd, func() tea.Msg { return selectIssueMsg{IssueID: msg.IssueID} })
+		return m, tea.Sequence(setItemsCmd, closedSetCmd, func() tea.Msg { return selectIssueMsg{IssueID: msg.IssueID} })
 
 	case issueStatusUpdatedMsg:
 		m.choosingStatus = false
@@ -135,17 +136,19 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if err != nil {
 			return m, nil
 		}
-		setItemsCmd := m.issueList.SetIssues(issues)
+		setItemsCmd := m.issueList.SetIssues(OpenAndInProgressOnly(issues))
+		closedSetCmd := m.closedIssueList.SetIssues(ClosedOnly(issues))
 		for _, issue := range issues {
 			if issue.ID == msg.IssueID {
 				m.issueDetail.SetIssue(issue)
 				break
 			}
 		}
-		return m, tea.Sequence(setItemsCmd, func() tea.Msg { return selectIssueMsg{IssueID: msg.IssueID} })
+		return m, tea.Sequence(setItemsCmd, closedSetCmd, func() tea.Msg { return selectIssueMsg{IssueID: msg.IssueID} })
 
 	case selectIssueMsg:
 		m.issueList.SelectIssueID(msg.IssueID)
+		m.closedIssueList.SelectIssueID(msg.IssueID)
 		return m, nil
 
 	case issueCreatedMsg:
@@ -159,9 +162,10 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if err != nil {
 			return m, nil
 		}
-		setItemsCmd := m.issueList.SetIssues(issues)
+		setItemsCmd := m.issueList.SetIssues(OpenAndInProgressOnly(issues))
+		closedSetCmd := m.closedIssueList.SetIssues(ClosedOnly(issues))
 		m.issueDetail.SetIssue(*msg.Issue)
-		return m, tea.Sequence(setItemsCmd, func() tea.Msg { return selectIssueMsg{IssueID: msg.Issue.ID} })
+		return m, tea.Sequence(setItemsCmd, closedSetCmd, func() tea.Msg { return selectIssueMsg{IssueID: msg.Issue.ID} })
 
 	case issueDeletedMsg:
 		m.confirmingDelete = false
@@ -173,10 +177,11 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if err != nil {
 			return m, nil
 		}
-		setItemsCmd := m.issueList.SetIssues(issues)
+		setItemsCmd := m.issueList.SetIssues(OpenAndInProgressOnly(issues))
+		closedSetCmd := m.closedIssueList.SetIssues(ClosedOnly(issues))
 		if len(issues) == 0 {
 			m.issueDetail.SetIssue(models.Issue{})
-			return m, setItemsCmd
+			return m, tea.Sequence(setItemsCmd, closedSetCmd)
 		}
 		newIndex := msg.PreviousIndex
 		if newIndex >= len(issues) {
@@ -184,7 +189,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 		selectID := issues[newIndex].ID
 		m.issueDetail.SetIssue(issues[newIndex])
-		return m, tea.Sequence(setItemsCmd, func() tea.Msg { return selectIssueMsg{IssueID: selectID} })
+		return m, tea.Sequence(setItemsCmd, closedSetCmd, func() tea.Msg { return selectIssueMsg{IssueID: selectID} })
 
 	case tea.KeyMsg:
 		if m.confirmingDelete {
@@ -282,8 +287,9 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, cmd
 		}
 
-		if m.issueList.FilterState() == list.Filtering {
-			cmd, _ := m.issueList.Update(msg)
+		focusedList := m.FocusedIssueList()
+		if focusedList.FilterState() == list.Filtering {
+			cmd, _ := focusedList.Update(msg)
 			return m, cmd
 		}
 
@@ -298,12 +304,20 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m, nil
 	}
 
-	cmd, changed := m.issueList.Update(msg)
+	if m.focusedWindow == 0 {
+		cmd, changed := m.issueList.Update(msg)
+		if changed {
+			if selected := m.issueList.SelectedItem(); selected.ID != "" {
+				m.issueDetail.SetIssue(selected.Issue)
+			}
+		}
+		return m, cmd
+	}
+	cmd, changed := m.closedIssueList.Update(msg)
 	if changed {
-		if selected := m.issueList.SelectedItem(); selected.ID != "" {
+		if selected := m.closedIssueList.SelectedItem(); selected.ID != "" {
 			m.issueDetail.SetIssue(selected.Issue)
 		}
 	}
-
 	return m, cmd
 }

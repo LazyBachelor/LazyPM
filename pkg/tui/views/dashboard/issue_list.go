@@ -108,6 +108,51 @@ func NewIssueList(svc *service.Services, width, height int) IssueList {
 	}
 }
 
+func NewIssueListFromIssues(svc *service.Services, issues []models.Issue, width, height int) IssueList {
+	// for making an IssueList from a pre-existing list of issues.
+	listIssues := make([]list.Item, len(issues))
+	for i, issue := range issues {
+		listIssues[i] = ListIssue{Issue: issue}
+	}
+	l := list.New(listIssues, NewIssueListDelegate(width), width, height)
+	l.SetShowTitle(false)
+	l.SetShowHelp(false)
+	l.SetShowStatusBar(false)
+	l.SetFilteringEnabled(true)
+	l.FilterInput.PromptStyle = styles.FilterPromptStyle
+	l.FilterInput.Cursor.Style = styles.FilterStyle
+	l.FilterInput.TextStyle = styles.FilterInputStyle
+	l.FilterInput.Prompt = "🔍 "
+	return IssueList{
+		list:   l,
+		svc:    svc,
+		width:  width,
+		height: height,
+	}
+}
+
+func OpenAndInProgressOnly(issues []models.Issue) []models.Issue {
+	// used for the first window in the dashboard
+	out := make([]models.Issue, 0, len(issues))
+	for _, issue := range issues {
+		if issue.Status == models.StatusOpen || issue.Status == models.StatusInProgress {
+			out = append(out, issue)
+		}
+	}
+	return out
+}
+
+func ClosedOnly(issues []models.Issue) []models.Issue {
+	// used for the second window in the dashboard
+	out := make([]models.Issue, 0, len(issues))
+	for _, issue := range issues {
+		if issue.Status == models.StatusClosed {
+			out = append(out, issue)
+		}
+	}
+	return out
+}
+
 func (l *IssueList) Update(msg tea.Msg) (tea.Cmd, bool) {
 	var cmd tea.Cmd
 	oldIndex := l.list.Index()
@@ -160,9 +205,7 @@ func (l IssueList) renderFilteredItems() string {
 		visibleItems = l.list.Items()
 	}
 
-	itemsPerPage := l.list.Paginator.ItemsOnPage(len(visibleItems))
-	start := l.list.Paginator.Page * itemsPerPage
-	end := min(start+itemsPerPage, len(visibleItems))
+	start, end := l.list.Paginator.GetSliceBounds(len(visibleItems))
 
 	cursor := l.list.Index()
 

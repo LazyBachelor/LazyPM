@@ -6,12 +6,13 @@ import (
 )
 
 type DashboardKeyMap struct {
-	Help        key.Binding
-	Quit        key.Binding
-	SelectIssue key.Binding
-	BackToList  key.Binding
-	ScrollUp    key.Binding
-	ScrollDown  key.Binding
+	Help            key.Binding
+	Quit            key.Binding
+	SelectIssue     key.Binding
+	BackToList      key.Binding
+	ScrollUp        key.Binding
+	ScrollDown      key.Binding
+	SwitchWindow    key.Binding
 	EditTitle       key.Binding
 	EditDescription key.Binding
 	ChangeStatus    key.Binding
@@ -44,6 +45,10 @@ var defaultDashboardKeyMap = DashboardKeyMap{
 		key.WithKeys("down", "j"),
 		key.WithHelp("↓/j", "down"),
 	),
+	SwitchWindow: key.NewBinding(
+		key.WithKeys("tab"),
+		key.WithHelp("tab", "switch window"),
+	),
 	EditTitle: key.NewBinding(
 		key.WithKeys("e"),
 		key.WithHelp("e", "edit title"),
@@ -74,6 +79,8 @@ func (d *Model) handleKeyMsg(msg tea.KeyMsg) tea.Cmd {
 		d.helpBar.ToggleHelp()
 	case key.Matches(msg, d.keyMap.Quit):
 		return tea.Quit
+	case key.Matches(msg, d.keyMap.SwitchWindow):
+		d.ToggleFocusedWindow()
 	case d.IsFocusedOnList() && key.Matches(msg, d.keyMap.SelectIssue):
 		d.FocusDetail()
 	case d.IsFocusedOnDetail() && key.Matches(msg, d.keyMap.BackToList):
@@ -83,25 +90,26 @@ func (d *Model) handleKeyMsg(msg tea.KeyMsg) tea.Cmd {
 	case d.IsFocusedOnDetail() && key.Matches(msg, d.keyMap.ScrollDown):
 		d.issueDetail.ScrollDown(1)
 	case !d.editingTitle && !d.creatingIssue && !d.editingDescription && key.Matches(msg, d.keyMap.EditTitle):
-		if selected := d.issueList.SelectedItem(); selected.ID != "" {
+		if selected := d.FocusedIssueList().SelectedItem(); selected.ID != "" {
 			d.startEditTitle(selected)
 			cmd = d.titleInput.Focus()
 		}
 	case !d.editingTitle && !d.creatingIssue && !d.editingDescription && key.Matches(msg, d.keyMap.EditDescription):
-		if selected := d.issueList.SelectedItem(); selected.ID != "" {
+		if selected := d.FocusedIssueList().SelectedItem(); selected.ID != "" {
 			d.startEditDescription(selected)
 			cmd = d.descriptionInput.Focus()
 		}
 	case !d.editingTitle && !d.creatingIssue && !d.editingDescription && !d.choosingStatus && key.Matches(msg, d.keyMap.ChangeStatus):
-		if selected := d.issueList.SelectedItem(); selected.ID != "" {
+		if selected := d.FocusedIssueList().SelectedItem(); selected.ID != "" {
 			d.startChooseStatus(selected)
 		}
 	case !d.editingTitle && !d.creatingIssue && key.Matches(msg, d.keyMap.AddIssue):
 		d.startCreateIssue()
 		cmd = d.createTitleInput.Focus()
 	case !d.editingTitle && !d.creatingIssue && !d.editingDescription && !d.choosingStatus && !d.confirmingDelete && key.Matches(msg, d.keyMap.DeleteIssue):
-		if selected := d.issueList.SelectedItem(); selected.ID != "" {
-			d.startConfirmDelete(selected.ID, d.issueList.Index())
+		fl := d.FocusedIssueList()
+		if selected := fl.SelectedItem(); selected.ID != "" {
+			d.startConfirmDelete(selected.ID, fl.Index())
 		}
 	}
 

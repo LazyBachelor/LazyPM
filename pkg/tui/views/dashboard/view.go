@@ -19,20 +19,36 @@ func (m *Model) View() string {
 	bottomHeight := m.helpBar.Height()
 
 	contentHeight := m.height - headerHeight - bottomHeight
+	halfHeight := contentHeight / 2
+	if halfHeight < 1 {
+		halfHeight = 1
+	}
 
 	totalContentWidth := m.width - 1
 	listWidth := totalContentWidth * styles.ListViewRatio / 100
 	detailWidth := totalContentWidth - listWidth
 
-	m.issueList.SetSize(listWidth, contentHeight)
+	m.issueList.SetSize(listWidth, halfHeight)
+	m.closedIssueList.SetSize(listWidth, halfHeight)
 	m.issueDetail.SetSize(detailWidth, contentHeight)
 
 	listView := m.issueList.View()
+	closedListView := m.closedIssueList.View()
 	detailView := m.issueDetail.View()
 
-	content := lipgloss.JoinHorizontal(lipgloss.Left, listView, detailView)
+	mainLabel := styles.LabelStyle.Render("Display issues")
+	closedLabel := styles.LabelStyle.Render("Closed issues")
+	if m.focusedWindow == 0 {
+		mainLabel = lipgloss.NewStyle().Foreground(styles.Primary).Bold(true).Render("Display issues ▶")
+	} else {
+		closedLabel = lipgloss.NewStyle().Foreground(styles.Primary).Bold(true).Render("Closed issues ▶")
+	}
+	leftColumn := lipgloss.JoinVertical(lipgloss.Left,
+		mainLabel, listView,
+		closedLabel, closedListView,
+	)
+	content := lipgloss.JoinHorizontal(lipgloss.Left, leftColumn, detailView)
 
-	// return lipgloss.JoinVertical(lipgloss.Left, header, content, bottomView)
 	mainView := lipgloss.JoinVertical(lipgloss.Left, header, content, bottomView)
 
 	if m.editingTitle {

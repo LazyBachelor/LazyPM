@@ -1,6 +1,8 @@
 package dashboard
 
 import (
+	"context"
+
 	"github.com/LazyBachelor/LazyPM/internal/service"
 	"github.com/charmbracelet/bubbles/textinput"
 	"github.com/charmbracelet/bubbles/textarea"
@@ -8,15 +10,18 @@ import (
 )
 
 type Model struct {
-	header          Header
-	issueList       IssueList
-	issueDetail     IssueDetail
-	helpBar         HelpBar
-	keyMap          DashboardKeyMap
-	svc             *service.Services
-	width           int
-	height          int
-	focusedPane     int // 0 = list, 1 = detail
+	header           Header
+	issueList        IssueList
+	issueDetail      IssueDetail
+	closedIssueList  IssueList
+	helpBar          HelpBar
+	keyMap           DashboardKeyMap
+	svc              *service.Services
+	width            int
+	height           int
+	focusedWindow    int // 0 = main (display issues), 1 = closed issues
+	focusedPaneMain  int // 0 = list, 1 = detail
+	focusedPaneClosed int
 	
 	editingTitle       bool // true while we are editing a title
 	titleInput         textinput.Model
@@ -38,16 +43,20 @@ type Model struct {
 
 func NewDashboard(svc *service.Services) *Model {
 	m := &Model{
-		header:      NewHeader("Project Manager Dashboard"),
-		keyMap:      defaultDashboardKeyMap,
-		svc:         svc,
-		width:       80,
-		height:      24,
-		focusedPane: 0,
+		header:           NewHeader("Project Manager Dashboard"),
+		keyMap:           defaultDashboardKeyMap,
+		svc:              svc,
+		width:            80,
+		height:           24,
+		focusedWindow:    0,
+		focusedPaneMain:  0,
+		focusedPaneClosed: 0,
 	}
 
-	m.issueList = NewIssueList(svc, 0, 0)
+	allIssues, _ := svc.Beads.AllIssues(context.Background())
+	m.issueList = NewIssueListFromIssues(svc, OpenAndInProgressOnly(allIssues), 0, 0)
 	m.issueDetail = NewIssueDetail()
+	m.closedIssueList = NewIssueListFromIssues(svc, ClosedOnly(allIssues), 0, 0)
 	m.helpBar = NewHelpBar(m.keyMap)
 
 	ti := textinput.New()
@@ -67,6 +76,8 @@ func NewDashboard(svc *service.Services) *Model {
 	m.descriptionInput = descTa
 
 	if selected := m.issueList.SelectedItem(); selected.ID != "" {
+		m.issueDetail.SetIssue(selected.Issue)
+	} else if selected := m.closedIssueList.SelectedItem(); selected.ID != "" {
 		m.issueDetail.SetIssue(selected.Issue)
 	}
 
@@ -109,27 +120,64 @@ func (m *Model) Init() tea.Cmd {
 }
 
 func (m *Model) IsFocusedOnList() bool {
-	return m.focusedPane == 0
+	if m.focusedWindow == 0 {
+		return m.focusedPaneMain == 0
+	}
+	return m.focusedPaneClosed == 0
 }
 
 func (m *Model) IsFocusedOnDetail() bool {
-	return m.focusedPane == 1
+	if m.focusedWindow == 0 {
+		return m.focusedPaneMain == 1
+	}
+	return m.focusedPaneClosed == 1
 }
 
 func (m *Model) FocusList() {
-	m.focusedPane = 0
+	if m.focusedWindow == 0 {
+		m.focusedPaneMain = 0
+	} else {
+		m.focusedPaneClosed = 0
+	}
 	m.issueDetail.SetFocused(false)
 }
 
 func (m *Model) FocusDetail() {
-	m.focusedPane = 1
+	if m.focusedWindow == 0 {
+		m.focusedPaneMain = 1
+	} else {
+		m.focusedPaneClosed = 1
+	}
 	m.issueDetail.SetFocused(true)
 }
 
 func (m *Model) ToggleFocus() {
-	if m.focusedPane == 0 {
+	if m.IsFocusedOnList() {
 		m.FocusDetail()
 	} else {
 		m.FocusList()
 	}
+}
+
+// FocusedIssueList returns the issue list of the currently focused window.
+func (m *Model) FocusedIssueList() *IssueList {
+	if m.focusedWindow == 0 {
+		return &m.issueList
+	}
+	return &m.closedIssueList
+}
+
+// ToggleFocusedWindow switches focus between main and closed issues window.
+func (m *Model) ToggleFocusedWindow() {
+	m.focusedWindow = 1 - m.focusedWindow
+	if m.focusedWindow == 0 {
+		if selected := m.issueList.SelectedItem(); selected.ID != "" {
+			m.issueDetail.SetIssue(selected.Issue)
+		}
+	} else {
+		if selected := m.closedIssueList.SelectedItem(); selected.ID != "" {
+			m.issueDetail.SetIssue(selected.Issue)
+		}
+	}
+	m.issueDetail.SetFocused(m.IsFocusedOnDetail())
 }
