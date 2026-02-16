@@ -15,6 +15,8 @@ type Model struct {
 	width       int
 	height      int
 	focusedPane int // 0 = list, 1 = detail
+	showDeleteConfirm bool
+	deleteErr error
 }
 
 func NewDashboard(svc *service.Services) *Model {

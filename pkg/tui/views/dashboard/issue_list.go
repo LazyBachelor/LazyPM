@@ -20,6 +20,10 @@ type IssueList struct {
 	height int
 }
 
+func (l IssueList) Remove(index int) IssueList {
+	panic("unimplemented")
+}
+
 type ListIssue struct {
 	models.Issue
 }

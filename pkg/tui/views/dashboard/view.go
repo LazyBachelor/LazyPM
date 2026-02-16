@@ -6,6 +6,24 @@ import (
 )
 
 func (m *Model) View() string {
+
+	var deletePrompt string
+	if m.showDeleteConfirm {
+	deletePrompt = lipgloss.NewStyle().
+		Foreground(lipgloss.Color("1")).
+		Bold(true).
+		Render("Are you sure you want to delete this issue? (y/n)")
+	}
+
+
+	if m.showDeleteConfirm {
+	return lipgloss.NewStyle().
+		Foreground(lipgloss.Color("1")).
+		Bold(true).
+		Render("Are you sure you want to delete this issue? (y/n)")
+	}
+
+
 	if m.width == 0 || m.height == 0 {
 		return "Loading..."
 	}
@@ -32,5 +50,13 @@ func (m *Model) View() string {
 
 	content := lipgloss.JoinHorizontal(lipgloss.Left, listView, detailView)
 
-	return lipgloss.JoinVertical(lipgloss.Left, header, content, bottomView)
+	mainView := lipgloss.JoinVertical(lipgloss.Left, header, content, bottomView)
+
+	if m.showDeleteConfirm {
+	return lipgloss.JoinVertical(lipgloss.Left, deletePrompt, mainView)
+	}
+
+	return mainView
+
+	
 }
