@@ -3,30 +3,29 @@ package routes
 import "github.com/LazyBachelor/LazyPM/pkg/web/components"
 
 var baseLayout = components.LayoutProps{
-    Title:       "Beads Test Application",
-    Description: "A sample application using Beads storage service",
-    Head: components.HeadProps{
-        Links: []components.Link{
-            {Href: "/assets/css/styles.css", Rel: "stylesheet"},
-            {Href: "/assets/manifest.json", Rel: "manifest"},
-        },
-        Scripts: []components.Script{
-            {Src: "/assets/js/htmx.min.js", Defer: true},
-            {Src: "/assets/js/ajax.min.js", Defer: true},
-        },
-    },
-    Header: components.HeaderProps{
-        BrandName:         "LazyPM Dashboard",
-        CreateLabel:       "+ Create",
-        CreateHref:         "",
-        SearchPlaceholder: "Search",
-    },
-    Footer: components.FooterProps{
-    },
+	Title:       "Beads Test Application",
+	Description: "A sample application using Beads storage service",
+	Head: components.HeadProps{
+		Links: []components.Link{
+			{Href: "/assets/css/styles.css", Rel: "stylesheet"},
+			{Href: "/assets/manifest.json", Rel: "manifest"},
+		},
+		Scripts: []components.Script{
+			{Src: "/assets/js/htmx.min.js", Defer: true},
+			{Src: "/assets/js/ajax.min.js", Defer: true},
+		},
+	},
+	Header: components.HeaderProps{
+		BrandName:         "LazyPM Dashboard",
+		CreateLabel:       "+ Create",
+		CreateHref:        "",
+		SearchPlaceholder: "Search",
+	},
+	Footer: components.FooterProps{},
 }
 
-templ BaseLayout(){
-    @components.Layout(baseLayout){
-        { children... }
-    }
+templ BaseLayout() {
+	@components.Layout(baseLayout) {
+		{ children... }
+	}
 }
