@@ -13,6 +13,10 @@ import (
 func main() {
 	ctx := context.Background()
 
+	if err := newIntroModel().Run(); err != nil {
+		log.Fatalf("Failed to run intro screen: %v\n", err)
+	}
+
 	svc, close, err := initializeServices(ctx)
 	if err != nil {
 		log.Fatalf("Failed to initialize services: %v\n", err)
