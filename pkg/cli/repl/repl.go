@@ -22,8 +22,14 @@ You can also run shell commands directly. Type 'exit' or 'quit' to leave.`
 	ReplTitle = "Welcome to Project Management CLI! " + ReplHelp
 )
 
-// RunREPL starts the interactive Read-Eval-Print Loop for the PM CLI.
-func RunREPL(ctx context.Context, config cli.CLIConfig) error {
+type REPL struct{}
+
+func NewRepl() *REPL {
+	return &REPL{}
+}
+
+// Run starts the interactive Read-Eval-Print Loop for the PM CLI.
+func (r *REPL) Run(ctx context.Context, config cli.CLIConfig) error {
 	// Set terminal to raw mode to capture input properly in the REPL.
 	// This allows us to handle input character by character and provide a better user experience.
 	// We also ensure that the terminal state is restored when the REPL exits, even if an error occurs.

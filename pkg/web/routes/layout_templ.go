@@ -15,6 +15,7 @@ var baseLayout = components.LayoutProps{
 	Description: "A sample application using Beads storage service",
 	Head: components.HeadProps{
 		Links: []components.Link{
+			{Href: "/assets/css/styles.css", Rel: "preload", As: "style"},
 			{Href: "/assets/css/styles.css", Rel: "stylesheet"},
 			{Href: "/assets/manifest.json", Rel: "manifest"},
 		},

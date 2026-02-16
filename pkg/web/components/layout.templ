@@ -27,7 +27,18 @@ type LayoutProps struct {
 	Footer      FooterProps
 }
 
+templ Head(props HeadProps) {
+	for _, link := range props.Links {
+		<link href={ link.Href } rel={ link.Rel } as={ link.As }/>
+	}
+	for _, script := range props.Scripts {
+		<script src={ script.Src } defer={ script.Defer }></script>
+	}
+}
+
 type HeadProps struct {
+	Links   []Link
+	Scripts []Script
 	Links   []Link
 	Scripts []Script
 }
@@ -38,6 +49,8 @@ type Link struct {
 }
 
 type Script struct {
+	Src   string
+	Defer bool
 	Src   string
 	Defer bool
 }
@@ -128,15 +141,20 @@ type HeaderProps struct {
 	CreateHref        string
 	SearchPlaceholder string
 	Routes            []NavRoute
+	Routes []NavRoute
 }
 
 type NavRoute struct {
 	Name string
 	Path string
+	Name string
+	Path string
 }
 
+templ Footer(props FooterProps) {
 templ Footer(props FooterProps) {
 }
 
 type FooterProps struct {
 }
+

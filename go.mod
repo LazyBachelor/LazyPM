@@ -3,6 +3,7 @@ module github.com/LazyBachelor/LazyPM
 go 1.25.6
 
 require (
+	charm.land/lipgloss/v2 v2.0.0-beta.3.0.20251106193318-19329a3e8410
 	github.com/google/uuid v1.6.0
 	github.com/muesli/reflow v0.3.0
 	github.com/steveyegge/beads v0.49.6
@@ -24,11 +25,14 @@ require (
 require (
 	github.com/NYTimes/gziphandler v1.1.1
 	github.com/a-h/templ v0.3.977
+	github.com/donseba/go-htmx v1.12.1
+	github.com/go-chi/chi/v5 v5.2.5
+	github.com/go-playground/form/v4 v4.3.0
+	github.com/go-playground/validator/v10 v10.30.1
 	github.com/rs/cors v1.11.1
 )
 
 require (
-	charm.land/lipgloss/v2 v2.0.0-beta.3.0.20251106193318-19329a3e8410 // indirect
 	github.com/a-h/parse v0.0.0-20250122154542-74294addb73e // indirect
 	github.com/andybalholm/brotli v1.2.0 // indirect
 	github.com/atotto/clipboard v0.1.4 // indirect
@@ -51,9 +55,13 @@ require (
 	github.com/erikgeiser/coninput v0.0.0-20211004153227-1c3628e74d0f // indirect
 	github.com/fatih/color v1.18.0 // indirect
 	github.com/fsnotify/fsnotify v1.9.0 // indirect
+	github.com/gabriel-vasile/mimetype v1.4.12 // indirect
+	github.com/go-playground/locales v0.14.1 // indirect
+	github.com/go-playground/universal-translator v0.18.1 // indirect
 	github.com/go-viper/mapstructure/v2 v2.5.0 // indirect
 	github.com/haatos/goshipit v0.0.0-20260206030541-056850f43320 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
+	github.com/leodido/go-urn v1.4.0 // indirect
 	github.com/lucasb-eyer/go-colorful v1.3.0 // indirect
 	github.com/mattn/go-colorable v0.1.14 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
@@ -84,6 +92,7 @@ require (
 	github.com/tetratelabs/wazero v1.11.0 // indirect
 	github.com/xo/terminfo v0.0.0-20220910002029-abceb7e1c41e // indirect
 	go.yaml.in/yaml/v3 v3.0.4 // indirect
+	golang.org/x/crypto v0.48.0 // indirect
 	golang.org/x/exp v0.0.0-20260209203927-2842357ff358 // indirect
 	golang.org/x/mod v0.33.0 // indirect
 	golang.org/x/net v0.50.0 // indirect

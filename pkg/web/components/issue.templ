@@ -17,7 +17,7 @@ type IssueFormProps struct {
 }
 
 templ IssueForm(props IssueFormProps) {
-	<div class={ "w-full max-w-xs mx-auto ", props.Class }>
+	<div class={ "w-full max-w-lg mx-auto ", props.Class }>
 		<form
 			class="form space-y-1"
 			hx-post={ props.Action }
@@ -29,12 +29,14 @@ templ IssueForm(props IssueFormProps) {
 				Name:     "title",
 				Label:    "Title",
 				Value:    props.Title,
+				Class:    "w-full",
 				Required: true,
 			})
 			@base.Textarea(base.TextareaProps{
 				Name:     "description",
 				Label:    "Description",
 				Value:    props.Description,
+				Class:    "w-full",
 				Required: true,
 			})
 			@base.Select(base.SelectProps{
@@ -63,8 +65,9 @@ templ IssueForm(props IssueFormProps) {
 			@base.Range(base.RangeProps{
 				Name:  "priority",
 				Label: "Priority",
+				Class: "flex-1",
 				Min:   0,
-				Max:   5,
+				Max:   4,
 				Value: props.Priority,
 				Step:  1,
 			})

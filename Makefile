@@ -20,14 +20,12 @@ tui:
 web:
 	go run ./cmd/web
 
+# Run both dev and tw in parallel for generating templates and compiling Tailwind CSS on file changes
 dev:
 	@go tool templ generate -watch -cmd "go run ./cmd/web"
-
 tw:
-	@npx --yes @tailwindcss/cli -i ./pkg/web/input.css -o ./pkg/web/assets/css/styles.css --watch
+	@npx --yes @tailwindcss/cli -i ./pkg/web/input.css -o ./pkg/web/assets/css/styles.css --watch --minify
 
-watch:
-	@make -j2 dev tw
 
 completions:
 	@go build -o ./bin/pm ./cmd/pm

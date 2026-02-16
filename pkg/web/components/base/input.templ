@@ -6,6 +6,7 @@ type InputProps struct {
 	Label           string
 	Type            string // defaults to "text"
 	Value           string
+	Class           string
 	Placeholder     string
 	Description     string
 	Error           string
@@ -34,10 +35,9 @@ templ Input(props InputProps) {
 		if props.Label != "" {
 			<legend class="fieldset-legend">{ props.Label }</legend>
 		}
-		<label
-			for={ props.Name }
+		<div
 			class={
-				"input validator tooltip tooltip-top",
+				"input validator tooltip tooltip-top", props.Class,
 				templ.KV("tooltip tooltip-top", props.DisabledMessage != ""),
 				templ.KV("input-xs", props.Size == "xs"),
 				templ.KV("input-sm", props.Size == "sm"),
@@ -52,7 +52,9 @@ templ Input(props InputProps) {
 				@props.Icon
 			}
 			<input
+				id={ props.Name }
 				name={ props.Name }
+				aria-label={ props.Label }
 				if props.Type == "" {
 					type="text"
 				} else {
@@ -74,7 +76,7 @@ templ Input(props InputProps) {
 				}
 				{ props.Attrs... }
 			/>
-		</label>
+		</div>
 		if props.Description != "" {
 			<div class="label">{ props.Description }</div>
 		}

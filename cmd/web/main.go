@@ -1,14 +1,17 @@
 package main
 
 import (
-	"github.com/LazyBachelor/LazyPM/internal/service"
-	"github.com/LazyBachelor/LazyPM/pkg/web"
 	"context"
 	"fmt"
 	"os"
+
+	"github.com/LazyBachelor/LazyPM/internal/service"
+	"github.com/LazyBachelor/LazyPM/pkg/web"
 )
 
 func main() {
+	web := web.NewWeb()
+
 	config := service.Config{
 		WebAddress:            "localhost:8080",
 		BeadsDBPath:           "./.pm/db.db",
