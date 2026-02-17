@@ -3,9 +3,10 @@ package taskui
 import (
 	"errors"
 	"fmt"
+	"strings"
 
 	"charm.land/lipgloss/v2"
-	"github.com/charmbracelet/bubbles/help"
+	"github.com/LazyBachelor/LazyPM/internal/style"
 	"github.com/charmbracelet/bubbles/key"
 	tea "github.com/charmbracelet/bubbletea"
 )
@@ -22,16 +23,30 @@ type TaskDetails struct {
 type TaskModel struct {
 	TaskDetails
 	keys          TaskHelpKeys
-	help          help.Model
 	width, height int
 	userQuit      bool
+}
+
+type TaskHelpKeys struct {
+	Quit  key.Binding
+	Start key.Binding
+}
+
+var DefaultTaskKeys = TaskHelpKeys{
+	Quit: key.NewBinding(
+		key.WithKeys("q", "ctrl+c"),
+		key.WithHelp("q", "Quit"),
+	),
+	Start: key.NewBinding(
+		key.WithKeys("enter"),
+		key.WithHelp("enter", "Start"),
+	),
 }
 
 func NewTaskModel(details TaskDetails) TaskModel {
 	return TaskModel{
 		TaskDetails: details,
 		keys:        DefaultTaskKeys,
-		help:        help.New(),
 	}
 }
 
@@ -48,7 +63,7 @@ func (m TaskModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case key.Matches(msg, m.keys.Quit):
 			m.userQuit = true
 			return m, tea.Quit
-		case key.Matches(msg, m.keys.Continue):
+		case key.Matches(msg, m.keys.Start):
 			return m, tea.Quit
 		}
 	}
@@ -56,34 +71,39 @@ func (m TaskModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m TaskModel) View() string {
-	padding := 3
+	if m.width < 55 || m.height < 16 {
+		return lipgloss.Place(m.width, m.height, lipgloss.Center, lipgloss.Center,
+			style.TextStyle.Render("Terminal too small."))
+	}
 
-	header := lipgloss.NewStyle().
-		PaddingTop(padding).Width(m.width).Align(lipgloss.Center).
-		Bold(true).Render(m.Title)
-
-	headerHeight := lipgloss.Height(header)
-
-	helpView := lipgloss.NewStyle().
-		PaddingBottom(padding).
-		Width(m.width).Align(lipgloss.Center).
-		Render(m.help.View(m.keys))
-
-	helpHeight := lipgloss.Height(helpView)
+	boxWidth := min(m.width-10, 80)
 
 	detailsText := fmt.Sprintf("Time to complete: %s | Difficulty: %s", m.TimeToComplete, m.Difficulty)
-	details := lipgloss.NewStyle().Align(lipgloss.Center).
-		Width(m.width).PaddingBottom(1).Render(detailsText)
 
-	detailsHeight := lipgloss.Height(details)
+	boxStyle := style.BorderStyle.
+		Margin(1, 0).Padding(2, 4).Width(boxWidth)
 
-	content := lipgloss.NewStyle().
-		Width(m.width).Height(m.height-headerHeight-helpHeight-detailsHeight).
-		Align(lipgloss.Center, lipgloss.Center).
-		Render(m.Description)
+	var b strings.Builder
 
-	return lipgloss.JoinVertical(lipgloss.Top, header, content, details, helpView)
+	b.WriteString(style.TitleStyle.Render(m.Title))
+	b.WriteString("\n")
 
+	content := lipgloss.JoinVertical(
+		lipgloss.Center,
+		style.TextStyle.Render(m.Description),
+		"\n",
+		style.TextStyle.Foreground(style.SecondaryColor).Render(detailsText),
+	)
+
+	b.WriteString(boxStyle.Render(content))
+	b.WriteString("\n")
+
+	helpText := "Press " + m.keys.Start.Help().Key + " to start • " + m.keys.Quit.Help().Key + " to quit"
+	b.WriteString(style.HelpStyle.Render(helpText))
+
+	final := lipgloss.Place(m.width, m.height, lipgloss.Center, lipgloss.Center, b.String())
+
+	return final
 }
 
 func (m *TaskModel) SetSize(width, height int) {
