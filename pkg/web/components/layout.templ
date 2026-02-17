@@ -19,25 +19,6 @@ templ Layout(props LayoutProps) {
 				{ children... }
 			</main>
 			</div>
-			<script>
-			function toggleSidebar() {
-	const sidebar = document.getElementById("sidebar");
-	if (!sidebar) return;
-	const labels = sidebar.querySelectorAll(".sidebar-label");
-	const links = sidebar.querySelectorAll(".sidebar-link, .sidebar-toggle");
-		sidebar.classList.toggle("w-56");
-	sidebar.classList.toggle("w-16");
-	labels.forEach(label => {
-		label.classList.toggle("hidden");
-	});
-	links.forEach(link => {
-		link.classList.toggle("justify-start");
-		link.classList.toggle("justify-center");
-		link.classList.toggle("gap-3");
-		link.classList.toggle("gap-0");
-	});
-}
-			</script>
 		</body>
 	</html>
 }
