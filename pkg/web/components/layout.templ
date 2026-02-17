@@ -10,11 +10,34 @@ templ Layout(props LayoutProps) {
 			<meta name="description" content={ props.Description }/>
 			@Head(props.Head)
 		</head>
-		<body>
+		<body class="min-h-screen bg-base-200 text-base-content flex flex-col">
 			@Header(props.Header)
-			<main>
+
+			<div class="flex flex-1 min-h-0">
+			@Sidebar(props.Routes)
+			<main class="flex-1 p-4 bg-base-100 min-h-0 overflow-auto">
 				{ children... }
 			</main>
+			</div>
+			<script>
+			function toggleSidebar() {
+	const sidebar = document.getElementById("sidebar");
+	if (!sidebar) return;
+	const labels = sidebar.querySelectorAll(".sidebar-label");
+	const links = sidebar.querySelectorAll(".sidebar-link, .sidebar-toggle");
+		sidebar.classList.toggle("w-56");
+	sidebar.classList.toggle("w-16");
+	labels.forEach(label => {
+		label.classList.toggle("hidden");
+	});
+	links.forEach(link => {
+		link.classList.toggle("justify-start");
+		link.classList.toggle("justify-center");
+		link.classList.toggle("gap-3");
+		link.classList.toggle("gap-0");
+	});
+}
+			</script>
 		</body>
 	</html>
 }
@@ -24,6 +47,12 @@ type LayoutProps struct {
 	Description string
 	Head        HeadProps
 	Header      HeaderProps
+	Routes      []NavRoutes
+}
+type NavRoutes struct {
+	Name string
+	Path string
+	Icon templ.Component
 }
 
 templ Head(props HeadProps) {

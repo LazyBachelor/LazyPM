@@ -1,0 +1,37 @@
+package components
+
+templ Sidebar(routes []NavRoutes) {
+	<aside
+		id="sidebar"
+		class="w-56 shrink-0 flex flex-col min-h-0 bg-base-100 border-r border-base-300 shadow-sm transition-all duration-300"
+	>
+		<nav class="flex-1 overflow-y-auto py-3 px-2">
+			<ul class="menu menu-vertical w-full p-0 gap-0.5">
+				for _, r := range routes {
+					<li>
+						<a
+							href={ r.Path }
+							class="sidebar-link rounded-lg py-2.5 px-3 text-base-content font-medium no-underline hover:bg-base-200 active:bg-base-200 transition-colors duration-150 flex items-center gap-3 min-w-0"
+						>
+							if r.Icon != nil {
+								<span class="sidebar-icon shrink-0 flex items-center justify-center [&>svg]:w-5 [&>svg]:h-5">@r.Icon</span>
+							}
+							<span class="sidebar-label truncate">{ r.Name }</span>
+						</a>
+					</li>
+				}
+			</ul>
+		</nav>
+		<div class="border-t border-base-300 p-2 shrink-0">
+			<button
+				type="button"
+				class="sidebar-toggle btn btn-ghost btn-sm w-full justify-start text-base-content/80 hover:text-base-content hover:bg-base-200 rounded-lg flex items-center gap-3"
+				onclick="toggleSidebar()"
+				aria-label="Collapse sidebar"
+			>
+				<span class="sidebar-icon shrink-0">@IconCollapse()</span>
+				<span class="sidebar-label">Collapse</span>
+			</button>
+		</div>
+	</aside>
+}

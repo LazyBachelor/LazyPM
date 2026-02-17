@@ -1,0 +1,13 @@
+{
+  "name": "lazypm-web",
+  "private": true,
+  "scripts": {
+    "build:css": "tailwindcss -i input.css -o assets/css/styles.css"
+  },
+  "devDependencies": {
+    "@tailwindcss/cli": "latest",
+    "@tailwindcss/typography": "latest",
+    "daisyui": "latest",
+    "tailwindcss": "latest"
+  }
+}
