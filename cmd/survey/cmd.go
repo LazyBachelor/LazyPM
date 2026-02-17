@@ -32,16 +32,21 @@ func runStartCmd(cmd *cobra.Command, args []string) error {
 	defer cleanup()
 
 	surveyTasks := initTasks(svc)
-	interfaces := initInterfaces()
 
-	if args[0] == "tui" {
-		interfaces = []task.Interface{tui.NewTui()}
-	}
-	if args[0] == "repl" {
-		interfaces = []task.Interface{repl.NewRepl()}
-	}
-	if args[0] == "web" {
-		interfaces = []task.Interface{web.NewWeb()}
+	interfaces := []task.Interface{}
+
+	if len(args) == 0 {
+		interfaces = initInterfaces()
+	} else {
+		if args[0] == "tui" {
+			interfaces = []task.Interface{tui.NewTui()}
+		}
+		if args[0] == "repl" {
+			interfaces = []task.Interface{repl.NewRepl()}
+		}
+		if args[0] == "web" {
+			interfaces = []task.Interface{web.NewWeb()}
+		}
 	}
 
 	if err := taskLoop(cmd.Context(), surveyTasks, interfaces); err != nil {
