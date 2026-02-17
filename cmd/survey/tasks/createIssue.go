@@ -2,7 +2,7 @@ package tasks
 
 import (
 	"context"
-	"errors"
+	"fmt"
 
 	"github.com/LazyBachelor/LazyPM/internal/models"
 	"github.com/LazyBachelor/LazyPM/internal/service"
@@ -10,6 +10,12 @@ import (
 	ui "github.com/LazyBachelor/LazyPM/pkg/task/ui"
 	"github.com/charmbracelet/huh"
 )
+
+const description = `You are tasked with creating a new issue in the project management system.
+This task will test your ability to use the issue creation workflow effectively.
+
+Assign this task to yourself and start creating the issue.
+Make sure to fill out all the necessary details, including the title, description, and assignee.`
 
 func NewCreateIssueTask(svc *service.Services) *task.Task {
 	aboutScreen := ui.NewTaskModel(createIssueDetails())
@@ -55,15 +61,18 @@ func createIssueQuestionnaire() ui.Questions {
 }
 
 func createIssueDbState(ctx context.Context, svc *service.Services) error {
+	// Clear existing issues to ensure a clean state for the task
 	if err := svc.DeleteIssues(); err != nil {
 		return err
 	}
 
-	issues := []*models.Issue{
-		{Title: "Test Issue", Description: "Long Description", IssueType: models.TypeBug, Status: models.StatusBlocked},
+	issue := models.Issue{
+		ID:    "pm-abc",
+		Title: "Create A New Issue", Description: description,
+		IssueType: models.TypeTask, Status: models.StatusOpen,
 	}
 
-	if err := svc.Beads.CreateIssues(ctx, issues, "actor"); err != nil {
+	if err := svc.Beads.CreateIssue(ctx, &issue, ""); err != nil {
 		return err
 	}
 
@@ -76,8 +85,24 @@ func createIssueValidate(ctx context.Context, svc *service.Services) (ok bool, e
 		return false, err
 	}
 
-	if len(issues) == 0 {
-		return false, errors.New("no issues found. Please create an issue to proceed.")
+	if len(issues) == 1 && issues[0].Title == "Create A New Issue" {
+		return false, fmt.Errorf("issue not created")
+	}
+
+	if issues[0].Assignee == "" {
+		return false, fmt.Errorf("issue assignee not set")
+	}
+
+	if len(issues) > 2 {
+		return false, fmt.Errorf("too many issues created, we are expecting two total issues")
+	}
+
+	if issues[1].Assignee == "" {
+		return false, fmt.Errorf("issue assignee not set")
+	}
+
+	if issues[1].Description == "" {
+		return false, fmt.Errorf("issue description not set")
 	}
 
 	return true, nil
