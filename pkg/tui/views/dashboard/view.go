@@ -58,5 +58,4 @@ func (m *Model) View() string {
 
 	return mainView
 
-	
 }
