@@ -6,38 +6,57 @@ import (
 	"time"
 
 	"github.com/LazyBachelor/LazyPM/internal/service"
+	taskui "github.com/LazyBachelor/LazyPM/pkg/task/ui"
 	tea "github.com/charmbracelet/bubbletea"
 )
 
+type Tasker interface {
+	Init() *Task
+	Config() TaskConfig
+
+	Details() taskui.TaskDetails
+	QuestionsFunc() QuestionsFunc
+
+	InterfaceType() Interface
+
+	ValidateFunc(context.Context) (ok bool, errorMsg error)
+	DbStateFunc(context.Context) error
+}
+
 type Task struct {
-	Config        TaskConfig
-	interfaceType Interface
-	aboutScreen   tea.Model
-	questionnaire tea.Model
+	svc    *service.Services
+	Config TaskConfig
+
+	Interface     Interface
+	InterfaceType InterfaceType
+
+	details       taskui.TaskDetails
+	questionsFunc QuestionsFunc
 
 	validateFunc ValidateFunc
 	dbStateFunc  DbStateFunc
-
-	svc *service.Services
 
 	feedbackChan chan ValidationFeedback
 	doneChan     chan bool
 	quitChan     chan bool
 }
 
-func NewTask(svc *service.Services, aboutScreen tea.Model, questionnaire tea.Model) *Task {
+func NewTask(svc *service.Services, details taskui.TaskDetails, questionsFunc QuestionsFunc) *Task {
 	return &Task{
-		aboutScreen:   aboutScreen,
-		questionnaire: questionnaire,
+		details:       details,
+		questionsFunc: questionsFunc,
 		svc:           svc,
 	}
 }
 
 func (t *Task) IntroduceTask() error {
-	if t.aboutScreen == nil {
-		return fmt.Errorf("aboutScreen is not set")
+	if t.details == (taskui.TaskDetails{}) {
+		return fmt.Errorf("details is not set")
 	}
-	model, err := tea.NewProgram(t.aboutScreen, tea.WithAltScreen()).Run()
+
+	detailsScreen := taskui.NewTaskModel(t.details)
+
+	model, err := tea.NewProgram(detailsScreen, tea.WithAltScreen()).Run()
 	if err != nil {
 		return err
 	}
@@ -48,32 +67,39 @@ func (t *Task) IntroduceTask() error {
 }
 
 func (t *Task) StartInterface(ctx context.Context, cfg TaskConfig) error {
-	if t.interfaceType == nil {
+	if t.Interface == nil {
 		return fmt.Errorf("interfaceType is not set")
 	}
 
-	return t.interfaceType.Run(ctx, cfg)
+	return t.Interface.Run(ctx, cfg)
 }
 
 func (t *Task) Initialize(ctx context.Context) error {
 	if t.dbStateFunc == nil {
 		return fmt.Errorf("dbStateFunc is not set")
 	}
-	return t.dbStateFunc(ctx, t.svc)
+	return t.dbStateFunc(ctx)
 }
 
 func (t *Task) Validate(ctx context.Context) (bool, error) {
 	if t.validateFunc == nil {
 		return false, fmt.Errorf("validateFunc is not set")
 	}
-	return t.validateFunc(ctx, t.svc)
+	return t.validateFunc(ctx)
 }
 
 func (t *Task) StartQuestionnaire() error {
-	if t.questionnaire == nil {
-		return fmt.Errorf("questionnaire is not set")
+	if t.questionsFunc == nil {
+		return fmt.Errorf("questionsFunc is not set")
 	}
-	model, err := tea.NewProgram(t.questionnaire, tea.WithAltScreen()).Run()
+
+	questions := t.questionsFunc(t.InterfaceType)
+	if questions == nil {
+		return fmt.Errorf("questions is nil")
+	}
+
+	questionare := taskui.NewQuestionnaireModel(questions)
+	model, err := tea.NewProgram(questionare, tea.WithAltScreen()).Run()
 	if err != nil {
 		return err
 	}
@@ -88,7 +114,11 @@ func (t *Task) SetConfigFunc(fn ConfigFunc) {
 }
 
 func (t *Task) SetInterface(interfaceType Interface) {
-	t.interfaceType = interfaceType
+	t.Interface = interfaceType
+}
+
+func (t *Task) SetInterfaceType(interfaceType InterfaceType) {
+	t.InterfaceType = interfaceType
 }
 
 func (t *Task) SetDbStateFunc(fn DbStateFunc) {

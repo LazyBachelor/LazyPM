@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/LazyBachelor/LazyPM/internal/service"
+	taskui "github.com/LazyBachelor/LazyPM/pkg/task/ui"
 )
 
 var ErrUserQuit = errors.New("user quit")
@@ -16,9 +17,18 @@ type Interface interface {
 	Run(context.Context, TaskConfig) error
 }
 
+type InterfaceType string
+
+const (
+	InterfaceTUI InterfaceType = "tui"
+	InterfaceCLI InterfaceType = "repl"
+	InterfaceWeb InterfaceType = "web"
+)
+
 type ConfigFunc func() TaskConfig
-type ValidateFunc func(context.Context, *service.Services) (ok bool, err error)
-type DbStateFunc func(context.Context, *service.Services) error
+type ValidateFunc func(context.Context) (ok bool, err error)
+type DbStateFunc func(context.Context) error
+type QuestionsFunc func(InterfaceType) taskui.Questions
 
 type ValidationFeedback struct {
 	Success   bool

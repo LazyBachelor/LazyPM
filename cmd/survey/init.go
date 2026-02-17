@@ -23,7 +23,7 @@ func initializeServices(ctx context.Context) (*service.Services, func(), error) 
 
 func initTasks(svc *service.Services) []*task.Task {
 	return []*task.Task{
-		tasks.NewCreateIssueTask(svc),
+		tasks.NewCreateIssueTask(svc).Init(),
 	}
 }
 

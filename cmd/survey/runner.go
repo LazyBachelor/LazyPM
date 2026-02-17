@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"math/rand"
 
+	"github.com/LazyBachelor/LazyPM/cmd/survey/tasks"
 	"github.com/LazyBachelor/LazyPM/pkg/task"
 )
 
@@ -15,6 +16,7 @@ func taskLoop(ctx context.Context, surveyTasks []*task.Task, interfaces []task.I
 	for _, t := range surveyTasks {
 
 		t.SetInterface(interfaces[interfaceIndex])
+		t.SetInterfaceType(tasks.InterfaceToType(interfaces[interfaceIndex]))
 
 		doneChan := make(chan bool, 1)
 		quitChan := make(chan bool, 1)
