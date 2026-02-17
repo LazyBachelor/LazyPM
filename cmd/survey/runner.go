@@ -16,6 +16,14 @@ func taskLoop(ctx context.Context, surveyTasks []*task.Task, interfaces []task.I
 
 		t.SetInterface(interfaces[interfaceIndex])
 
+		doneChan := make(chan bool, 1)
+		quitChan := make(chan bool, 1)
+		feedbackChan := make(chan task.ValidationFeedback, 10)
+
+		if validated, ok := interfaces[interfaceIndex].(task.ValidatedInterface); ok {
+			validated.SetChannels(feedbackChan, quitChan)
+		}
+
 		if err := t.Initialize(ctx); err != nil {
 			return fmt.Errorf("failed to initialize task: %w", err)
 		}
@@ -24,16 +32,27 @@ func taskLoop(ctx context.Context, surveyTasks []*task.Task, interfaces []task.I
 			return returnIfUserQuit(err, "failed to display task introduction screen")
 		}
 
-		if err := t.StartInterface(ctx, t.Config); err != nil {
-			return returnIfUserQuit(err, "failed to start task interface")
-		}
+		t.SetChannels(feedbackChan, doneChan, quitChan)
 
-		ok, err := t.Validate(ctx)
-		if err != nil {
-			return returnIfUserQuit(err, "validation error")
-		}
-		if !ok {
-			return fmt.Errorf("task validation failed: task did not meet requirements")
+		go t.StartValidationLoop(ctx)
+
+		interfaceDone := make(chan error, 1)
+		go func() {
+			interfaceDone <- t.StartInterface(ctx, t.Config)
+		}()
+
+		select {
+		case <-doneChan:
+			close(quitChan)
+			<-interfaceDone
+			fmt.Println("Task completed successfully!")
+
+		case err := <-interfaceDone:
+			close(quitChan)
+			if err != nil {
+				return returnIfUserQuit(err, "failed to start task interface")
+			}
+			fmt.Println("Task incomplete - you exited early")
 		}
 
 		if err := t.StartQuestionnaire(); err != nil {

@@ -3,6 +3,7 @@ package task
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/LazyBachelor/LazyPM/internal/service"
 	tea "github.com/charmbracelet/bubbletea"
@@ -18,6 +19,10 @@ type Task struct {
 	dbStateFunc  DbStateFunc
 
 	svc *service.Services
+
+	feedbackChan chan ValidationFeedback
+	doneChan     chan bool
+	quitChan     chan bool
 }
 
 func NewTask(svc *service.Services, aboutScreen tea.Model, questionnaire tea.Model) *Task {
@@ -92,4 +97,44 @@ func (t *Task) SetDbStateFunc(fn DbStateFunc) {
 
 func (t *Task) SetValidateFunc(fn ValidateFunc) {
 	t.validateFunc = fn
+}
+
+func (t *Task) SetChannels(feedbackChan chan ValidationFeedback, doneChan chan bool, quitChan chan bool) {
+	t.feedbackChan = feedbackChan
+	t.doneChan = doneChan
+	t.quitChan = quitChan
+}
+
+func (t *Task) StartValidationLoop(ctx context.Context) {
+	ticker := time.NewTicker(1 * time.Second)
+	defer ticker.Stop()
+
+	for {
+		select {
+		case <-ticker.C:
+			ok, err := t.Validate(ctx)
+			feedback := ValidationFeedback{
+				Timestamp: time.Now(),
+			}
+			if ok {
+				feedback.Success = true
+				feedback.Message = "Task completed successfully!"
+				t.feedbackChan <- feedback
+				t.doneChan <- true
+				return
+			} else {
+				feedback.Success = false
+				if err != nil {
+					feedback.Message = err.Error()
+				} else {
+					feedback.Message = "Task not yet complete"
+				}
+				t.feedbackChan <- feedback
+			}
+		case <-t.quitChan:
+			return
+		case <-ctx.Done():
+			return
+		}
+	}
 }
