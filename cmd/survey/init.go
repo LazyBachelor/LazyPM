@@ -27,6 +27,10 @@ func initTasks(svc *service.Services) []*task.Task {
 	}
 }
 
-func initInterfaces() []task.Interface {
-	return []task.Interface{repl.NewRepl(), tui.NewTui(), web.NewWeb()}
+func initInterfaces() map[string]task.Interface {
+	return map[string]task.Interface{
+		"repl": repl.NewRepl(),
+		"tui":  tui.NewTui(),
+		"web":  web.NewWeb(),
+	}
 }

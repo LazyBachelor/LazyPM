@@ -8,7 +8,7 @@ var (
 	SecondaryColor = lipgloss.AdaptiveColor{Light: "#ff6f61", Dark: "#ff6347"}
 	AccentColor    = lipgloss.AdaptiveColor{Light: "#6a5acd", Dark: "#9370db"}
 	Background     = lipgloss.AdaptiveColor{Light: "#ffffff", Dark: "#1e1e1e"}
-	TextColor      = lipgloss.AdaptiveColor{Light: "#000000", Dark: "#ffffff"}
+	TextColor      = lipgloss.AdaptiveColor{Light: "#252525b7", Dark: "#ffffff"}
 )
 
 var (
@@ -21,8 +21,7 @@ var (
 )
 
 var (
-	TitleStyle       = lipgloss.NewStyle().Foreground(PrimaryColor).Bold(true)
-	DescriptionStyle = lipgloss.NewStyle().Foreground(TextColor).Italic(true)
-	DetailStyle      = lipgloss.NewStyle().Foreground(SecondaryColor)
-	HelpStyle        = lipgloss.NewStyle().Align(lipgloss.Center).Foreground(AccentColor)
+	TitleStyle = lipgloss.NewStyle().Foreground(PrimaryColor).Bold(true)
+	TextStyle  = lipgloss.NewStyle().Foreground(TextColor)
+	HelpStyle  = lipgloss.NewStyle().Align(lipgloss.Center).Foreground(AccentColor)
 )

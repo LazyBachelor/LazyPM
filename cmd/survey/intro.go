@@ -114,7 +114,8 @@ func (m introModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 func (m introModel) View() string {
 	if m.width < 55 || m.height < 16 {
-		return lipgloss.Place(m.width, m.height, lipgloss.Center, lipgloss.Center, "Terminal too small.")
+		return lipgloss.Place(m.width, m.height, lipgloss.Center, lipgloss.Center,
+			style.TextStyle.Render("Terminal too small."))
 	}
 
 	var content string
@@ -127,10 +128,9 @@ func (m introModel) View() string {
 		return ""
 	}
 
-	boxWidth := min(m.width-10, 90)
+	boxWidth := min(m.width-10, 80)
 
-	boxStyle := lipgloss.NewStyle().
-		Border(style.DefaultBorder).
+	boxStyle := style.BorderStyle.
 		Margin(1, 0).Padding(2, 4).Width(boxWidth)
 
 	var b strings.Builder
@@ -138,7 +138,7 @@ func (m introModel) View() string {
 	b.WriteString(style.TitleStyle.Render(IntroTitle))
 	b.WriteString("\n")
 
-	b.WriteString(boxStyle.Render(content))
+	b.WriteString(boxStyle.Render(style.TextStyle.Render(content)))
 	b.WriteString("\n")
 
 	helpText := "Press " + keys.Continue.Help().Key + " to continue • " +

@@ -3,14 +3,12 @@ package main
 import (
 	"fmt"
 
-	"github.com/LazyBachelor/LazyPM/pkg/cli/repl"
 	"github.com/LazyBachelor/LazyPM/pkg/task"
-	"github.com/LazyBachelor/LazyPM/pkg/tui"
-	"github.com/LazyBachelor/LazyPM/pkg/web"
 	"github.com/spf13/cobra"
 )
 
 var interfaceType string
+var stage int
 
 var rootCmd = &cobra.Command{
 	Use: "survey",
@@ -42,28 +40,36 @@ var submitCmd = &cobra.Command{
 func runStartCmd(cmd *cobra.Command, args []string) error {
 	interfaces := initInterfaces()
 
-	if cmd.Flags().Changed("interface") {
-		switch interfaceType {
-		case "tui":
-			interfaces = []task.Interface{tui.NewTui()}
-		case "repl":
-			interfaces = []task.Interface{repl.NewRepl()}
-		case "web":
-			interfaces = []task.Interface{web.NewWeb()}
-		default:
-			return fmt.Errorf("invalid interface type: %s", interfaceType)
-		}
-	}
-
-	if err := newIntroModel().Run(); err != nil {
-		return returnIfUserQuit(err, "failed to run intro")
-	}
-
 	svc, cleanup, err := initializeServices(cmd.Context())
 	if err != nil {
 		return returnIfUserQuit(err, "failed to initialize services")
 	}
 	defer cleanup()
+
+	tasks := initTasks(svc)
+
+	if cmd.Flags().Changed("interface") {
+		if _, ok := interfaces[interfaceType]; !ok {
+			return fmt.Errorf("invalid interface, valid are (tui, repl, web)")
+		}
+		interfaces = map[string]task.Interface{
+			interfaceType: interfaces[interfaceType],
+		}
+	}
+
+	if cmd.Flags().Changed("stage") {
+		if stage < 1 || stage > len(tasks) {
+			return fmt.Errorf("invalid stage")
+		}
+		if err := runTask(cmd.Context(), tasks[stage-1], interfaces[interfaceType]); err != nil {
+			return err
+		}
+		return nil
+	}
+
+	if err := newIntroModel().Run(); err != nil {
+		return returnIfUserQuit(err, "failed to run intro")
+	}
 
 	surveyTasks := initTasks(svc)
 
@@ -75,7 +81,8 @@ func runStartCmd(cmd *cobra.Command, args []string) error {
 
 func init() {
 	rootCmd.CompletionOptions.DisableDefaultCmd = true
-	startCmd.Flags().StringVarP(&interfaceType, "interface", "i", "", "Specify which interface to use for the survey (tui, repl, web).")
+	startCmd.Flags().StringVarP(&interfaceType, "interface", "i", "tui", "Specify interface.")
+	startCmd.Flags().IntVarP(&stage, "stage", "s", 1, "Run stage directly")
 	rootCmd.AddCommand(startCmd)
 	rootCmd.AddCommand(submitCmd)
 }
