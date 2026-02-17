@@ -2,25 +2,62 @@ package main
 
 import (
 	"errors"
+	"strings"
 
+	"github.com/LazyBachelor/LazyPM/internal/style"
+	"github.com/charmbracelet/bubbles/key"
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/lipgloss"
 )
 
 var ErrUserQuit = errors.New("user quit")
 
+const stages = 2
+
 const (
-	IntroTitle = "Welcome to the Task Survey!"
+	IntroTitle = "✦ Project Managment Interface Survey ✦"
 
-	IntroductionText = `This survey is designed to gather feedback on task management interfaces.
-Your responses will help us improve our services. Please note that all data collected will be anonymized and used solely for research purposes.
-By participating, you consent to the collection and use of your data as described in this disclaimer.
+	IntroductionText = `Welcome! This survey gathers feedback on task management interfaces.
 
-Press any key to continue...`
+Your responses will help us improve our services. All data is anonymized
+and used solely for research purposes.
 
-	Disclaimer = `This survey is designed to gather feedback on task management interfaces.
-Your responses will help us improve our services. Please note that all data collected will be anonymized and used solely for research purposes.
-By participating, you consent to the collection and use of your data as described in this disclaimer.`
+By participating, you consent to data collection as described below.`
+
+	Disclaimer = `📋 Data Collection Notice
+
+• All responses are completely anonymized
+• Data is used for research purposes only
+• No personally identifiable information is collected
+• You may exit at any time by pressing Esc
+• We get no data unless you complete the survey and submit.`
 )
+
+type keyMap struct {
+	Start    key.Binding
+	Continue key.Binding
+	Back     key.Binding
+	Quit     key.Binding
+}
+
+var keys = keyMap{
+	Start: key.NewBinding(
+		key.WithKeys("enter"),
+		key.WithHelp("enter", "start survey"),
+	),
+	Continue: key.NewBinding(
+		key.WithKeys(" ", "j", "l", "down", "right"),
+		key.WithHelp("space", "continue"),
+	),
+	Back: key.NewBinding(
+		key.WithKeys("b", "k", "h", "backspace", "up", "left"),
+		key.WithHelp("b", "back"),
+	),
+	Quit: key.NewBinding(
+		key.WithKeys("esc", "ctrl+c", "q"),
+		key.WithHelp("esc", "quit"),
+	),
+}
 
 type introModel struct {
 	stage         int
@@ -30,7 +67,7 @@ type introModel struct {
 
 func newIntroModel() introModel {
 	return introModel{
-		stage: 0,
+		stage: 1,
 	}
 }
 
@@ -54,13 +91,19 @@ func (m introModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.WindowSizeMsg:
 		m.SetSize(msg.Width, msg.Height)
 	case tea.KeyMsg:
-		switch msg.Type {
-		case tea.KeyEnter, tea.KeySpace:
-			m.stage++
-			if m.stage > 1 {
-				return m, tea.Quit
+		switch {
+		case key.Matches(msg, keys.Start) && m.stage == stages:
+			return m, tea.Quit
+		case key.Matches(msg, keys.Continue):
+			if m.stage < stages {
+				m.stage++
 			}
-		case tea.KeyEsc, tea.KeyCtrlC:
+		case key.Matches(msg, keys.Back):
+			if m.stage > 1 {
+				m.stage--
+			}
+			return m, nil
+		case key.Matches(msg, keys.Quit):
 			m.userQuit = true
 			return m, tea.Quit
 		}
@@ -70,13 +113,46 @@ func (m introModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m introModel) View() string {
-	switch m.stage {
-	case 0:
-		return IntroductionText
-	case 1:
-		return Disclaimer
+	if m.width < 55 || m.height < 16 {
+		return lipgloss.Place(m.width, m.height, lipgloss.Center, lipgloss.Center, "Terminal too small.")
 	}
-	return ""
+
+	var content string
+	switch m.stage {
+	case 1:
+		content = IntroductionText
+	case 2:
+		content = Disclaimer
+	default:
+		return ""
+	}
+
+	boxWidth := min(m.width-10, 90)
+
+	boxStyle := lipgloss.NewStyle().
+		Border(style.DefaultBorder).
+		Margin(1, 0).Padding(2, 4).Width(boxWidth)
+
+	var b strings.Builder
+
+	b.WriteString(style.TitleStyle.Render(IntroTitle))
+	b.WriteString("\n")
+
+	b.WriteString(boxStyle.Render(content))
+	b.WriteString("\n")
+
+	helpText := "Press " + keys.Continue.Help().Key + " to continue • " +
+		keys.Back.Help().Key + " to go back • " + keys.Quit.Help().Key + " to quit"
+
+	if m.stage == stages {
+		helpText += "\nPress " + keys.Start.Help().Key + " to start the survey"
+	}
+
+	b.WriteString(style.HelpStyle.Render(helpText))
+
+	final := lipgloss.Place(m.width, m.height, lipgloss.Center, lipgloss.Center, b.String())
+
+	return final
 }
 
 func (m *introModel) SetSize(width, height int) {

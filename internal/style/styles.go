@@ -24,5 +24,5 @@ var (
 	TitleStyle       = lipgloss.NewStyle().Foreground(PrimaryColor).Bold(true)
 	DescriptionStyle = lipgloss.NewStyle().Foreground(TextColor).Italic(true)
 	DetailStyle      = lipgloss.NewStyle().Foreground(SecondaryColor)
-	HelpStyle        = lipgloss.NewStyle().Foreground(AccentColor)
+	HelpStyle        = lipgloss.NewStyle().Align(lipgloss.Center).Foreground(AccentColor)
 )
