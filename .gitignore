@@ -3,3 +3,4 @@
 *.ext
 bin
 .idea
+pkg/web/node_modules/
