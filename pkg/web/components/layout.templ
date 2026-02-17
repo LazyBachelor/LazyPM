@@ -2,7 +2,7 @@ package components
 
 templ Layout(props LayoutProps) {
 	<!DOCTYPE html>
-	<html lang="en">
+	<html lang="en" data-theme="corporate">
 		<head>
 			<meta charset="UTF-8"/>
 			<title>{ props.Title }</title>
@@ -15,7 +15,6 @@ templ Layout(props LayoutProps) {
 			<main>
 				{ children... }
 			</main>
-			@Footer(props.Footer)
 		</body>
 	</html>
 }
@@ -25,7 +24,6 @@ type LayoutProps struct {
 	Description string
 	Head        HeadProps
 	Header      HeaderProps
-	Footer      FooterProps
 }
 
 templ Head(props HeadProps) {
@@ -54,26 +52,26 @@ type Script struct {
 }
 
 templ Header(props HeaderProps) {
-	<header>
-		<nav>
-			for _, route := range props.Routes {
-				<a href={ route.Path }>{ route.Name }</a>
+	<header class="navbar bg-primary text-primary-content px-6">
+		<div class="navbar-start">
+			<span class="font-semibold mr-5">{ props.Title }</span>
+		</div>
+		<div class="navbar-center">
+			if props.NavbarCenter != nil {
+				@props.NavbarCenter
 			}
-		</nav>
+		</div>
+		<div class="navbar-end">
+			if props.NavbarEnd != nil {
+				@props.NavbarEnd
+			}
+		</div>
 	</header>
 }
 
 type HeaderProps struct {
-	Routes []NavRoute
-}
-
-type NavRoute struct {
-	Name string
-	Path string
-}
-
-templ Footer(props FooterProps) {
-}
-
-type FooterProps struct {
+	Title        string
+	NavbarStart  templ.Component
+	NavbarCenter templ.Component
+	NavbarEnd    templ.Component
 }

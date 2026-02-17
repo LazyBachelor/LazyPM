@@ -9,6 +9,7 @@ import "github.com/a-h/templ"
 import templruntime "github.com/a-h/templ/runtime"
 
 import "github.com/LazyBachelor/LazyPM/pkg/web/components"
+import "github.com/LazyBachelor/LazyPM/pkg/web/components/base"
 
 var baseLayout = components.LayoutProps{
 	Title:       "Beads Test Application",
@@ -24,8 +25,18 @@ var baseLayout = components.LayoutProps{
 			{Src: "/assets/js/ajax.min.js", Defer: true},
 		},
 	},
-	Header: components.HeaderProps{},
-	Footer: components.FooterProps{},
+	Header: components.HeaderProps{
+		Title: "LazyPM Dashboard",
+		NavbarCenter: base.Input(base.InputProps{
+			Name:        "search-issue",
+			Type:        "search",
+			Placeholder: "Search issues...",
+			Class:       "",
+			Attrs: templ.Attributes{
+				"class": "text-base-content",
+			},
+		}),
+	},
 }
 
 func BaseLayout() templ.Component {
