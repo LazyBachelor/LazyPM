@@ -46,6 +46,11 @@ func (q *QuestionnaireModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	if f, ok := form.(*huh.Form); ok {
 		q.form = f
 	}
+
+	if q.form.State == huh.StateCompleted {
+		return q, tea.Quit
+	}
+
 	return q, cmd
 }
 
