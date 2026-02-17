@@ -34,6 +34,17 @@ func newIntroModel() introModel {
 	}
 }
 
+func (m introModel) Run() error {
+	model, err := tea.NewProgram(m, tea.WithAltScreen()).Run()
+	if err != nil {
+		return err
+	}
+	if m, ok := model.(introModel); ok && m.userQuit {
+		return ErrUserQuit
+	}
+	return nil
+}
+
 func (m introModel) Init() tea.Cmd {
 	return nil
 }
@@ -66,17 +77,6 @@ func (m introModel) View() string {
 		return Disclaimer
 	}
 	return ""
-}
-
-func (m introModel) Run() error {
-	model, err := tea.NewProgram(m, tea.WithAltScreen()).Run()
-	if err != nil {
-		return err
-	}
-	if m, ok := model.(introModel); ok && m.userQuit {
-		return ErrUserQuit
-	}
-	return nil
 }
 
 func (m *introModel) SetSize(width, height int) {

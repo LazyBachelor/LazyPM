@@ -11,11 +11,11 @@ import (
 	"github.com/charmbracelet/huh"
 )
 
-func NewCreateIssueTask() *task.Task {
+func NewCreateIssueTask(svc *service.Services) *task.Task {
 	aboutScreen := ui.NewTaskModel(createIssueDetails())
 	questionnaire := ui.NewQuestionnaireModel(createIssueQuestionnaire())
 
-	task := task.NewTask(aboutScreen, questionnaire)
+	task := task.NewTask(svc, aboutScreen, questionnaire)
 	task.SetConfigFunc(createIssueConfig)
 	task.SetDbStateFunc(createIssueDbState)
 	task.SetValidateFunc(createIssueValidate)

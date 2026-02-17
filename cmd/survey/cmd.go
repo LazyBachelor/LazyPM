@@ -1,48 +1,41 @@
 package main
 
 import (
-	"errors"
-	"log"
-	"os"
-
-	"github.com/LazyBachelor/LazyPM/pkg/task"
 	"github.com/spf13/cobra"
 )
 
 var rootCmd = &cobra.Command{
 	Use:   "survey",
-	Short: "Run the user survey",
+	Short: "This application exists to gather metrics and feedback on task management interfaces.",
 }
 
 var startCmd = &cobra.Command{
 	Use:   "start",
 	Short: "Start the user survey",
-	Run: func(cmd *cobra.Command, args []string) {
-		if err := newIntroModel().Run(); err != nil {
-			if errors.Is(err, ErrUserQuit) {
-				os.Exit(0)
-			}
-			log.Fatalf("Failed to run intro screen: %v\n", err)
-		}
+	RunE:  runStartCmd,
+}
 
-		svc, close, err := initializeServices(cmd.Context())
-		if err != nil {
-			log.Fatalf("Failed to initialize services: %v\n", err)
-		}
-		defer close()
+func runStartCmd(cmd *cobra.Command, args []string) error {
+	if err := newIntroModel().Run(); err != nil {
+		return returnIfUserQuit(err, "failed to run intro")
+	}
 
-		surveyTasks := initTasks()
-		interfaces := initInterfaces()
+	svc, cleanup, err := initializeServices(cmd.Context())
+	if err != nil {
+		return returnIfUserQuit(err, "failed to initialize services")
+	}
+	defer cleanup()
 
-		if err := taskLoop(cmd.Context(), svc, surveyTasks, interfaces); err != nil {
-			if errors.Is(err, task.ErrUserQuit) {
-				os.Exit(0)
-			}
-			log.Fatalf("Task loop failed: %v\n", err)
-		}
-	},
+	surveyTasks := initTasks(svc)
+	interfaces := initInterfaces()
+
+	if err := taskLoop(cmd.Context(), surveyTasks, interfaces); err != nil {
+		return returnIfUserQuit(err, "task loop failed")
+	}
+	return nil
 }
 
 func init() {
+	rootCmd.CompletionOptions.DisableDefaultCmd = true
 	rootCmd.AddCommand(startCmd)
 }

@@ -16,12 +16,15 @@ type Task struct {
 
 	validateFunc ValidateFunc
 	dbStateFunc  DbStateFunc
+
+	svc *service.Services
 }
 
-func NewTask(aboutScreen tea.Model, questionnaire tea.Model) *Task {
+func NewTask(svc *service.Services, aboutScreen tea.Model, questionnaire tea.Model) *Task {
 	return &Task{
 		aboutScreen:   aboutScreen,
 		questionnaire: questionnaire,
+		svc:           svc,
 	}
 }
 
@@ -45,6 +48,20 @@ func (t *Task) StartInterface(ctx context.Context, cfg TaskConfig) error {
 	}
 
 	return t.interfaceType.Run(ctx, cfg)
+}
+
+func (t *Task) Initialize(ctx context.Context) error {
+	if t.dbStateFunc == nil {
+		return fmt.Errorf("dbStateFunc is not set")
+	}
+	return t.dbStateFunc(ctx, t.svc)
+}
+
+func (t *Task) Validate(ctx context.Context) (bool, error) {
+	if t.validateFunc == nil {
+		return false, fmt.Errorf("validateFunc is not set")
+	}
+	return t.validateFunc(ctx, t.svc)
 }
 
 func (t *Task) StartQuestionnaire() error {
@@ -75,18 +92,4 @@ func (t *Task) SetDbStateFunc(fn DbStateFunc) {
 
 func (t *Task) SetValidateFunc(fn ValidateFunc) {
 	t.validateFunc = fn
-}
-
-func (t *Task) Initialize(ctx context.Context, svc *service.Services) error {
-	if t.dbStateFunc == nil {
-		return fmt.Errorf("dbStateFunc is not set")
-	}
-	return t.dbStateFunc(ctx, svc)
-}
-
-func (t *Task) Validate(ctx context.Context, svc *service.Services) (bool, error) {
-	if t.validateFunc == nil {
-		return false, fmt.Errorf("validateFunc is not set")
-	}
-	return t.validateFunc(ctx, svc)
 }

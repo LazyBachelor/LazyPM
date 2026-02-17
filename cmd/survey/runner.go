@@ -6,45 +6,38 @@ import (
 	"fmt"
 	"math/rand"
 
-	"github.com/LazyBachelor/LazyPM/internal/service"
 	"github.com/LazyBachelor/LazyPM/pkg/task"
 )
 
-func taskLoop(ctx context.Context, svc *service.Services, surveyTasks []*task.Task, interfaces []task.Interface) error {
+func taskLoop(ctx context.Context, surveyTasks []*task.Task, interfaces []task.Interface) error {
 	interfaceIndex := rand.Int() % len(interfaces)
 
 	for _, t := range surveyTasks {
 
 		t.SetInterface(interfaces[interfaceIndex])
 
-		if err := t.Initialize(ctx, svc); err != nil {
+		if err := t.Initialize(ctx); err != nil {
 			return fmt.Errorf("failed to initialize task: %w", err)
 		}
 
 		if err := t.IntroduceTask(); err != nil {
-			if errors.Is(err, task.ErrUserQuit) {
-				return task.ErrUserQuit
-			}
-			return fmt.Errorf("failed to display task introduction screen: %w", err)
+			return returnIfUserQuit(err, "failed to display task introduction screen")
 		}
 
 		if err := t.StartInterface(ctx, t.Config); err != nil {
-			return fmt.Errorf("failed to start task interface: %w", err)
+			return returnIfUserQuit(err, "failed to start task interface")
 		}
 
-		ok, err := t.Validate(ctx, svc)
+		ok, err := t.Validate(ctx)
 		if err != nil {
-			return fmt.Errorf("validation error: %w", err)
+			return returnIfUserQuit(err, "validation error")
 		}
 		if !ok {
 			return fmt.Errorf("task validation failed: task did not meet requirements")
 		}
 
 		if err := t.StartQuestionnaire(); err != nil {
-			if errors.Is(err, task.ErrUserQuit) {
-				return task.ErrUserQuit
-			}
-			return fmt.Errorf("failed to start questionnaire: %w", err)
+			return returnIfUserQuit(err, "failed to start questionnaire")
 		}
 
 		interfaceIndex++
@@ -53,4 +46,11 @@ func taskLoop(ctx context.Context, svc *service.Services, surveyTasks []*task.Ta
 		}
 	}
 	return nil
+}
+
+func returnIfUserQuit(err error, msg string) error {
+	if errors.Is(err, ErrUserQuit) {
+		return nil
+	}
+	return fmt.Errorf("%s: %w", msg, err)
 }

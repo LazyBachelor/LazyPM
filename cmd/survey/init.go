@@ -21,9 +21,9 @@ func initializeServices(ctx context.Context) (*service.Services, func(), error) 
 	return service.NewServices(ctx, config)
 }
 
-func initTasks() []*task.Task {
+func initTasks(svc *service.Services) []*task.Task {
 	return []*task.Task{
-		tasks.NewCreateIssueTask(),
+		tasks.NewCreateIssueTask(svc),
 	}
 }
 
