@@ -1,6 +1,10 @@
 package main
 
 import (
+	"github.com/LazyBachelor/LazyPM/pkg/cli/repl"
+	"github.com/LazyBachelor/LazyPM/pkg/task"
+	"github.com/LazyBachelor/LazyPM/pkg/tui"
+	"github.com/LazyBachelor/LazyPM/pkg/web"
 	"github.com/spf13/cobra"
 )
 
@@ -13,6 +17,7 @@ var startCmd = &cobra.Command{
 	Use:   "start",
 	Short: "Start the user survey",
 	RunE:  runStartCmd,
+	Args:  cobra.MinimumNArgs(0),
 }
 
 func runStartCmd(cmd *cobra.Command, args []string) error {
@@ -28,6 +33,16 @@ func runStartCmd(cmd *cobra.Command, args []string) error {
 
 	surveyTasks := initTasks(svc)
 	interfaces := initInterfaces()
+
+	if args[0] == "tui" {
+		interfaces = []task.Interface{tui.NewTui()}
+	}
+	if args[0] == "repl" {
+		interfaces = []task.Interface{repl.NewRepl()}
+	}
+	if args[0] == "web" {
+		interfaces = []task.Interface{web.NewWeb()}
+	}
 
 	if err := taskLoop(cmd.Context(), surveyTasks, interfaces); err != nil {
 		return returnIfUserQuit(err, "task loop failed")
