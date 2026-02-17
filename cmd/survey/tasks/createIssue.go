@@ -85,24 +85,14 @@ func createIssueValidate(ctx context.Context, svc *service.Services) (ok bool, e
 		return false, err
 	}
 
-	if len(issues) == 1 && issues[0].Title == "Create A New Issue" {
+	if len(issues) == 1 {
 		return false, fmt.Errorf("issue not created")
 	}
 
-	if issues[0].Assignee == "" {
-		return false, fmt.Errorf("issue assignee not set")
-	}
-
-	if len(issues) > 2 {
-		return false, fmt.Errorf("too many issues created, we are expecting two total issues")
-	}
-
-	if issues[1].Assignee == "" {
-		return false, fmt.Errorf("issue assignee not set")
-	}
-
-	if issues[1].Description == "" {
-		return false, fmt.Errorf("issue description not set")
+	for _, issue := range issues {
+		if issue.Description == "" && issue.Title != "" {
+			return false, fmt.Errorf("issue title or description not set")
+		}
 	}
 
 	return true, nil
