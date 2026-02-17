@@ -36,6 +36,7 @@ var baseLayout = components.LayoutProps{
 				"class": "text-base-content",
 			},
 		}),
+		NavbarEnd: components.Status(),
 	},
 }
 
