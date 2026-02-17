@@ -52,4 +52,3 @@ func (s *Storage[T]) Init() error {
 	}
 	return s.Load()
 }
-

@@ -102,18 +102,18 @@ func initialized(beadsPath string) bool {
 	return true
 }
 
-// Brukes til reset/testing/admin-operasjon
+// Used for reset/testing/admin operations
 func (s Services) DeleteIssues() error {
 
-    var deleteIssues = "DELETE FROM issues;"
+		var deleteIssues = "DELETE FROM issues;"
 
-    if _, err := s.DB.Exec(deleteIssues); err != nil {
-        return err
-    }
-    return nil
+		if _, err := s.DB.Exec(deleteIssues); err != nil {
+			return err
+		}
+return nil
 }
 
-// Bruk av TUI for delete spesifikt issue (ID)
+// Used by TUI to delete a specific issue by ID
 func (s *Services) DeleteIssue(id string) error {
     query := `DELETE FROM issues WHERE id = ?`
 

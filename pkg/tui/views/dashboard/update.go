@@ -26,7 +26,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	case tea.KeyMsg:
 
-		// 🔴 Hvis vi er i delete-confirmation mode
+
 		if m.showDeleteConfirm {
 			switch msg.String() {
 			case "y":
@@ -37,13 +37,13 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 		}
 
-		// Hvis listen er i filter mode
+	
 		if m.issueList.FilterState() == list.Filtering {
 			cmd, _ := m.issueList.Update(msg)
 			return m, cmd
 		}
 
-		// 🔴 Trigger delete
+
 		if msg.String() == "d" {
 			selected := m.issueList.SelectedItem()
 			if selected.ID != "" {
@@ -65,7 +65,6 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, nil
 		}
 
-		// Fjern item fra bubbles list
 		index := m.issueList.Index()
 		m.issueList = m.issueList.Remove(index)
 
