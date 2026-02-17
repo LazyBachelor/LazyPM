@@ -80,19 +80,22 @@ func createIssueDbState(ctx context.Context, svc *service.Services) error {
 }
 
 func createIssueValidate(ctx context.Context, svc *service.Services) (ok bool, errorMsg error) {
+	// Fetches issues, indexed with latest first
 	issues, err := svc.Beads.SearchIssues(ctx, "", models.IssueFilter{})
 	if err != nil {
 		return false, err
 	}
 
-	if len(issues) == 1 {
+	if len(issues) < 2 {
 		return false, fmt.Errorf("issue not created")
 	}
 
-	for _, issue := range issues {
-		if issue.Description == "" && issue.Title != "" {
-			return false, fmt.Errorf("issue title or description not set")
-		}
+	if issues[0].Title == "" {
+		return false, fmt.Errorf("issue title is empty")
+	}
+
+	if issues[0].Description == "" {
+		return false, fmt.Errorf("issue description is empty")
 	}
 
 	return true, nil
