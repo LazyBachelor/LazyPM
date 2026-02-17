@@ -11,18 +11,26 @@ import (
 	"github.com/LazyBachelor/LazyPM/pkg/cli"
 	"github.com/LazyBachelor/LazyPM/pkg/cli/commands"
 	"github.com/LazyBachelor/LazyPM/pkg/cli/styles"
+	"github.com/LazyBachelor/LazyPM/pkg/task"
 	"github.com/c-bata/go-prompt"
 	"golang.org/x/term"
 )
 
 const (
 	ReplHelp = `Type 'pm help' for available PM commands.
+Type 'pm status' to check task progress.
 You can also run shell commands directly. Type 'exit' or 'quit' to leave.`
 
 	ReplTitle = "Welcome to Project Management CLI! " + ReplHelp
 )
 
-type REPL struct{}
+type REPL struct {
+	feedbackChan chan task.ValidationFeedback
+	quitChan     chan bool
+
+	currentFeedback task.ValidationFeedback
+	exitRequested   bool
+}
 
 func NewRepl() *REPL {
 	return &REPL{}
@@ -49,20 +57,38 @@ func (r *REPL) Run(ctx context.Context, config cli.CLIConfig) error {
 	// Make sure to set services, to ensure they are available.
 	commands.SetServices(svc)
 
+	// Set the REPL instance so status command can access it
+	commands.SetRepl(r)
+
 	fmt.Println(styles.TitleStyle.Render(ReplTitle)) // Print REPL title.
+
+	// Start goroutine to watch for validation feedback and quit signals
+	if r.feedbackChan != nil && r.quitChan != nil {
+		go r.watchValidation()
+	}
 
 	// history keeps track of command history.
 	// This enables navigating through previous commands.
 	var history []string
 
-	// Start the REPL loop, which continues until the user types "exit" or "quit".
-	for {
+	// Start the REPL loop, which continues until the user types "exit" or "quit" or task completes.
+	for !r.exitRequested {
+		// Check if we should exit before prompting (non-blocking check)
+		if r.exitRequested {
+			break
+		}
+
 		// Prompt the user for input, and provide suggestions.
 		input := prompt.Input(
 			PromptPrefix,
 			completer,
 			promptOptions(history)...,
 		)
+
+		// Check again after prompt returns (in case validation completed while waiting)
+		if r.exitRequested {
+			break
+		}
 
 		// Trim whitespace from the input to ensure consistent command processing.
 		input = strings.TrimSpace(input)
@@ -81,4 +107,33 @@ func (r *REPL) Run(ctx context.Context, config cli.CLIConfig) error {
 	}
 
 	return nil
+}
+
+func (r *REPL) watchValidation() {
+	for {
+		select {
+		case feedback := <-r.feedbackChan:
+			r.currentFeedback = feedback
+			if feedback.Success {
+				fmt.Printf("\n%s\n", styles.TitleStyle.Render("Task completed successfully!"))
+				fmt.Println("Press Enter to exit...")
+				r.exitRequested = true
+				return
+			}
+		case <-r.quitChan:
+			r.exitRequested = true
+			return
+		}
+	}
+}
+
+// GetCurrentFeedback returns the current validation feedback for the status command
+func (r *REPL) GetCurrentFeedback() task.ValidationFeedback {
+	return r.currentFeedback
+}
+
+// SetChannels sets the channels for receiving validation feedback and quit signals from the task interface
+func (r *REPL) SetChannels(feedbackChan chan task.ValidationFeedback, quitChan chan bool) {
+	r.feedbackChan = feedbackChan
+	r.quitChan = quitChan
 }
