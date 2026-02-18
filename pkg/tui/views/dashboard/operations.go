@@ -297,6 +297,13 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if cmd != nil {
 			return m, cmd
 		}
+	case ValidationFeedbackMsg:
+		m.currentFeedback = msg.Feedback
+		if msg.Feedback.Success {
+			m.showComplete = true
+			return m, tea.Quit
+		}
+		return m, m.listenForValidation()
 
 	case tea.WindowSizeMsg:
 		m.width = msg.Width
