@@ -15,10 +15,10 @@ func (m *Model) View() string {
 	header := m.header.View(m.width)
 	headerHeight := m.header.Height()
 
-	bottomView := m.helpBar.View()
-	bottomHeight := m.helpBar.Height()
+	footer := m.footer()
+	footerHeight := lipgloss.Height(footer)
 
-	contentHeight := m.height - headerHeight - bottomHeight
+	contentHeight := m.height - headerHeight - footerHeight
 
 	totalContentWidth := m.width - 1
 	listWidth := totalContentWidth * styles.ListViewRatio / 100
@@ -32,5 +32,16 @@ func (m *Model) View() string {
 
 	content := lipgloss.JoinHorizontal(lipgloss.Left, listView, detailView)
 
-	return lipgloss.JoinVertical(lipgloss.Left, header, content, bottomView)
+	return lipgloss.JoinVertical(lipgloss.Left, header, content, footer)
+}
+
+func (m *Model) footer() string {
+	feedbackStatus := m.currentFeedback.Message
+
+	if feedbackStatus == "" {
+		return m.helpBar.View()
+	}
+
+	m.helpBar.SetWidth(m.width - lipgloss.Width(feedbackStatus))
+	return lipgloss.JoinHorizontal(lipgloss.Left, m.helpBar.View(), feedbackStatus)
 }

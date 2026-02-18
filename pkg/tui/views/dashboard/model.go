@@ -2,29 +2,40 @@ package dashboard
 
 import (
 	"github.com/LazyBachelor/LazyPM/internal/service"
+	"github.com/LazyBachelor/LazyPM/pkg/task"
 	tea "github.com/charmbracelet/bubbletea"
 )
 
-type Model struct {
-	header      Header
-	issueList   IssueList
-	issueDetail IssueDetail
-	helpBar     HelpBar
-	keyMap      DashboardKeyMap
-	svc         *service.Services
-	width       int
-	height      int
-	focusedPane int // 0 = list, 1 = detail
+type ValidationFeedbackMsg struct {
+	Feedback task.ValidationFeedback
 }
 
-func NewDashboard(svc *service.Services) *Model {
+type Model struct {
+	header          Header
+	issueList       IssueList
+	issueDetail     IssueDetail
+	helpBar         HelpBar
+	keyMap          DashboardKeyMap
+	svc             *service.Services
+	width           int
+	height          int
+	focusedPane     int // 0 = list, 1 = detail
+	feedbackChan    chan task.ValidationFeedback
+	quitChan        chan bool
+	currentFeedback task.ValidationFeedback
+	showComplete    bool
+}
+
+func NewDashboard(svc *service.Services, feedbackChan chan task.ValidationFeedback, quitChan chan bool) *Model {
 	m := &Model{
-		header:      NewHeader("Project Manager Dashboard"),
-		keyMap:      defaultDashboardKeyMap,
-		svc:         svc,
-		width:       80,
-		height:      24,
-		focusedPane: 0,
+		header:       NewHeader("Project Manager Dashboard"),
+		keyMap:       defaultDashboardKeyMap,
+		svc:          svc,
+		width:        80,
+		height:       24,
+		focusedPane:  0,
+		feedbackChan: feedbackChan,
+		quitChan:     quitChan,
 	}
 
 	m.issueList = NewIssueList(svc, 0, 0)
@@ -39,7 +50,14 @@ func NewDashboard(svc *service.Services) *Model {
 }
 
 func (m *Model) Init() tea.Cmd {
-	return nil
+	return m.listenForValidation()
+}
+
+func (m *Model) listenForValidation() tea.Cmd {
+	return func() tea.Msg {
+		feedback := <-m.feedbackChan
+		return ValidationFeedbackMsg{Feedback: feedback}
+	}
 }
 
 func (m *Model) IsFocusedOnList() bool {

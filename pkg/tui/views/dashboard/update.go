@@ -1,8 +1,8 @@
 package dashboard
 
 import (
-	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/bubbles/list"
+	tea "github.com/charmbracelet/bubbletea"
 )
 
 func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
@@ -22,6 +22,14 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.width = msg.Width
 		m.height = msg.Height
 		return m, nil
+
+	case ValidationFeedbackMsg:
+		m.currentFeedback = msg.Feedback
+		if msg.Feedback.Success {
+			m.showComplete = true
+			return m, tea.Quit
+		}
+		return m, m.listenForValidation()
 	}
 
 	cmd, changed := m.issueList.Update(msg)

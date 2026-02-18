@@ -2,82 +2,91 @@ package tasks
 
 import (
 	"context"
-	"errors"
+	"fmt"
 
 	"github.com/LazyBachelor/LazyPM/internal/models"
 	"github.com/LazyBachelor/LazyPM/internal/service"
 	"github.com/LazyBachelor/LazyPM/pkg/task"
-	ui "github.com/LazyBachelor/LazyPM/pkg/task/ui"
-	"github.com/charmbracelet/huh"
+	taskui "github.com/LazyBachelor/LazyPM/pkg/task/ui"
 )
 
-func NewCreateIssueTask() *task.Task {
-	aboutScreen := ui.NewTaskModel(createIssueDetails())
-	questionnaire := ui.NewQuestionnaireModel(createIssueQuestionnaire())
+const description = `You are tasked with creating a new issue in the project management system.
+This task will test your ability to use the issue creation workflow effectively.
 
-	task := task.NewTask(aboutScreen, questionnaire)
-	task.SetConfigFunc(createIssueConfig)
-	task.SetDbStateFunc(createIssueDbState)
-	task.SetValidateFunc(createIssueValidate)
-	return task
+Assign this task to yourself and start creating the issue.
+Make sure to fill out all the necessary details, including the title, description, and assignee.`
+
+type CreateIssueTask struct {
+	svc *service.Services
 }
 
-func createIssueConfig() task.TaskConfig {
-	return task.TaskConfig{
-		IssuePrefix:           "pm",
-		BeadsDBPath:           "./.pm/db.db",
-		StatisticsStoragePath: "./.pm/task-1-stats.json",
-		WebAddress:            ":8080",
-	}
+func NewCreateIssueTask(svc *service.Services) *CreateIssueTask {
+	return &CreateIssueTask{svc: svc}
 }
 
-func createIssueDetails() ui.TaskDetails {
-	return ui.TaskDetails{
-		Title:          "Create Issue Task",
-		Description:    "Create a new issue in the project management system to test the issue creation workflow.",
-		TimeToComplete: "15m",
-		Difficulty:     "Hard",
-	}
+func (t *CreateIssueTask) Config() task.TaskConfig {
+	config := BaseConfig()
+	config.StatisticsStoragePath = "./.pm/create-issue-stats.json"
+	return config
 }
 
-func createIssueQuestionnaire() ui.Questions {
-	return ui.Questions{
-		huh.NewGroup(
-			huh.NewConfirm().Title("Was this good"),
-		),
-		huh.NewGroup(
-			huh.NewSelect[int]().Options(
-				huh.NewOption("Very good", 1),
-				huh.NewOption("Very Bad", 2),
-			).Title("How good was it?"),
-		),
-	}
+func (t *CreateIssueTask) Details() taskui.TaskDetails {
+	details := BaseDetails()
+	details.Title = "Create Issue Task"
+	details.Description = description
+	return details
 }
 
-func createIssueDbState(ctx context.Context, svc *service.Services) error {
-	if err := svc.DeleteIssues(); err != nil {
+func (t *CreateIssueTask) Questions(interfaceType task.InterfaceType) taskui.Questions {
+	questions := BaseQuestions(interfaceType)
+	return questions
+}
+
+func (t *CreateIssueTask) Setup(ctx context.Context) error {
+	// Clear existing issues to ensure a clean state for the task
+	if err := t.svc.DeleteIssues(); err != nil {
 		return err
 	}
 
-	issues := []*models.Issue{
-		{Title: "Test Issue", Description: "Long Description", IssueType: models.TypeBug, Status: models.StatusBlocked},
+	issue := models.Issue{
+		ID:          "pm-abc",
+		Title:       "Create A New Issue",
+		Description: description,
+		IssueType:   models.TypeTask,
+		Status:      models.StatusOpen,
 	}
 
-	if err := svc.Beads.CreateIssues(ctx, issues, "actor"); err != nil {
-		return err
-	}
-
-	return nil
+	return t.svc.Beads.CreateIssue(ctx, &issue, "")
 }
 
-func createIssueValidate(ctx context.Context, svc *service.Services) (ok bool, errorMsg error) {
-	issues, err := svc.Beads.SearchIssues(ctx, "", models.IssueFilter{})
+func (t *CreateIssueTask) Validate(ctx context.Context) (bool, error) {
+	issues, err := t.svc.Beads.SearchIssues(ctx, "", models.IssueFilter{})
 	if err != nil {
 		return false, err
 	}
 
-	if len(issues) == 0 {
-		return false, errors.New("no issues found. Please create an issue to proceed.")
+	if len(issues) < 2 {
+		return false, fmt.Errorf("issue not created")
+	}
+
+	var createdIssue *models.Issue
+	for i := range issues {
+		if issues[i].ID != "pm-abc" {
+			createdIssue = issues[i]
+			break
+		}
+	}
+
+	if createdIssue == nil {
+		return false, fmt.Errorf("new issue not found")
+	}
+
+	if createdIssue.Title == "" {
+		return false, fmt.Errorf("issue title is empty")
+	}
+
+	if createdIssue.Description == "" {
+		return false, fmt.Errorf("issue description is empty")
 	}
 
 	return true, nil
