@@ -17,7 +17,7 @@ type Server struct {
 // NewServer creates and configures a new HTTP server instance.
 func NewServer(props Server) *http.Server {
 	if props.Address == "" {
-		props.Address = "localhost:8080"
+		props.Address = ":8080"
 	}
 
 	handler := props.RegisterRoutes(props.Assets)

@@ -11,6 +11,12 @@ build:
 	go build -o ./bin/tui ./cmd/tui
 	go build -o ./bin/web ./cmd/web
 
+docker-build:
+	@docker build -t survey .
+
+docker-run:
+	@docker run -it -p 8080:8080 survey:latest
+
 cli:
 	go run ./cmd/pm
 
