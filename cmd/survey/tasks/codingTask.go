@@ -27,7 +27,7 @@ func (t *CodingTask) Config() task.TaskConfig {
 		IssuePrefix:           "pm",
 		BeadsDBPath:           "./.pm/db.db",
 		StatisticsStoragePath: "./.pm/coding-stats.json",
-		WebAddress:            "localhost:8080",
+		WebAddress:            ":8080",
 	}
 }
 
