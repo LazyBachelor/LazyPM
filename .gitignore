@@ -3,3 +3,8 @@
 *.ext
 bin
 .idea
+
+node_modules/
+package-lock.json
+package.json
+pkg/web/node_modules/
