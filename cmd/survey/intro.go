@@ -15,7 +15,7 @@ var ErrUserQuit = errors.New("user quit")
 const stages = 2
 
 const (
-	IntroTitle = "✦ Project Managment Interface Survey ✦"
+	IntroTitle = "✦ Project Management Interface Survey ✦"
 
 	IntroductionText = `Welcome! This survey gathers feedback on task management interfaces.
 
