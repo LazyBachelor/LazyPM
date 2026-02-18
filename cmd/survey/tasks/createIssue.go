@@ -84,11 +84,10 @@ func (t *CreateIssueTask) Validate(ctx context.Context) (bool, error) {
 		return false, fmt.Errorf("issue not created")
 	}
 
-	// Find the user-created issue (any issue other than the seed issue "pm-abc")
 	var createdIssue *models.Issue
 	for i := range issues {
 		if issues[i].ID != "pm-abc" {
-			createdIssue = &issues[i]
+			createdIssue = issues[i]
 			break
 		}
 	}
