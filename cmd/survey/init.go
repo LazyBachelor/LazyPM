@@ -17,7 +17,7 @@ func initializeServices(ctx context.Context) (*service.Services, func(), error) 
 		IssuePrefix:           "pm",
 		BeadsDBPath:           "./.pm/db.db",
 		StatisticsStoragePath: "./.pm/stats.json",
-		WebAddress:            "localhost:8080",
+		WebAddress:            ":8080",
 	}
 	return service.NewServices(ctx, config)
 }

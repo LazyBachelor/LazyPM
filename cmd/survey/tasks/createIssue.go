@@ -30,7 +30,7 @@ func (t *CreateIssueTask) Config() task.TaskConfig {
 		IssuePrefix:           "pm",
 		BeadsDBPath:           "./.pm/db.db",
 		StatisticsStoragePath: "./.pm/task-1-stats.json",
-		WebAddress:            "localhost:8080",
+		WebAddress:            ":8080",
 	}
 }
 
