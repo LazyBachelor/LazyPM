@@ -8,6 +8,8 @@ clean:
 	@rm -rf ./bin
 	@rm -rf ./.pm
 	@rm -rf node_modules
+	@rm package-lock.json
+	@rm package.json
 
 build: tidy
 	go build -o ./bin/pm ./cmd/pm
