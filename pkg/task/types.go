@@ -2,12 +2,15 @@ package task
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/LazyBachelor/LazyPM/internal/service"
 	taskui "github.com/LazyBachelor/LazyPM/pkg/task/ui"
 )
 
 type TaskConfig = service.Config
+
+var ErrUserQuit = fmt.Errorf("user quit")
 
 type Interface interface {
 	Run(context.Context, TaskConfig) error

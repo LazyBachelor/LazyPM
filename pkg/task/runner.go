@@ -9,8 +9,6 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 )
 
-var ErrUserQuit = fmt.Errorf("user quit")
-
 // RunTask orchestrates the complete task execution flow:
 // 1. Setup the task
 // 2. Show task intro screen

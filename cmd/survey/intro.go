@@ -1,16 +1,14 @@
 package main
 
 import (
-	"errors"
 	"strings"
 
 	"github.com/LazyBachelor/LazyPM/internal/style"
+	"github.com/LazyBachelor/LazyPM/pkg/task"
 	"github.com/charmbracelet/bubbles/key"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 )
-
-var ErrUserQuit = errors.New("user quit")
 
 const stages = 2
 
@@ -77,7 +75,7 @@ func (m introModel) Run() error {
 		return err
 	}
 	if m, ok := model.(introModel); ok && m.userQuit {
-		return ErrUserQuit
+		return task.ErrUserQuit
 	}
 	return nil
 }

@@ -1,7 +1,6 @@
 package taskui
 
 import (
-	"errors"
 	"fmt"
 	"strings"
 
@@ -10,8 +9,6 @@ import (
 	"github.com/charmbracelet/bubbles/key"
 	tea "github.com/charmbracelet/bubbletea"
 )
-
-var ErrUserQuit = errors.New("user quit")
 
 type TaskDetails struct {
 	Title          string
