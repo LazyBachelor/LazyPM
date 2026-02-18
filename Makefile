@@ -24,6 +24,7 @@ web:
 dev:
 	@go tool templ generate -watch -cmd "go run ./cmd/web"
 tw:
+	@npm install tailwindcss@latest @tailwindcss/cli@latest @tailwindcss/typography daisyui@latest
 	@npx --yes @tailwindcss/cli -i ./pkg/web/input.css -o ./pkg/web/assets/css/styles.css --watch --minify
 
 
