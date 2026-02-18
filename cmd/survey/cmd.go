@@ -46,7 +46,7 @@ func runStartCmd(cmd *cobra.Command, args []string) error {
 	}
 	defer cleanup()
 
-	tasks := initTasks(svc)
+	surveyTasks := initTasks(svc)
 
 	if cmd.Flags().Changed("interface") {
 		if _, ok := interfaces[interfaceType]; !ok {
@@ -58,10 +58,10 @@ func runStartCmd(cmd *cobra.Command, args []string) error {
 	}
 
 	if cmd.Flags().Changed("stage") {
-		if stage < 1 || stage > len(tasks) {
+		if stage < 1 || stage > len(surveyTasks) {
 			return fmt.Errorf("invalid stage")
 		}
-		if err := runTask(cmd.Context(), tasks[stage-1], interfaces[interfaceType]); err != nil {
+		if err := runTask(cmd.Context(), surveyTasks[stage-1], interfaces[interfaceType]); err != nil {
 			return err
 		}
 		return nil
@@ -70,8 +70,6 @@ func runStartCmd(cmd *cobra.Command, args []string) error {
 	if err := newIntroModel().Run(); err != nil {
 		return returnIfUserQuit(err, "failed to run intro")
 	}
-
-	surveyTasks := initTasks(svc)
 
 	if err := taskLoop(cmd.Context(), surveyTasks, interfaces); err != nil {
 		return returnIfUserQuit(err, "task loop failed")

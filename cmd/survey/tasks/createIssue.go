@@ -7,7 +7,7 @@ import (
 	"github.com/LazyBachelor/LazyPM/internal/models"
 	"github.com/LazyBachelor/LazyPM/internal/service"
 	"github.com/LazyBachelor/LazyPM/pkg/task"
-	ui "github.com/LazyBachelor/LazyPM/pkg/task/ui"
+	taskui "github.com/LazyBachelor/LazyPM/pkg/task/ui"
 	"github.com/charmbracelet/huh"
 )
 
@@ -17,23 +17,18 @@ This task will test your ability to use the issue creation workflow effectively.
 Assign this task to yourself and start creating the issue.
 Make sure to fill out all the necessary details, including the title, description, and assignee.`
 
+func init() {
+	task.Register("create_issue", func(svc *service.Services) task.Tasker {
+		return NewCreateIssueTask(svc)
+	})
+}
+
 type CreateIssueTask struct {
-	*task.Task
 	svc *service.Services
 }
 
 func NewCreateIssueTask(svc *service.Services) *CreateIssueTask {
-	return &CreateIssueTask{
-		svc: svc,
-	}
-}
-
-func (t *CreateIssueTask) Init() *task.Task {
-	task := task.NewTask(t.svc, t.Details(), t.QuestionsFunc())
-	task.SetConfigFunc(t.Config)
-	task.SetDbStateFunc(t.DbStateFunc)
-	task.SetValidateFunc(t.ValidateFunc)
-	return task
+	return &CreateIssueTask{svc: svc}
 }
 
 func (t *CreateIssueTask) Config() task.TaskConfig {
@@ -45,65 +40,47 @@ func (t *CreateIssueTask) Config() task.TaskConfig {
 	}
 }
 
-func (t *CreateIssueTask) Details() ui.TaskDetails {
-	return ui.TaskDetails{
+func (t *CreateIssueTask) Details() taskui.TaskDetails {
+	return taskui.TaskDetails{
 		Title:          "Create Issue Task",
-		Description:    "Create a new issue in the project management system to test the issue creation workflow.",
+		Description:    "Create a new issue in the project management system...",
 		TimeToComplete: "15m",
 		Difficulty:     "Hard",
 	}
 }
 
-func (t *CreateIssueTask) QuestionsFunc() task.QuestionsFunc {
-	return func(interfaceType task.InterfaceType) ui.Questions {
-		questions := ui.Questions{}
-
-		// Add an extra question for TUI
-		if interfaceType == task.InterfaceTUI {
-			questions = append(questions,
-				huh.NewGroup(
-					huh.NewConfirm().Title("Did you complete?"),
-				),
-			)
-		}
-
-		questions = append(questions,
-			huh.NewGroup(
-				huh.NewConfirm().Title("Was this good"),
-			),
-			huh.NewGroup(
-				huh.NewSelect[int]().Options(
+func (t *CreateIssueTask) Questions(interfaceType task.InterfaceType) taskui.Questions {
+	return taskui.Questions{
+		huh.NewGroup(huh.NewConfirm().Title("Was this good")),
+		huh.NewGroup(
+			huh.NewSelect[int]().
+				Options(
 					huh.NewOption("Very good", 1),
 					huh.NewOption("Very Bad", 2),
-				).Title("How good was it?"),
-			),
-		)
-
-		return questions
+				).
+				Title("How good was it?"),
+		),
 	}
 }
 
-func (t *CreateIssueTask) DbStateFunc(ctx context.Context) error {
+func (t *CreateIssueTask) Setup(ctx context.Context) error {
 	// Clear existing issues to ensure a clean state for the task
 	if err := t.svc.DeleteIssues(); err != nil {
 		return err
 	}
 
 	issue := models.Issue{
-		ID:    "pm-abc",
-		Title: "Create A New Issue", Description: description,
-		IssueType: models.TypeTask, Status: models.StatusOpen,
+		ID:          "pm-abc",
+		Title:       "Create A New Issue",
+		Description: description,
+		IssueType:   models.TypeTask,
+		Status:      models.StatusOpen,
 	}
 
-	if err := t.svc.Beads.CreateIssue(ctx, &issue, ""); err != nil {
-		return err
-	}
-
-	return nil
+	return t.svc.Beads.CreateIssue(ctx, &issue, "")
 }
 
-func (t *CreateIssueTask) ValidateFunc(ctx context.Context) (ok bool, errorMsg error) {
-	// Fetches issues, indexed with latest first
+func (t *CreateIssueTask) Validate(ctx context.Context) (bool, error) {
 	issues, err := t.svc.Beads.SearchIssues(ctx, "", models.IssueFilter{})
 	if err != nil {
 		return false, err
