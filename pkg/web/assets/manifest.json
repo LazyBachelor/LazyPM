@@ -1,0 +1,21 @@
+{
+  "short_name": "ProjTool",
+  "name": "Project Management Tool",
+  "icons": [
+    {
+      "src": "/public/images/icon-48.png",
+      "type": "image/png",
+      "sizes": "48x48"
+    },
+    {
+      "src": "/public/images/icon-128.png",
+      "type": "image/png",
+      "sizes": "128x128"
+    }
+  ],
+  "start_url": "/",
+  "background_color": "#ffffff",
+  "display": "standalone",
+  "theme_color": "#000000",
+  "description": "Web Based Project Management Tool for Bachelor Study"
+}
