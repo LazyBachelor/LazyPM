@@ -84,11 +84,24 @@ func (t *CreateIssueTask) Validate(ctx context.Context) (bool, error) {
 		return false, fmt.Errorf("issue not created")
 	}
 
-	if issues[0].Title == "" {
+	// Find the user-created issue (any issue other than the seed issue "pm-abc")
+	var createdIssue *models.Issue
+	for i := range issues {
+		if issues[i].ID != "pm-abc" {
+			createdIssue = &issues[i]
+			break
+		}
+	}
+
+	if createdIssue == nil {
+		return false, fmt.Errorf("new issue not found")
+	}
+
+	if createdIssue.Title == "" {
 		return false, fmt.Errorf("issue title is empty")
 	}
 
-	if issues[0].Description == "" {
+	if createdIssue.Description == "" {
 		return false, fmt.Errorf("issue description is empty")
 	}
 
