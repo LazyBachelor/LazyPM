@@ -159,16 +159,16 @@ func (m *Model) ToggleFocus() {
 	}
 }
 
-// FocusedIssueList returns the issue list of the currently focused window.
 func (m *Model) FocusedIssueList() *IssueList {
+	// return the issue list of the currently focused window so we can use two tui windows for issues
 	if m.focusedWindow == 0 {
 		return &m.issueList
 	}
 	return &m.closedIssueList
 }
 
-// ToggleFocusedWindow switches focus between main and closed issues window.
 func (m *Model) ToggleFocusedWindow() {
+	// switch focus between open/in-progress and closed issues window
 	m.focusedWindow = 1 - m.focusedWindow
 	if m.focusedWindow == 0 {
 		if selected := m.issueList.SelectedItem(); selected.ID != "" {
