@@ -17,6 +17,7 @@ type RangeProps struct {
 templ Range(props RangeProps) {
 	<div class="form-control">
 		<label
+			for={ props.Name }
 			class="label space-x-1 w-full"
 			x-data={ fmt.Sprintf("{ value: %d }", props.Value) }
 		>
@@ -32,9 +33,7 @@ templ Range(props RangeProps) {
 			}
 			<input
 				type="range"
-				if props.ID != "" {
-					id={ props.ID }
-				}
+				id={ props.Name }
 				name={ props.Name }
 				min={ fmt.Sprintf("%d", props.Min) }
 				max={ fmt.Sprintf("%d", props.Max) }

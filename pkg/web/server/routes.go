@@ -27,6 +27,7 @@ func (s *Server) RegisterRoutes(assets embed.FS) http.Handler {
 	s.handleAssets(r, assets)
 
 	r.Get("/", handler.IndexHandler)
+	r.Get("/status", handler.HandleTaskStatus)
 
 	r.Route("/issues", func(r chi.Router) {
 		r.Get("/", handler.ListIssues)
@@ -35,7 +36,7 @@ func (s *Server) RegisterRoutes(assets embed.FS) http.Handler {
 		r.Route("/{id}", func(r chi.Router) {
 			r.Use(handler.IssueCtx)
 			r.Get("/", handler.GetIssue)
-			r.Put("/", handler.UpdateIssue)
+			r.Patch("/", handler.UpdateIssue)
 			r.Delete("/", handler.DeleteIssue)
 		})
 	})
@@ -43,10 +44,15 @@ func (s *Server) RegisterRoutes(assets embed.FS) http.Handler {
 }
 
 func (s *Server) handleAssets(r chi.Router, assets embed.FS) {
-	r.Handle("/assets/*", http.StripPrefix("/assets/",
-		http.FileServer(http.Dir("pkg/web/assets"))))
+	fileServer := http.FileServer(http.Dir("pkg/web/assets"))
 
-	r.HandleFunc("GET /robots.txt", func(w http.ResponseWriter, r *http.Request) {
+	r.Handle("/assets/*",
+		http.StripPrefix("/assets/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			w.Header().Set("Cache-Control", "public, max-age=31536000, immutable")
+			fileServer.ServeHTTP(w, r)
+		})))
+
+	r.Get("/robots.txt", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Cache-Control", "no-cache")
 		http.ServeContent(w, r, "robots.txt", time.Now(), strings.NewReader("User-agent: *\nAllow: /"))
 	})

@@ -9,12 +9,14 @@ import "github.com/a-h/templ"
 import templruntime "github.com/a-h/templ/runtime"
 
 import "github.com/LazyBachelor/LazyPM/pkg/web/components"
+import "github.com/LazyBachelor/LazyPM/pkg/web/components/base"
 
 var baseLayout = components.LayoutProps{
 	Title:       "Beads Test Application",
 	Description: "A sample application using Beads storage service",
 	Head: components.HeadProps{
 		Links: []components.Link{
+			{Href: "/assets/css/styles.css", Rel: "preload", As: "style"},
 			{Href: "/assets/css/styles.css", Rel: "stylesheet"},
 			{Href: "/assets/manifest.json", Rel: "manifest"},
 		},
@@ -23,13 +25,29 @@ var baseLayout = components.LayoutProps{
 			{Src: "/assets/js/ajax.min.js", Defer: true},
 		},
 	},
-	Header: components.HeaderProps{
-		BrandName:         "LazyPM Dashboard",
-		CreateLabel:       "+ Create",
-		CreateHref:        "",
-		SearchPlaceholder: "Search",
+
+	Routes: []components.NavRoutes{
+		{Name: "Dashboard", Path: "/", Icon: components.IconDashboard()},
+		{Name: "Issues", Path: "/", Icon: components.IconIssues()},
+		{Name: "Agile Board", Path: "/board", Icon: components.IconAgileBoard()},
+		{Name: "Backlog", Path: "/backlog", Icon: components.IconBacklog()},
+		{Name: "Reports", Path: "/reports", Icon: components.IconReports()},
+		{Name: "Settings", Path: "/settings", Icon: components.IconSettings()},
 	},
-	Footer: components.FooterProps{},
+
+	Header: components.HeaderProps{
+		Title: "LazyPM Dashboard",
+		NavbarCenter: base.Input(base.InputProps{
+			Name:        "search-issue",
+			Type:        "search",
+			Placeholder: "Search issues...",
+			Class:       "",
+			Attrs: templ.Attributes{
+				"class": "text-base-content",
+			},
+		}),
+		NavbarEnd: components.Status(),
+	},
 }
 
 func BaseLayout() templ.Component {

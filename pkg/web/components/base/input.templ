@@ -35,8 +35,7 @@ templ Input(props InputProps) {
 		if props.Label != "" {
 			<legend class="fieldset-legend">{ props.Label }</legend>
 		}
-		<label
-			for={ props.Name }
+		<div
 			class={
 				"input validator tooltip tooltip-top", props.Class,
 				templ.KV("tooltip tooltip-top", props.DisabledMessage != ""),
@@ -53,7 +52,9 @@ templ Input(props InputProps) {
 				@props.Icon
 			}
 			<input
+				id={ props.Name }
 				name={ props.Name }
+				aria-label={ props.Label }
 				if props.Type == "" {
 					type="text"
 				} else {
@@ -75,7 +76,7 @@ templ Input(props InputProps) {
 				}
 				{ props.Attrs... }
 			/>
-		</label>
+		</div>
 		if props.Description != "" {
 			<div class="label">{ props.Description }</div>
 		}

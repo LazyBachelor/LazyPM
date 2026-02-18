@@ -142,7 +142,7 @@ func IssueForm(props IssueFormProps) templ.Component {
 			Label: "Priority",
 			Class: "flex-1",
 			Min:   0,
-			Max:   5,
+			Max:   4,
 			Value: props.Priority,
 			Step:  1,
 		}).Render(ctx, templ_7745c5c3_Buffer)

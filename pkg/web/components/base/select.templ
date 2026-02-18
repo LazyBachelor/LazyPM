@@ -33,10 +33,9 @@ templ Select(props SelectProps) {
 				templ.KV("select-lg", props.Size == "lg"),
 				templ.KV("select-xl", props.Size == "xl"),
 			}
-			if props.ID != "" {
-				id={ props.ID }
-			}
+			id={ props.Name }
 			name={ props.Name }
+			aria-label={ props.Label }
 			if props.Required {
 				required
 			}
