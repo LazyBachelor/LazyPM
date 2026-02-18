@@ -9,20 +9,11 @@ import (
 )
 
 type TaskConfig = service.Config
-
-var ErrUserQuit = fmt.Errorf("user quit")
+type InterfaceType string
 
 type Interface interface {
 	Run(context.Context, TaskConfig) error
 }
-
-type InterfaceType string
-
-const (
-	InterfaceTUI InterfaceType = "tui"
-	InterfaceCLI InterfaceType = "repl"
-	InterfaceWeb InterfaceType = "web"
-)
 
 type Tasker interface {
 	Config() TaskConfig
@@ -41,3 +32,5 @@ type ValidatedInterface interface {
 	Interface
 	SetChannels(feedbackChan chan ValidationFeedback, quitChan chan bool)
 }
+
+var ErrUserQuit = fmt.Errorf("user quit")

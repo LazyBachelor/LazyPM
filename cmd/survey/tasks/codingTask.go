@@ -6,7 +6,6 @@ import (
 	"github.com/LazyBachelor/LazyPM/internal/service"
 	"github.com/LazyBachelor/LazyPM/pkg/task"
 	taskui "github.com/LazyBachelor/LazyPM/pkg/task/ui"
-	"github.com/charmbracelet/huh"
 )
 
 const codingDescription = `You are tasked with writing a simple function.
@@ -23,37 +22,22 @@ func NewCodingTask(svc *service.Services) *CodingTask {
 }
 
 func (t *CodingTask) Config() task.TaskConfig {
-	return task.TaskConfig{
-		IssuePrefix:           "pm",
-		BeadsDBPath:           "./.pm/db.db",
-		StatisticsStoragePath: "./.pm/coding-stats.json",
-		WebAddress:            ":8080",
-	}
+	config := BaseConfig()
+	config.StatisticsStoragePath = "./.pm/coding-task-stats.json"
+	return config
 }
 
 func (t *CodingTask) Details() taskui.TaskDetails {
-	return taskui.TaskDetails{
-		Title:          "Coding Task",
-		Description:    codingDescription,
-		TimeToComplete: "10m",
-		Difficulty:     "Easy",
-	}
+	details := BaseDetails()
+	details.Title = "Coding Task"
+	details.Description = codingDescription
+	return details
 }
 
-func (t *CodingTask) Questions(interfaceType task.InterfaceType) taskui.Questions {
-	return taskui.Questions{
-		huh.NewGroup(huh.NewConfirm().Title("Did you complete the coding task?")),
-		huh.NewGroup(
-			huh.NewSelect[int]().
-				Options(
-					huh.NewOption("Very easy", 1),
-					huh.NewOption("Easy", 2),
-					huh.NewOption("Moderate", 3),
-					huh.NewOption("Hard", 4),
-				).
-				Title("How difficult was the task?"),
-		),
-	}
+func (t *CodingTask) Questions(interfaceType task.InterfaceType) (questions taskui.Questions) {
+	questions = append(questions, BaseQuestions(interfaceType)...)
+
+	return questions
 }
 
 func (t *CodingTask) Setup(ctx context.Context) error {

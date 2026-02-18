@@ -8,7 +8,6 @@ import (
 	"github.com/LazyBachelor/LazyPM/internal/service"
 	"github.com/LazyBachelor/LazyPM/pkg/task"
 	taskui "github.com/LazyBachelor/LazyPM/pkg/task/ui"
-	"github.com/charmbracelet/huh"
 )
 
 const description = `You are tasked with creating a new issue in the project management system.
@@ -26,35 +25,21 @@ func NewCreateIssueTask(svc *service.Services) *CreateIssueTask {
 }
 
 func (t *CreateIssueTask) Config() task.TaskConfig {
-	return task.TaskConfig{
-		IssuePrefix:           "pm",
-		BeadsDBPath:           "./.pm/db.db",
-		StatisticsStoragePath: "./.pm/task-1-stats.json",
-		WebAddress:            ":8080",
-	}
+	config := BaseConfig()
+	config.StatisticsStoragePath = "./.pm/create-issue-stats.json"
+	return config
 }
 
 func (t *CreateIssueTask) Details() taskui.TaskDetails {
-	return taskui.TaskDetails{
-		Title:          "Create Issue Task",
-		Description:    "Create a new issue in the project management system...",
-		TimeToComplete: "15m",
-		Difficulty:     "Hard",
-	}
+	details := BaseDetails()
+	details.Title = "Create Issue Task"
+	details.Description = description
+	return details
 }
 
 func (t *CreateIssueTask) Questions(interfaceType task.InterfaceType) taskui.Questions {
-	return taskui.Questions{
-		huh.NewGroup(huh.NewConfirm().Title("Was this good")),
-		huh.NewGroup(
-			huh.NewSelect[int]().
-				Options(
-					huh.NewOption("Very good", 1),
-					huh.NewOption("Very Bad", 2),
-				).
-				Title("How good was it?"),
-		),
-	}
+	questions := BaseQuestions(interfaceType)
+	return questions
 }
 
 func (t *CreateIssueTask) Setup(ctx context.Context) error {
