@@ -17,12 +17,6 @@ This task will test your ability to use the issue creation workflow effectively.
 Assign this task to yourself and start creating the issue.
 Make sure to fill out all the necessary details, including the title, description, and assignee.`
 
-func init() {
-	task.Register("create_issue", func(svc *service.Services) task.Tasker {
-		return NewCreateIssueTask(svc)
-	})
-}
-
 type CreateIssueTask struct {
 	svc *service.Services
 }

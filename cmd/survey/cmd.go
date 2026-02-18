@@ -77,10 +77,22 @@ func runStartCmd(cmd *cobra.Command, args []string) error {
 	return nil
 }
 
+var listCmd = &cobra.Command{
+	Use:   "list",
+	Short: "List available tasks",
+	RunE: func(cmd *cobra.Command, args []string) error {
+		for i, name := range task.List() {
+			cmd.Printf("%d. %s\n", i+1, name)
+		}
+		return nil
+	},
+}
+
 func init() {
 	rootCmd.CompletionOptions.DisableDefaultCmd = true
 	startCmd.Flags().StringVarP(&interfaceType, "interface", "i", "tui", "Specify interface.")
 	startCmd.Flags().IntVarP(&stage, "stage", "s", 1, "Run stage directly")
 	rootCmd.AddCommand(startCmd)
 	rootCmd.AddCommand(submitCmd)
+	rootCmd.AddCommand(listCmd)
 }

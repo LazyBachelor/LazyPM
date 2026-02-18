@@ -14,12 +14,6 @@ const codingDescription = `You are tasked with writing a simple function.
 Write a function that takes two integers and returns their sum.
 The function should be named "Add" and be part of the "coding" package.`
 
-func init() {
-	task.Register("coding_task", func(svc *service.Services) task.Tasker {
-		return NewCodingTask(svc)
-	})
-}
-
 type CodingTask struct {
 	svc *service.Services
 }
