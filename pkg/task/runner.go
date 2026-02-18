@@ -53,7 +53,9 @@ func RunTask(ctx context.Context, t Tasker, i Interface, ifaceType InterfaceType
 	select {
 	case <-doneChan:
 		close(quitChan)
-		<-interfaceDone
+		if err := <-interfaceDone; err != nil {
+			fmt.Printf("warning: interface error after task completion: %v\n", err)
+		}
 		fmt.Println("Task completed successfully!")
 
 	case err := <-interfaceDone:
