@@ -27,9 +27,6 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.currentFeedback = msg.Feedback
 		if msg.Feedback.Success {
 			m.showComplete = true
-			if m.quitChan != nil {
-				close(m.quitChan)
-			}
 			return m, tea.Quit
 		}
 		return m, m.listenForValidation()
