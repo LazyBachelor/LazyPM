@@ -104,32 +104,10 @@ func initialized(beadsPath string) bool {
 
 // Used for reset/testing/admin operations
 func (s Services) DeleteIssues() error {
+	var deleteIssues = "DELETE FROM issues;"
 
-		var deleteIssues = "DELETE FROM issues;"
-
-		if _, err := s.DB.Exec(deleteIssues); err != nil {
-			return err
-		}
-return nil
-}
-
-// Used by TUI to delete a specific issue by ID
-func (s *Services) DeleteIssue(id string) error {
-    query := `DELETE FROM issues WHERE id = ?`
-
-    result, err := s.DB.Exec(query, id)
-    if err != nil {
-        return fmt.Errorf("failed to delete issue: %w", err)
-    }
-
-    rowsAffected, err := result.RowsAffected()
-    if err != nil {
-        return err
-    }
-
-    if rowsAffected == 0 {
-        return fmt.Errorf("issue with id %s not found", id)
-    }
-
-    return nil
+	if _, err := s.DB.Exec(deleteIssues); err != nil {
+		return err
+	}
+	return nil
 }

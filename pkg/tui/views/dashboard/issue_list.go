@@ -21,7 +21,14 @@ type IssueList struct {
 }
 
 func (l IssueList) Remove(index int) IssueList {
-	panic("unimplemented")
+	newList := l.list
+	(&newList).RemoveItem(index)
+	return IssueList{
+		list:   newList,
+		svc:    l.svc,
+		width:  l.width,
+		height: l.height,
+	}
 }
 
 type ListIssue struct {

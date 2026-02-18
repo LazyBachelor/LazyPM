@@ -12,6 +12,7 @@ type DashboardKeyMap struct {
 	BackToList  key.Binding
 	ScrollUp    key.Binding
 	ScrollDown  key.Binding
+	Delete      key.Binding
 }
 
 var defaultDashboardKeyMap = DashboardKeyMap{
@@ -38,6 +39,10 @@ var defaultDashboardKeyMap = DashboardKeyMap{
 	ScrollDown: key.NewBinding(
 		key.WithKeys("down", "j"),
 		key.WithHelp("↓/j", "down"),
+	),
+	Delete: key.NewBinding(
+		key.WithKeys("d"),
+		key.WithHelp("d", "delete issue"),
 	),
 }
 
