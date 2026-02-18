@@ -7,6 +7,15 @@ import (
 	"github.com/charmbracelet/huh"
 )
 
+type Questions []*huh.Group
+
+type QuestionnaireModel struct {
+	Questions
+	form          *huh.Form
+	width, height int
+	userQuit      bool
+}
+
 func NewQuestionnaireModel(questions Questions) *QuestionnaireModel {
 	form := huh.NewForm(questions...).
 		WithTheme(style.HuhCenterTheme()).WithLayout(huh.LayoutGrid(1, 1))
@@ -28,6 +37,7 @@ func (q *QuestionnaireModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.KeyMsg:
 		switch msg.String() {
 		case "q", "ctrl+c":
+			q.userQuit = true
 			return q, tea.Quit
 		}
 	}
@@ -36,6 +46,11 @@ func (q *QuestionnaireModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	if f, ok := form.(*huh.Form); ok {
 		q.form = f
 	}
+
+	if q.form.State == huh.StateCompleted {
+		return q, tea.Quit
+	}
+
 	return q, cmd
 }
 
@@ -51,4 +66,8 @@ func (q *QuestionnaireModel) View() string {
 
 func (q *QuestionnaireModel) SetSize(width, height int) {
 	q.width, q.height = width, height
+}
+
+func (q QuestionnaireModel) GetUserQuit() bool {
+	return q.userQuit
 }

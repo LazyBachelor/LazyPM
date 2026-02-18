@@ -3,30 +3,53 @@ package main
 import (
 	"context"
 
-	"github.com/LazyBachelor/LazyPM/cmd/survey/tasks"
 	"github.com/LazyBachelor/LazyPM/internal/service"
 	"github.com/LazyBachelor/LazyPM/pkg/cli/repl"
 	"github.com/LazyBachelor/LazyPM/pkg/task"
 	"github.com/LazyBachelor/LazyPM/pkg/tui"
 	"github.com/LazyBachelor/LazyPM/pkg/web"
+
+	"github.com/LazyBachelor/LazyPM/cmd/survey/tasks"
+	_ "github.com/LazyBachelor/LazyPM/cmd/survey/tasks"
 )
+
+func init() {
+	task.Register("create_issue", func(svc *service.Services) task.Tasker {
+		return tasks.NewCreateIssueTask(svc)
+	})
+	task.Register("coding_task", func(svc *service.Services) task.Tasker {
+		return tasks.NewCodingTask(svc)
+	})
+}
+
+func initTasks(svc *service.Services) []task.Tasker {
+	var taskers []task.Tasker
+
+	for _, name := range task.List() {
+		t, err := task.Get(name, svc)
+		if err != nil {
+			continue
+		}
+		taskers = append(taskers, t)
+	}
+
+	return taskers
+}
 
 func initializeServices(ctx context.Context) (*service.Services, func(), error) {
 	config := service.Config{
 		IssuePrefix:           "pm",
 		BeadsDBPath:           "./.pm/db.db",
 		StatisticsStoragePath: "./.pm/stats.json",
-		WebAddress:            "localhost:8080",
+		WebAddress:            ":8080",
 	}
 	return service.NewServices(ctx, config)
 }
 
-func initTasks() []*task.Task {
-	return []*task.Task{
-		tasks.NewCreateIssueTask(),
+func initInterfaces() map[string]task.Interface {
+	return map[string]task.Interface{
+		"repl": repl.NewRepl(),
+		"tui":  tui.NewTui(),
+		"web":  web.NewWeb(),
 	}
-}
-
-func initInterfaces() []task.Interface {
-	return []task.Interface{repl.NewRepl(), tui.NewTui(), web.NewWeb()}
 }

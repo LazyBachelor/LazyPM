@@ -4,23 +4,28 @@ import (
 	"context"
 
 	"github.com/LazyBachelor/LazyPM/internal/service"
-	"github.com/charmbracelet/bubbles/textinput"
+	"github.com/LazyBachelor/LazyPM/pkg/task"
 	"github.com/charmbracelet/bubbles/textarea"
+	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
 )
 
+type ValidationFeedbackMsg struct {
+	Feedback task.ValidationFeedback
+}
+
 type Model struct {
-	header           Header
-	issueList        IssueList
-	issueDetail      IssueDetail
+	header               Header
+	issueList            IssueList
+	issueDetail          IssueDetail
 	closedIssueList  IssueList
-	helpBar          HelpBar
-	keyMap           DashboardKeyMap
-	svc              *service.Services
-	width            int
-	height           int
+	helpBar              HelpBar
+	keyMap               DashboardKeyMap
+	svc                  *service.Services
+	width                int
+	height               int
 	focusedWindow    int // 0 = main (display issues), 1 = closed issues
-	focusedPaneMain  int // 0 = list, 1 = detail
+	focusedPaneMain      int // 0 = list, 1 = detail
 	focusedPaneClosed int
 	
 	editingTitle       bool // true while we are editing a title
@@ -39,18 +44,24 @@ type Model struct {
 
 	choosingStatus bool
 	statusIssueID  string
+	feedbackChan    chan task.ValidationFeedback
+	quitChan        chan bool
+	currentFeedback task.ValidationFeedback
+	showComplete    bool
 }
 
-func NewDashboard(svc *service.Services) *Model {
+func NewDashboard(svc *service.Services, feedbackChan chan task.ValidationFeedback, quitChan chan bool) *Model {
 	m := &Model{
-		header:           NewHeader("Project Manager Dashboard"),
-		keyMap:           defaultDashboardKeyMap,
-		svc:              svc,
-		width:            80,
-		height:           24,
+		header:            NewHeader("Project Manager Dashboard"),
+		keyMap:            defaultDashboardKeyMap,
+		svc:               svc,
+		width:             80,
+		height:            24,
 		focusedWindow:    0,
 		focusedPaneMain:  0,
-		focusedPaneClosed: 0,
+		focusedPaneClosed:  0,
+		feedbackChan: feedbackChan,
+		quitChan:     quitChan,
 	}
 
 	allIssues, _ := svc.Beads.AllIssues(context.Background())
@@ -116,7 +127,14 @@ func (m *Model) startChooseStatus(selected ListIssue) {
 }
 
 func (m *Model) Init() tea.Cmd {
-	return nil
+	return m.listenForValidation()
+}
+
+func (m *Model) listenForValidation() tea.Cmd {
+	return func() tea.Msg {
+		feedback := <-m.feedbackChan
+		return ValidationFeedbackMsg{Feedback: feedback}
+	}
 }
 
 func (m *Model) IsFocusedOnList() bool {

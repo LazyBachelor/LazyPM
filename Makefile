@@ -4,30 +4,44 @@ tidy:
 	go mod tidy
 
 clean:
-	go clean
+	@go clean
+	@rm -rf ./bin
+	@rm -rf ./.pm
+	@rm -rf node_modules
+	@rm package-lock.json
+	@rm package.json
 
-build:
+build: tidy
 	go build -o ./bin/pm ./cmd/pm
 	go build -o ./bin/tui ./cmd/tui
 	go build -o ./bin/web ./cmd/web
+	go build -o ./bin/survey ./cmd/survey
 
-cli:
+docker-build:
+	@docker build -t survey .
+
+docker-run:
+	@docker run -it -p 8080:8080 survey:latest
+
+cli: tidy
 	go run ./cmd/pm
 
-tui: 
+tui: tidy
 	go run ./cmd/tui
 
-web:
+web: tidy
 	go run ./cmd/web
 
-dev:
+tw-install:
+	@npm install tailwindcss@latest @tailwindcss/cli@latest @tailwindcss/typography daisyui@latest
+
+# Run both dev and tw in parallel for generating templates and compiling Tailwind CSS on file changes
+dev: tidy
 	@go tool templ generate -watch -cmd "go run ./cmd/web"
 
-tw:
-	@npx --yes @tailwindcss/cli -i ./pkg/web/input.css -o ./pkg/web/assets/css/styles.css --watch
+tw: tw-install
+	@npx --yes @tailwindcss/cli -i ./pkg/web/input.css -o ./pkg/web/assets/css/styles.css --watch --minify
 
-watch:
-	@make -j2 dev tw
 
 completions:
 	@go build -o ./bin/pm ./cmd/pm

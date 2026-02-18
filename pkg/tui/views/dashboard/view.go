@@ -15,10 +15,10 @@ func (m *Model) View() string {
 	header := m.header.View(m.width)
 	headerHeight := m.header.Height()
 
-	bottomView := m.helpBar.View()
-	bottomHeight := m.helpBar.Height()
+	footer := m.footer()
+	footerHeight := lipgloss.Height(footer)
 
-	contentHeight := m.height - headerHeight - bottomHeight
+	contentHeight := m.height - headerHeight - footerHeight
 	halfHeight := contentHeight / 2
 	if halfHeight < 1 {
 		halfHeight = 1
@@ -49,7 +49,7 @@ func (m *Model) View() string {
 	)
 	content := lipgloss.JoinHorizontal(lipgloss.Left, leftColumn, detailView)
 
-	mainView := lipgloss.JoinVertical(lipgloss.Left, header, content, bottomView)
+	mainView := lipgloss.JoinVertical(lipgloss.Left, header, content, footer)
 
 	if m.editingTitle {
 		editBoxWidth := min(60, m.width-4)
@@ -122,4 +122,16 @@ func (m *Model) View() string {
 	}
 
 	return mainView
+
+}
+
+func (m *Model) footer() string {
+	feedbackStatus := m.currentFeedback.Message
+
+	if feedbackStatus == "" {
+		return m.helpBar.View()
+	}
+
+	m.helpBar.SetWidth(m.width - lipgloss.Width(feedbackStatus))
+	return lipgloss.JoinHorizontal(lipgloss.Left, m.helpBar.View(), feedbackStatus)
 }
