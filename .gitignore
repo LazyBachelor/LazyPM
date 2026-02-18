@@ -2,9 +2,10 @@
 *.db
 *.ext
 bin
+
 .idea
+.vscode
 
 node_modules/
 package-lock.json
 package.json
-pkg/web/node_modules/
