@@ -6,12 +6,14 @@ import (
 	"fmt"
 	"math/rand"
 
-	"github.com/LazyBachelor/LazyPM/cmd/survey/tasks"
+	"github.com/LazyBachelor/LazyPM/pkg/cli/repl"
 	"github.com/LazyBachelor/LazyPM/pkg/task"
+	"github.com/LazyBachelor/LazyPM/pkg/tui"
+	"github.com/LazyBachelor/LazyPM/pkg/web"
 )
 
 func runTask(ctx context.Context, t task.Tasker, i task.Interface) error {
-	return task.RunTask(ctx, t, i, tasks.InterfaceToType(i))
+	return task.RunTask(ctx, t, i, InterfaceToType(i))
 }
 
 func taskLoop(ctx context.Context, surveyTasks []task.Tasker, interfaces map[string]task.Interface) error {
@@ -33,6 +35,19 @@ func taskLoop(ctx context.Context, surveyTasks []task.Tasker, interfaces map[str
 		}
 	}
 	return nil
+}
+
+func InterfaceToType(it task.Interface) task.InterfaceType {
+	switch it.(type) {
+	case *repl.REPL:
+		return task.InterfaceCLI
+	case *tui.Tui:
+		return task.InterfaceTUI
+	case *web.Web:
+		return task.InterfaceWeb
+	default:
+		return task.InterfaceType("unknown")
+	}
 }
 
 func returnIfUserQuit(err error, msg string) error {
