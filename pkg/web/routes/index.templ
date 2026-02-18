@@ -1,8 +1,6 @@
 package routes
 
-import (
-	"github.com/LazyBachelor/LazyPM/pkg/web/components"
-)
+import "github.com/LazyBachelor/LazyPM/pkg/web/components"
 
 type IndexProps struct {
 	IssueTable components.IssueTableProps
@@ -10,11 +8,11 @@ type IndexProps struct {
 
 templ Index(props IndexProps) {
 	@BaseLayout() {
-		<div class="flex flex-col justify-center items-center gap-6 mb-12">
-			<h1>Create New Issue</h1>
+		<div class="flex flex-col justify-center items-center gap-6 m-5">
+			<h1 class="text-2xl text-primary">Create New Issue</h1>
 			@components.IssueForm(
 				components.IssueFormProps{
-					Action:      "/create-issue",
+					Action:      "/issues",
 					Class:       "mb-4",
 					Title:       "",
 					Description: "",
@@ -22,7 +20,7 @@ templ Index(props IndexProps) {
 					Priority:    0,
 					IssueType:   "task",
 				})
+			@components.IssueTable(props.IssueTable)
 		</div>
-		@components.IssueTable(props.IssueTable)
 	}
 }

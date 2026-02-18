@@ -1,81 +1,142 @@
 package components
 
-templ Layout(props LayoutProps){
-    <!DOCTYPE html>
-    <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <title>{props.Title}</title>
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <meta name="description" content={props.Description}>
-        @Head(props.Head)
-    </head>
-    <body>
-        @Header(props.Header)
-        <main>
-            { children... }
-        </main>
-        @Footer(props.Footer)
-    </body>
-    </html>
+templ Layout(props LayoutProps) {
+	<!DOCTYPE html>
+	<html lang="en" data-theme="corporate">
+		<head>
+			<meta charset="UTF-8"/>
+			<title>{ props.Title }</title>
+			<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+			<meta name="description" content={ props.Description }/>
+			@Head(props.Head)
+		</head>
+		<body class="min-h-screen bg-base-200 text-base-content">
+			@Header(props.Header)
+			<main class="p-4 bg-base-100 min-h-[calc(100vh-4rem)]">
+				{ children... }
+			</main>
+		</body>
+	</html>
 }
 
 type LayoutProps struct {
-    Title       string
-    Description string
-    Head        HeadProps
-    Header      HeaderProps
-    Footer      FooterProps
-}
-
-templ Head(props HeadProps){
-    for _, link := range props.Links {
-        <link href={ link.Href } rel={ link.Rel }>
-    }
-
-    for _, script := range props.Scripts {
-        <script src={ script.Src } defer={ script.Defer }></script>
-    }
+	Title       string
+	Description string
+	Head        HeadProps
+	Header      HeaderProps
+	Footer      FooterProps
 }
 
 type HeadProps struct {
-    Links []Link
-    Scripts []Script
+	Links   []Link
+	Scripts []Script
 }
 
 type Link struct {
-    Href string
-    Rel  string
+	Href string
+	Rel  string
 }
 
 type Script struct {
-    Src string
-    Defer bool
+	Src   string
+	Defer bool
 }
 
-templ Header(props HeaderProps){
-    <header>
-        <nav>
-            for _, route := range props.Routes {
-                <a href={ route.Path }>{ route.Name }</a>
-            }
-        </nav>
-    </header>
+templ Head(props HeadProps) {
+	for _, link := range props.Links {
+		<link href={ link.Href } rel={ link.Rel }/>
+	}
+	for _, script := range props.Scripts {
+		<script src={ script.Src } defer={ script.Defer }></script>
+	}
+}
+
+templ Header(props HeaderProps) {
+	@Topbar() {
+		<div class="navbar-start gap-4">
+			@TopbarBrand(props.BrandName)
+			@TopbarCreateButton(props.CreateLabel, props.CreateHref)
+		</div>
+		<div class="navbar-center flex-1 min-w-[32rem] max-w-4xl mx-auto px-2">
+			@TopbarSearch(props.SearchPlaceholder)
+		</div>
+		<div class="navbar-end">
+			@TopbarIconButton("Notifications") {
+				@IconBell()
+			}
+			@TopbarIconButton("User menu") {
+				@IconUser()
+			}
+		</div>
+	}
+}
+
+templ Topbar() {
+	<header class="navbar sticky top-0 z-10 bg-primary text-primary-content shadow-sm min-h-12 px-6">
+		{ children... }
+	</header>
+}
+
+templ TopbarLeft() {
+	<div class="navbar-start">
+		{ children... }
+	</div>
+}
+
+templ TopbarBrand(brandName string) {
+	<span class="font-semibold text-base whitespace-nowrap">{ brandName }</span>
+}
+
+templ TopbarCreateButton(label string, href string) {
+	if href != "" {
+		<a href={ href } class="btn btn-sm bg-base-100 text-primary border-none hover:opacity-90 rounded-btn">{ label }</a>
+	} else {
+		<button type="button" class="btn btn-sm bg-base-100 text-primary border-none hover:opacity-90 rounded-btn">{ label }</button>
+	}
+}
+
+templ TopbarCenter() {
+	<div class="navbar-center">
+		{ children... }
+	</div>
+}
+
+templ TopbarSearch(placeholder string) {
+	<input
+		type="search"
+		placeholder={ placeholder }
+		aria-label="Search"
+		class="input input-md w-full bg-base-100 text-base-content placeholder-opacity-90 border border-base-content/20"
+	/>
+}
+
+templ TopbarRight() {
+	<div class="navbar-end">
+		{ children... }
+	</div>
+}
+
+templ TopbarIconButton(ariaLabel string) {
+	<button type="button" aria-label={ ariaLabel } class="btn btn-ghost btn-sm btn-square text-primary-content hover:bg-primary-content/20">
+		{ children... }
+	</button>
 }
 
 type HeaderProps struct {
-    Routes []NavRoute
+	BrandName         string
+	CreateLabel       string
+	CreateHref        string
+	SearchPlaceholder string
+	Routes            []NavRoute
 }
 
 type NavRoute struct {
-    Name string
-    Path string
+	Name string
+	Path string
 }
 
-templ Footer(props FooterProps){
-    
+templ Footer(props FooterProps) {
 }
 
 type FooterProps struct {
-    
 }

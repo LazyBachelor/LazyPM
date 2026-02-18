@@ -17,7 +17,7 @@ type RangeProps struct {
 templ Range(props RangeProps) {
 	<div class="form-control">
 		<label
-			class="label space-x-1"
+			class="label space-x-1 w-full"
 			x-data={ fmt.Sprintf("{ value: %d }", props.Value) }
 		>
 			if props.Label != "" {

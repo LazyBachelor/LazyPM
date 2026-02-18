@@ -23,7 +23,12 @@ var baseLayout = components.LayoutProps{
 			{Src: "/assets/js/ajax.min.js", Defer: true},
 		},
 	},
-	Header: components.HeaderProps{},
+	Header: components.HeaderProps{
+		BrandName:         "LazyPM Dashboard",
+		CreateLabel:       "+ Create",
+		CreateHref:        "",
+		SearchPlaceholder: "Search",
+	},
 	Footer: components.FooterProps{},
 }
 

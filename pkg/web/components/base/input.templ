@@ -6,6 +6,7 @@ type InputProps struct {
 	Label           string
 	Type            string // defaults to "text"
 	Value           string
+	Class           string
 	Placeholder     string
 	Description     string
 	Error           string
@@ -37,7 +38,7 @@ templ Input(props InputProps) {
 		<label
 			for={ props.Name }
 			class={
-				"input validator tooltip tooltip-top",
+				"input validator tooltip tooltip-top", props.Class,
 				templ.KV("tooltip tooltip-top", props.DisabledMessage != ""),
 				templ.KV("input-xs", props.Size == "xs"),
 				templ.KV("input-sm", props.Size == "sm"),
