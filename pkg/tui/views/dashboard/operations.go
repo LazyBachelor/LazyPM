@@ -255,17 +255,17 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				issueID := m.statusIssueID
 				m.choosingStatus = false
 				m.statusIssueID = ""
-				return m, updateIssueStatusCmd(m.svc, issueID, "open")
+				return m, updateIssueStatusCmd(m.svc, issueID, models.StatusOpen)
 			case "i":
 				issueID := m.statusIssueID
 				m.choosingStatus = false
 				m.statusIssueID = ""
-				return m, updateIssueStatusCmd(m.svc, issueID, "in_progress")
+				return m, updateIssueStatusCmd(m.svc, issueID, models.StatusInProgress)
 			case "c":
 				issueID := m.statusIssueID
 				m.choosingStatus = false
 				m.statusIssueID = ""
-				return m, updateIssueStatusCmd(m.svc, issueID, "closed")
+				return m, updateIssueStatusCmd(m.svc, issueID, models.StatusClosed)
 			case "esc":
 				m.choosingStatus = false
 				m.statusIssueID = ""
