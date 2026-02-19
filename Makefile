@@ -17,8 +17,15 @@ build: tidy
 	go build -o ./bin/web ./cmd/web
 	go build -o ./bin/survey ./cmd/survey
 
-docker-build:
-	@docker build -t telikz/lazypm .
+enable-multiplatform-build:
+	@docker buildx create --name multiplatform --use 2>/dev/null || docker buildx use multiplatform
+
+docker-build: enable-multiplatform-build
+	@docker buildx build \
+  --platform linux/amd64,linux/arm64,linux/arm/v7 \
+  -t telikz/lazypm:latest \
+  --push .
+
 
 docker-run:
 	@docker run -it -p 8080:8080 -v "$PWD:/data" telikz/lazypm:latest start
