@@ -71,6 +71,10 @@ func BaseQuestions(interfaceType task.InterfaceType) taskui.Questions {
 	}
 }
 
+func Question(fields ...huh.Field) *huh.Group {
+	return huh.NewGroup(fields...)
+}
+
 func ReplQuestion(interfaceType task.InterfaceType, fields ...huh.Field) *huh.Group {
 	if interfaceType != InterfaceREPL {
 		return nil
@@ -78,14 +82,14 @@ func ReplQuestion(interfaceType task.InterfaceType, fields ...huh.Field) *huh.Gr
 	return huh.NewGroup(fields...)
 }
 
-func WebQuestion(questions *taskui.Questions, interfaceType task.InterfaceType, fields ...huh.Field) *huh.Group {
+func WebQuestion(interfaceType task.InterfaceType, fields ...huh.Field) *huh.Group {
 	if interfaceType != InterfaceWeb {
 		return nil
 	}
 	return huh.NewGroup(fields...)
 }
 
-func TUIQuestion(questions *taskui.Questions, interfaceType task.InterfaceType, fields ...huh.Field) *huh.Group {
+func TUIQuestion(interfaceType task.InterfaceType, fields ...huh.Field) *huh.Group {
 	if interfaceType != InterfaceTUI {
 		return nil
 	}

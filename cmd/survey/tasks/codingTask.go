@@ -40,9 +40,21 @@ func (t *CodingTask) Details() taskui.TaskDetails {
 
 func (t *CodingTask) Questions(interfaceType task.InterfaceType) (questions taskui.Questions) {
 	return BaseQuestions(interfaceType).
-		With(ReplQuestion(interfaceType,
-			huh.NewInput().Title("Please write your code in the 'code.txt' file and save it.").
-				Placeholder("Write your code here...")),
+		With(
+			ReplQuestion(interfaceType,
+				huh.NewConfirm().Title("Question only for REPL interface")),
+		).
+		With(
+			WebQuestion(interfaceType,
+				huh.NewInput().Title("Question only for Web interface")),
+		).
+		With(
+			TUIQuestion(interfaceType,
+				huh.NewConfirm().Title("Question only for TUI interface")),
+		).
+		With(
+			Question(
+				huh.NewConfirm().Title("One last question for all interfaces!")),
 		)
 }
 
