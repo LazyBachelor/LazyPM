@@ -18,10 +18,13 @@ build: tidy
 	go build -o ./bin/survey ./cmd/survey
 
 docker-build:
-	@docker build -t survey .
+	@docker build -t telikz/lazypm .
 
 docker-run:
-	@docker run -it -p 8080:8080 survey:latest
+	@docker run -it -p 8080:8080 -v "$PWD:/data" telikz/lazypm:latest start
+
+docker-push:
+	@docker push telikz/lazypm:latest
 
 start:
 	@go run ./cmd/survey start

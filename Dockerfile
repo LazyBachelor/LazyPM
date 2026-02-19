@@ -4,9 +4,10 @@ COPY go.mod go.sum ./
 RUN go mod download
 COPY . .
 RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo \
-    -ldflags="-w -s" -trimpath -o survey ./cmd/survey/
+    -ldflags="-w -s" -trimpath -o pm ./cmd/survey/
 
 FROM gcr.io/distroless/static-debian13
-COPY --from=builder /app/survey /survey
+WORKDIR /data
+COPY --from=builder /app/pm /pm
 EXPOSE 8080
-ENTRYPOINT ["/survey"]
+ENTRYPOINT ["/pm"]
