@@ -1,8 +1,12 @@
 package dashboard
 
 import (
+	"context"
+
 	"github.com/LazyBachelor/LazyPM/internal/service"
 	"github.com/LazyBachelor/LazyPM/pkg/task"
+	"github.com/charmbracelet/bubbles/textarea"
+	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
 )
 
@@ -11,15 +15,34 @@ type ValidationFeedbackMsg struct {
 }
 
 type Model struct {
-	header          Header
-	issueList       IssueList
-	issueDetail     IssueDetail
-	helpBar         HelpBar
-	keyMap          DashboardKeyMap
-	svc             *service.Services
-	width           int
-	height          int
-	focusedPane     int // 0 = list, 1 = detail
+	header               Header
+	issueList            IssueList
+	issueDetail          IssueDetail
+	closedIssueList  IssueList
+	helpBar              HelpBar
+	keyMap               DashboardKeyMap
+	svc                  *service.Services
+	width                int
+	height               int
+	focusedWindow    int // 0 = main (display issues), 1 = closed issues
+	focusedPaneMain      int // 0 = list, 1 = detail
+	focusedPaneClosed int
+	editingTitle       bool // true while we are editing a title
+	titleInput         textinput.Model
+	editingIssueID     string
+
+	editingDescription bool // true while editing a description
+	descriptionInput   textarea.Model
+	editingDescIssueID string
+	creatingIssue      bool // true while creating a new issue
+	createTitleInput   textinput.Model
+
+	confirmingDelete   bool // true while confirming a delete
+	deleteConfirmID    string
+	deleteConfirmIndex int
+
+	choosingStatus bool
+	statusIssueID  string
 	feedbackChan    chan task.ValidationFeedback
 	quitChan        chan bool
 	currentFeedback task.ValidationFeedback
@@ -28,25 +51,78 @@ type Model struct {
 
 func NewDashboard(svc *service.Services, feedbackChan chan task.ValidationFeedback, quitChan chan bool) *Model {
 	m := &Model{
-		header:       NewHeader("Project Manager Dashboard"),
-		keyMap:       defaultDashboardKeyMap,
-		svc:          svc,
-		width:        80,
-		height:       24,
-		focusedPane:  0,
+		header:            NewHeader("Project Manager Dashboard"),
+		keyMap:            defaultDashboardKeyMap,
+		svc:               svc,
+		width:             80,
+		height:            24,
+		focusedWindow:    0,
+		focusedPaneMain:  0,
+		focusedPaneClosed:  0,
 		feedbackChan: feedbackChan,
 		quitChan:     quitChan,
 	}
 
-	m.issueList = NewIssueList(svc, 0, 0)
+	allIssues, _ := svc.Beads.AllIssues(context.Background())
+	m.issueList = NewIssueListFromIssues(svc, OpenAndInProgressOnly(allIssues), 0, 0)
 	m.issueDetail = NewIssueDetail()
+	m.closedIssueList = NewIssueListFromIssues(svc, ClosedOnly(allIssues), 0, 0)
 	m.helpBar = NewHelpBar(m.keyMap)
 
+	ti := textinput.New()
+	ti.Placeholder = "Issue title ..."
+	ti.CharLimit = 256
+	m.titleInput = ti
+
+	createTi := textinput.New()
+	createTi.Placeholder = "New issue title ..."
+	createTi.CharLimit = 256
+	m.createTitleInput = createTi
+
+	descTa := textarea.New()
+	descTa.Placeholder = "Issue description..."
+	descTa.SetWidth(56)
+	descTa.SetHeight(8)
+	m.descriptionInput = descTa
+
 	if selected := m.issueList.SelectedItem(); selected.ID != "" {
+		m.issueDetail.SetIssue(selected.Issue)
+	} else if selected := m.closedIssueList.SelectedItem(); selected.ID != "" {
 		m.issueDetail.SetIssue(selected.Issue)
 	}
 
 	return m
+}
+
+func (m *Model) startEditTitle(selected ListIssue) {
+	m.editingTitle = true
+	m.editingIssueID = selected.ID
+	m.titleInput.SetValue(selected.Issue.Title)
+	m.titleInput.CursorEnd()
+}
+
+func (m *Model) startEditDescription(selected ListIssue) {
+	m.editingDescription = true
+	m.editingDescIssueID = selected.ID
+	m.descriptionInput.SetValue(selected.Issue.Description)
+	m.descriptionInput.CursorEnd()
+}
+
+func (m *Model) startCreateIssue() {
+	m.creatingIssue = true
+	m.createTitleInput.SetValue("")
+	m.createTitleInput.Reset()
+}
+
+func (m *Model) startConfirmDelete(issueID string, index int) {
+	m.confirmingDelete = true
+	m.deleteConfirmID = issueID
+	m.deleteConfirmIndex = index
+}
+
+func (m *Model) startChooseStatus(selected ListIssue) {
+	m.choosingStatus = true
+	m.statusIssueID = selected.ID
 }
 
 func (m *Model) Init() tea.Cmd {
@@ -61,27 +137,64 @@ func (m *Model) listenForValidation() tea.Cmd {
 }
 
 func (m *Model) IsFocusedOnList() bool {
-	return m.focusedPane == 0
+	if m.focusedWindow == 0 {
+		return m.focusedPaneMain == 0
+	}
+	return m.focusedPaneClosed == 0
 }
 
 func (m *Model) IsFocusedOnDetail() bool {
-	return m.focusedPane == 1
+	if m.focusedWindow == 0 {
+		return m.focusedPaneMain == 1
+	}
+	return m.focusedPaneClosed == 1
 }
 
 func (m *Model) FocusList() {
-	m.focusedPane = 0
+	if m.focusedWindow == 0 {
+		m.focusedPaneMain = 0
+	} else {
+		m.focusedPaneClosed = 0
+	}
 	m.issueDetail.SetFocused(false)
 }
 
 func (m *Model) FocusDetail() {
-	m.focusedPane = 1
+	if m.focusedWindow == 0 {
+		m.focusedPaneMain = 1
+	} else {
+		m.focusedPaneClosed = 1
+	}
 	m.issueDetail.SetFocused(true)
 }
 
 func (m *Model) ToggleFocus() {
-	if m.focusedPane == 0 {
+	if m.IsFocusedOnList() {
 		m.FocusDetail()
 	} else {
 		m.FocusList()
 	}
+}
+
+func (m *Model) FocusedIssueList() *IssueList {
+	// return the issue list of the currently focused window so we can use two tui windows for issues
+	if m.focusedWindow == 0 {
+		return &m.issueList
+	}
+	return &m.closedIssueList
+}
+
+func (m *Model) ToggleFocusedWindow() {
+	// switch focus between open/in-progress and closed issues window
+	m.focusedWindow = 1 - m.focusedWindow
+	if m.focusedWindow == 0 {
+		if selected := m.issueList.SelectedItem(); selected.ID != "" {
+			m.issueDetail.SetIssue(selected.Issue)
+		}
+	} else {
+		if selected := m.closedIssueList.SelectedItem(); selected.ID != "" {
+			m.issueDetail.SetIssue(selected.Issue)
+		}
+	}
+	m.issueDetail.SetFocused(m.IsFocusedOnDetail())
 }
