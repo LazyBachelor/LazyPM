@@ -132,7 +132,7 @@ func NewIssueListFromIssues(svc *service.Services, issues []models.Issue, width,
 }
 
 func OpenAndInProgressOnly(issues []models.Issue) []models.Issue {
-	// used to display issues in the first window in the dashboard
+	// used to display open & in-progress issues in the first window in the dashboard
 	out := make([]models.Issue, 0, len(issues))
 	for _, issue := range issues {
 		if issue.Status == models.StatusOpen || issue.Status == models.StatusInProgress {
