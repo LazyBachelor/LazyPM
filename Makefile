@@ -23,6 +23,9 @@ docker-build:
 docker-run:
 	@docker run -it -p 8080:8080 survey:latest
 
+start:
+	@go run ./cmd/survey start
+
 cli: tidy
 	go run ./cmd/pm
 
