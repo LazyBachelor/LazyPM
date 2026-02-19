@@ -164,9 +164,21 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 		setItemsCmd := m.issueList.SetIssues(OpenAndInProgressOnly(issues))
 		closedSetCmd := m.closedIssueList.SetIssues(ClosedOnly(issues))
-		m.issueDetail.SetIssue(*msg.Issue)
-		return m, tea.Sequence(setItemsCmd, closedSetCmd, func() tea.Msg { return selectIssueMsg{IssueID: msg.Issue.ID} })
 
+		// Determine the created issue from the refreshed list to ensure all fields (like ID) are populated.
+		selectedIssue := msg.Issue
+		if selectedIssue.ID == "" {
+			for _, issue := range issues {
+				// Prefer an issue that matches the created issue's title when ID is not yet known.
+				if issue.Title == msg.Issue.Title {
+					selectedIssue = &issue
+					break
+				}
+			}
+		}
+
+		m.issueDetail.SetIssue(*selectedIssue)
+		return m, tea.Sequence(setItemsCmd, closedSetCmd, func() tea.Msg { return selectIssueMsg{IssueID: selectedIssue.ID} })
 	case issueDeletedMsg:
 		m.confirmingDelete = false
 		m.deleteConfirmID = ""
