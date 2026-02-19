@@ -63,9 +63,7 @@ func (t *CodingTask) Setup(ctx context.Context) error {
 		return err
 	}
 
-	content := textFileContent
-
-	if err := os.WriteFile("./code.txt", []byte(content), 0644); err != nil {
+	if err := os.WriteFile("./code.txt", []byte(textFileContent), 0644); err != nil {
 		return err
 	}
 
