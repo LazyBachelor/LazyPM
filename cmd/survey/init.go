@@ -37,13 +37,7 @@ func initTasks(svc *service.Services) []task.Tasker {
 }
 
 func initializeServices(ctx context.Context) (*service.Services, func(), error) {
-	config := service.Config{
-		IssuePrefix:           "pm",
-		BeadsDBPath:           "./.pm/db.db",
-		StatisticsStoragePath: "./.pm/stats.json",
-		WebAddress:            ":8080",
-	}
-	return service.NewServices(ctx, config)
+	return service.NewServices(ctx, tasks.BaseConfig())
 }
 
 func initInterfaces() map[string]task.Interface {

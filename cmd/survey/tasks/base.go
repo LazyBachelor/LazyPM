@@ -1,6 +1,7 @@
 package tasks
 
 import (
+	"github.com/LazyBachelor/LazyPM/internal/service"
 	"github.com/LazyBachelor/LazyPM/pkg/cli/repl"
 	"github.com/LazyBachelor/LazyPM/pkg/task"
 	taskui "github.com/LazyBachelor/LazyPM/pkg/task/ui"
@@ -40,10 +41,14 @@ func BaseDetails() taskui.TaskDetails {
 func BaseConfig() task.TaskConfig {
 	return task.TaskConfig{
 		IssuePrefix:           "pm",
+		WebAddress:            ":8080",
 		BeadsDBPath:           "./.pm/db.db",
 		StatisticsStoragePath: "./.pm/stats.json",
-		WebAddress:            ":8080",
 	}
+}
+
+func ClearIssues(svc *service.Services) error {
+	return svc.Beads.DeleteIssues()
 }
 
 func BaseQuestions(interfaceType task.InterfaceType) taskui.Questions {
@@ -66,36 +71,23 @@ func BaseQuestions(interfaceType task.InterfaceType) taskui.Questions {
 	}
 }
 
-func AppendGroup(questions *taskui.Questions, group *huh.Group) taskui.Questions {
-	*questions = append(*questions, group)
-	return *questions
-}
-
-func AppendQuestion(questions *taskui.Questions, interfaceType task.InterfaceType, field ...huh.Field) taskui.Questions {
-	*questions = append(*questions, huh.NewGroup(field...))
-	return *questions
-}
-
-func AppendReplQuestion(questions *taskui.Questions, interfaceType task.InterfaceType, field ...huh.Field) taskui.Questions {
+func ReplQuestion(interfaceType task.InterfaceType, fields ...huh.Field) *huh.Group {
 	if interfaceType != InterfaceREPL {
-		return *questions
+		return nil
 	}
-	*questions = append(*questions, huh.NewGroup(field...))
-	return *questions
+	return huh.NewGroup(fields...)
 }
 
-func AppendWebQuestion(questions *taskui.Questions, interfaceType task.InterfaceType, field ...huh.Field) taskui.Questions {
+func WebQuestion(questions *taskui.Questions, interfaceType task.InterfaceType, fields ...huh.Field) *huh.Group {
 	if interfaceType != InterfaceWeb {
-		return *questions
+		return nil
 	}
-	*questions = append(*questions, huh.NewGroup(field...))
-	return *questions
+	return huh.NewGroup(fields...)
 }
 
-func AppendTUIQuestion(questions *taskui.Questions, interfaceType task.InterfaceType, field ...huh.Field) taskui.Questions {
+func TUIQuestion(questions *taskui.Questions, interfaceType task.InterfaceType, fields ...huh.Field) *huh.Group {
 	if interfaceType != InterfaceTUI {
-		return *questions
+		return nil
 	}
-	*questions = append(*questions, huh.NewGroup(field...))
-	return *questions
+	return huh.NewGroup(fields...)
 }

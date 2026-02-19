@@ -10,13 +10,6 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 )
 
-type TaskDetails struct {
-	Title          string
-	Description    string
-	TimeToComplete string
-	Difficulty     string
-}
-
 type TaskModel struct {
 	TaskDetails
 	keys          TaskHelpKeys

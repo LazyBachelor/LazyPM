@@ -7,8 +7,6 @@ import (
 	"github.com/charmbracelet/huh"
 )
 
-type Questions []*huh.Group
-
 type QuestionnaireModel struct {
 	Questions
 	form          *huh.Form

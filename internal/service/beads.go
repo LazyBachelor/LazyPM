@@ -41,3 +41,13 @@ func (s *BeadsService) AllIssues(ctx context.Context) ([]models.Issue, error) {
 
 	return issues, nil
 }
+
+func (s *BeadsService) DeleteIssues() error {
+
+	var deleteIssues = "DELETE FROM issues;"
+
+	if _, err := s.UnderlyingDB().Exec(deleteIssues); err != nil {
+		return err
+	}
+	return nil
+}

@@ -25,36 +25,25 @@ func NewCreateIssueTask(svc *service.Services) *CreateIssueTask {
 }
 
 func (t *CreateIssueTask) Config() task.TaskConfig {
-	config := BaseConfig()
-	config.StatisticsStoragePath = "./.pm/create-issue-stats.json"
-	return config
+	return BaseConfig().WithStatisticsStoragePath("./.pm/create-issue-stats.json")
 }
 
 func (t *CreateIssueTask) Details() taskui.TaskDetails {
-	details := BaseDetails()
-	details.Title = "Create Issue Task"
-	details.Description = description
-	return details
+	return BaseDetails().WithTitle("Create Issue Task").WithDescription(description)
 }
 
 func (t *CreateIssueTask) Questions(interfaceType task.InterfaceType) taskui.Questions {
-	questions := BaseQuestions(interfaceType)
-	return questions
+	return BaseQuestions(interfaceType)
 }
 
 func (t *CreateIssueTask) Setup(ctx context.Context) error {
 	// Clear existing issues to ensure a clean state for the task
-	if err := t.svc.DeleteIssues(); err != nil {
+	if err := ClearIssues(t.svc); err != nil {
 		return err
 	}
 
-	issue := models.Issue{
-		ID:          "pm-abc",
-		Title:       "Create A New Issue",
-		Description: description,
-		IssueType:   models.TypeTask,
-		Status:      models.StatusOpen,
-	}
+	issue := models.NewBaseIssue().
+		WithTitle("Create a New Issue").WithDescription(description).Build()
 
 	return t.svc.Beads.CreateIssue(ctx, &issue, "")
 }

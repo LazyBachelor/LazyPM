@@ -9,6 +9,7 @@ import (
 	"github.com/LazyBachelor/LazyPM/internal/service"
 	"github.com/LazyBachelor/LazyPM/pkg/task"
 	taskui "github.com/LazyBachelor/LazyPM/pkg/task/ui"
+	"github.com/charmbracelet/huh"
 )
 
 const codingDescription = `You are tasked with writing a simple function.
@@ -30,31 +31,28 @@ func NewCodingTask(svc *service.Services) *CodingTask {
 }
 
 func (t *CodingTask) Config() task.TaskConfig {
-	config := BaseConfig()
-	config.StatisticsStoragePath = "./.pm/coding-task-stats.json"
-	return config
+	return BaseConfig().WithStatisticsStoragePath("./.pm/coding-task-stats.json")
 }
 
 func (t *CodingTask) Details() taskui.TaskDetails {
-	details := BaseDetails()
-	details.Title = "Coding Task"
-	details.Description = codingDescription
-	return details
+	return BaseDetails().WithTitle("Coding Task").WithDescription(codingDescription)
 }
 
 func (t *CodingTask) Questions(interfaceType task.InterfaceType) (questions taskui.Questions) {
-	questions = append(questions, BaseQuestions(interfaceType)...)
-
-	return questions
+	return BaseQuestions(interfaceType).
+		With(ReplQuestion(interfaceType,
+			huh.NewInput().Title("Please write your code in the 'code.txt' file and save it.").
+				Placeholder("Write your code here...")),
+		)
 }
 
 func (t *CodingTask) Setup(ctx context.Context) error {
-	if err := t.svc.DeleteIssues(); err != nil {
+	if err := ClearIssues(t.svc); err != nil {
 		return err
 	}
 
 	content := textFileContent
-	
+
 	if err := os.WriteFile("./code.txt", []byte(content), 0644); err != nil {
 		return err
 	}
