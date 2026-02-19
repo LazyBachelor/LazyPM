@@ -15,14 +15,6 @@ import (
 	"github.com/steveyegge/beads"
 )
 
-type Config struct {
-	RootCmd               string
-	WebAddress            string
-	BeadsDBPath           string
-	IssuePrefix           string
-	StatisticsStoragePath string
-}
-
 type Services struct {
 	Config     Config
 	DB         *sql.DB
@@ -37,12 +29,6 @@ func NewServices(ctx context.Context, config Config) (*Services, func(), error) 
 		fmt.Println("PM is not initialized")
 		os.Exit(0)
 	}
-
-	db, err := sql.Open("sqlite3", config.BeadsDBPath)
-	if err != nil {
-		return nil, nil, err
-	}
-	cleanupFuncs = append(cleanupFuncs, func() { db.Close() })
 
 	store, err := beads.NewSQLiteStorage(ctx, config.BeadsDBPath)
 	if err != nil {
@@ -67,7 +53,7 @@ func NewServices(ctx context.Context, config Config) (*Services, func(), error) 
 	}
 
 	return &Services{
-		DB:         db,
+		DB:         beadsSvc.UnderlyingDB(),
 		Beads:      beadsSvc,
 		Statistics: statSvc,
 		Config:     config,
@@ -100,14 +86,4 @@ func initialized(beadsPath string) bool {
 		}
 	}
 	return true
-}
-
-func (s *Services) DeleteIssues() error {
-
-	var deleteIssues = "DELETE FROM issues;"
-
-	if _, err := s.DB.Exec(deleteIssues); err != nil {
-		return err
-	}
-	return nil
 }
