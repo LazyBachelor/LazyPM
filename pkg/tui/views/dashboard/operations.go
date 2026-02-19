@@ -189,19 +189,49 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if err != nil {
 			return m, nil
 		}
-		setItemsCmd := m.issueList.SetIssues(OpenAndInProgressOnly(issues))
-		closedSetCmd := m.closedIssueList.SetIssues(ClosedOnly(issues))
-		if len(issues) == 0 {
+		openIssues := OpenAndInProgressOnly(issues)
+		closedIssues := ClosedOnly(issues)
+		setItemsCmd := m.issueList.SetIssues(openIssues)
+		closedSetCmd := m.closedIssueList.SetIssues(closedIssues)
+		// If there are no issues at all, clear the detail view and return.
+		if len(openIssues) == 0 && len(closedIssues) == 0 {
 			m.issueDetail.SetIssue(models.Issue{})
 			return m, tea.Sequence(setItemsCmd, closedSetCmd)
 		}
-		newIndex := msg.PreviousIndex
-		if newIndex >= len(issues) {
-			newIndex = len(issues) - 1
+
+		// Determine which list to use for the next selection.
+		var targetIssues []models.Issue
+		if m.focusedWindow == 0 {
+			targetIssues = openIssues
+			if len(targetIssues) == 0 && len(closedIssues) > 0 {
+				// The open list became empty; fall back to closed issues.
+				targetIssues = closedIssues
+				m.focusedWindow = 1
+			}
+		} else {
+			targetIssues = closedIssues
+			if len(targetIssues) == 0 && len(openIssues) > 0 {
+				// The closed list became empty; fall back to open/in-progress issues.
+				targetIssues = openIssues
+				m.focusedWindow = 0
+			}
 		}
-		selectID := issues[newIndex].ID
-		m.issueDetail.SetIssue(issues[newIndex])
-		return m, tea.Sequence(setItemsCmd, closedSetCmd, func() tea.Msg { return selectIssueMsg{IssueID: selectID} })
+
+		// Safety: if targetIssues is still empty here, just clear detail and return.
+		if len(targetIssues) == 0 {
+			m.issueDetail.SetIssue(models.Issue{})
+			return m, tea.Sequence(setItemsCmd, closedSetCmd)
+		}
+
+		newIndex := msg.PreviousIndex
+		if newIndex >= len(targetIssues) {
+			newIndex = len(targetIssues) - 1
+		}
+		selectedIssue := targetIssues[newIndex]
+		m.issueDetail.SetIssue(selectedIssue)
+		return m, tea.Sequence(setItemsCmd, closedSetCmd, func() tea.Msg {
+			return selectIssueMsg{IssueID: selectedIssue.ID}
+		})
 
 	case tea.KeyMsg:
 		if m.confirmingDelete {
