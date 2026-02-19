@@ -89,21 +89,21 @@ func (d *Model) handleKeyMsg(msg tea.KeyMsg) tea.Cmd {
 		d.issueDetail.ScrollUp(1)
 	case d.IsFocusedOnDetail() && key.Matches(msg, d.keyMap.ScrollDown):
 		d.issueDetail.ScrollDown(1)
-	case !d.editingTitle && !d.creatingIssue && !d.editingDescription && key.Matches(msg, d.keyMap.EditTitle):
+	case !d.editingTitle && !d.creatingIssue && !d.editingDescription && !d.choosingStatus && !d.confirmingDelete && key.Matches(msg, d.keyMap.EditTitle):
 		if selected := d.FocusedIssueList().SelectedItem(); selected.ID != "" {
 			d.startEditTitle(selected)
 			cmd = d.titleInput.Focus()
 		}
-	case !d.editingTitle && !d.creatingIssue && !d.editingDescription && key.Matches(msg, d.keyMap.EditDescription):
+	case !d.editingTitle && !d.creatingIssue && !d.editingDescription && !d.choosingStatus && !d.confirmingDelete && key.Matches(msg, d.keyMap.EditDescription):
 		if selected := d.FocusedIssueList().SelectedItem(); selected.ID != "" {
 			d.startEditDescription(selected)
 			cmd = d.descriptionInput.Focus()
 		}
-	case !d.editingTitle && !d.creatingIssue && !d.editingDescription && !d.choosingStatus && key.Matches(msg, d.keyMap.ChangeStatus):
+	case !d.editingTitle && !d.creatingIssue && !d.editingDescription && !d.choosingStatus && !d.confirmingDelete && key.Matches(msg, d.keyMap.ChangeStatus):
 		if selected := d.FocusedIssueList().SelectedItem(); selected.ID != "" {
 			d.startChooseStatus(selected)
 		}
-	case !d.editingTitle && !d.creatingIssue && key.Matches(msg, d.keyMap.AddIssue):
+	case !d.editingTitle && !d.creatingIssue && !d.editingDescription && !d.choosingStatus && !d.confirmingDelete && key.Matches(msg, d.keyMap.AddIssue):
 		d.startCreateIssue()
 		cmd = d.createTitleInput.Focus()
 	case !d.editingTitle && !d.creatingIssue && !d.editingDescription && !d.choosingStatus && !d.confirmingDelete && key.Matches(msg, d.keyMap.DeleteIssue):
