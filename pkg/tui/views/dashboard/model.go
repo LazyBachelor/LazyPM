@@ -27,7 +27,6 @@ type Model struct {
 	focusedWindow    int // 0 = main (display issues), 1 = closed issues
 	focusedPaneMain      int // 0 = list, 1 = detail
 	focusedPaneClosed int
-	
 	editingTitle       bool // true while we are editing a title
 	titleInput         textinput.Model
 	editingIssueID     string
