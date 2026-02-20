@@ -53,7 +53,9 @@ func (s *BeadsService) DeleteIssues() error {
 }
 
 func (s *BeadsService) GetComments(ctx context.Context, issueID string) ([]models.Comment, error) {
-	commentsPtr, err := s.Storage.GetIssueComments(ctx, issueID)
+	query := `SELECT id, issue_id, author, text, created_at FROM comments WHERE issue_id = ? ORDER BY created_at ASC LIMIT 100`
+
+	rows, err := s.UnderlyingDB().QueryContext(ctx, query, issueID)
 	if err != nil {
 		return nil, err
 	}
@@ -73,5 +75,24 @@ func (s *BeadsService) GetComments(ctx context.Context, issueID string) ([]model
 }
 
 func (s *BeadsService) AddComment(ctx context.Context, issueID, author, text string) (*models.Comment, error) {
-	return s.Storage.AddIssueComment(ctx, issueID, author, text)
+	query := `INSERT INTO comments (issue_id, author, text, created_at) VALUES (?, ?, ?, ?)`
+
+	createdAt := time.Now().UTC()
+	result, err := s.UnderlyingDB().ExecContext(ctx, query, issueID, author, text, createdAt)
+	if err != nil {
+		return nil, err
+	}
+
+	id, err := result.LastInsertId()
+	if err != nil {
+		return nil, err
+	}
+
+	return &models.Comment{
+		ID:        id,
+		IssueID:   issueID,
+		Author:    author,
+		Text:      text,
+		CreatedAt: createdAt,
+	}, nil
 }
