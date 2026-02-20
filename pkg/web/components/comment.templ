@@ -75,7 +75,7 @@ templ CommentForm(props CommentFormProps) {
 			hx-post={ "/issues/" + props.IssueID + "/comments" }
 			hx-target="#comments-list"
 			hx-swap="beforeend"
-			hx-on::after-request="this.reset()"
+			hx-on::after-success="this.reset()"
 		>
 			@base.Input(base.InputProps{
 				Name:        "author",
