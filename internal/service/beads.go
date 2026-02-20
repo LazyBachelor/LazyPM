@@ -81,7 +81,7 @@ func (s *BeadsService) GetComments(ctx context.Context, issueID string) ([]model
 func (s *BeadsService) AddComment(ctx context.Context, issueID, author, text string) (*models.Comment, error) {
 	query := `INSERT INTO comments (issue_id, author, text, created_at) VALUES (?, ?, ?, ?)`
 
-	createdAt := time.Now()
+	createdAt := time.Now().UTC()
 	result, err := s.UnderlyingDB().ExecContext(ctx, query, issueID, author, text, createdAt)
 	if err != nil {
 		return nil, err
