@@ -13,15 +13,8 @@ type CommentForm struct {
 }
 
 func ListComments(w http.ResponseWriter, r *http.Request) {
-	issue := r.Context().Value(issueKey).(*models.Issue)
-	svc := Services(r)
+	comments := r.Context().Value(commentsKey).([]models.Comment)
 	hx := HTMX(r)
-
-	comments, err := svc.Beads.GetComments(r.Context(), issue.ID)
-	if err != nil {
-		http.Error(w, "Failed to retrieve comments: "+err.Error(), http.StatusInternalServerError)
-		return
-	}
 
 	if hx.IsHxRequest() {
 		components.CommentList(components.CommentListProps{

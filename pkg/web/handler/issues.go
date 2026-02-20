@@ -3,6 +3,7 @@ package handler
 import (
 	"context"
 	"net/http"
+	"strings"
 
 	"github.com/LazyBachelor/LazyPM/internal/models"
 	"github.com/LazyBachelor/LazyPM/pkg/web/routes"
@@ -10,6 +11,7 @@ import (
 )
 
 const issueKey = "issue"
+const commentsKey = "comments"
 
 type IssueForm struct {
 	Title       string           `form:"title" validate:"required,max=255"`
@@ -90,7 +92,14 @@ func IssueCtx(next http.Handler) http.Handler {
 			return
 		}
 
+		comments, err := svc.Beads.GetComments(r.Context(), issue.ID)
+		if err != nil {
+			http.Error(w, "Error getting comments: "+err.Error(), http.StatusInternalServerError)
+			return
+		}
+
 		ctx := context.WithValue(r.Context(), issueKey, issue)
+		ctx = context.WithValue(ctx, commentsKey, comments)
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 
@@ -98,19 +107,13 @@ func IssueCtx(next http.Handler) http.Handler {
 
 func GetIssue(w http.ResponseWriter, r *http.Request) {
 	issue := r.Context().Value(issueKey).(*models.Issue)
-	svc := Services(r)
+	comments := r.Context().Value(commentsKey).([]models.Comment)
 	hx := HTMX(r)
 
 	acceptHeader := r.Header.Get("Accept")
-	wantsHTML := acceptHeader == "" || (len(acceptHeader) >= 9 && acceptHeader[:9] == "text/html")
+	wantsHTML := acceptHeader == "" || strings.Contains(acceptHeader, "text/html")
 
 	if wantsHTML && !hx.IsHxRequest() {
-		comments, err := svc.Beads.GetComments(r.Context(), issue.ID)
-		if err != nil {
-			http.Error(w, "Failed to retrieve comments: "+err.Error(), http.StatusInternalServerError)
-			return
-		}
-
 		routes.IssueDetail(routes.IssueDetailProps{
 			Issue:    *issue,
 			Comments: comments,

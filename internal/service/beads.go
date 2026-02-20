@@ -3,7 +3,6 @@ package service
 import (
 	"context"
 	"fmt"
-	"time"
 
 	"github.com/LazyBachelor/LazyPM/internal/models"
 
@@ -54,49 +53,25 @@ func (s *BeadsService) DeleteIssues() error {
 }
 
 func (s *BeadsService) GetComments(ctx context.Context, issueID string) ([]models.Comment, error) {
-	query := `SELECT id, issue_id, author, text, created_at FROM comments WHERE issue_id = ? ORDER BY created_at ASC`
-
-	rows, err := s.UnderlyingDB().QueryContext(ctx, query, issueID)
+	commentsPtr, err := s.Storage.GetIssueComments(ctx, issueID)
 	if err != nil {
 		return nil, err
 	}
-	defer rows.Close()
 
-	var comments []models.Comment
-	for rows.Next() {
-		var c models.Comment
-		if err := rows.Scan(&c.ID, &c.IssueID, &c.Author, &c.Text, &c.CreatedAt); err != nil {
-			return nil, err
-		}
-		comments = append(comments, c)
+	if len(commentsPtr) == 0 {
+		return []models.Comment{}, nil
 	}
 
-	if err := rows.Err(); err != nil {
-		return nil, err
+	comments := make([]models.Comment, 0, len(commentsPtr))
+	for _, c := range commentsPtr {
+		if c != nil {
+			comments = append(comments, *c)
+		}
 	}
 
 	return comments, nil
 }
 
 func (s *BeadsService) AddComment(ctx context.Context, issueID, author, text string) (*models.Comment, error) {
-	query := `INSERT INTO comments (issue_id, author, text, created_at) VALUES (?, ?, ?, ?)`
-
-	createdAt := time.Now()
-	result, err := s.UnderlyingDB().ExecContext(ctx, query, issueID, author, text, createdAt)
-	if err != nil {
-		return nil, err
-	}
-
-	id, err := result.LastInsertId()
-	if err != nil {
-		return nil, err
-	}
-
-	return &models.Comment{
-		ID:        id,
-		IssueID:   issueID,
-		Author:    author,
-		Text:      text,
-		CreatedAt: createdAt,
-	}, nil
+	return s.Storage.AddIssueComment(ctx, issueID, author, text)
 }
