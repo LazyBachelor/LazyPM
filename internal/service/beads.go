@@ -54,7 +54,7 @@ func (s *BeadsService) DeleteIssues() error {
 }
 
 func (s *BeadsService) GetComments(ctx context.Context, issueID string) ([]models.Comment, error) {
-	query := `SELECT id, issue_id, author, text, created_at FROM comments WHERE issue_id = ? ORDER BY created_at ASC`
+	query := `SELECT id, issue_id, author, text, created_at FROM comments WHERE issue_id = ? ORDER BY created_at ASC LIMIT 100`
 
 	rows, err := s.UnderlyingDB().QueryContext(ctx, query, issueID)
 	if err != nil {
