@@ -23,7 +23,9 @@ var updateCmd = &cobra.Command{
 func runUpdateCmd(cmd *cobra.Command, args []string) error {
 	issueID := args[0]
 
-	issue, err := svc.Beads.GetIssue(cmd.Context(), issueID)
+	app := AppFromContext(cmd.Context())
+
+	issue, err := app.Issues.GetIssue(cmd.Context(), issueID)
 	if err != nil {
 		return fmt.Errorf("error getting issue: %w", err)
 	}
@@ -37,12 +39,12 @@ func runUpdateCmd(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("error getting update values: %w", err)
 	}
 
-	err = svc.Beads.UpdateIssue(cmd.Context(), issueID, updates, "test_actor")
+	err = app.Issues.UpdateIssue(cmd.Context(), issueID, updates, "test_actor")
 	if err != nil {
 		return fmt.Errorf("error updating issue: %w", err)
 	}
 
-	updatedIssue, err := svc.Beads.GetIssue(cmd.Context(), issueID)
+	updatedIssue, err := app.Issues.GetIssue(cmd.Context(), issueID)
 	if err != nil {
 		return fmt.Errorf("error getting updated issue: %w", err)
 	}

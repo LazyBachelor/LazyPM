@@ -23,14 +23,14 @@ Please write your code below this line!
 `
 
 type CodingTask struct {
-	svc *service.Services
+	app *service.App
 }
 
-func NewCodingTask(svc *service.Services) *CodingTask {
-	return &CodingTask{svc: svc}
+func NewCodingTask(app *service.App) *CodingTask {
+	return &CodingTask{app: app}
 }
 
-func (t *CodingTask) Config() task.TaskConfig {
+func (t *CodingTask) Config() task.Config {
 	return BaseConfig().WithStatisticsStoragePath("./.pm/coding-task-stats.json")
 }
 
@@ -59,7 +59,7 @@ func (t *CodingTask) Questions(interfaceType task.InterfaceType) (questions task
 }
 
 func (t *CodingTask) Setup(ctx context.Context) error {
-	if err := ClearIssues(t.svc); err != nil {
+	if err := ClearIssues(t.app); err != nil {
 		return err
 	}
 
@@ -71,7 +71,6 @@ func (t *CodingTask) Setup(ctx context.Context) error {
 }
 
 func (t *CodingTask) Validate(ctx context.Context) (bool, error) {
-
 	file, err := os.ReadFile("./code.txt")
 	if err != nil {
 		return false, err

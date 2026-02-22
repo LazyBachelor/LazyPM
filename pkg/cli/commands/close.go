@@ -30,8 +30,10 @@ func runCloseCmd(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("issue ID cannot be empty")
 	}
 
+	app := AppFromContext(cmd.Context())
+
 	// Fetch the issue to ensure it exists before closing.
-	issue, err := svc.Beads.GetIssue(cmd.Context(), closeID)
+	issue, err := app.Issues.GetIssue(cmd.Context(), closeID)
 	if err != nil {
 		return fmt.Errorf("error fetching issue: %w", err)
 	}
@@ -47,7 +49,7 @@ func runCloseCmd(cmd *cobra.Command, args []string) error {
 	}
 
 	// Close the issue.
-	err = svc.Beads.CloseIssue(cmd.Context(), closeID, issue.CloseReason, "", "")
+	err = app.Issues.CloseIssue(cmd.Context(), closeID, issue.CloseReason, "", "")
 	if err != nil {
 		return fmt.Errorf("error closing issue: %w", err)
 	}

@@ -10,9 +10,12 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// svc is a global variable that holds beads, config and stats services.
-// Must be called before executing any commands to ensure services are available.
-var svc *service.Services
+type contextKey string
+
+const appKey contextKey = "app"
+
+// app is a package-level variable used during command setup
+var app *service.App
 
 // Flags struct to hold command-line flag values for issues.
 type Flags struct {
@@ -30,13 +33,28 @@ type Flags struct {
 var rootCmd = &cobra.Command{
 	Short: "Project Management CLI",
 	Long:  `Project Management CLI for managing issues and tasks.`,
+	PersistentPreRun: func(cmd *cobra.Command, args []string) {
+		// Inject app into context for all commands
+		if app != nil {
+			cmd.SetContext(context.WithValue(cmd.Context(), appKey, app))
+		}
+	},
 }
 
-// SetServices sets the global services variable for use in command execution.
+// SetApp sets the app variable for use in command execution.
 // Must be called before executing any commands to ensure services are available.
-func SetServices(services *service.Services) {
-	svc = services
-	rootCmd.Use = svc.Config.RootCmd
+func SetApp(application *service.App) {
+	app = application
+	rootCmd.Use = app.Config.RootCmd
+}
+
+// AppFromContext retrieves the App from the command context
+func AppFromContext(ctx context.Context) *service.App {
+	if a, ok := ctx.Value(appKey).(*service.App); ok {
+		return a
+	}
+	// Fallback to package-level app (for testing or edge cases)
+	return app
 }
 
 // Execute executes the root command using the fang library.

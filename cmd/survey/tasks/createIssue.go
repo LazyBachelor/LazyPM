@@ -17,14 +17,14 @@ Assign this task to yourself and start creating the issue.
 Make sure to fill out all the necessary details, including the title, description, and assignee.`
 
 type CreateIssueTask struct {
-	svc *service.Services
+	app *service.App
 }
 
-func NewCreateIssueTask(svc *service.Services) *CreateIssueTask {
-	return &CreateIssueTask{svc: svc}
+func NewCreateIssueTask(app *service.App) *CreateIssueTask {
+	return &CreateIssueTask{app: app}
 }
 
-func (t *CreateIssueTask) Config() task.TaskConfig {
+func (t *CreateIssueTask) Config() task.Config {
 	return BaseConfig().WithStatisticsStoragePath("./.pm/create-issue-stats.json")
 }
 
@@ -38,18 +38,18 @@ func (t *CreateIssueTask) Questions(interfaceType task.InterfaceType) taskui.Que
 
 func (t *CreateIssueTask) Setup(ctx context.Context) error {
 	// Clear existing issues to ensure a clean state for the task
-	if err := ClearIssues(t.svc); err != nil {
+	if err := ClearIssues(t.app); err != nil {
 		return err
 	}
 
 	issue := models.NewBaseIssue().
 		WithTitle("Create a New Issue").WithDescription(description).Build()
 
-	return t.svc.Beads.CreateIssue(ctx, &issue, "")
+	return t.app.Issues.CreateIssue(ctx, &issue, "")
 }
 
 func (t *CreateIssueTask) Validate(ctx context.Context) (bool, error) {
-	issues, err := t.svc.Beads.SearchIssues(ctx, "", models.IssueFilter{})
+	issues, err := t.app.Issues.SearchIssues(ctx, "", models.IssueFilter{})
 	if err != nil {
 		return false, err
 	}

@@ -8,8 +8,8 @@ import (
 	"github.com/LazyBachelor/LazyPM/pkg/cli/commands"
 )
 
-// CLIConfig is an alias for service.Config, used to configure the CLI.
-type CLIConfig = service.Config
+// Config is an alias for service.Config, used to configure the CLI.
+type Config = service.Config
 
 type CLI struct{}
 
@@ -18,15 +18,15 @@ func NewCli() *CLI {
 }
 
 // Run initializes the services and executes the CLI commands.
-func (c *CLI) Run(ctx context.Context, config CLIConfig) error {
-	svc, cleanup, err := service.NewServices(ctx, config)
+func (c *CLI) Run(ctx context.Context, config Config) error {
+	app, cleanup, err := service.NewServices(ctx, config)
 	if err != nil {
 		return err
 	}
 
 	defer cleanup()
 
-	commands.SetServices(svc)
+	commands.SetApp(app)
 
 	if err := commands.Execute(); err != nil {
 		return err
@@ -36,15 +36,15 @@ func (c *CLI) Run(ctx context.Context, config CLIConfig) error {
 }
 
 // RunWithArgs initializes the services and executes the CLI commands with the provided arguments.
-func (c *CLI) RunWithArgs(ctx context.Context, config CLIConfig, args []string) error {
-	svc, cleanup, err := service.NewServices(ctx, config)
+func (c *CLI) RunWithArgs(ctx context.Context, config Config, args []string) error {
+	app, cleanup, err := service.NewServices(ctx, config)
 	if err != nil {
 		return err
 	}
 
 	defer cleanup()
 
-	commands.SetServices(svc)
+	commands.SetApp(app)
 
 	if err := commands.ExecuteArgs(args); err != nil {
 		return err

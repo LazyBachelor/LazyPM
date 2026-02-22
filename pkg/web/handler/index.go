@@ -8,10 +8,10 @@ import (
 )
 
 func IndexHandler(w http.ResponseWriter, r *http.Request) {
-	svc := Services(r)
+	app := App(r)
 	hx := HTMX(r)
 
-	issues, err := svc.Beads.AllIssues(r.Context())
+	issues, err := app.Issues.AllIssues(r.Context())
 	if err != nil {
 		http.Error(w, "failed to retrieve issues", http.StatusInternalServerError)
 		return

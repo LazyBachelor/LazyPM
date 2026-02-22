@@ -24,7 +24,8 @@ func runGetCmd(cmd *cobra.Command, args []string) error {
 	issueID := args[0]
 
 	// Fetch the issue details using the service layer.
-	issuePtr, err := svc.Beads.GetIssue(cmd.Context(), issueID)
+	app := AppFromContext(cmd.Context())
+	issuePtr, err := app.Issues.GetIssue(cmd.Context(), issueID)
 	if err != nil {
 		return err
 	}

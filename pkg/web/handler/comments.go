@@ -29,7 +29,7 @@ func ListComments(w http.ResponseWriter, r *http.Request) {
 
 func CreateComment(w http.ResponseWriter, r *http.Request) {
 	issue := r.Context().Value(issueKey).(*models.Issue)
-	svc := Services(r)
+	app := App(r)
 	hx := HTMX(r)
 
 	form, err := ParseForm[CommentForm](r)
@@ -47,7 +47,7 @@ func CreateComment(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	comment, err := svc.Beads.AddIssueComment(r.Context(), issue.ID, form.Author, form.Text)
+	comment, err := app.Issues.AddIssueComment(r.Context(), issue.ID, form.Author, form.Text)
 	if err != nil {
 		http.Error(w, "Failed to create comment: "+err.Error(), http.StatusInternalServerError)
 		return

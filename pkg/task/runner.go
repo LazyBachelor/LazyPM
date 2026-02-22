@@ -94,14 +94,13 @@ func startValidationLoop(ctx context.Context, t Tasker, feedbackChan chan Valida
 				feedbackChan <- feedback
 				doneChan <- true
 				return
-			} else {
-				if err != nil {
-					feedback.Message = err.Error()
-				} else {
-					feedback.Message = "Task not yet complete"
-				}
-				feedbackChan <- feedback
 			}
+			if err != nil {
+				feedback.Message = err.Error()
+			} else {
+				feedback.Message = "Task not yet complete"
+			}
+			feedbackChan <- feedback
 		case <-quitChan:
 			return
 		case <-ctx.Done():

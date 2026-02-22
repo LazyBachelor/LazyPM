@@ -34,11 +34,12 @@ func completeIssues(cmd *cobra.Command, args []string, toComplete string) ([]str
 
 // GetIssueCompletions fetches issues matching the toComplete string for shell completion.
 func GetIssueCompletions(ctx context.Context, toComplete string) ([]models.Issue, cobra.ShellCompDirective) {
-	if svc == nil {
+	app := AppFromContext(ctx)
+	if app == nil {
 		return nil, cobra.ShellCompDirectiveNoFileComp
 	}
 
-	issues, err := svc.Beads.AllIssues(ctx)
+	issues, err := app.Issues.AllIssues(ctx)
 	if err != nil {
 		return nil, cobra.ShellCompDirectiveNoFileComp
 	}

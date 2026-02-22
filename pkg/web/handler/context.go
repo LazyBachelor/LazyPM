@@ -11,14 +11,14 @@ import (
 type contextKey string
 
 const (
-	servicesKey contextKey = "services"
-	htmxKey     contextKey = "htmx"
+	appKey  contextKey = "app"
+	htmxKey contextKey = "htmx"
 )
 
-func ServicesMiddleware(svc *service.Services) func(http.Handler) http.Handler {
+func AppMiddleware(app *service.App) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			ctx := context.WithValue(r.Context(), servicesKey, svc)
+			ctx := context.WithValue(r.Context(), appKey, app)
 			next.ServeHTTP(w, r.WithContext(ctx))
 		})
 	}
@@ -33,8 +33,8 @@ func HTMXMiddleware(next http.Handler) http.Handler {
 	})
 }
 
-func Services(r *http.Request) *service.Services {
-	return r.Context().Value(servicesKey).(*service.Services)
+func App(r *http.Request) *service.App {
+	return r.Context().Value(appKey).(*service.App)
 }
 
 func HTMX(r *http.Request) *htmx.Handler {

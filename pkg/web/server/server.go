@@ -9,9 +9,9 @@ import (
 )
 
 type Server struct {
-	Address  string
-	Assets   embed.FS
-	Services *service.Services
+	Address string
+	Assets  embed.FS
+	App     *service.App
 }
 
 // NewServer creates and configures a new HTTP server instance.

@@ -3,20 +3,12 @@ package main
 import (
 	"context"
 
+	"github.com/LazyBachelor/LazyPM/internal/service"
 	"github.com/LazyBachelor/LazyPM/pkg/cli"
 )
 
 func main() {
-	config := cli.CLIConfig{
-		RootCmd:               "pm",
-		IssuePrefix:           "pm",
-		BeadsDBPath:           "./.pm/db.db",
-		StatisticsStoragePath: "./.pm/stats.json",
-	}
-
-	cli := cli.NewCli()
-
-	if err := cli.Run(context.Background(), config); err != nil {
+	if err := cli.NewCli().Run(context.Background(), service.BaseConfig); err != nil {
 		return
 	}
 }

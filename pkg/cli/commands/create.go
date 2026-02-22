@@ -54,7 +54,8 @@ func runCreateCmd(cmd *cobra.Command, args []string) error {
 	}
 
 	// Create the issue using the service layer.
-	err := svc.Beads.CreateIssue(cmd.Context(), issue, "test_actor")
+	app := AppFromContext(cmd.Context())
+	err := app.Issues.CreateIssue(cmd.Context(), issue, "test_actor")
 	if err != nil {
 		return fmt.Errorf("error creating issue: %w", err)
 	}

@@ -14,19 +14,19 @@ import (
 )
 
 func init() {
-	task.Register("create_issue", func(svc *service.Services) task.Tasker {
-		return tasks.NewCreateIssueTask(svc)
+	task.Register("create_issue", func(app *service.App) task.Tasker {
+		return tasks.NewCreateIssueTask(app)
 	})
-	task.Register("coding_task", func(svc *service.Services) task.Tasker {
-		return tasks.NewCodingTask(svc)
+	task.Register("coding_task", func(app *service.App) task.Tasker {
+		return tasks.NewCodingTask(app)
 	})
 }
 
-func initTasks(svc *service.Services) []task.Tasker {
+func initTasks(app *service.App) []task.Tasker {
 	var taskers []task.Tasker
 
 	for _, name := range task.List() {
-		t, err := task.Get(name, svc)
+		t, err := task.Get(name, app)
 		if err != nil {
 			continue
 		}
@@ -36,7 +36,7 @@ func initTasks(svc *service.Services) []task.Tasker {
 	return taskers
 }
 
-func initializeServices(ctx context.Context) (*service.Services, func(), error) {
+func initializeServices(ctx context.Context) (*service.App, func(), error) {
 	return service.NewServices(ctx, tasks.BaseConfig())
 }
 

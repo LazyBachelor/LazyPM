@@ -37,7 +37,7 @@ func NewRepl() *REPL {
 }
 
 // Run starts the interactive Read-Eval-Print Loop for the PM CLI.
-func (r *REPL) Run(ctx context.Context, config cli.CLIConfig) error {
+func (r *REPL) Run(ctx context.Context, config cli.Config) error {
 	// Set terminal to raw mode to capture input properly in the REPL.
 	// This allows us to handle input character by character and provide a better user experience.
 	// We also ensure that the terminal state is restored when the REPL exits, even if an error occurs.
@@ -48,14 +48,14 @@ func (r *REPL) Run(ctx context.Context, config cli.CLIConfig) error {
 	defer term.Restore(int(os.Stdin.Fd()), oldState)
 
 	// Initialize services for beads, config and stats.
-	svc, cleanup, err := service.NewServices(ctx, config)
+	app, cleanup, err := service.NewServices(ctx, config)
 	if err != nil {
 		return fmt.Errorf("failed to initialize services: %w", err)
 	}
 	defer cleanup()
 
-	// Make sure to set services, to ensure they are available.
-	commands.SetServices(svc)
+	// Make sure to set app, to ensure they are available.
+	commands.SetApp(app)
 
 	// Set the REPL instance so status command can access it
 	commands.SetRepl(r)

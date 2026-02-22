@@ -55,7 +55,8 @@ func runGetIssuesCmd(cmd *cobra.Command, args []string) error {
 	}
 
 	// Fetch issues based on the search query and filters.
-	issuesPtr, err := svc.Beads.SearchIssues(cmd.Context(), queryArg, filter)
+	app := AppFromContext(cmd.Context())
+	issuesPtr, err := app.Issues.SearchIssues(cmd.Context(), queryArg, filter)
 	if err != nil {
 		return err
 	}

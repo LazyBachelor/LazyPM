@@ -38,17 +38,12 @@ func BaseDetails() taskui.TaskDetails {
 	}
 }
 
-func BaseConfig() task.TaskConfig {
-	return task.TaskConfig{
-		IssuePrefix:           "pm",
-		WebAddress:            ":8080",
-		BeadsDBPath:           "./.pm/db.db",
-		StatisticsStoragePath: "./.pm/stats.json",
-	}
+func BaseConfig() task.Config {
+	return service.BaseConfig
 }
 
-func ClearIssues(svc *service.Services) error {
-	return svc.Beads.DeleteIssues()
+func ClearIssues(app *service.App) error {
+	return app.Issues.DeleteIssues()
 }
 
 func BaseQuestions(interfaceType task.InterfaceType) taskui.Questions {
