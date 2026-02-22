@@ -15,7 +15,7 @@ import (
 
 type CommentSectionProps struct {
 	IssueID  string
-	Comments []models.Comment
+	Comments []*models.Comment
 }
 
 func CommentSection(props CommentSectionProps) templ.Component {
@@ -75,7 +75,7 @@ func CommentSection(props CommentSectionProps) templ.Component {
 }
 
 type CommentListProps struct {
-	Comments []models.Comment
+	Comments []*models.Comment
 }
 
 func CommentList(props CommentListProps) templ.Component {
@@ -117,7 +117,7 @@ func CommentList(props CommentListProps) templ.Component {
 }
 
 type CommentItemProps struct {
-	Comment models.Comment
+	Comment *models.Comment
 }
 
 func CommentItem(props CommentItemProps) templ.Component {
@@ -247,7 +247,7 @@ func CommentForm(props CommentFormProps) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 12, "\" hx-target=\"#comments-list\" hx-swap=\"beforeend\" hx-on::after-request=\"this.reset()\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 12, "\" hx-target=\"#comments-list\" hx-swap=\"beforeend\" hx-on::after-success=\"this.reset()\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

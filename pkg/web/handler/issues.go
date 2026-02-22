@@ -92,7 +92,7 @@ func IssueCtx(next http.Handler) http.Handler {
 			return
 		}
 
-		comments, err := svc.Beads.GetComments(r.Context(), issue.ID)
+		comments, err := svc.Beads.GetIssueComments(r.Context(), issue.ID)
 		if err != nil {
 			http.Error(w, "Error getting comments: "+err.Error(), http.StatusInternalServerError)
 			return
@@ -107,14 +107,19 @@ func IssueCtx(next http.Handler) http.Handler {
 
 func GetIssue(w http.ResponseWriter, r *http.Request) {
 	issue := r.Context().Value(issueKey).(*models.Issue)
-	comments := r.Context().Value(commentsKey).([]models.Comment)
+	comments := r.Context().Value(commentsKey).([]*models.Comment)
 	hx := HTMX(r)
 
-	acceptHeader := r.Header.Get("Accept")
-	wantsHTML := acceptHeader == "" || strings.Contains(acceptHeader, "text/html")
-
-	if wantsHTML && !hx.IsHxRequest() {
+	if !hx.IsHxRequest() && strings.Contains(r.Header.Get("Accept"), "text/html") {
 		routes.IssueDetail(routes.IssueDetailProps{
+			Issue:    *issue,
+			Comments: comments,
+		}).Render(r.Context(), w)
+		return
+	}
+
+	if hx.IsHxRequest() {
+		routes.IssueDetailContent(routes.IssueDetailProps{
 			Issue:    *issue,
 			Comments: comments,
 		}).Render(r.Context(), w)

@@ -13,7 +13,7 @@ type CommentForm struct {
 }
 
 func ListComments(w http.ResponseWriter, r *http.Request) {
-	comments := r.Context().Value(commentsKey).([]models.Comment)
+	comments := r.Context().Value(commentsKey).([]*models.Comment)
 	hx := HTMX(r)
 
 	if hx.IsHxRequest() {
@@ -40,14 +40,14 @@ func CreateComment(w http.ResponseWriter, r *http.Request) {
 
 	if err := ValidateForm(form); err != nil {
 		if hx.IsHxRequest() {
-			hx.WriteString("<div class=\"alert alert-error\">Please fix the form errors</div>")
+			hx.WriteString(`<div class="alert alert-error">Please fix the form errors</div>`)
 		} else {
 			http.Error(w, "Validation error: "+err.Error(), http.StatusUnprocessableEntity)
 		}
 		return
 	}
 
-	comment, err := svc.Beads.AddComment(r.Context(), issue.ID, form.Author, form.Text)
+	comment, err := svc.Beads.AddIssueComment(r.Context(), issue.ID, form.Author, form.Text)
 	if err != nil {
 		http.Error(w, "Failed to create comment: "+err.Error(), http.StatusInternalServerError)
 		return
@@ -55,7 +55,7 @@ func CreateComment(w http.ResponseWriter, r *http.Request) {
 
 	if hx.IsHxRequest() {
 		components.CommentItem(components.CommentItemProps{
-			Comment: *comment,
+			Comment: comment,
 		}).Render(r.Context(), w)
 		return
 	}

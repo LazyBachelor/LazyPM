@@ -104,10 +104,22 @@ templ IssueRows(issues []models.Issue) {
 	for _, issue := range issues {
 		<tr class="hover">
 			<td class="px-4 py-2 border">
-				<a href={ templ.SafeURL("/issues/" + issue.ID) } class="link link-primary font-mono">{ issue.ID }</a>
+				<a
+					class="link link-primary font-mono"
+					hx-get={ "/issues/" + issue.ID }
+					hx-target="main"
+					hx-swap="innerHTML"
+					hx-push-url="true"
+				>{ issue.ID }</a>
 			</td>
 			<td class="px-4 py-2 border">
-				<a href={ templ.SafeURL("/issues/" + issue.ID) } class="hover:text-primary">{ issue.Title }</a>
+				<a
+					class="hover:text-primary"
+					hx-get={ "/issues/" + issue.ID }
+					hx-target="main"
+					hx-swap="innerHTML"
+					hx-push-url="true"
+				>{ issue.Title }</a>
 			</td>
 			<td class="px-4 py-2 border">{ string(issue.Status) }</td>
 			<td class="px-4 py-2 border">{ string(issue.IssueType) }</td>

@@ -8,72 +8,77 @@ import (
 
 type IssueDetailProps struct {
 	Issue    models.Issue
-	Comments []models.Comment
+	Comments []*models.Comment
+}
+
+templ IssueDetailContent(props IssueDetailProps) {
+	<div class="container mx-auto px-4 py-6">
+		<div class="mb-4">
+			<a
+				class="btn btn-ghost btn-sm"
+				hx-get="/"
+				hx-target="main"
+				hx-swap="innerHTML"
+				hx-push-url="true"
+			>
+				@components.IconBack()
+				Back to Issues
+			</a>
+		</div>
+		<div class="card bg-base-100 shadow-lg mb-6">
+			<div class="card-body">
+				<div class="flex items-start justify-between">
+					<div>
+						<span class="badge badge-neutral font-mono">{ props.Issue.ID }</span>
+						<h1 class="text-2xl font-bold mt-2">{ props.Issue.Title }</h1>
+					</div>
+					<div class="flex gap-2">
+						@StatusBadge(props.Issue.Status)
+						@TypeBadge(props.Issue.IssueType)
+						@PriorityBadge(props.Issue.Priority)
+					</div>
+				</div>
+				if props.Issue.Description != "" {
+					<div class="mt-4">
+						<h3 class="text-sm font-semibold text-base-content/70 mb-2">Description</h3>
+						<p class="whitespace-pre-wrap">{ props.Issue.Description }</p>
+					</div>
+				}
+				<div class="divider"></div>
+				<div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+					<div>
+						<span class="text-base-content/60">Created</span>
+						<p class="font-medium">{ props.Issue.CreatedAt.Format("Jan 2, 2006") }</p>
+					</div>
+					<div>
+						<span class="text-base-content/60">Updated</span>
+						<p class="font-medium">{ props.Issue.UpdatedAt.Format("Jan 2, 2006") }</p>
+					</div>
+					if props.Issue.Assignee != "" {
+						<div>
+							<span class="text-base-content/60">Assignee</span>
+							<p class="font-medium">{ props.Issue.Assignee }</p>
+						</div>
+					}
+					if props.Issue.Owner != "" {
+						<div>
+							<span class="text-base-content/60">Owner</span>
+							<p class="font-medium">{ props.Issue.Owner }</p>
+						</div>
+					}
+				</div>
+			</div>
+		</div>
+		@components.CommentSection(components.CommentSectionProps{
+			IssueID:  props.Issue.ID,
+			Comments: props.Comments,
+		})
+	</div>
 }
 
 templ IssueDetail(props IssueDetailProps) {
 	@BaseLayout() {
-		<div class="container mx-auto px-4 py-6">
-			<div class="mb-4">
-				<a href="/" class="btn btn-ghost btn-sm">
-					@components.IconBack()
-					Back to Issues
-				</a>
-			</div>
-
-			<div class="card bg-base-100 shadow-lg mb-6">
-				<div class="card-body">
-					<div class="flex items-start justify-between">
-						<div>
-							<span class="badge badge-neutral font-mono">{ props.Issue.ID }</span>
-							<h1 class="text-2xl font-bold mt-2">{ props.Issue.Title }</h1>
-						</div>
-						<div class="flex gap-2">
-							@StatusBadge(props.Issue.Status)
-							@TypeBadge(props.Issue.IssueType)
-							@PriorityBadge(props.Issue.Priority)
-						</div>
-					</div>
-
-					if props.Issue.Description != "" {
-						<div class="mt-4">
-							<h3 class="text-sm font-semibold text-base-content/70 mb-2">Description</h3>
-							<p class="whitespace-pre-wrap">{ props.Issue.Description }</p>
-						</div>
-					}
-
-					<div class="divider"></div>
-
-					<div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-						<div>
-							<span class="text-base-content/60">Created</span>
-							<p class="font-medium">{ props.Issue.CreatedAt.Format("Jan 2, 2006") }</p>
-						</div>
-						<div>
-							<span class="text-base-content/60">Updated</span>
-							<p class="font-medium">{ props.Issue.UpdatedAt.Format("Jan 2, 2006") }</p>
-						</div>
-						if props.Issue.Assignee != "" {
-							<div>
-								<span class="text-base-content/60">Assignee</span>
-								<p class="font-medium">{ props.Issue.Assignee }</p>
-							</div>
-						}
-						if props.Issue.Owner != "" {
-							<div>
-								<span class="text-base-content/60">Owner</span>
-								<p class="font-medium">{ props.Issue.Owner }</p>
-							</div>
-						}
-					</div>
-				</div>
-			</div>
-
-			@components.CommentSection(components.CommentSectionProps{
-				IssueID:  props.Issue.ID,
-				Comments: props.Comments,
-			})
-		</div>
+		@IssueDetailContent(props)
 	}
 }
 

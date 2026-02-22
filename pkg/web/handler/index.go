@@ -9,6 +9,7 @@ import (
 
 func IndexHandler(w http.ResponseWriter, r *http.Request) {
 	svc := Services(r)
+	hx := HTMX(r)
 
 	issues, err := svc.Beads.AllIssues(r.Context())
 	if err != nil {
@@ -20,6 +21,11 @@ func IndexHandler(w http.ResponseWriter, r *http.Request) {
 		IssueTable: components.IssueTableProps{
 			Issues: issues,
 		},
+	}
+
+	if hx.IsHxRequest() {
+		routes.IndexContent(props).Render(r.Context(), w)
+		return
 	}
 
 	routes.Index(props).Render(r.Context(), w)

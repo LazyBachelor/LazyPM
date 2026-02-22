@@ -7,7 +7,7 @@ import (
 
 type CommentSectionProps struct {
 	IssueID  string
-	Comments []models.Comment
+	Comments []*models.Comment
 }
 
 templ CommentSection(props CommentSectionProps) {
@@ -31,7 +31,7 @@ templ CommentSection(props CommentSectionProps) {
 }
 
 type CommentListProps struct {
-	Comments []models.Comment
+	Comments []*models.Comment
 }
 
 templ CommentList(props CommentListProps) {
@@ -45,7 +45,7 @@ templ CommentList(props CommentListProps) {
 }
 
 type CommentItemProps struct {
-	Comment models.Comment
+	Comment *models.Comment
 }
 
 templ CommentItem(props CommentItemProps) {
