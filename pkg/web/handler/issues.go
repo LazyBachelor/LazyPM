@@ -3,12 +3,15 @@ package handler
 import (
 	"context"
 	"net/http"
+	"strings"
 
 	"github.com/LazyBachelor/LazyPM/internal/models"
+	"github.com/LazyBachelor/LazyPM/pkg/web/routes"
 	"github.com/go-chi/chi/v5"
 )
 
 const issueKey = "issue"
+const commentsKey = "comments"
 
 type IssueForm struct {
 	Title       string           `form:"title" validate:"required,max=255"`
@@ -89,7 +92,14 @@ func IssueCtx(next http.Handler) http.Handler {
 			return
 		}
 
+		comments, err := svc.Beads.GetIssueComments(r.Context(), issue.ID)
+		if err != nil {
+			http.Error(w, "Error getting comments: "+err.Error(), http.StatusInternalServerError)
+			return
+		}
+
 		ctx := context.WithValue(r.Context(), issueKey, issue)
+		ctx = context.WithValue(ctx, commentsKey, comments)
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 
@@ -97,8 +107,26 @@ func IssueCtx(next http.Handler) http.Handler {
 
 func GetIssue(w http.ResponseWriter, r *http.Request) {
 	issue := r.Context().Value(issueKey).(*models.Issue)
+	comments := r.Context().Value(commentsKey).([]*models.Comment)
 	hx := HTMX(r)
 
+	if !hx.IsHxRequest() && strings.Contains(r.Header.Get("Accept"), "text/html") {
+		routes.IssueDetail(routes.IssueDetailProps{
+			Issue:    *issue,
+			Comments: comments,
+		}).Render(r.Context(), w)
+		return
+	}
+
+	if hx.IsHxRequest() {
+		routes.IssueDetailContent(routes.IssueDetailProps{
+			Issue:    *issue,
+			Comments: comments,
+		}).Render(r.Context(), w)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
 	hx.WriteJSON(issue)
 }
 

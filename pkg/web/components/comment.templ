@@ -1,0 +1,103 @@
+package components
+
+import (
+	"github.com/LazyBachelor/LazyPM/internal/models"
+	"github.com/LazyBachelor/LazyPM/pkg/web/components/base"
+)
+
+type CommentSectionProps struct {
+	IssueID  string
+	Comments []*models.Comment
+}
+
+templ CommentSection(props CommentSectionProps) {
+	<div class="w-full max-w-2xl mx-auto mt-8">
+		<h2 class="text-xl font-semibold mb-4">Comments</h2>
+		
+		<div id="comments-list" class="space-y-4 mb-6">
+			if len(props.Comments) == 0 {
+				<p class="text-base-content/60 italic">No comments yet. Be the first to comment!</p>
+			} else {
+				for _, comment := range props.Comments {
+					@CommentItem(CommentItemProps{Comment: comment})
+				}
+			}
+		</div>
+
+		@CommentForm(CommentFormProps{
+			IssueID: props.IssueID,
+		})
+	</div>
+}
+
+type CommentListProps struct {
+	Comments []*models.Comment
+}
+
+templ CommentList(props CommentListProps) {
+	if len(props.Comments) == 0 {
+		<p class="text-base-content/60 italic">No comments yet. Be the first to comment!</p>
+	} else {
+		for _, comment := range props.Comments {
+			@CommentItem(CommentItemProps{Comment: comment})
+		}
+	}
+}
+
+type CommentItemProps struct {
+	Comment *models.Comment
+}
+
+templ CommentItem(props CommentItemProps) {
+	<div class="card bg-base-200 shadow-sm">
+		<div class="card-body p-4">
+			<div class="flex items-center justify-between mb-2">
+				<span class="font-medium text-primary">{ props.Comment.Author }</span>
+				<span class="text-sm text-base-content/60">{ props.Comment.CreatedAt.Format("Jan 2, 2006 3:04 PM") }</span>
+			</div>
+			<p class="whitespace-pre-wrap">{ props.Comment.Text }</p>
+		</div>
+	</div>
+}
+
+type CommentFormProps struct {
+	IssueID string
+	Author  string
+	Text    string
+	Class   string
+}
+
+templ CommentForm(props CommentFormProps) {
+	<div class={ "w-full", props.Class }>
+		<h3 class="text-lg font-medium mb-3">Add a Comment</h3>
+		<form
+			class="space-y-3"
+			hx-post={ "/issues/" + props.IssueID + "/comments" }
+			hx-target="#comments-list"
+			hx-swap="beforeend"
+			hx-on::after-success="this.reset()"
+		>
+			@base.Input(base.InputProps{
+				Name:        "author",
+				Label:       "Your Name",
+				Value:       props.Author,
+				Placeholder: "Enter your name",
+				Class:       "w-full",
+				Required:    true,
+			})
+			@base.Textarea(base.TextareaProps{
+				Name:        "text",
+				Label:       "Comment",
+				Value:       props.Text,
+				Placeholder: "Write your comment here...",
+				Class:       "w-full",
+				Required:    true,
+				Rows:        4,
+			})
+			<button type="submit" class="btn btn-primary">
+				Post Comment
+			</button>
+		</form>
+		<div id="comment-result" class="mt-2"></div>
+	</div>
+}

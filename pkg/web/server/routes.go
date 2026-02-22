@@ -38,6 +38,11 @@ func (s *Server) RegisterRoutes(assets embed.FS) http.Handler {
 			r.Get("/", handler.GetIssue)
 			r.Patch("/", handler.UpdateIssue)
 			r.Delete("/", handler.DeleteIssue)
+
+			r.Route("/comments", func(r chi.Router) {
+				r.Get("/", handler.ListComments)
+				r.Post("/", handler.CreateComment)
+			})
 		})
 	})
 	return gziphandler.GzipHandler(r)

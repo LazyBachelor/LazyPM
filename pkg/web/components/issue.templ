@@ -1,6 +1,7 @@
 package components
 
 import (
+	"fmt"
 	"github.com/LazyBachelor/LazyPM/internal/models"
 	"github.com/LazyBachelor/LazyPM/pkg/web/components/base"
 )
@@ -101,12 +102,28 @@ templ IssueTable(props IssueTableProps) {
 
 templ IssueRows(issues []models.Issue) {
 	for _, issue := range issues {
-		<tr>
-			<td class="px-4 py-2 border">{ issue.ID }</td>
-			<td class="px-4 py-2 border">{ issue.Title }</td>
-			<td class="px-4 py-2 border">{ issue.Status }</td>
-			<td class="px-4 py-2 border">{ issue.IssueType }</td>
-			<td class="px-4 py-2 border">{ issue.Priority }</td>
+		<tr class="hover">
+			<td class="px-4 py-2 border">
+				<a
+					class="link link-primary font-mono"
+					hx-get={ "/issues/" + issue.ID }
+					hx-target="main"
+					hx-swap="innerHTML"
+					hx-push-url="true"
+				>{ issue.ID }</a>
+			</td>
+			<td class="px-4 py-2 border">
+				<a
+					class="hover:text-primary"
+					hx-get={ "/issues/" + issue.ID }
+					hx-target="main"
+					hx-swap="innerHTML"
+					hx-push-url="true"
+				>{ issue.Title }</a>
+			</td>
+			<td class="px-4 py-2 border">{ string(issue.Status) }</td>
+			<td class="px-4 py-2 border">{ string(issue.IssueType) }</td>
+			<td class="px-4 py-2 border">{ fmt.Sprintf("P%d", issue.Priority) }</td>
 		</tr>
 	}
 }
