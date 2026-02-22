@@ -1,4 +1,4 @@
-package commands
+package issuesCmd
 
 import (
 	"context"
@@ -17,8 +17,8 @@ var (
 	deleteInteractive bool
 )
 
-// deleteCmd represents the delete command.
-var deleteCmd = &cobra.Command{
+// DeleteCmd represents the delete command.
+var DeleteCmd = &cobra.Command{
 	Use:     "delete [id]",
 	Short:   "Delete an existing issue",
 	Long:    `Delete an existing issue by its ID.`,
@@ -125,8 +125,6 @@ func runDeleteInteractive(ctx context.Context) error {
 
 // init function to set up the delete command and its flags.
 func init() {
-	deleteCmd.Flags().BoolVarP(&deleteInteractive, "interactive", "i", false, "Delete issues interactively")
-	deleteCmd.Flags().BoolVarP(&confirmDelete, "yes", "y", true, "Confirm deletion without prompt")
-
-	rootCmd.AddCommand(deleteCmd)
+	DeleteCmd.Flags().BoolVarP(&deleteInteractive, "interactive", "i", false, "Delete issues interactively")
+	DeleteCmd.Flags().BoolVarP(&confirmDelete, "yes", "y", true, "Confirm deletion without prompt")
 }

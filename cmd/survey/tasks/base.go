@@ -2,7 +2,7 @@ package tasks
 
 import (
 	"github.com/LazyBachelor/LazyPM/internal/service"
-	"github.com/LazyBachelor/LazyPM/pkg/cli/repl"
+	"github.com/LazyBachelor/LazyPM/pkg/repl"
 	"github.com/LazyBachelor/LazyPM/pkg/task"
 	taskui "github.com/LazyBachelor/LazyPM/pkg/task/ui"
 	"github.com/LazyBachelor/LazyPM/pkg/tui"

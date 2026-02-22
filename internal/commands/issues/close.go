@@ -1,4 +1,4 @@
-package commands
+package issuesCmd
 
 import (
 	"fmt"
@@ -7,9 +7,9 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// closeCmd represents the close command,
+// CloseCmd represents the close command,
 // which allows users to close an existing issue by its ID.
-var closeCmd = &cobra.Command{
+var CloseCmd = &cobra.Command{
 	Use:     "close [id]",
 	Short:   "Close an existing issue",
 	Long:    `Close an existing issue by its ID.`,
@@ -57,9 +57,4 @@ func runCloseCmd(cmd *cobra.Command, args []string) error {
 	cmd.Println("Closed issue with ID:", closeID)
 
 	return nil
-}
-
-// init function to set up the close command and its flags.
-func init() {
-	rootCmd.AddCommand(closeCmd)
 }

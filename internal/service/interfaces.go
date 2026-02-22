@@ -8,11 +8,18 @@ import (
 	"github.com/steveyegge/beads"
 )
 
+// ValidationFeedback holds task validation status
+type ValidationFeedback struct {
+	Success bool
+	Message string
+}
+
 type App struct {
-	Config Config
-	Issues IssueService
-	Stats  StatsService
-	Logger *slog.Logger
+	Config          Config
+	Issues          IssueService
+	Stats           StatsService
+	Logger          *slog.Logger
+	CurrentFeedback *ValidationFeedback
 }
 
 type IssueService interface {

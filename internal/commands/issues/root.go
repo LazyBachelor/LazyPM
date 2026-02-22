@@ -1,4 +1,4 @@
-package commands
+package issuesCmd
 
 import (
 	"bytes"
@@ -29,8 +29,8 @@ type Flags struct {
 	priority    int
 }
 
-// rootCmd is the base command for the CLI application.
-var rootCmd = &cobra.Command{
+// RootCmd is the base command for the CLI application.
+var RootCmd = &cobra.Command{
 	Short: "Project Management CLI",
 	Long:  `Project Management CLI for managing issues and tasks.`,
 	PersistentPreRun: func(cmd *cobra.Command, args []string) {
@@ -45,7 +45,7 @@ var rootCmd = &cobra.Command{
 // Must be called before executing any commands to ensure services are available.
 func SetApp(application *service.App) {
 	app = application
-	rootCmd.Use = app.Config.RootCmd
+	RootCmd.Use = app.Config.RootCmd
 }
 
 // AppFromContext retrieves the App from the command context
@@ -57,37 +57,37 @@ func AppFromContext(ctx context.Context) *service.App {
 	return app
 }
 
-// Execute executes the root command using the fang library.
-func Execute() error {
-	return fang.Execute(context.Background(), rootCmd,
-		fang.WithColorSchemeFunc(fang.AnsiColorScheme))
-}
-
 // ExecuteArgs executes the command with the given arguments using the fang library.
 func ExecuteArgs(args []string) error {
-	rootCmd.SetArgs(args)
-	return fang.Execute(context.Background(), rootCmd,
+	RootCmd.SetArgs(args)
+	return fang.Execute(context.Background(), RootCmd,
 		fang.WithColorSchemeFunc(fang.AnsiColorScheme))
 }
 
 // ExecuteArgsString executes the command with the given arguments and returns the output as a string.
 // This is useful for testing command outputs and used in the REPL
 func ExecuteArgsString(args []string) (string, error) {
+	return ExecuteArgsStringWithContext(context.Background(), args)
+}
+
+// ExecuteArgsStringWithContext executes the command with context and returns the output as a string.
+func ExecuteArgsStringWithContext(ctx context.Context, args []string) (string, error) {
 	buf := new(bytes.Buffer)
 
-	rootCmd.SetOut(buf)
-	rootCmd.SetErr(buf)
-	rootCmd.SetArgs(args)
+	RootCmd.SetOut(buf)
+	RootCmd.SetErr(buf)
+	RootCmd.SetArgs(args)
+	RootCmd.SetContext(ctx)
 
-	err := rootCmd.Execute()
+	err := RootCmd.Execute()
 
 	return buf.String(), err
 }
 
 // init function to set up the command hierarchy and options.
 func init() {
-	rootCmd.CompletionOptions.DisableDefaultCmd = false
-	rootCmd.AddGroup(&cobra.Group{ID: "help", Title: "Helping Commands"})
-	rootCmd.SetCompletionCommandGroupID("help")
-	rootCmd.SetHelpCommandGroupID("help")
+	RootCmd.CompletionOptions.DisableDefaultCmd = false
+	RootCmd.AddGroup(&cobra.Group{ID: "help", Title: "Helping Commands"})
+	RootCmd.SetCompletionCommandGroupID("help")
+	RootCmd.SetHelpCommandGroupID("help")
 }

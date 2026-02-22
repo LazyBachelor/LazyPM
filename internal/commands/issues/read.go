@@ -1,12 +1,12 @@
-package commands
+package issuesCmd
 
 import (
 	"github.com/LazyBachelor/LazyPM/internal/models"
 	"github.com/spf13/cobra"
 )
 
-// getIssueCmd represents the get issue command.
-var getIssueCmd = &cobra.Command{
+// GetCmd represents the get issue command.
+var GetCmd = &cobra.Command{
 	Use:   "describe [issue ID]",
 	Short: "Get issue details",
 	Long:  `Get issue details by ID`,
@@ -44,5 +44,4 @@ func runGetCmd(cmd *cobra.Command, args []string) error {
 
 // init function to set up the get issue command.
 func init() {
-	rootCmd.AddCommand(getIssueCmd)
 }

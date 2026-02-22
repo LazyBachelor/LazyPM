@@ -4,17 +4,23 @@ package cli
 import (
 	"context"
 
+	"github.com/LazyBachelor/LazyPM/internal/commands/issues"
 	"github.com/LazyBachelor/LazyPM/internal/service"
-	"github.com/LazyBachelor/LazyPM/pkg/cli/commands"
+	"github.com/charmbracelet/fang"
+	"github.com/spf13/cobra"
 )
 
 // Config is an alias for service.Config, used to configure the CLI.
 type Config = service.Config
 
-type CLI struct{}
+type CLI struct {
+	RootCmd *cobra.Command
+}
 
-func NewCli() *CLI {
-	return &CLI{}
+func NewCli(rootCmd *cobra.Command) *CLI {
+	return &CLI{
+		RootCmd: rootCmd,
+	}
 }
 
 // Run initializes the services and executes the CLI commands.
@@ -26,9 +32,10 @@ func (c *CLI) Run(ctx context.Context, config Config) error {
 
 	defer cleanup()
 
-	commands.SetApp(app)
+	issuesCmd.SetApp(app)
 
-	if err := commands.Execute(); err != nil {
+	if err := fang.Execute(ctx, c.RootCmd,
+		fang.WithColorSchemeFunc(fang.AnsiColorScheme)); err != nil {
 		return err
 	}
 
@@ -44,9 +51,9 @@ func (c *CLI) RunWithArgs(ctx context.Context, config Config, args []string) err
 
 	defer cleanup()
 
-	commands.SetApp(app)
+	issuesCmd.SetApp(app)
 
-	if err := commands.ExecuteArgs(args); err != nil {
+	if err := issuesCmd.ExecuteArgs(args); err != nil {
 		return err
 	}
 

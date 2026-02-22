@@ -1,4 +1,4 @@
-package commands
+package issuesCmd
 
 import (
 	"strings"
@@ -17,8 +17,8 @@ pm list --title "New feature" --desc "feature description"
 pm list -p 1 -l 10`
 )
 
-// getIssuesCmd represents the get issues command.
-var getIssuesCmd = &cobra.Command{
+// ListCmd represents the get issues command.
+var ListCmd = &cobra.Command{
 	Use:     "list [search query]",
 	Short:   "List all issues",
 	Long:    `List all issues in the project management system.`,
@@ -70,17 +70,15 @@ func runGetIssuesCmd(cmd *cobra.Command, args []string) error {
 
 // init function to set up the get issues command and its flags.
 func init() {
-	getIssuesCmd.Flags().StringVar(&listFlags.title, "title", "", "Filter issues by title")
-	getIssuesCmd.Flags().StringVarP(&listFlags.description, "desc", "d", "", "Filter issues by description")
-	getIssuesCmd.Flags().StringVarP(&listFlags.status, "status", "s", "", "Filter issues by status (open, closed, in_progress)")
-	getIssuesCmd.Flags().StringVarP(&listFlags.issueType, "type", "t", "", "Filter issues by type (bug, feature, task)")
-	getIssuesCmd.Flags().IntVarP(&listFlags.priority, "priority", "p", 0, "Filter issues by priority (0-4)")
+	ListCmd.Flags().StringVar(&listFlags.title, "title", "", "Filter issues by title")
+	ListCmd.Flags().StringVarP(&listFlags.description, "desc", "d", "", "Filter issues by description")
+	ListCmd.Flags().StringVarP(&listFlags.status, "status", "s", "", "Filter issues by status (open, closed, in_progress)")
+	ListCmd.Flags().StringVarP(&listFlags.issueType, "type", "t", "", "Filter issues by type (bug, feature, task)")
+	ListCmd.Flags().IntVarP(&listFlags.priority, "priority", "p", 0, "Filter issues by priority (0-4)")
 
-	getIssuesCmd.Flags().IntVarP(&listFlags.limit, "limit", "l", 25, "Limit the number of issues returned")
+	ListCmd.Flags().IntVarP(&listFlags.limit, "limit", "l", 25, "Limit the number of issues returned")
 
-	getIssuesCmd.RegisterFlagCompletionFunc("status", completionFunc(statusOptions))
-	getIssuesCmd.RegisterFlagCompletionFunc("type", completionFunc(typeOptions))
-	getIssuesCmd.RegisterFlagCompletionFunc("priority", completionFunc(priorityRange))
-
-	rootCmd.AddCommand(getIssuesCmd)
+	ListCmd.RegisterFlagCompletionFunc("status", completionFunc(statusOptions))
+	ListCmd.RegisterFlagCompletionFunc("type", completionFunc(typeOptions))
+	ListCmd.RegisterFlagCompletionFunc("priority", completionFunc(priorityRange))
 }

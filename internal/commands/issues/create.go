@@ -1,4 +1,4 @@
-package commands
+package issuesCmd
 
 import (
 	"fmt"
@@ -18,8 +18,8 @@ const (
 pm create Fix bug --desc "Bug description" --status in_progress --type bug --priority 5`
 )
 
-// createCmd represents the create command, which allows users to create a new issue with specified details.
-var createCmd = &cobra.Command{
+// CreateCmd represents the create command, which allows users to create a new issue with specified details.
+var CreateCmd = &cobra.Command{
 	Use:     "create [title]",
 	Short:   "Create a new issue",
 	Long:    `Create a new issue with the specified details.`,
@@ -105,15 +105,13 @@ func runCreateInteractive() error {
 
 // init function to set up the create command and its flags.
 func init() {
-	createCmd.Flags().BoolVarP(&createFlags.interactive, "interactive", "i", false, "Create issue interactively")
-	createCmd.Flags().StringVarP(&createFlags.description, "desc", "d", "", "Issue description")
-	createCmd.Flags().StringVarP(&createFlags.status, "status", "s", "open", "Issue status(open, closed, in_progress)")
-	createCmd.Flags().StringVarP(&createFlags.issueType, "type", "t", "task", "Issue type(bug, feature, task)")
-	createCmd.Flags().IntVarP(&createFlags.priority, "priority", "p", 0, "Issue priority(0-4)")
+	CreateCmd.Flags().BoolVarP(&createFlags.interactive, "interactive", "i", false, "Create issue interactively")
+	CreateCmd.Flags().StringVarP(&createFlags.description, "desc", "d", "", "Issue description")
+	CreateCmd.Flags().StringVarP(&createFlags.status, "status", "s", "open", "Issue status(open, closed, in_progress)")
+	CreateCmd.Flags().StringVarP(&createFlags.issueType, "type", "t", "task", "Issue type(bug, feature, task)")
+	CreateCmd.Flags().IntVarP(&createFlags.priority, "priority", "p", 0, "Issue priority(0-4)")
 
-	createCmd.RegisterFlagCompletionFunc("type", completionFunc(typeOptions))
-	createCmd.RegisterFlagCompletionFunc("status", completionFunc(statusOptions))
-	createCmd.RegisterFlagCompletionFunc("priority", completionFunc(priorityRange))
-
-	rootCmd.AddCommand(createCmd)
+	CreateCmd.RegisterFlagCompletionFunc("type", completionFunc(typeOptions))
+	CreateCmd.RegisterFlagCompletionFunc("status", completionFunc(statusOptions))
+	CreateCmd.RegisterFlagCompletionFunc("priority", completionFunc(priorityRange))
 }
