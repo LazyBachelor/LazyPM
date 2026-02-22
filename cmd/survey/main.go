@@ -4,9 +4,12 @@ import (
 	"context"
 
 	"github.com/LazyBachelor/LazyPM/cmd/survey/tasks"
-	"github.com/LazyBachelor/LazyPM/internal/commands/survey"
+	surveyCmd "github.com/LazyBachelor/LazyPM/internal/commands/survey"
 	"github.com/LazyBachelor/LazyPM/internal/service"
+	"github.com/LazyBachelor/LazyPM/pkg/repl"
 	"github.com/LazyBachelor/LazyPM/pkg/task"
+	"github.com/LazyBachelor/LazyPM/pkg/tui"
+	"github.com/LazyBachelor/LazyPM/pkg/web"
 	"github.com/charmbracelet/fang"
 )
 
@@ -20,16 +23,22 @@ func main() {
 }
 
 func init() {
+	task.RegisterInterface("tui", tui.NewTui())
+	task.RegisterInterface("web", web.NewWeb())
+	task.RegisterInterface("repl", repl.NewRepl())
+
 	surveyCmd.StartCmd.RunE = runStartCmd
 	surveyCmd.RootCmd.AddCommand(surveyCmd.StartCmd)
 	surveyCmd.RootCmd.AddCommand(surveyCmd.SubmitCmd)
 	surveyCmd.RootCmd.AddCommand(surveyCmd.StatusCmd)
-	surveyCmd.RootCmd.AddCommand(surveyCmd.ListCmd)
+	surveyCmd.RootCmd.AddCommand(surveyCmd.ListTasksCmd)
+	surveyCmd.RootCmd.AddCommand(surveyCmd.ListInterfacesCmd)
 
-	task.Register("create_issue", func(app *service.App) task.Tasker {
+	task.RegisterTask("create_issue", func(app *service.App) task.Tasker {
 		return tasks.NewCreateIssueTask(app)
 	})
-	task.Register("coding_task", func(app *service.App) task.Tasker {
+	task.RegisterTask("coding_task", func(app *service.App) task.Tasker {
 		return tasks.NewCodingTask(app)
 	})
+
 }

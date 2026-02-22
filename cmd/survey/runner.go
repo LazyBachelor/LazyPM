@@ -25,7 +25,7 @@ func runStartCmd(cmd *cobra.Command, args []string) error {
 
 	if cmd.Flags().Changed("interface") {
 		if _, ok := interfaces[surveyCmd.InterfaceType]; !ok {
-			return fmt.Errorf("invalid interface, valid are (tui, repl, web)")
+			return fmt.Errorf("invalid interface, valid are %v", task.ListInterfaces())
 		}
 		interfaces = map[string]task.Interface{
 			surveyCmd.InterfaceType: interfaces[surveyCmd.InterfaceType],

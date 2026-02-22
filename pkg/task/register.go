@@ -6,26 +6,51 @@ import (
 	"github.com/LazyBachelor/LazyPM/internal/service"
 )
 
-var registry = make(map[string]func(*service.App) Tasker)
+var interfaceRegistry = make(map[string]Interface)
 
-func Register(name string, constructor func(*service.App) Tasker) {
-	if _, exists := registry[name]; exists {
-		panic(fmt.Sprintf("task %q already registered", name))
+func RegisterInterface(name string, iface Interface) {
+	if _, exists := interfaceRegistry[name]; exists {
+		panic(fmt.Sprintf("interface %q already registered", name))
 	}
-	registry[name] = constructor
+	interfaceRegistry[name] = iface
 }
 
-func Get(name string, app *service.App) (Tasker, error) {
-	constructor, ok := registry[name]
+func GetInterface(name string) (Interface, error) {
+	iface, ok := interfaceRegistry[name]
+	if !ok {
+		return nil, fmt.Errorf("interface %q not found", name)
+	}
+	return iface, nil
+}
+
+func ListInterfaces() []string {
+	names := make([]string, 0, len(interfaceRegistry))
+	for name := range interfaceRegistry {
+		names = append(names, name)
+	}
+	return names
+}
+
+var taskRegistry = make(map[string]func(*service.App) Tasker)
+
+func RegisterTask(name string, constructor func(*service.App) Tasker) {
+	if _, exists := taskRegistry[name]; exists {
+		panic(fmt.Sprintf("task %q already registered", name))
+	}
+	taskRegistry[name] = constructor
+}
+
+func GetTasks(name string, app *service.App) (Tasker, error) {
+	constructor, ok := taskRegistry[name]
 	if !ok {
 		return nil, fmt.Errorf("task %q not found", name)
 	}
 	return constructor(app), nil
 }
 
-func List() []string {
-	names := make([]string, 0, len(registry))
-	for name := range registry {
+func ListTasks() []string {
+	names := make([]string, 0, len(taskRegistry))
+	for name := range taskRegistry {
 		names = append(names, name)
 	}
 	return names
