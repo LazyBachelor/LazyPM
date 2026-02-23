@@ -97,5 +97,9 @@ func (t *CreateIssueTask) Validate(ctx context.Context) (bool, error) {
 		return false, fmt.Errorf("issue status is not closed")
 	}
 
+	if t.setupTask.Status != models.StatusClosed {
+		return false, fmt.Errorf("setup issue status is not closed")
+	}
+
 	return EndTaskWithTimeout(&t.done, "Task completed!", 5*time.Second)
 }
