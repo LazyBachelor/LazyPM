@@ -82,6 +82,25 @@ func deleteIssueCmd(svc *service.Services, issueID string, currentIndex int) tea
 	}
 }
 
+func (m *Model) refreshIssueListsAndSelectIssue(issueID string) tea.Cmd {
+	/* update handler for issueTitleUpdatedMsg, issueDescriptionUpdatedMsg, and issueStatusUpdatedMsg to avoid using nearly identical code for refreshing the issue lists and updating the detail view
+	Fetch all issues, update both lists, set the detail view for the given issue, and return a command to select that issue. Returns nil if fetch fails.
+	*/
+	issues, err := m.svc.Beads.AllIssues(context.Background())
+	if err != nil {
+		return nil
+	}
+	setItemsCmd := m.issueList.SetIssues(OpenAndInProgressOnly(issues))
+	closedSetCmd := m.closedIssueList.SetIssues(ClosedOnly(issues))
+	for _, issue := range issues {
+		if issue.ID == issueID {
+			m.issueDetail.SetIssue(issue)
+			break
+		}
+	}
+	return tea.Sequence(setItemsCmd, closedSetCmd, func() tea.Msg { return selectIssueMsg{IssueID: issueID} })
+}
+
 func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case issueTitleUpdatedMsg:
@@ -91,19 +110,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if msg.Err != nil {
 			return m, nil
 		}
-		issues, err := m.svc.Beads.AllIssues(context.Background())
-		if err != nil {
-			return m, nil
-		}
-		setItemsCmd := m.issueList.SetIssues(OpenAndInProgressOnly(issues))
-		closedSetCmd := m.closedIssueList.SetIssues(ClosedOnly(issues))
-		for _, issue := range issues {
-			if issue.ID == msg.IssueID {
-				m.issueDetail.SetIssue(issue)
-				break
-			}
-		}
-		return m, tea.Sequence(setItemsCmd, closedSetCmd, func() tea.Msg { return selectIssueMsg{IssueID: msg.IssueID} })
+		return m, m.refreshIssueListsAndSelectIssue(msg.IssueID)
 
 	case issueDescriptionUpdatedMsg:
 		m.editingDescription = false
@@ -112,19 +119,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if msg.Err != nil {
 			return m, nil
 		}
-		issues, err := m.svc.Beads.AllIssues(context.Background())
-		if err != nil {
-			return m, nil
-		}
-		setItemsCmd := m.issueList.SetIssues(OpenAndInProgressOnly(issues))
-		closedSetCmd := m.closedIssueList.SetIssues(ClosedOnly(issues))
-		for _, issue := range issues {
-			if issue.ID == msg.IssueID {
-				m.issueDetail.SetIssue(issue)
-				break
-			}
-		}
-		return m, tea.Sequence(setItemsCmd, closedSetCmd, func() tea.Msg { return selectIssueMsg{IssueID: msg.IssueID} })
+		return m, m.refreshIssueListsAndSelectIssue(msg.IssueID)
 
 	case issueStatusUpdatedMsg:
 		m.choosingStatus = false
@@ -132,19 +127,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if msg.Err != nil {
 			return m, nil
 		}
-		issues, err := m.svc.Beads.AllIssues(context.Background())
-		if err != nil {
-			return m, nil
-		}
-		setItemsCmd := m.issueList.SetIssues(OpenAndInProgressOnly(issues))
-		closedSetCmd := m.closedIssueList.SetIssues(ClosedOnly(issues))
-		for _, issue := range issues {
-			if issue.ID == msg.IssueID {
-				m.issueDetail.SetIssue(issue)
-				break
-			}
-		}
-		return m, tea.Sequence(setItemsCmd, closedSetCmd, func() tea.Msg { return selectIssueMsg{IssueID: msg.IssueID} })
+		return m, m.refreshIssueListsAndSelectIssue(msg.IssueID)
 
 	case selectIssueMsg:
 		m.issueList.SelectIssueID(msg.IssueID)

@@ -18,8 +18,14 @@ func (m *Model) View() string {
 	footer := m.footer()
 	footerHeight := lipgloss.Height(footer)
 
+	// To avoid layer overflow or clipping, the label heights are calculated and subtracted from the available height before calculating the list heights to avoid layout overflow or clipping.
 	contentHeight := m.height - headerHeight - footerHeight
-	halfHeight := contentHeight / 2
+
+	mainLabel := styles.LabelStyle.Render("Display issues")
+	closedLabel := styles.LabelStyle.Render("Closed issues")
+	labelHeight := lipgloss.Height(mainLabel) + lipgloss.Height(closedLabel)
+	availableForLists := contentHeight - labelHeight
+	halfHeight := availableForLists / 2
 	if halfHeight < 1 {
 		halfHeight = 1
 	}
@@ -36,8 +42,6 @@ func (m *Model) View() string {
 	closedListView := m.closedIssueList.View()
 	detailView := m.issueDetail.View()
 
-	mainLabel := styles.LabelStyle.Render("Display issues")
-	closedLabel := styles.LabelStyle.Render("Closed issues")
 	if m.focusedWindow == 0 {
 		mainLabel = lipgloss.NewStyle().Foreground(styles.Primary).Bold(true).Render("Display issues ▶")
 	} else {
