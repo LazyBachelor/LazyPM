@@ -24,9 +24,9 @@ type Model struct {
 	svc                  *service.Services
 	width                int
 	height               int
-	focusedWindow    int // 0 = main (display issues), 1 = closed issues
+	focusedWindow    	 int // 0 = main (display issues), 1 = closed issues
 	focusedPaneMain      int // 0 = list, 1 = detail
-	focusedPaneClosed int
+	focusedPaneClosed 	 int
 	editingTitle       bool // true while we are editing a title
 	titleInput         textinput.Model
 	editingIssueID     string
@@ -41,8 +41,10 @@ type Model struct {
 	deleteConfirmID    string
 	deleteConfirmIndex int
 
-	choosingStatus bool
-	statusIssueID  string
+	choosingStatus  bool
+	statusIssueID   string
+	choosingPriority bool
+	priorityIssueID  string
 	feedbackChan    chan task.ValidationFeedback
 	quitChan        chan bool
 	currentFeedback task.ValidationFeedback
@@ -123,6 +125,11 @@ func (m *Model) startConfirmDelete(issueID string, index int) {
 func (m *Model) startChooseStatus(selected ListIssue) {
 	m.choosingStatus = true
 	m.statusIssueID = selected.ID
+}
+
+func (m *Model) startChoosePriority(selected ListIssue) {
+	m.choosingPriority = true
+	m.priorityIssueID = selected.ID
 }
 
 func (m *Model) Init() tea.Cmd {

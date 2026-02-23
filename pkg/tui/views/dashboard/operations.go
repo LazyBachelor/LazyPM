@@ -24,6 +24,11 @@ type issueStatusUpdatedMsg struct {
 	Err     error
 }
 
+type issuePriorityUpdatedMsg struct {
+	IssueID string
+	Err     error
+}
+
 type selectIssueMsg struct {
 	IssueID string
 }
@@ -60,6 +65,14 @@ func updateIssueStatusCmd(svc *service.Services, issueID, status string) tea.Cmd
 		updates := map[string]interface{}{"status": status}
 		err := svc.Beads.UpdateIssue(context.Background(), issueID, updates, "tui")
 		return issueStatusUpdatedMsg{IssueID: issueID, Err: err}
+	}
+}
+
+func updateIssuePriorityCmd(svc *service.Services, issueID string, priority int) tea.Cmd {
+	return func() tea.Msg {
+		updates := map[string]interface{}{"priority": priority}
+		err := svc.Beads.UpdateIssue(context.Background(), issueID, updates, "tui")
+		return issuePriorityUpdatedMsg{IssueID: issueID, Err: err}
 	}
 }
 
@@ -124,6 +137,14 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case issueStatusUpdatedMsg:
 		m.choosingStatus = false
 		m.statusIssueID = ""
+		if msg.Err != nil {
+			return m, nil
+		}
+		return m, m.refreshIssueListsAndSelectIssue(msg.IssueID)
+
+	case issuePriorityUpdatedMsg:
+		m.choosingPriority = false
+		m.priorityIssueID = ""
 		if msg.Err != nil {
 			return m, nil
 		}
@@ -252,6 +273,23 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			case "esc":
 				m.choosingStatus = false
 				m.statusIssueID = ""
+				return m, nil
+			}
+		}
+
+		if m.choosingPriority {
+			switch msg.String() {
+			case "0", "1", "2", "3", "4":
+				issueID := m.priorityIssueID
+				priority := int(msg.String()[0] - '0')
+				m.choosingPriority = false
+				m.priorityIssueID = ""
+				return m, updateIssuePriorityCmd(m.svc, issueID, priority)
+			case "esc":
+				m.choosingPriority = false
+				m.priorityIssueID = ""
+				return m, nil
+			default:
 				return m, nil
 			}
 		}

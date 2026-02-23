@@ -7,6 +7,7 @@ import (
 
 func (m *Model) View() string {
 	if m.width == 0 || m.height == 0 {
+		// if there is no space just print a loading message
 		return "Loading..."
 	}
 
@@ -123,6 +124,20 @@ func (m *Model) View() string {
 			BorderForeground(styles.PrimaryBorder).
 			Render(statusContent)
 		return lipgloss.Place(m.width, m.height, lipgloss.Center, lipgloss.Center, statusBox)
+	}
+
+	if m.choosingPriority {
+		priorityContent := lipgloss.JoinVertical(lipgloss.Left,
+			styles.LabelStyle.Render("Change priority for "+m.priorityIssueID+":"),
+			lipgloss.NewStyle().Foreground(styles.FaintText).Render("0 = lowest   1 = low   2 = medium   3 = high   4 = highest"),
+			lipgloss.NewStyle().Foreground(styles.FaintText).Render("Esc = cancel"),
+		)
+		priorityBoxWidth := min(60, m.width-4)
+		priorityBox := styles.ContainerStyle.
+			Width(priorityBoxWidth).
+			BorderForeground(styles.PrimaryBorder).
+			Render(priorityContent)
+		return lipgloss.Place(m.width, m.height, lipgloss.Center, lipgloss.Center, priorityBox)
 	}
 
 	return mainView

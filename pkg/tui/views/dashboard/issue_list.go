@@ -2,7 +2,9 @@ package dashboard
 
 import (
 	"context"
+	"fmt"
 	"io"
+	"sort"
 
 	"github.com/LazyBachelor/LazyPM/internal/models"
 	"github.com/LazyBachelor/LazyPM/internal/service"
@@ -53,6 +55,7 @@ func getTableColumns(width int) []TableColumn {
 			{width: 20, label: "TITLE", key: "title"},
 			{width: 15, label: "STATUS", key: "status"},
 			{width: 10, label: "TYPE", key: "type"},
+			{width: 15, label: "PRIORITY", key: "priority"},
 		}
 	}
 }
@@ -139,6 +142,7 @@ func OpenAndInProgressOnly(issues []models.Issue) []models.Issue {
 			out = append(out, issue)
 		}
 	}
+	sortByPriorityDesc(out)
 	return out
 }
 
@@ -150,7 +154,15 @@ func ClosedOnly(issues []models.Issue) []models.Issue {
 			out = append(out, issue)
 		}
 	}
+	sortByPriorityDesc(out)
 	return out
+}
+
+// sortByPriorityDesc sorts issues by priority, highest first.
+func sortByPriorityDesc(issues []models.Issue) {
+	sort.Slice(issues, func(i, j int) bool {
+		return issues[i].Priority > issues[j].Priority
+	})
 }
 
 func (l *IssueList) Update(msg tea.Msg) (tea.Cmd, bool) {
@@ -311,6 +323,8 @@ func getColumnValue(col TableColumn, issue ListIssue) string {
 		return string(issue.Issue.Status)
 	case "type":
 		return string(issue.Issue.IssueType)
+	case "priority":
+		return fmt.Sprintf("%d", issue.Issue.Priority)
 	default:
 		return ""
 	}
