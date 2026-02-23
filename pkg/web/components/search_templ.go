@@ -29,20 +29,20 @@ func SearchForm(searchQuery string) templ.Component {
 			templ_7745c5c3_Var1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<form class=\"flex gap-2 items-center\" action=\"/\" method=\"get\" hx-get=\"/\" hx-target=\"main\" hx-swap=\"innerHTML\" hx-push-url=\"true\" hx-trigger=\"submit, input changed delay:400ms from:input[name='q']\"><input type=\"search\" name=\"q\" value=\"")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<form class=\"flex gap-2 items-center\" hx-get=\"/\" hx-target=\"main\" hx-swap=\"innerHTML\" hx-push-url=\"true\" hx-trigger=\"submit, input changed delay:400ms from:input[name='q']\"><input type=\"search\" name=\"q\" value=\"")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var2 string
 		templ_7745c5c3_Var2, templ_7745c5c3_Err = templ.JoinStringErrs(searchQuery)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/web/components/search.templ`, Line: 17, Col: 22}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/web/components/search.templ`, Line: 15, Col: 22}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var2))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "\" placeholder=\"Search by title, description, or assignee...\" class=\"input input-sm input-bordered text-base-content w-48 md:w-64\" aria-label=\"Search issues\"> <button type=\"submit\" class=\"btn btn-sm btn-ghost\">Search</button></form>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "\" placeholder=\"Search by title, description, or assignee...\" class=\"input input-md input-bordered text-base-content w-48 md:w-64\" aria-label=\"Search issues\"></form>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
