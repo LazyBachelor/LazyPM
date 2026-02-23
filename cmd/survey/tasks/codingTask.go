@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/LazyBachelor/LazyPM/internal/service"
 	"github.com/LazyBachelor/LazyPM/pkg/task"
@@ -99,5 +100,5 @@ func (t *CodingTask) Validate(ctx context.Context) (bool, error) {
 		return false, fmt.Errorf("the function does not contain a return statement")
 	}
 
-	return true, nil
+	return EndTaskWithTimeout(nil, "Task completed!", 5*time.Second)
 }
