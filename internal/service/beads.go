@@ -28,18 +28,51 @@ func NewBeadsService(ctx context.Context, storage beads.Storage, prefix string) 
 }
 
 func (s *BeadsService) AllIssues(ctx context.Context) ([]models.Issue, error) {
-	issuesPtr, err := s.Storage.SearchIssues(ctx, "", models.IssueFilter{})
+	issuesPtr, err := s.SearchIssues(ctx, "", models.IssueFilter{})
 	if err != nil {
 		return nil, err
 	}
+	return models.IssuesPtrToIssues(issuesPtr), nil
+}
 
-	if len(issuesPtr) == 0 {
-		return []models.Issue{}, nil
+// SearchIssues returns issues matching the query (title, description, id, assignee) and optional filter.
+// The query searches across title, description, and id (LIKE %query%).
+// Assignee exact match is also searched when query is non-empty.
+func (s *BeadsService) SearchIssues(ctx context.Context, query string, filter models.IssueFilter) ([]*models.Issue, error) {
+	seen := make(map[string]bool)
+	var merged []*models.Issue
+
+	// Search by query (title, description, id)
+	issuesPtr, err := s.Storage.SearchIssues(ctx, query, filter)
+	if err != nil {
+		return nil, err
+	}
+	for _, issue := range issuesPtr {
+		if issue != nil && !seen[issue.ID] {
+			seen[issue.ID] = true
+			merged = append(merged, issue)
+		}
 	}
 
-	issues := models.IssuesPtrToIssues(issuesPtr)
+	// Also search by assignee when query is non-empty (exact match)
+	if query != "" && filter.Assignee == nil {
+		assigneeFilter := filter
+		assigneeFilter.Assignee = &query
+		assigneeFilter.TitleSearch = ""
+		assigneeFilter.DescriptionContains = ""
+		assigneePtr, err := s.Storage.SearchIssues(ctx, "", assigneeFilter)
+		if err != nil {
+			return nil, err
+		}
+		for _, issue := range assigneePtr {
+			if issue != nil && !seen[issue.ID] {
+				seen[issue.ID] = true
+				merged = append(merged, issue)
+			}
+		}
+	}
 
-	return issues, nil
+	return merged, nil
 }
 
 func (s *BeadsService) DeleteIssues() error {

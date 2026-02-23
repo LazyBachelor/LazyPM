@@ -11,7 +11,8 @@ import templruntime "github.com/a-h/templ/runtime"
 import "github.com/LazyBachelor/LazyPM/pkg/web/components"
 
 type IndexProps struct {
-	IssueTable components.IssueTableProps
+	IssueTable  components.IssueTableProps
+	SearchQuery string
 }
 
 func IndexContent(props IndexProps) templ.Component {
@@ -103,7 +104,7 @@ func Index(props IndexProps) templ.Component {
 			}
 			return nil
 		})
-		templ_7745c5c3_Err = BaseLayout().Render(templ.WithChildren(ctx, templ_7745c5c3_Var3), templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = BaseLayout(BaseLayoutProps{SearchQuery: props.SearchQuery}).Render(templ.WithChildren(ctx, templ_7745c5c3_Var3), templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

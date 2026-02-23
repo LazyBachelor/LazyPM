@@ -77,7 +77,7 @@ templ IssueDetailContent(props IssueDetailProps) {
 }
 
 templ IssueDetail(props IssueDetailProps) {
-	@BaseLayout() {
+	@BaseLayout(BaseLayoutProps{SearchQuery: ""}) {
 		@IssueDetailContent(props)
 	}
 }
