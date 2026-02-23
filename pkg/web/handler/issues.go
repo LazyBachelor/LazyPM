@@ -110,18 +110,25 @@ func GetIssue(w http.ResponseWriter, r *http.Request) {
 	comments := r.Context().Value(commentsKey).([]*models.Comment)
 	hx := HTMX(r)
 
+	displayOwner := orDisplay(issue.Owner, "—")
+	displayAssignee := orDisplay(issue.Assignee, "—")
+
 	if !hx.IsHxRequest() && strings.Contains(r.Header.Get("Accept"), "text/html") {
 		routes.IssueDetail(routes.IssueDetailProps{
-			Issue:    *issue,
-			Comments: comments,
+			Issue:           *issue,
+			DisplayOwner:    displayOwner,
+			DisplayAssignee: displayAssignee,
+			Comments:        comments,
 		}).Render(r.Context(), w)
 		return
 	}
 
 	if hx.IsHxRequest() {
 		routes.IssueDetailContent(routes.IssueDetailProps{
-			Issue:    *issue,
-			Comments: comments,
+			Issue:           *issue,
+			DisplayOwner:    displayOwner,
+			DisplayAssignee: displayAssignee,
+			Comments:        comments,
 		}).Render(r.Context(), w)
 		return
 	}

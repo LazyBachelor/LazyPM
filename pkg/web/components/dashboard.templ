@@ -1,0 +1,102 @@
+package components
+
+import (
+	"github.com/LazyBachelor/LazyPM/internal/models"
+	"github.com/LazyBachelor/LazyPM/pkg/web/components/base"
+)
+
+type DashboardPageProps struct {
+	ActiveIssues    []models.Issue
+	ClosedIssues    []models.Issue
+	SelectedIssue   *models.Issue
+	SelectedID      string
+	BaseURL         string
+	QueryParam      string
+	EmptyText       string
+	DisplayOwner    string
+	DisplayAssignee string
+}
+
+templ DashboardPage(props DashboardPageProps) {
+	<div class="min-h-screen bg-base-100">
+		<div class="flex flex-col lg:flex-row min-h-[calc(100vh-4rem)]">
+			<div class="w-full lg:w-1/2 xl:w-[45%] flex flex-col border-r border-base-200 min-h-0 overflow-auto">
+				<section class="p-4 border-b border-base-200">
+					<h2 class="text-sm font-semibold mb-2">Issues</h2>
+					@base.Table(
+						[]templ.Component{
+							base.PlainText("ID"),
+							base.PlainText("Title"),
+							base.PlainText("Status"),
+							base.PlainText("Type"),
+							base.PlainText("Priority"),
+						},
+						[]templ.Component{
+							DashboardIssueRows(props.ActiveIssues, props.SelectedID, props.BaseURL, props.QueryParam),
+						},
+						templ.Attributes{},
+					)
+				</section>
+				<section class="p-4 flex-1 min-h-0 overflow-auto">
+					<h2 class="text-sm font-semibold mb-2">Closed issues</h2>
+					@base.Table(
+						[]templ.Component{
+							base.PlainText("ID"),
+							base.PlainText("Title"),
+							base.PlainText("Status"),
+							base.PlainText("Type"),
+							base.PlainText("Priority"),
+						},
+						[]templ.Component{
+							DashboardIssueRows(props.ClosedIssues, props.SelectedID, props.BaseURL, props.QueryParam),
+						},
+						templ.Attributes{},
+					)
+				</section>
+			</div>
+
+			<div class="w-full lg:w-1/2 xl:w-[55%] p-4 overflow-auto">
+				if props.SelectedIssue != nil {
+					<div class="max-w-2xl">
+						@IssueDetailCard(IssueDetailCardProps{
+							Issue:           *props.SelectedIssue,
+							DisplayOwner:    props.DisplayOwner,
+							DisplayAssignee: props.DisplayAssignee,
+						})
+					</div>
+				} else {
+					<div class="flex flex-col items-center justify-center min-h-[200px] opacity-70">
+						<p class="text-center">{ props.EmptyText }</p>
+						<a href="/" class="btn btn-primary btn-sm mt-4">Create an issue</a>
+					</div>
+				}
+			</div>
+		</div>
+	</div>
+}
+
+templ DashboardIssueRows(issues []models.Issue, selectedID string, baseURL string, queryParam string) {
+	if len(issues) == 0 {
+		<tr><td colspan="5" class="text-center opacity-70 py-4">No issues</td></tr>
+	} else {
+		for _, issue := range issues {
+			if issue.ID == selectedID {
+				<tr class="hover active cursor-pointer" hx-get={ baseURL + queryParam + issue.ID } hx-target="main" hx-swap="innerHTML" hx-push-url="true">
+					<td><a class="link link-primary font-mono text-xs" href={ baseURL + queryParam + issue.ID }>{ issue.ID }</a></td>
+					<td><a class="link" href={ baseURL + queryParam + issue.ID }>{ issue.Title }</a></td>
+					<td>@StatusBadge(issue.Status)</td>
+					<td>@TypeBadge(issue.IssueType)</td>
+					<td>@PriorityBadge(issue.Priority)</td>
+				</tr>
+			} else {
+				<tr class="hover cursor-pointer" hx-get={ baseURL + queryParam + issue.ID } hx-target="main" hx-swap="innerHTML" hx-push-url="true">
+					<td><a class="link link-primary font-mono text-xs" href={ baseURL + queryParam + issue.ID }>{ issue.ID }</a></td>
+					<td><a class="link" href={ baseURL + queryParam + issue.ID }>{ issue.Title }</a></td>
+					<td>@StatusBadge(issue.Status)</td>
+					<td>@TypeBadge(issue.IssueType)</td>
+					<td>@PriorityBadge(issue.Priority)</td>
+				</tr>
+			}
+		}
+	}
+}

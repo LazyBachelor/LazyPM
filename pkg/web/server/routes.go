@@ -27,6 +27,7 @@ func (s *Server) RegisterRoutes(assets embed.FS) http.Handler {
 	s.handleAssets(r, assets)
 
 	r.Get("/", handler.IndexHandler)
+	r.Get("/dashboard", handler.DashboardHandler)
 	r.Get("/status", handler.HandleTaskStatus)
 
 	r.Route("/issues", func(r chi.Router) {
