@@ -40,5 +40,8 @@ func init() {
 	task.RegisterTask("coding_task", func(app *service.App) task.Tasker {
 		return tasks.NewCodingTask(app)
 	})
+	task.RegisterTask("git-task", func(app *service.App) task.Tasker {
+		return tasks.NewGitTask(app)
+	})
 
 }
