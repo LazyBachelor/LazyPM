@@ -35,14 +35,11 @@ func (s *BeadsService) AllIssues(ctx context.Context) ([]models.Issue, error) {
 	return models.IssuesPtrToIssues(issuesPtr), nil
 }
 
-// SearchIssues returns issues matching the query (title, description, id, assignee) and optional filter.
-// The query searches across title, description, and id (LIKE %query%).
-// Assignee exact match is also searched when query is non-empty.
+
 func (s *BeadsService) SearchIssues(ctx context.Context, query string, filter models.IssueFilter) ([]*models.Issue, error) {
 	seen := make(map[string]bool)
 	var merged []*models.Issue
 
-	// Search by query (title, description, id)
 	issuesPtr, err := s.Storage.SearchIssues(ctx, query, filter)
 	if err != nil {
 		return nil, err
@@ -54,7 +51,6 @@ func (s *BeadsService) SearchIssues(ctx context.Context, query string, filter mo
 		}
 	}
 
-	// Also search by assignee when query is non-empty (exact match)
 	if query != "" && filter.Assignee == nil {
 		assigneeFilter := filter
 		assigneeFilter.Assignee = &query
