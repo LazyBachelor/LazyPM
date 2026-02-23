@@ -11,6 +11,7 @@ import (
 	"github.com/LazyBachelor/LazyPM/internal/service"
 	"github.com/LazyBachelor/LazyPM/pkg/task"
 	taskui "github.com/LazyBachelor/LazyPM/pkg/task/ui"
+	"github.com/charmbracelet/huh"
 	"github.com/go-git/go-git/v6"
 )
 
@@ -40,7 +41,16 @@ func (t *GitTask) Details() taskui.TaskDetails {
 }
 
 func (t *GitTask) Questions(interfaceType task.InterfaceType) taskui.Questions {
-	return BaseQuestions(interfaceType)
+	return BaseQuestions(interfaceType).With(
+		huh.NewGroup(
+			huh.NewSelect[string]().Title("What Git Interface did you use?").
+				Options(
+					huh.Option[string]{Value: "cli", Key: "Command Line Interface"},
+					huh.Option[string]{Value: "tui", Key: "Terminal User Interface"},
+					huh.Option[string]{Value: "gui", Key: "Graphical User Interface"},
+				),
+		),
+	)
 }
 
 func (t *GitTask) Setup(ctx context.Context) error {
