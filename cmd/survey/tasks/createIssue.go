@@ -3,6 +3,7 @@ package tasks
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/LazyBachelor/LazyPM/internal/models"
 	"github.com/LazyBachelor/LazyPM/internal/service"
@@ -13,15 +14,18 @@ import (
 const description = `You are tasked with creating a new issue in the project management system.
 This task will test your ability to use the issue creation workflow effectively.
 
-Assign this task to yourself and start creating the issue.
-Make sure to fill out all the necessary details, including the title, description, and assignee.`
+Assign this task to yourself and start creating a new issue.
+Make sure to fill out all the necessary details, including the title and description.
+Once you have created the issue, mark it as closed to complete the task.`
 
 type CreateIssueTask struct {
-	app *service.App
+	done      bool
+	app       *service.App
+	setupTask *models.Issue
 }
 
 func NewCreateIssueTask(app *service.App) *CreateIssueTask {
-	return &CreateIssueTask{app: app}
+	return &CreateIssueTask{app: app, done: false}
 }
 
 func (t *CreateIssueTask) Config() task.Config {
@@ -37,15 +41,14 @@ func (t *CreateIssueTask) Questions(interfaceType task.InterfaceType) taskui.Que
 }
 
 func (t *CreateIssueTask) Setup(ctx context.Context) error {
-	// Clear existing issues to ensure a clean state for the task
 	if err := ClearIssues(t.app); err != nil {
 		return err
 	}
 
-	issue := models.NewBaseIssue().
+	t.setupTask = models.NewBaseIssue().
 		WithTitle("Create a New Issue").WithDescription(description).Build()
 
-	return t.app.Issues.CreateIssue(ctx, &issue, "")
+	return t.app.Issues.CreateIssue(ctx, t.setupTask, "")
 }
 
 func (t *CreateIssueTask) Validate(ctx context.Context) (bool, error) {
@@ -53,6 +56,12 @@ func (t *CreateIssueTask) Validate(ctx context.Context) (bool, error) {
 	if err != nil {
 		return false, err
 	}
+
+	/* Not implemented yet, as assigning to self is not supported in the current implementation
+	if t.setupTask.Assignee != "Me" {
+		return false, fmt.Errorf("issue not assigned to self")
+	}
+	*/
 
 	if len(issues) < 2 {
 		return false, fmt.Errorf("issue not created")
@@ -78,5 +87,15 @@ func (t *CreateIssueTask) Validate(ctx context.Context) (bool, error) {
 		return false, fmt.Errorf("issue description is empty")
 	}
 
-	return true, nil
+	/* Not implemented yet, as assigning to self is not supported in the current implementation
+	if createdIssue.Assignee != "Me" {
+		return false, fmt.Errorf("issue not assigned to self")
+	}
+	*/
+
+	if createdIssue.Status != models.StatusClosed {
+		return false, fmt.Errorf("issue status is not closed")
+	}
+
+	return EndTaskWithTimeout(&t.done, "Task completed!", 5*time.Second)
 }

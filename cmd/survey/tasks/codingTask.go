@@ -24,11 +24,12 @@ Please write your code below this line!
 `
 
 type CodingTask struct {
-	app *service.App
+	done bool
+	app  *service.App
 }
 
 func NewCodingTask(app *service.App) *CodingTask {
-	return &CodingTask{app: app}
+	return &CodingTask{app: app, done: false}
 }
 
 func (t *CodingTask) Config() task.Config {
@@ -100,5 +101,5 @@ func (t *CodingTask) Validate(ctx context.Context) (bool, error) {
 		return false, fmt.Errorf("the function does not contain a return statement")
 	}
 
-	return EndTaskWithTimeout(nil, "Task completed!", 5*time.Second)
+	return EndTaskWithTimeout(&t.done, "Task completed!", 5*time.Second)
 }
