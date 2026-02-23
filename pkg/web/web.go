@@ -3,6 +3,7 @@ package web
 import (
 	"context"
 	"embed"
+	"errors"
 	"fmt"
 	"net/http"
 	"time"
@@ -13,7 +14,7 @@ import (
 	"github.com/LazyBachelor/LazyPM/pkg/web/server"
 )
 
-type WebConfig = service.Config
+type Config = service.Config
 
 type Web struct {
 	feedbackChan chan task.ValidationFeedback
@@ -27,8 +28,8 @@ func NewWeb() *Web {
 //go:embed assets/*
 var assets embed.FS
 
-func (w *Web) Run(ctx context.Context, config WebConfig) error {
-	svc, cleanup, err := service.NewServices(ctx, config)
+func (w *Web) Run(ctx context.Context, config Config) error {
+	app, cleanup, err := service.NewServices(ctx, config)
 	if err != nil {
 		return err
 	}
@@ -36,16 +37,16 @@ func (w *Web) Run(ctx context.Context, config WebConfig) error {
 	defer cleanup()
 
 	httpServer := server.NewServer(server.Server{
-		Address:  config.WebAddress,
-		Assets:   assets,
-		Services: svc,
+		Address: config.WebAddress,
+		Assets:  assets,
+		App:     app,
 	})
 
 	fmt.Printf("Starting web server on %s...\n", config.WebAddress)
 
 	serverErr := make(chan error, 1)
 	go func() {
-		if err := httpServer.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+		if err := httpServer.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 			serverErr <- err
 		}
 	}()

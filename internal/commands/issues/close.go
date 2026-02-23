@@ -1,4 +1,4 @@
-package commands
+package issuesCmd
 
 import (
 	"fmt"
@@ -7,9 +7,9 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// closeCmd represents the close command,
+// CloseCmd represents the close command,
 // which allows users to close an existing issue by its ID.
-var closeCmd = &cobra.Command{
+var CloseCmd = &cobra.Command{
 	Use:     "close [id]",
 	Short:   "Close an existing issue",
 	Long:    `Close an existing issue by its ID.`,
@@ -30,8 +30,10 @@ func runCloseCmd(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("issue ID cannot be empty")
 	}
 
+	app := AppFromContext(cmd.Context())
+
 	// Fetch the issue to ensure it exists before closing.
-	issue, err := svc.Beads.GetIssue(cmd.Context(), closeID)
+	issue, err := app.Issues.GetIssue(cmd.Context(), closeID)
 	if err != nil {
 		return fmt.Errorf("error fetching issue: %w", err)
 	}
@@ -47,7 +49,7 @@ func runCloseCmd(cmd *cobra.Command, args []string) error {
 	}
 
 	// Close the issue.
-	err = svc.Beads.CloseIssue(cmd.Context(), closeID, issue.CloseReason, "", "")
+	err = app.Issues.CloseIssue(cmd.Context(), closeID, issue.CloseReason, "", "")
 	if err != nil {
 		return fmt.Errorf("error closing issue: %w", err)
 	}
@@ -55,9 +57,4 @@ func runCloseCmd(cmd *cobra.Command, args []string) error {
 	cmd.Println("Closed issue with ID:", closeID)
 
 	return nil
-}
-
-// init function to set up the close command and its flags.
-func init() {
-	rootCmd.AddCommand(closeCmd)
 }

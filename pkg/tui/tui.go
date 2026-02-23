@@ -9,7 +9,7 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 )
 
-type TUIConfig = service.Config
+type Config = service.Config
 
 type Tui struct {
 	feedbackChan chan task.ValidationFeedback
@@ -20,15 +20,15 @@ func NewTui() *Tui {
 	return &Tui{}
 }
 
-func (t *Tui) Run(ctx context.Context, config TUIConfig) error {
-	svc, cleanup, err := service.NewServices(ctx, config)
+func (t *Tui) Run(ctx context.Context, config Config) error {
+	app, cleanup, err := service.NewServices(ctx, config)
 	if err != nil {
 		return err
 	}
 
 	defer cleanup()
 
-	p := tea.NewProgram(views.NewDashboardView(svc, t.feedbackChan, t.quitChan),
+	p := tea.NewProgram(views.NewDashboardView(app, t.feedbackChan, t.quitChan),
 		tea.WithAltScreen(), tea.WithMouseAllMotion())
 
 	if t.quitChan != nil {

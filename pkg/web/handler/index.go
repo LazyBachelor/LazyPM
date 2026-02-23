@@ -10,12 +10,12 @@ import (
 )
 
 func IndexHandler(w http.ResponseWriter, r *http.Request) {
-	svc := Services(r)
+	app := App(r)
 	hx := HTMX(r)
 
 	query := strings.TrimSpace(r.URL.Query().Get("q"))
 	filter := models.IssueFilter{Limit: 100}
-	issuesPtr, err := svc.Beads.SearchIssues(r.Context(), query, filter)
+	issuesPtr, err := app.Issues.SearchIssues(r.Context(), query, filter)
 	if err != nil {
 		http.Error(w, "failed to retrieve issues", http.StatusInternalServerError)
 		return

@@ -3,19 +3,12 @@ package main
 import (
 	"context"
 
+	"github.com/LazyBachelor/LazyPM/internal/service"
 	"github.com/LazyBachelor/LazyPM/pkg/tui"
 )
 
 func main() {
-	config := tui.TUIConfig{
-		StatisticsStoragePath: "./.pm/stats.json",
-		BeadsDBPath:           "./.pm/db.db",
-		IssuePrefix:           "pm",
-	}
-
-	tui := tui.NewTui()
-
-	if err := tui.Run(context.Background(), config); err != nil {
-		panic(err)
+	if err := tui.NewTui().Run(context.Background(), service.BaseConfig); err != nil {
+		return
 	}
 }

@@ -8,6 +8,14 @@ type Config struct {
 	StatisticsStoragePath string
 }
 
+var BaseConfig = Config{
+	RootCmd:               "pm",
+	IssuePrefix:           "pm",
+	WebAddress:            ":8080",
+	BeadsDBPath:           "./.pm/db.db",
+	StatisticsStoragePath: "./.pm/stats.json",
+}
+
 func (c Config) WithRootCmd(rootCmd string) Config {
 	c.RootCmd = rootCmd
 	return c

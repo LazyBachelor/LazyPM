@@ -7,28 +7,67 @@ import (
 	"math/rand"
 
 	"github.com/LazyBachelor/LazyPM/cmd/survey/tasks"
+	surveyCmd "github.com/LazyBachelor/LazyPM/internal/commands/survey"
 	"github.com/LazyBachelor/LazyPM/pkg/task"
+	"github.com/spf13/cobra"
 )
 
-func runTask(ctx context.Context, t task.Tasker, i task.Interface) error {
-	return task.RunTask(ctx, t, i, tasks.InterfaceToType(i))
+func runStartCmd(cmd *cobra.Command, args []string) error {
+	interfaces := initInterfaces()
+
+	svc, cleanup, err := initializeServices(cmd.Context())
+	if err != nil {
+		return returnIfUserQuit(err, "failed to initialize services")
+	}
+	defer cleanup()
+
+	surveyTasks := initTasks(svc)
+
+	if cmd.Flags().Changed("interface") {
+		if _, ok := interfaces[surveyCmd.InterfaceType]; !ok {
+			return fmt.Errorf("invalid interface, valid are %v", task.ListInterfaces())
+		}
+		interfaces = map[string]task.Interface{
+			surveyCmd.InterfaceType: interfaces[surveyCmd.InterfaceType],
+		}
+	}
+
+	if cmd.Flags().Changed("stage") {
+		if surveyCmd.Task < 1 || surveyCmd.Task > len(surveyTasks) {
+			return fmt.Errorf("invalid stage")
+		}
+		if err := task.RunTask(cmd.Context(), surveyTasks[surveyCmd.Task-1],
+			interfaces[surveyCmd.InterfaceType], tasks.InterfaceToType(interfaces[surveyCmd.InterfaceType])); err != nil {
+			return err
+		}
+		return nil
+	}
+
+	if err := newIntroModel().Run(); err != nil {
+		return returnIfUserQuit(err, "failed to run intro")
+	}
+
+	if err := taskLoop(cmd.Context(), surveyTasks, interfaces); err != nil {
+		return returnIfUserQuit(err, "task loop failed")
+	}
+	return nil
 }
 
 func taskLoop(ctx context.Context, surveyTasks []task.Tasker, interfaces map[string]task.Interface) error {
-	var ifaceNames []string
+	var iNames []string
 	for name := range interfaces {
-		ifaceNames = append(ifaceNames, name)
+		iNames = append(iNames, name)
 	}
 
-	rand.Shuffle(len(ifaceNames), func(i, j int) {
-		ifaceNames[i], ifaceNames[j] = ifaceNames[j], ifaceNames[i]
+	rand.Shuffle(len(iNames), func(i, j int) {
+		iNames[i], iNames[j] = iNames[j], iNames[i]
 	})
 
 	for i, t := range surveyTasks {
-		idx := i % len(ifaceNames)
-		selected := interfaces[ifaceNames[idx]]
+		idx := i % len(iNames)
+		selected := interfaces[iNames[idx]]
 
-		if err := runTask(ctx, t, selected); err != nil {
+		if err := task.RunTask(ctx, t, selected, tasks.InterfaceToType(selected)); err != nil {
 			return err
 		}
 	}

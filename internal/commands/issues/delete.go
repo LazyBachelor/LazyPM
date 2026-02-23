@@ -1,4 +1,4 @@
-package commands
+package issuesCmd
 
 import (
 	"context"
@@ -17,8 +17,8 @@ var (
 	deleteInteractive bool
 )
 
-// deleteCmd represents the delete command.
-var deleteCmd = &cobra.Command{
+// DeleteCmd represents the delete command.
+var DeleteCmd = &cobra.Command{
 	Use:     "delete [id]",
 	Short:   "Delete an existing issue",
 	Long:    `Delete an existing issue by its ID.`,
@@ -46,8 +46,10 @@ func runDeleteCmd(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("issue ID cannot be empty")
 	}
 
+	app := AppFromContext(cmd.Context())
+
 	// Fetch the issue to ensure it exists before deletion.
-	issue, err := svc.Beads.GetIssue(cmd.Context(), deleteID)
+	issue, err := app.Issues.GetIssue(cmd.Context(), deleteID)
 	if err != nil {
 		return fmt.Errorf("error fetching issue: %w", err)
 	}
@@ -70,7 +72,7 @@ func runDeleteCmd(cmd *cobra.Command, args []string) error {
 	}
 
 	// Delete the issue.
-	err = svc.Beads.DeleteIssue(cmd.Context(), deleteID)
+	err = app.Issues.DeleteIssue(cmd.Context(), deleteID)
 	if err != nil {
 		return fmt.Errorf("error deleting issue: %w", err)
 	}
@@ -83,9 +85,10 @@ func runDeleteCmd(cmd *cobra.Command, args []string) error {
 // runDeleteInteractive runs the interactive mode for deleting issues,
 // allowing users to select multiple issues for deletion.
 func runDeleteInteractive(ctx context.Context) error {
+	app := AppFromContext(ctx)
 	options := []huh.Option[string]{}
 
-	issues, err := svc.Beads.SearchIssues(ctx, "", models.IssueFilter{})
+	issues, err := app.Issues.SearchIssues(ctx, "", models.IssueFilter{})
 	if err != nil {
 		return fmt.Errorf("error fetching issues: %w", err)
 	}
@@ -110,7 +113,7 @@ func runDeleteInteractive(ctx context.Context) error {
 	}
 
 	for _, id := range deleteIDs {
-		err := svc.Beads.DeleteIssue(ctx, id)
+		err := app.Issues.DeleteIssue(ctx, id)
 		if err != nil {
 			return fmt.Errorf("error deleting issue with ID %s: %w", id, err)
 		}
@@ -122,8 +125,6 @@ func runDeleteInteractive(ctx context.Context) error {
 
 // init function to set up the delete command and its flags.
 func init() {
-	deleteCmd.Flags().BoolVarP(&deleteInteractive, "interactive", "i", false, "Delete issues interactively")
-	deleteCmd.Flags().BoolVarP(&confirmDelete, "yes", "y", true, "Confirm deletion without prompt")
-
-	rootCmd.AddCommand(deleteCmd)
+	DeleteCmd.Flags().BoolVarP(&deleteInteractive, "interactive", "i", false, "Delete issues interactively")
+	DeleteCmd.Flags().BoolVarP(&confirmDelete, "yes", "y", true, "Confirm deletion without prompt")
 }

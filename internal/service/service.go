@@ -2,8 +2,8 @@ package service
 
 import (
 	"context"
-	"database/sql"
 	"fmt"
+	"log/slog"
 	"os"
 	"time"
 
@@ -15,14 +15,7 @@ import (
 	"github.com/steveyegge/beads"
 )
 
-type Services struct {
-	Config     Config
-	DB         *sql.DB
-	Beads      *BeadsService
-	Statistics *StatisticsService
-}
-
-func NewServices(ctx context.Context, config Config) (*Services, func(), error) {
+func NewServices(ctx context.Context, config Config) (*App, func(), error) {
 	var cleanupFuncs []func()
 
 	if !initialized(config.BeadsDBPath) {
@@ -47,16 +40,18 @@ func NewServices(ctx context.Context, config Config) (*Services, func(), error) 
 		StartTime: time.Now(),
 	})
 
+	logger := slog.New(slog.NewJSONHandler(os.Stdout, nil))
+
 	statSvc, err := NewStatisticsService(statStore)
 	if err != nil {
 		return nil, nil, err
 	}
 
-	return &Services{
-		DB:         beadsSvc.UnderlyingDB(),
-		Beads:      beadsSvc,
-		Statistics: statSvc,
-		Config:     config,
+	return &App{
+		Issues: beadsSvc,
+		Stats:  statSvc,
+		Config: config,
+		Logger: logger,
 	}, func() { runCleanup(cleanupFuncs) }, nil
 
 }
