@@ -1,0 +1,21 @@
+package components
+
+templ SearchForm(searchQuery string) {
+	<form
+		class="flex gap-2 items-center"
+		hx-get="/"
+		hx-target="main"
+		hx-swap="innerHTML"
+		hx-push-url="true"
+		hx-trigger="submit, input changed delay:400ms from:input[name='q']"
+	>
+		<input
+			type="search"
+			name="q"
+			value={ searchQuery }
+			placeholder="Search by title, description, or assignee..."
+			class="input input-md input-bordered text-base-content w-48 md:w-64"
+			aria-label="Search issues"
+		/>
+	</form>
+}

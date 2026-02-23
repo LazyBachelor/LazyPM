@@ -3,7 +3,8 @@ package routes
 import "github.com/LazyBachelor/LazyPM/pkg/web/components"
 
 type IndexProps struct {
-	IssueTable components.IssueTableProps
+	IssueTable   components.IssueTableProps
+	SearchQuery  string
 }
 
 templ IndexContent(props IndexProps) {
@@ -24,7 +25,7 @@ templ IndexContent(props IndexProps) {
 }
 
 templ Index(props IndexProps) {
-	@BaseLayout() {
+	@BaseLayout(BaseLayoutProps{SearchQuery: props.SearchQuery}) {
 		@IndexContent(props)
 	}
 }

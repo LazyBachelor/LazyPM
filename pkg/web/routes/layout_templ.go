@@ -9,48 +9,43 @@ import "github.com/a-h/templ"
 import templruntime "github.com/a-h/templ/runtime"
 
 import "github.com/LazyBachelor/LazyPM/pkg/web/components"
-import "github.com/LazyBachelor/LazyPM/pkg/web/components/base"
 
-var baseLayout = components.LayoutProps{
-	Title:       "Beads Test Application",
-	Description: "A sample application using Beads storage service",
-	Head: components.HeadProps{
-		Links: []components.Link{
-			{Href: "/assets/css/styles.css", Rel: "preload", As: "style"},
-			{Href: "/assets/css/styles.css", Rel: "stylesheet"},
-			{Href: "/assets/manifest.json", Rel: "manifest"},
-		},
-		Scripts: []components.Script{
-			{Src: "/assets/js/htmx.min.js", Defer: true},
-			{Src: "/assets/js/ajax.min.js", Defer: true},
-		},
-	},
-
-	Routes: []components.NavRoutes{
-		{Name: "Dashboard", Path: "/", Icon: components.IconDashboard()},
-		{Name: "Issues", Path: "/", Icon: components.IconIssues()},
-		{Name: "Agile Board", Path: "/board", Icon: components.IconAgileBoard()},
-		{Name: "Backlog", Path: "/backlog", Icon: components.IconBacklog()},
-		{Name: "Reports", Path: "/reports", Icon: components.IconReports()},
-		{Name: "Settings", Path: "/settings", Icon: components.IconSettings()},
-	},
-
-	Header: components.HeaderProps{
-		Title: "LazyPM Dashboard",
-		NavbarCenter: base.Input(base.InputProps{
-			Name:        "search-issue",
-			Type:        "search",
-			Placeholder: "Search issues...",
-			Class:       "",
-			Attrs: templ.Attributes{
-				"class": "text-base-content",
-			},
-		}),
-		NavbarEnd: components.Status(),
-	},
+type BaseLayoutProps struct {
+	SearchQuery string
 }
 
-func BaseLayout() templ.Component {
+func buildLayoutProps(searchQuery string) components.LayoutProps {
+	return components.LayoutProps{
+		Title:       "Beads Test Application",
+		Description: "A sample application using Beads storage service",
+		Head: components.HeadProps{
+			Links: []components.Link{
+				{Href: "/assets/css/styles.css", Rel: "preload", As: "style"},
+				{Href: "/assets/css/styles.css", Rel: "stylesheet"},
+				{Href: "/assets/manifest.json", Rel: "manifest"},
+			},
+			Scripts: []components.Script{
+				{Src: "/assets/js/htmx.min.js", Defer: true},
+				{Src: "/assets/js/ajax.min.js", Defer: true},
+			},
+		},
+		Routes: []components.NavRoutes{
+			{Name: "Dashboard", Path: "/", Icon: components.IconDashboard()},
+			{Name: "Issues", Path: "/", Icon: components.IconIssues()},
+			{Name: "Agile Board", Path: "/board", Icon: components.IconAgileBoard()},
+			{Name: "Backlog", Path: "/backlog", Icon: components.IconBacklog()},
+			{Name: "Reports", Path: "/reports", Icon: components.IconReports()},
+			{Name: "Settings", Path: "/settings", Icon: components.IconSettings()},
+		},
+		Header: components.HeaderProps{
+			Title:        "LazyPM Dashboard",
+			NavbarCenter: components.SearchForm(searchQuery),
+			NavbarEnd:    components.Status(),
+		},
+	}
+}
+
+func BaseLayout(props BaseLayoutProps) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
@@ -89,7 +84,7 @@ func BaseLayout() templ.Component {
 			}
 			return nil
 		})
-		templ_7745c5c3_Err = components.Layout(baseLayout).Render(templ.WithChildren(ctx, templ_7745c5c3_Var2), templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = components.Layout(buildLayoutProps(props.SearchQuery)).Render(templ.WithChildren(ctx, templ_7745c5c3_Var2), templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
