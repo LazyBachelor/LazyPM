@@ -53,8 +53,8 @@ func (b *IssueBuilder) WithPriority(priority int) *IssueBuilder {
 	return b
 }
 
-func (b IssueBuilder) Build() Issue {
-	return Issue{
+func (b IssueBuilder) Build() *Issue {
+	return &Issue{
 		ID:          b.ID,
 		Title:       b.Title,
 		Description: b.Description,
