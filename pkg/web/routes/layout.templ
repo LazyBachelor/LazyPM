@@ -1,7 +1,6 @@
 package routes
 
 import "github.com/LazyBachelor/LazyPM/pkg/web/components"
-import "github.com/LazyBachelor/LazyPM/pkg/web/components/base"
 
 var baseLayout = components.LayoutProps{
 	Title:       "Beads Test Application",
@@ -18,7 +17,7 @@ var baseLayout = components.LayoutProps{
 		},
 	},
 
-    Routes: []components.NavRoutes{
+	Routes: []components.NavRoutes{
 		{Name: "Dashboard", Path: "/", Icon: components.IconDashboard()},
 		{Name: "Issues", Path: "/", Icon: components.IconIssues()},
 		{Name: "Agile Board", Path: "/board", Icon: components.IconAgileBoard()},
@@ -26,9 +25,10 @@ var baseLayout = components.LayoutProps{
 		{Name: "Reports", Path: "/reports", Icon: components.IconReports()},
 		{Name: "Settings", Path: "/settings", Icon: components.IconSettings()},
 	},
-    
+
 	Header: components.HeaderProps{
 		Title: "LazyPM Dashboard",
+		/* Removed until properly implemented
 		NavbarCenter: base.Input(base.InputProps{
 			Name:        "search-issue",
 			Type:        "search",
@@ -37,7 +37,7 @@ var baseLayout = components.LayoutProps{
 			Attrs: templ.Attributes{
 				"class": "text-base-content",
 			},
-		}),
+		}),*/
 		NavbarEnd: components.Status(),
 	},
 }
