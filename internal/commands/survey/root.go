@@ -4,11 +4,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var (
-	InterfaceType string
-	Task          int
-)
-
 // RootCmd is the base command for the survey CLI.
 var RootCmd = &cobra.Command{
 	Use: "survey",
@@ -24,6 +19,4 @@ Your responses will be kept confidential and used solely for research purposes.`
 
 func init() {
 	RootCmd.CompletionOptions.DisableDefaultCmd = true
-	StartCmd.Flags().StringVarP(&InterfaceType, "interface", "i", "tui", "Specify interface.")
-	StartCmd.Flags().IntVarP(&Task, "task", "t", 1, "Run task directly")
 }

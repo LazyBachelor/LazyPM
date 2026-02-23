@@ -32,15 +32,14 @@ func runStartCmd(cmd *cobra.Command, args []string) error {
 		}
 	}
 
-	if cmd.Flags().Changed("stage") {
-		if surveyCmd.Task < 1 || surveyCmd.Task > len(surveyTasks) {
-			return fmt.Errorf("invalid stage")
+	if cmd.Flags().Changed("task") {
+		if surveyTask := surveyTasks[surveyCmd.Task]; surveyTask == nil {
+			return fmt.Errorf("invalid task, valid are %v", task.ListTasks())
 		}
-		if err := task.RunTask(cmd.Context(), surveyTasks[surveyCmd.Task-1],
-			interfaces[surveyCmd.InterfaceType], tasks.InterfaceToType(interfaces[surveyCmd.InterfaceType])); err != nil {
-			return err
+
+		surveyTasks = map[string]task.Tasker{
+			surveyCmd.Task: surveyTasks[surveyCmd.Task],
 		}
-		return nil
 	}
 
 	if err := newIntroModel().Run(); err != nil {
@@ -53,7 +52,7 @@ func runStartCmd(cmd *cobra.Command, args []string) error {
 	return nil
 }
 
-func taskLoop(ctx context.Context, surveyTasks []task.Tasker, interfaces map[string]task.Interface) error {
+func taskLoop(ctx context.Context, surveyTasks map[string]task.Tasker, interfaces map[string]task.Interface) error {
 	var iNames []string
 	for name := range interfaces {
 		iNames = append(iNames, name)
@@ -63,14 +62,16 @@ func taskLoop(ctx context.Context, surveyTasks []task.Tasker, interfaces map[str
 		iNames[i], iNames[j] = iNames[j], iNames[i]
 	})
 
-	for i, t := range surveyTasks {
-		idx := i % len(iNames)
-		selected := interfaces[iNames[idx]]
+	idx := 0
+	for _, t := range surveyTasks {
+		iIdx := idx % len(iNames)
+		selected := interfaces[iNames[iIdx]]
 
 		if err := task.RunTask(ctx, t, selected, tasks.InterfaceToType(selected)); err != nil {
 			return err
 		}
 	}
+	idx++
 	return nil
 }
 
