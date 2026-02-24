@@ -2,12 +2,7 @@ package routes
 
 import "github.com/LazyBachelor/LazyPM/pkg/web/components"
 
-type BaseLayoutProps struct {
-	SearchQuery string
-}
-
-func buildLayoutProps(searchQuery string) components.LayoutProps {
-	return components.LayoutProps{
+var baseLayout = components.LayoutProps{
 		Title:       "Beads Test Application",
 		Description: "A sample application using Beads storage service",
 		Head: components.HeadProps{
@@ -17,28 +12,30 @@ func buildLayoutProps(searchQuery string) components.LayoutProps {
 				{Href: "/assets/manifest.json", Rel: "manifest"},
 			},
 			Scripts: []components.Script{
+				{Src: "https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js", Defer: true},
 				{Src: "/assets/js/htmx.min.js", Defer: true},
 				{Src: "/assets/js/ajax.min.js", Defer: true},
 			},
 		},
 		Routes: []components.NavRoutes{
-			{Name: "Dashboard", Path: "/dashboard", Icon: components.IconDashboard()},
+			{Name: "Dashboard", Path: "/", Icon: components.IconDashboard()},
+			/* Add back when functionality is implemented
 			{Name: "Issues", Path: "/", Icon: components.IconIssues()},
 			{Name: "Agile Board", Path: "/board", Icon: components.IconAgileBoard()},
 			{Name: "Backlog", Path: "/backlog", Icon: components.IconBacklog()},
 			{Name: "Reports", Path: "/reports", Icon: components.IconReports()},
 			{Name: "Settings", Path: "/settings", Icon: components.IconSettings()},
+			*/
 		},
 		Header: components.HeaderProps{
-			Title:        "LazyPM Dashboard",
-			NavbarCenter: components.SearchForm(searchQuery),
+			Title:        "LazyPM",
 			NavbarEnd:    components.Status(),
 		},
 	}
-}
 
-templ BaseLayout(props BaseLayoutProps) {
-	@components.Layout(buildLayoutProps(props.SearchQuery)) {
+
+templ BaseLayout() {
+	@components.Layout(baseLayout) {
 		{ children... }
 	}
 }
