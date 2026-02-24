@@ -18,8 +18,9 @@ func NewBaseIssue() *IssueBuilder {
 		WithID("pm-abc").
 		WithTitle("Basic Issue").
 		WithDescription("Basic Description").
-		WithIssueType(TypeTask).
-		WithStatus(StatusOpen)
+		WithStatus(StatusOpen).
+		WithIssueType(TypeTask)
+
 }
 
 func (b *IssueBuilder) WithID(id string) *IssueBuilder {

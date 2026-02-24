@@ -8,15 +8,15 @@ import (
 	taskui "github.com/LazyBachelor/LazyPM/pkg/task/ui"
 )
 
-type TaskConfig = service.Config
+type Config = service.Config
 type InterfaceType string
 
 type Interface interface {
-	Run(context.Context, TaskConfig) error
+	Run(context.Context, Config) error
 }
 
 type Tasker interface {
-	Config() TaskConfig
+	Config() Config
 	Details() taskui.TaskDetails
 	Questions(InterfaceType) taskui.Questions
 	Setup(context.Context) error

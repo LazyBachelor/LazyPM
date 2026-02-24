@@ -4,7 +4,7 @@ import (
 	"context"
 	"strings"
 
-	"github.com/LazyBachelor/LazyPM/pkg/cli/commands"
+	"github.com/LazyBachelor/LazyPM/internal/commands/issues"
 	"github.com/c-bata/go-prompt"
 	"github.com/muesli/reflow/truncate"
 )
@@ -21,6 +21,7 @@ var rootSuggestions = []prompt.Suggest{
 // commandSuggestions is a list of prompt suggestions for PM commands.
 var baseSuggestions = []prompt.Suggest{
 	{Text: "help", Description: "Show help information"},
+	{Text: "status", Description: "Show task status"},
 	{Text: "delete", Description: "Delete an issue by ID"},
 	{Text: "close", Description: "Close an issue by ID"},
 	{Text: "create", Description: "Create a new issue with title"},
@@ -148,7 +149,7 @@ func issueIDSuggestions(partial string, hasCommand bool) []prompt.Suggest {
 		return nil
 	}
 
-	issues, _ := commands.GetIssueCompletions(context.Background(), partial)
+	issues, _ := issuesCmd.GetIssueCompletions(context.Background(), partial)
 
 	var suggestions []prompt.Suggest
 	for _, issue := range issues {

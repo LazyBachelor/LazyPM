@@ -22,11 +22,12 @@ func (s *Server) RegisterRoutes(assets embed.FS) http.Handler {
 	r.Use(middleware.CleanPath)
 
 	r.Use(handler.HTMXMiddleware)
-	r.Use(handler.ServicesMiddleware(s.Services))
+	r.Use(handler.AppMiddleware(s.App))
 
 	s.handleAssets(r, assets)
 
 	r.Get("/", handler.IndexHandler)
+	r.Get("/dashboard", handler.DashboardHandler)
 	r.Get("/status", handler.HandleTaskStatus)
 
 	r.Route("/issues", func(r chi.Router) {

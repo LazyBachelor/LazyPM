@@ -17,7 +17,7 @@ import (
 
 type IssueList struct {
 	list   list.Model
-	svc    *service.Services
+	app    *service.App
 	width  int
 	height int
 }
@@ -77,8 +77,8 @@ func renderHeaders(cols []TableColumn) string {
 	return lipgloss.JoinHorizontal(lipgloss.Left, parts...)
 }
 
-func NewIssueList(svc *service.Services, width, height int) IssueList {
-	issues, err := svc.Beads.AllIssues(context.Background())
+func NewIssueList(app *service.App, width, height int) IssueList {
+	issues, err := app.Issues.AllIssues(context.Background())
 	if err != nil {
 		return IssueList{}
 	}
@@ -105,13 +105,13 @@ func NewIssueList(svc *service.Services, width, height int) IssueList {
 
 	return IssueList{
 		list:   l,
-		svc:    svc,
+		app:    app,
 		width:  width,
 		height: height,
 	}
 }
 
-func NewIssueListFromIssues(svc *service.Services, issues []models.Issue, width, height int) IssueList {
+func NewIssueListFromIssues(app *service.App, issues []models.Issue, width, height int) IssueList {
 	// for making an IssueList from a pre-existing list of issues.
 	listIssues := make([]list.Item, len(issues))
 	for i, issue := range issues {
@@ -128,7 +128,7 @@ func NewIssueListFromIssues(svc *service.Services, issues []models.Issue, width,
 	l.FilterInput.Prompt = "🔍 "
 	return IssueList{
 		list:   l,
-		svc:    svc,
+		app:    app,
 		width:  width,
 		height: height,
 	}

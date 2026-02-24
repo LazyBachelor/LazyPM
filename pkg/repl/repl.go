@@ -7,11 +7,13 @@ import (
 	"os"
 	"strings"
 
+	"github.com/LazyBachelor/LazyPM/internal/commands/issues"
+	surveyCmd "github.com/LazyBachelor/LazyPM/internal/commands/survey"
 	"github.com/LazyBachelor/LazyPM/internal/service"
+	"github.com/LazyBachelor/LazyPM/internal/style"
 	"github.com/LazyBachelor/LazyPM/pkg/cli"
-	"github.com/LazyBachelor/LazyPM/pkg/cli/commands"
-	"github.com/LazyBachelor/LazyPM/pkg/cli/styles"
 	"github.com/LazyBachelor/LazyPM/pkg/task"
+	"github.com/LazyBachelor/LazyPM/pkg/tui/styles"
 	"github.com/c-bata/go-prompt"
 	"golang.org/x/term"
 )
@@ -27,6 +29,7 @@ You can also run shell commands directly. Type 'exit' or 'quit' to leave.`
 type REPL struct {
 	feedbackChan chan task.ValidationFeedback
 	quitChan     chan bool
+	app          *service.App
 
 	currentFeedback task.ValidationFeedback
 	exitRequested   bool
@@ -37,7 +40,7 @@ func NewRepl() *REPL {
 }
 
 // Run starts the interactive Read-Eval-Print Loop for the PM CLI.
-func (r *REPL) Run(ctx context.Context, config cli.CLIConfig) error {
+func (r *REPL) Run(ctx context.Context, config cli.Config) error {
 	// Set terminal to raw mode to capture input properly in the REPL.
 	// This allows us to handle input character by character and provide a better user experience.
 	// We also ensure that the terminal state is restored when the REPL exits, even if an error occurs.
@@ -48,19 +51,19 @@ func (r *REPL) Run(ctx context.Context, config cli.CLIConfig) error {
 	defer term.Restore(int(os.Stdin.Fd()), oldState)
 
 	// Initialize services for beads, config and stats.
-	svc, cleanup, err := service.NewServices(ctx, config)
+	app, cleanup, err := service.NewServices(ctx, config)
 	if err != nil {
 		return fmt.Errorf("failed to initialize services: %w", err)
 	}
 	defer cleanup()
 
-	// Make sure to set services, to ensure they are available.
-	commands.SetServices(svc)
+	// Make sure to set app, to ensure they are available.
+	issuesCmd.SetApp(app)
 
-	// Set the REPL instance so status command can access it
-	commands.SetRepl(r)
+	// Store app reference for updating feedback
+	r.app = app
 
-	fmt.Println(styles.TitleStyle.Render(ReplTitle)) // Print REPL title.
+	fmt.Println(style.TitleStyle.Render(ReplTitle)) // Print REPL title.
 
 	// Start goroutine to watch for validation feedback and quit signals
 	if r.feedbackChan != nil && r.quitChan != nil {
@@ -102,8 +105,8 @@ func (r *REPL) Run(ctx context.Context, config cli.CLIConfig) error {
 		// Add the input to the history for future navigation.
 		history = append(history, input)
 
-		output, _ := execute(input)                     // Ignore errors for now, gives better ux
-		fmt.Println(styles.CommandStyle.Render(output)) // Print the output of the command in a styled format.
+		output, _ := execute(input)                 // Ignore errors for now, gives better ux
+		fmt.Println(style.TextStyle.Render(output)) // Print the output of the command in a styled format.
 	}
 
 	return nil
@@ -114,6 +117,13 @@ func (r *REPL) watchValidation() {
 		select {
 		case feedback := <-r.feedbackChan:
 			r.currentFeedback = feedback
+			// Update app's CurrentFeedback so status command can access it
+			if r.app != nil {
+				r.app.CurrentFeedback = &service.ValidationFeedback{
+					Success: feedback.Success,
+					Message: feedback.Message,
+				}
+			}
 			if feedback.Success {
 				fmt.Printf("\n%s\n", styles.TitleStyle.Render("Task completed successfully!"))
 				fmt.Println("Press Enter to exit...")
@@ -127,13 +137,18 @@ func (r *REPL) watchValidation() {
 	}
 }
 
-// GetCurrentFeedback returns the current validation feedback for the status command
-func (r *REPL) GetCurrentFeedback() task.ValidationFeedback {
-	return r.currentFeedback
-}
-
 // SetChannels sets the channels for receiving validation feedback and quit signals from the task interface
 func (r *REPL) SetChannels(feedbackChan chan task.ValidationFeedback, quitChan chan bool) {
 	r.feedbackChan = feedbackChan
 	r.quitChan = quitChan
+}
+
+func init() {
+	issuesCmd.RootCmd.AddCommand(issuesCmd.GetCmd)
+	issuesCmd.RootCmd.AddCommand(issuesCmd.ListCmd)
+	issuesCmd.RootCmd.AddCommand(issuesCmd.CloseCmd)
+	issuesCmd.RootCmd.AddCommand(issuesCmd.CreateCmd)
+	issuesCmd.RootCmd.AddCommand(issuesCmd.DeleteCmd)
+	issuesCmd.RootCmd.AddCommand(issuesCmd.UpdateCmd)
+	issuesCmd.RootCmd.AddCommand(surveyCmd.StatusCmd)
 }

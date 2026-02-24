@@ -1,0 +1,21 @@
+.pm
+.git
+bin
+
+.idea
+.vscode
+
+node_modules/
+package-lock.json
+package.json
+
+.gitignore
+.goreleaser.yaml
+
+*.db
+*.ext
+
+Makefile
+
+# Added by goreleaser init:
+dist/

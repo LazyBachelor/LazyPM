@@ -15,21 +15,21 @@ type ValidationFeedbackMsg struct {
 }
 
 type Model struct {
-	header               Header
-	issueList            IssueList
-	issueDetail          IssueDetail
-	closedIssueList  IssueList
-	helpBar              HelpBar
-	keyMap               DashboardKeyMap
-	svc                  *service.Services
-	width                int
-	height               int
-	focusedWindow    	 int // 0 = main (display issues), 1 = closed issues
-	focusedPaneMain      int // 0 = list, 1 = detail
+	header            Header
+	issueList         IssueList
+	issueDetail       IssueDetail
+	closedIssueList   IssueList
+	helpBar           HelpBar
+	keyMap            DashboardKeyMap
+	app               *service.App
+	width             int
+	height            int
+	focusedWindow     	 int // 0 = main (display issues), 1 = closed issues
+	focusedPaneMain   int // 0 = list, 1 = detail
 	focusedPaneClosed 	 int
-	editingTitle       bool // true while we are editing a title
-	titleInput         textinput.Model
-	editingIssueID     string
+	editingTitle      bool // true while we are editing a title
+	titleInput        textinput.Model
+	editingIssueID    string
 
 	editingDescription bool // true while editing a description
 	descriptionInput   textarea.Model
@@ -41,36 +41,36 @@ type Model struct {
 	deleteConfirmID    string
 	deleteConfirmIndex int
 
-	choosingStatus  bool // true while choosing a status
+	choosingStatus   bool // true while choosing a status
 	statusIssueID   string
 	choosingPriority  bool // true while choosing a priority
 	priorityIssueID   string
 	choosingType      bool // true while choosing a type
-	typeIssueID       string
+	typeIssueID        string
 	feedbackChan    chan task.ValidationFeedback
 	quitChan        chan bool
 	currentFeedback task.ValidationFeedback
 	showComplete    bool
 }
 
-func NewDashboard(svc *service.Services, feedbackChan chan task.ValidationFeedback, quitChan chan bool) *Model {
+func NewDashboard(app *service.App, feedbackChan chan task.ValidationFeedback, quitChan chan bool) *Model {
 	m := &Model{
 		header:            NewHeader("Project Manager Dashboard"),
 		keyMap:            defaultDashboardKeyMap,
-		svc:               svc,
+		app:               app,
 		width:             80,
 		height:            24,
-		focusedWindow:    0,
-		focusedPaneMain:  0,
-		focusedPaneClosed:  0,
-		feedbackChan: feedbackChan,
-		quitChan:     quitChan,
+		focusedWindow:     0,
+		focusedPaneMain:   0,
+		focusedPaneClosed: 0,
+		feedbackChan:      feedbackChan,
+		quitChan:          quitChan,
 	}
 
-	allIssues, _ := svc.Beads.AllIssues(context.Background())
-	m.issueList = NewIssueListFromIssues(svc, OpenAndInProgressOnly(allIssues), 0, 0)
+	allIssues, _ := app.Issues.AllIssues(context.Background())
+	m.issueList = NewIssueListFromIssues(app, OpenAndInProgressOnly(allIssues), 0, 0)
 	m.issueDetail = NewIssueDetail()
-	m.closedIssueList = NewIssueListFromIssues(svc, ClosedOnly(allIssues), 0, 0)
+	m.closedIssueList = NewIssueListFromIssues(app, ClosedOnly(allIssues), 0, 0)
 	m.helpBar = NewHelpBar(m.keyMap)
 
 	ti := textinput.New()

@@ -30,7 +30,7 @@ type UpdateIssueForm struct {
 }
 
 func CreateIssue(w http.ResponseWriter, r *http.Request) {
-	svc := Services(r)
+	app := App(r)
 	hx := HTMX(r)
 
 	form, err := ParseForm[IssueForm](r)
@@ -49,7 +49,7 @@ func CreateIssue(w http.ResponseWriter, r *http.Request) {
 	}
 
 	issue := form.toIssue()
-	if err := svc.Beads.CreateIssue(r.Context(), &issue, ""); err != nil {
+	if err := app.Issues.CreateIssue(r.Context(), &issue, ""); err != nil {
 		http.Error(w, "Failed to create issue: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -64,10 +64,10 @@ func CreateIssue(w http.ResponseWriter, r *http.Request) {
 }
 
 func ListIssues(w http.ResponseWriter, r *http.Request) {
-	svc := Services(r)
+	app := App(r)
 	hx := HTMX(r)
 
-	issues, err := svc.Beads.AllIssues(r.Context())
+	issues, err := app.Issues.AllIssues(r.Context())
 	if err != nil {
 		http.Error(w, "Failed to retrieve issues", http.StatusInternalServerError)
 		return
@@ -79,10 +79,10 @@ func ListIssues(w http.ResponseWriter, r *http.Request) {
 
 func IssueCtx(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		svc := Services(r)
+		app := App(r)
 
 		id := chi.URLParam(r, "id")
-		issue, err := svc.Beads.GetIssue(r.Context(), id)
+		issue, err := app.Issues.GetIssue(r.Context(), id)
 		if err != nil {
 			http.Error(w, "Error getting issue: "+err.Error(), http.StatusNotFound)
 			return
@@ -92,7 +92,7 @@ func IssueCtx(next http.Handler) http.Handler {
 			return
 		}
 
-		comments, err := svc.Beads.GetIssueComments(r.Context(), issue.ID)
+		comments, err := app.Issues.GetIssueComments(r.Context(), issue.ID)
 		if err != nil {
 			http.Error(w, "Error getting comments: "+err.Error(), http.StatusInternalServerError)
 			return
@@ -110,18 +110,25 @@ func GetIssue(w http.ResponseWriter, r *http.Request) {
 	comments := r.Context().Value(commentsKey).([]*models.Comment)
 	hx := HTMX(r)
 
+	displayOwner := orDisplay(issue.Owner, "—")
+	displayAssignee := orDisplay(issue.Assignee, "—")
+
 	if !hx.IsHxRequest() && strings.Contains(r.Header.Get("Accept"), "text/html") {
 		routes.IssueDetail(routes.IssueDetailProps{
-			Issue:    *issue,
-			Comments: comments,
+			Issue:           *issue,
+			DisplayOwner:    displayOwner,
+			DisplayAssignee: displayAssignee,
+			Comments:        comments,
 		}).Render(r.Context(), w)
 		return
 	}
 
 	if hx.IsHxRequest() {
 		routes.IssueDetailContent(routes.IssueDetailProps{
-			Issue:    *issue,
-			Comments: comments,
+			Issue:           *issue,
+			DisplayOwner:    displayOwner,
+			DisplayAssignee: displayAssignee,
+			Comments:        comments,
 		}).Render(r.Context(), w)
 		return
 	}
@@ -132,7 +139,7 @@ func GetIssue(w http.ResponseWriter, r *http.Request) {
 
 func UpdateIssue(w http.ResponseWriter, r *http.Request) {
 	issue := r.Context().Value(issueKey).(*models.Issue)
-	svc := Services(r)
+	app := App(r)
 	hx := HTMX(r)
 
 	form, err := ParseForm[UpdateIssueForm](r)
@@ -152,12 +159,12 @@ func UpdateIssue(w http.ResponseWriter, r *http.Request) {
 
 	changes := form.toChanges()
 
-	if err := svc.Beads.UpdateIssue(r.Context(), issue.ID, changes, ""); err != nil {
+	if err := app.Issues.UpdateIssue(r.Context(), issue.ID, changes, ""); err != nil {
 		http.Error(w, "Failed to update issue", http.StatusInternalServerError)
 		return
 	}
 
-	issue, err = svc.Beads.GetIssue(r.Context(), issue.ID)
+	issue, err = app.Issues.GetIssue(r.Context(), issue.ID)
 	if err != nil {
 		http.Error(w, "Failed to retrieve updated issue", http.StatusInternalServerError)
 		return
@@ -170,8 +177,8 @@ func UpdateIssue(w http.ResponseWriter, r *http.Request) {
 func DeleteIssue(w http.ResponseWriter, r *http.Request) {
 	issue := r.Context().Value(issueKey).(*models.Issue)
 
-	svc := Services(r)
-	if err := svc.Beads.DeleteIssue(r.Context(), issue.ID); err != nil {
+	app := App(r)
+	if err := app.Issues.DeleteIssue(r.Context(), issue.ID); err != nil {
 		http.Error(w, "Failed to delete issue", http.StatusInternalServerError)
 		return
 	}

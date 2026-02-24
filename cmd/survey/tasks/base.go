@@ -2,7 +2,7 @@ package tasks
 
 import (
 	"github.com/LazyBachelor/LazyPM/internal/service"
-	"github.com/LazyBachelor/LazyPM/pkg/cli/repl"
+	"github.com/LazyBachelor/LazyPM/pkg/repl"
 	"github.com/LazyBachelor/LazyPM/pkg/task"
 	taskui "github.com/LazyBachelor/LazyPM/pkg/task/ui"
 	"github.com/LazyBachelor/LazyPM/pkg/tui"
@@ -38,17 +38,12 @@ func BaseDetails() taskui.TaskDetails {
 	}
 }
 
-func BaseConfig() task.TaskConfig {
-	return task.TaskConfig{
-		IssuePrefix:           "pm",
-		WebAddress:            ":8080",
-		BeadsDBPath:           "./.pm/db.db",
-		StatisticsStoragePath: "./.pm/stats.json",
-	}
+func BaseConfig() task.Config {
+	return service.BaseConfig
 }
 
-func ClearIssues(svc *service.Services) error {
-	return svc.Beads.DeleteIssues()
+func ClearIssues(app *service.App) error {
+	return app.Issues.DeleteIssues()
 }
 
 func BaseQuestions(interfaceType task.InterfaceType) taskui.Questions {

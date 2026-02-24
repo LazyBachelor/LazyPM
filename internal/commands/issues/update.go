@@ -1,4 +1,4 @@
-package commands
+package issuesCmd
 
 import (
 	"fmt"
@@ -9,7 +9,7 @@ import (
 
 var updateFlags Flags
 
-var updateCmd = &cobra.Command{
+var UpdateCmd = &cobra.Command{
 	Use:               "update [issue ID]",
 	Short:             "Update an existing issue",
 	Long:              `Update an existing issue by its ID with the specified details.`,
@@ -23,7 +23,9 @@ var updateCmd = &cobra.Command{
 func runUpdateCmd(cmd *cobra.Command, args []string) error {
 	issueID := args[0]
 
-	issue, err := svc.Beads.GetIssue(cmd.Context(), issueID)
+	app := AppFromContext(cmd.Context())
+
+	issue, err := app.Issues.GetIssue(cmd.Context(), issueID)
 	if err != nil {
 		return fmt.Errorf("error getting issue: %w", err)
 	}
@@ -37,12 +39,12 @@ func runUpdateCmd(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("error getting update values: %w", err)
 	}
 
-	err = svc.Beads.UpdateIssue(cmd.Context(), issueID, updates, "test_actor")
+	err = app.Issues.UpdateIssue(cmd.Context(), issueID, updates, "test_actor")
 	if err != nil {
 		return fmt.Errorf("error updating issue: %w", err)
 	}
 
-	updatedIssue, err := svc.Beads.GetIssue(cmd.Context(), issueID)
+	updatedIssue, err := app.Issues.GetIssue(cmd.Context(), issueID)
 	if err != nil {
 		return fmt.Errorf("error getting updated issue: %w", err)
 	}
@@ -53,17 +55,15 @@ func runUpdateCmd(cmd *cobra.Command, args []string) error {
 }
 
 func init() {
-	updateCmd.Flags().StringVar(&updateFlags.title, "title", "", "New issue title")
-	updateCmd.Flags().StringVarP(&updateFlags.description, "desc", "d", "", "New issue description")
-	updateCmd.Flags().StringVarP(&updateFlags.status, "status", "s", "", "New issue status(open, closed, in_progress)")
-	updateCmd.Flags().StringVarP(&updateFlags.issueType, "type", "t", "", "New issue type(bug, feature, task)")
-	updateCmd.Flags().IntVarP(&updateFlags.priority, "priority", "p", 0, "New issue priority(0-5)")
+	UpdateCmd.Flags().StringVar(&updateFlags.title, "title", "", "New issue title")
+	UpdateCmd.Flags().StringVarP(&updateFlags.description, "desc", "d", "", "New issue description")
+	UpdateCmd.Flags().StringVarP(&updateFlags.status, "status", "s", "", "New issue status(open, closed, in_progress)")
+	UpdateCmd.Flags().StringVarP(&updateFlags.issueType, "type", "t", "", "New issue type(bug, feature, task)")
+	UpdateCmd.Flags().IntVarP(&updateFlags.priority, "priority", "p", 0, "New issue priority(0-5)")
 
-	updateCmd.RegisterFlagCompletionFunc("type", completionFunc(typeOptions))
-	updateCmd.RegisterFlagCompletionFunc("status", completionFunc(statusOptions))
-	updateCmd.RegisterFlagCompletionFunc("priority", completionFunc(priorityRange))
-
-	rootCmd.AddCommand(updateCmd)
+	UpdateCmd.RegisterFlagCompletionFunc("type", completionFunc(typeOptions))
+	UpdateCmd.RegisterFlagCompletionFunc("status", completionFunc(statusOptions))
+	UpdateCmd.RegisterFlagCompletionFunc("priority", completionFunc(priorityRange))
 }
 
 func getUpdateValues(cmd *cobra.Command) (map[string]interface{}, error) {

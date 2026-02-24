@@ -1,0 +1,32 @@
+package routes
+
+import (
+	"github.com/LazyBachelor/LazyPM/internal/models"
+	"github.com/LazyBachelor/LazyPM/pkg/web/components"
+)
+
+type DashboardProps struct {
+	ActiveIssues    []models.Issue
+	ClosedIssues    []models.Issue
+	SelectedIssue   *models.Issue
+	SelectedID      string
+	SearchQuery     string
+	DisplayOwner    string
+	DisplayAssignee string
+}
+
+templ Dashboard(props DashboardProps) {
+	@BaseLayout(BaseLayoutProps{SearchQuery: props.SearchQuery}) {
+		@components.DashboardPage(components.DashboardPageProps{
+			ActiveIssues:    props.ActiveIssues,
+			ClosedIssues:    props.ClosedIssues,
+			SelectedIssue:   props.SelectedIssue,
+			SelectedID:      props.SelectedID,
+			BaseURL:         "/dashboard",
+			QueryParam:      "?id=",
+			EmptyText:       "Select an issue to view details",
+			DisplayOwner:    props.DisplayOwner,
+			DisplayAssignee: props.DisplayAssignee,
+		})
+	}
+}

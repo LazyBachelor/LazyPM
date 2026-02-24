@@ -15,7 +15,7 @@ import (
 // 3. Run the interface
 // 4. Start validation loop in background
 // 5. Show questionnaire when done
-func RunTask(ctx context.Context, t Tasker, i Interface, ifaceType InterfaceType) error {
+func RunTask(ctx context.Context, t Tasker, i Interface, iType InterfaceType) error {
 	doneChan := make(chan bool, 1)
 	quitChan := make(chan bool, 1)
 	feedbackChan := make(chan ValidationFeedback, 10)
@@ -65,7 +65,7 @@ func RunTask(ctx context.Context, t Tasker, i Interface, ifaceType InterfaceType
 	}
 
 	// Show questionnaire
-	questions := t.Questions(ifaceType)
+	questions := t.Questions(iType)
 	questionare := taskui.NewQuestionnaireModel(questions)
 	model, err = tea.NewProgram(questionare, tea.WithAltScreen()).Run()
 	if err != nil {
@@ -94,14 +94,13 @@ func startValidationLoop(ctx context.Context, t Tasker, feedbackChan chan Valida
 				feedbackChan <- feedback
 				doneChan <- true
 				return
-			} else {
-				if err != nil {
-					feedback.Message = err.Error()
-				} else {
-					feedback.Message = "Task not yet complete"
-				}
-				feedbackChan <- feedback
 			}
+			if err != nil {
+				feedback.Message = err.Error()
+			} else {
+				feedback.Message = "Task not yet complete"
+			}
+			feedbackChan <- feedback
 		case <-quitChan:
 			return
 		case <-ctx.Done():
