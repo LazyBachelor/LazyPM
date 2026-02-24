@@ -10,11 +10,15 @@ templ Sidebar(routes []NavRoutes) {
 				for _, r := range routes {
 					<li>
 						<a
-							href={ r.Path }
+							hx-get={ r.Path }
+							hx-target="main"
+							hx-swap="innerHTML"
 							class="sidebar-link rounded-lg py-2.5 px-3 text-base-content items-center"
 						>
 							if r.Icon != nil {
-								<span class="sidebar-icon flex items-center justify-center">@r.Icon</span>
+								<span class="sidebar-icon flex items-center justify-center">
+									@r.Icon
+								</span>
 							}
 						</a>
 					</li>
