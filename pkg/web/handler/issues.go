@@ -176,6 +176,7 @@ func UpdateIssue(w http.ResponseWriter, r *http.Request) {
 
 func DeleteIssue(w http.ResponseWriter, r *http.Request) {
 	issue := r.Context().Value(issueKey).(*models.Issue)
+	hx := HTMX(r)
 
 	app := App(r)
 	if err := app.Issues.DeleteIssue(r.Context(), issue.ID); err != nil {
@@ -183,7 +184,9 @@ func DeleteIssue(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
+	if hx.IsHxRequest() {
+		w.Header().Set("HX-Redirect", "/dashboard")
+	}
 	w.WriteHeader(http.StatusNoContent)
 }
 

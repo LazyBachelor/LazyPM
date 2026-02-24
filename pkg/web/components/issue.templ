@@ -92,6 +92,7 @@ templ IssueTable(props IssueTableProps) {
 			base.PlainText("Status"),
 			base.PlainText("Type"),
 			base.PlainText("Priority"),
+			base.PlainText("Actions"),
 		},
 		[]templ.Component{
 			IssueRows(props.Issues),
@@ -124,6 +125,18 @@ templ IssueRows(issues []models.Issue) {
 			<td class="px-4 py-2 border">{ string(issue.Status) }</td>
 			<td class="px-4 py-2 border">{ string(issue.IssueType) }</td>
 			<td class="px-4 py-2 border">{ fmt.Sprintf("P%d", issue.Priority) }</td>
+			<td class="px-4 py-2 border">
+				<button
+					type="button"
+					class="btn btn-error btn-xs btn-ghost"
+					hx-delete={ "/issues/" + issue.ID }
+					hx-confirm="Are you sure you want to delete this issue? This action cannot be undone."
+					hx-target="body"
+					title="Delete issue"
+				>
+					Delete
+				</button>
+			</td>
 		</tr>
 	}
 }
