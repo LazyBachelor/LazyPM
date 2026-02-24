@@ -89,22 +89,6 @@ func updateIssueTypeCmd(app *service.App, issueID string, issueType models.Issue
 	}
 }
 
-func updateIssuePriorityCmd(app *service.App, issueID string, priority int) tea.Cmd {
-	return func() tea.Msg {
-		updates := map[string]interface{}{"priority": priority}
-		err := app.Issues.UpdateIssue(context.Background(), issueID, updates, "tui")
-		return issuePriorityUpdatedMsg{IssueID: issueID, Err: err}
-	}
-}
-
-func updateIssueTypeCmd(app *service.App, issueID string, issueType models.IssueType) tea.Cmd {
-	return func() tea.Msg {
-		updates := map[string]interface{}{"issue_type": string(issueType)}
-		err := app.Issues.UpdateIssue(context.Background(), issueID, updates, "tui")
-		return issueTypeUpdatedMsg{IssueID: issueID, Err: err}
-	}
-}
-
 func createIssueCmd(app *service.App, title string) tea.Cmd {
 	return func() tea.Msg {
 		issue := &models.Issue{
@@ -322,7 +306,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				priority := int(msg.String()[0] - '0')
 				m.choosingPriority = false
 				m.priorityIssueID = ""
-				return m, updateIssuePriorityCmd(m.svc, issueID, priority)
+				return m, updateIssuePriorityCmd(m.app, issueID, priority)
 			case "esc":
 				m.choosingPriority = false
 				m.priorityIssueID = ""
@@ -338,27 +322,27 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				issueID := m.typeIssueID
 				m.choosingType = false
 				m.typeIssueID = ""
-				return m, updateIssueTypeCmd(m.svc, issueID, models.TypeBug)
+				return m, updateIssueTypeCmd(m.app, issueID, models.TypeBug)
 			case "f":
 				issueID := m.typeIssueID
 				m.choosingType = false
 				m.typeIssueID = ""
-				return m, updateIssueTypeCmd(m.svc, issueID, models.TypeFeature)
+				return m, updateIssueTypeCmd(m.app, issueID, models.TypeFeature)
 			case "t":
 				issueID := m.typeIssueID
 				m.choosingType = false
 				m.typeIssueID = ""
-				return m, updateIssueTypeCmd(m.svc, issueID, models.TypeTask)
+				return m, updateIssueTypeCmd(m.app, issueID, models.TypeTask)
 			case "e":
 				issueID := m.typeIssueID
 				m.choosingType = false
 				m.typeIssueID = ""
-				return m, updateIssueTypeCmd(m.svc, issueID, models.TypeEpic)
+				return m, updateIssueTypeCmd(m.app, issueID, models.TypeEpic)
 			case "c":
 				issueID := m.typeIssueID
 				m.choosingType = false
 				m.typeIssueID = ""
-				return m, updateIssueTypeCmd(m.svc, issueID, models.TypeChore)
+				return m, updateIssueTypeCmd(m.app, issueID, models.TypeChore)
 			case "esc":
 				m.choosingType = false
 				m.typeIssueID = ""
