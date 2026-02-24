@@ -55,12 +55,11 @@ func CreateIssue(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if hx.IsHxRequest() {
-		// Success: close modal by triggering event, and refresh issue list
+		// Trigger issue list to refresh
 		w.Header().Set("HX-Trigger", `{"closeModal": "create-issue-modal", "issueCreated": "`+issue.ID+`"}`)
 		w.Header().Set("HX-Retarget", "#issue-list-container")
 		w.Header().Set("HX-Reswap", "innerHTML")
 
-		// Get updated issues list
 		filter := models.IssueFilter{Limit: 100}
 		issues, _ := app.Issues.SearchIssues(r.Context(), "", filter)
 		routes.DashboardIssueList(issues, "").Render(r.Context(), w)
