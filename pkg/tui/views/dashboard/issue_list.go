@@ -158,8 +158,8 @@ func ClosedOnly(issues []models.Issue) []models.Issue {
 	return out
 }
 
-// sortByPriorityDesc sorts issues by priority, highest first.
 func sortByPriorityDesc(issues []models.Issue) {
+	// sorts issues by priority, highest first.
 	sort.Slice(issues, func(i, j int) bool {
 		return issues[i].Priority > issues[j].Priority
 	})
@@ -313,6 +313,21 @@ func renderRow(issue ListIssue, isSelected bool, cols []TableColumn) string {
 	return lipgloss.JoinHorizontal(lipgloss.Left, parts...)
 }
 
+var priorityCodeNames = map[int]string{
+	0: "irrelevant",
+	1: "low",
+	2: "normal",
+	3: "high",
+	4: "critical",
+}
+
+func priorityCodeName(priority int) string {
+	if name, ok := priorityCodeNames[priority]; ok {
+		return name
+	}
+	return fmt.Sprintf("%d", priority)
+}
+
 func getColumnValue(col TableColumn, issue ListIssue) string {
 	switch col.key {
 	case "id":
@@ -324,7 +339,7 @@ func getColumnValue(col TableColumn, issue ListIssue) string {
 	case "type":
 		return string(issue.Issue.IssueType)
 	case "priority":
-		return fmt.Sprintf("%d", issue.Issue.Priority)
+		return priorityCodeName(issue.Issue.Priority)
 	default:
 		return ""
 	}

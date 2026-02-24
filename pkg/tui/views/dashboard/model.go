@@ -41,10 +41,12 @@ type Model struct {
 	deleteConfirmID    string
 	deleteConfirmIndex int
 
-	choosingStatus  bool
+	choosingStatus  bool // true while choosing a status
 	statusIssueID   string
-	choosingPriority bool
-	priorityIssueID  string
+	choosingPriority  bool // true while choosing a priority
+	priorityIssueID   string
+	choosingType      bool // true while choosing a type
+	typeIssueID       string
 	feedbackChan    chan task.ValidationFeedback
 	quitChan        chan bool
 	currentFeedback task.ValidationFeedback
@@ -130,6 +132,11 @@ func (m *Model) startChooseStatus(selected ListIssue) {
 func (m *Model) startChoosePriority(selected ListIssue) {
 	m.choosingPriority = true
 	m.priorityIssueID = selected.ID
+}
+
+func (m *Model) startChooseType(selected ListIssue) {
+	m.choosingType = true
+	m.typeIssueID = selected.ID
 }
 
 func (m *Model) Init() tea.Cmd {

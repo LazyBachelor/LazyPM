@@ -129,7 +129,7 @@ func (m *Model) View() string {
 	if m.choosingPriority {
 		priorityContent := lipgloss.JoinVertical(lipgloss.Left,
 			styles.LabelStyle.Render("Change priority for "+m.priorityIssueID+":"),
-			lipgloss.NewStyle().Foreground(styles.FaintText).Render("0 = lowest   1 = low   2 = medium   3 = high   4 = highest"),
+			lipgloss.NewStyle().Foreground(styles.FaintText).Render("0 = irrelevant 1 = low  2 = normal  3 = high  4 = critical"),
 			lipgloss.NewStyle().Foreground(styles.FaintText).Render("Esc = cancel"),
 		)
 		priorityBoxWidth := min(60, m.width-4)
@@ -138,6 +138,20 @@ func (m *Model) View() string {
 			BorderForeground(styles.PrimaryBorder).
 			Render(priorityContent)
 		return lipgloss.Place(m.width, m.height, lipgloss.Center, lipgloss.Center, priorityBox)
+	}
+
+	if m.choosingType {
+		typeContent := lipgloss.JoinVertical(lipgloss.Left,
+			styles.LabelStyle.Render("Change type for "+m.typeIssueID+":"),
+			lipgloss.NewStyle().Foreground(styles.FaintText).Render("b = bug   f = feature   t = task   e = epic   c = chore"),
+			lipgloss.NewStyle().Foreground(styles.FaintText).Render("Esc = cancel"),
+		)
+		typeBoxWidth := min(65, m.width-4)
+		typeBox := styles.ContainerStyle.
+			Width(typeBoxWidth).
+			BorderForeground(styles.PrimaryBorder).
+			Render(typeContent)
+		return lipgloss.Place(m.width, m.height, lipgloss.Center, lipgloss.Center, typeBox)
 	}
 
 	return mainView

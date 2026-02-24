@@ -29,6 +29,11 @@ type issuePriorityUpdatedMsg struct {
 	Err     error
 }
 
+type issueTypeUpdatedMsg struct {
+	IssueID string
+	Err     error
+}
+
 type selectIssueMsg struct {
 	IssueID string
 }
@@ -76,12 +81,21 @@ func updateIssuePriorityCmd(svc *service.Services, issueID string, priority int)
 	}
 }
 
+func updateIssueTypeCmd(svc *service.Services, issueID string, issueType models.IssueType) tea.Cmd {
+	return func() tea.Msg {
+		updates := map[string]interface{}{"issue_type": string(issueType)}
+		err := svc.Beads.UpdateIssue(context.Background(), issueID, updates, "tui")
+		return issueTypeUpdatedMsg{IssueID: issueID, Err: err}
+	}
+}
+
 func createIssueCmd(svc *service.Services, title string) tea.Cmd {
 	return func() tea.Msg {
 		issue := &models.Issue{
 			Title:     title,
 			Status:    models.StatusOpen,
 			IssueType: models.TypeTask,
+			Priority:  2,
 		}
 		err := svc.Beads.CreateIssue(context.Background(), issue, "tui")
 		return issueCreatedMsg{Issue: issue, Err: err}
@@ -145,6 +159,14 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case issuePriorityUpdatedMsg:
 		m.choosingPriority = false
 		m.priorityIssueID = ""
+		if msg.Err != nil {
+			return m, nil
+		}
+		return m, m.refreshIssueListsAndSelectIssue(msg.IssueID)
+
+	case issueTypeUpdatedMsg:
+		m.choosingType = false
+		m.typeIssueID = ""
 		if msg.Err != nil {
 			return m, nil
 		}
@@ -294,6 +316,42 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 		}
 
+		if m.choosingType {
+			switch msg.String() {
+			case "b":
+				issueID := m.typeIssueID
+				m.choosingType = false
+				m.typeIssueID = ""
+				return m, updateIssueTypeCmd(m.svc, issueID, models.TypeBug)
+			case "f":
+				issueID := m.typeIssueID
+				m.choosingType = false
+				m.typeIssueID = ""
+				return m, updateIssueTypeCmd(m.svc, issueID, models.TypeFeature)
+			case "t":
+				issueID := m.typeIssueID
+				m.choosingType = false
+				m.typeIssueID = ""
+				return m, updateIssueTypeCmd(m.svc, issueID, models.TypeTask)
+			case "e":
+				issueID := m.typeIssueID
+				m.choosingType = false
+				m.typeIssueID = ""
+				return m, updateIssueTypeCmd(m.svc, issueID, models.TypeEpic)
+			case "c":
+				issueID := m.typeIssueID
+				m.choosingType = false
+				m.typeIssueID = ""
+				return m, updateIssueTypeCmd(m.svc, issueID, models.TypeChore)
+			case "esc":
+				m.choosingType = false
+				m.typeIssueID = ""
+				return m, nil
+			default:
+				return m, nil
+			}
+		}
+
 		if m.creatingIssue {
 			if msg.String() == "enter" {
 				title := m.createTitleInput.Value()
@@ -354,6 +412,11 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if focusedList.FilterState() == list.Filtering {
 			cmd, _ := focusedList.Update(msg)
 			return m, cmd
+		}
+
+		// On main dashboard, ESC does nothing; only q quits; like in lazybeads.
+		if msg.String() == "esc" {
+			return m, nil
 		}
 
 		cmd := m.handleKeyMsg(msg)

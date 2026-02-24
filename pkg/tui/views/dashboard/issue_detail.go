@@ -1,8 +1,6 @@
 package dashboard
 
 import (
-	"fmt"
-
 	"github.com/LazyBachelor/LazyPM/internal/models"
 	"github.com/LazyBachelor/LazyPM/pkg/tui/styles"
 	"github.com/charmbracelet/bubbles/viewport"
@@ -56,7 +54,7 @@ func (i *IssueDetail) refreshContent() {
 	)
 
 	priorityRow := styles.RowStyle.Render(
-		styles.LabelStyle.Render("Priority:") + styles.ValueStyle.Render(fmt.Sprintf("%d", i.issue.Priority)),
+		styles.LabelStyle.Render("Priority:") + styles.ValueStyle.Render(priorityCodeName(i.issue.Priority)),
 	)
 
 	descLabel := styles.LabelStyle.Render("Description:")
