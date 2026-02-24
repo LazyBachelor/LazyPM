@@ -10,14 +10,13 @@ templ Layout(props LayoutProps) {
 			<meta name="description" content={ props.Description }/>
 			@Head(props.Head)
 		</head>
-		<body class="min-h-screen bg-base-200 text-base-content flex flex-col">
+		<body class="h-screen overflow-auto">
 			@Header(props.Header)
-
-			<div class="flex flex-1 min-h-0">
-			@Sidebar(props.Routes)
-			<main class="flex-1 p-4 bg-base-100 min-h-0 overflow-auto">
-				{ children... }
-			</main>
+			<div class="flex">
+				//@Sidebar(props.Routes) Hidden until we need it
+				<main class="flex-1 p-1 overflow-auto">
+					{ children... }
+				</main>
 			</div>
 		</body>
 	</html>
@@ -59,29 +58,4 @@ type Link struct {
 type Script struct {
 	Src   string
 	Defer bool
-}
-
-templ Header(props HeaderProps) {
-	<header class="navbar bg-primary text-primary-content px-6">
-		<div class="navbar-start">
-			<span class="font-semibold mr-5">{ props.Title }</span>
-		</div>
-		<div class="navbar-center">
-			if props.NavbarCenter != nil {
-				@props.NavbarCenter
-			}
-		</div>
-		<div class="navbar-end">
-			if props.NavbarEnd != nil {
-				@props.NavbarEnd
-			}
-		</div>
-	</header>
-}
-
-type HeaderProps struct {
-	Title        string
-	NavbarStart  templ.Component
-	NavbarCenter templ.Component
-	NavbarEnd    templ.Component
 }

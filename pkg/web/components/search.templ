@@ -1,20 +1,26 @@
 package components
 
-templ SearchForm(searchQuery string) {
+type SearchFormProps struct {
+	RootURL     string
+	SearchQuery string
+	Target      string
+}
+
+templ SearchForm(props SearchFormProps) {
 	<form
-		class="flex gap-2 items-center"
-		hx-get="/"
-		hx-target="main"
+		class="flex items-center"
+		hx-get={ props.RootURL }
+		hx-target={ props.Target }
 		hx-swap="innerHTML"
-		hx-push-url="true"
-		hx-trigger="submit, input changed delay:400ms from:input[name='q']"
+		hx-trigger="input changed delay:400ms from:input[name='q']"
+		hx-vals='{"partial": "true"}'
 	>
 		<input
 			type="search"
 			name="q"
-			value={ searchQuery }
-			placeholder="Search by title, description, or assignee..."
-			class="input input-md input-bordered text-base-content w-48 md:w-64"
+			value={ props.SearchQuery }
+			placeholder="Search by id, title or description"
+			class="input input-md text-base-content w-full"
 			aria-label="Search issues"
 		/>
 	</form>

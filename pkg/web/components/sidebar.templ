@@ -3,9 +3,9 @@ package components
 templ Sidebar(routes []NavRoutes) {
 	<aside
 		id="sidebar"
-		class="flex flex-col bg-base-100 border-r border-base-300 transition-all duration-300"
+		class="flex flex-col bg-base-100 border-r border-base-300"
 	>
-		<nav class="flex-1 overflow-y-auto p-2">
+		<nav class="flex-1 overflow-y-auto p-1">
 			<ul class="menu menu-vertical p-0">
 				for _, r := range routes {
 					<li>
@@ -13,7 +13,7 @@ templ Sidebar(routes []NavRoutes) {
 							hx-get={ r.Path }
 							hx-target="main"
 							hx-swap="innerHTML"
-							class="sidebar-link rounded-lg py-2.5 px-3 text-base-content items-center"
+							class="sidebar-link rounded-lg p-2 text-base-content items-center"
 						>
 							if r.Icon != nil {
 								<span class="sidebar-icon flex items-center justify-center">

@@ -3,30 +3,118 @@ package routes
 import (
 	"github.com/LazyBachelor/LazyPM/internal/models"
 	"github.com/LazyBachelor/LazyPM/pkg/web/components"
+	"github.com/LazyBachelor/LazyPM/pkg/web/components/base"
 )
 
 type DashboardProps struct {
-	ActiveIssues    []models.Issue
-	ClosedIssues    []models.Issue
-	SelectedIssue   *models.Issue
-	SelectedID      string
-	SearchQuery     string
-	DisplayOwner    string
-	DisplayAssignee string
+	Issues        []*models.Issue
+	SelectedIssue *models.Issue
+	BaseURL       string
+	QueryParam    string
+	EmptyText     string
 }
 
 templ Dashboard(props DashboardProps) {
-	@BaseLayout(BaseLayoutProps{SearchQuery: props.SearchQuery}) {
-		@components.DashboardPage(components.DashboardPageProps{
-			ActiveIssues:    props.ActiveIssues,
-			ClosedIssues:    props.ClosedIssues,
-			SelectedIssue:   props.SelectedIssue,
-			SelectedID:      props.SelectedID,
-			BaseURL:         "/dashboard",
-			QueryParam:      "?id=",
-			EmptyText:       "Select an issue to view details",
-			DisplayOwner:    props.DisplayOwner,
-			DisplayAssignee: props.DisplayAssignee,
-		})
+	@BaseLayout() {
+		@DashboardContent(props)
+	}
+}
+
+templ DashboardContent(props DashboardProps) {
+	<div class="flex flex-row">
+		<div class="w-full flex flex-col border-r border-base-200 overflow-auto">
+			<div class="flex p-2 border-b border-base-200 justify-between items-center gap-2">
+				<div class="w-full">
+					@components.SearchForm(components.SearchFormProps{
+						RootURL:     props.BaseURL,
+						SearchQuery: props.QueryParam,
+						Target:      "#issue-list-container",
+					})
+				</div>
+				<button
+					class="btn btn-primary"
+					hx-get="/create-issue"
+					hx-target="#modal-container"
+					hx-swap="innerHTML"
+				>
+					New Issue
+				</button>
+			</div>
+			<div
+				id="issue-list-container"
+			>
+				@DashboardIssueList(props.Issues, props.SelectedIssue.ID)
+			</div>
+		</div>
+		<div id="issue-detail-container" class="w-full max-[770px]:hidden">
+			@DashboardIssueDetail(props.SelectedIssue, props.EmptyText)
+		</div>
+	</div>
+	@components.ModalContainer()
+}
+
+templ DashboardIssueDetail(selectedIssue *models.Issue, emptyText string) {
+	if selectedIssue != nil {
+		<div class="max-w-2xl p-2">
+			@components.IssueDetail(components.IssueDetailProps{
+				Issue: selectedIssue,
+			})
+		</div>
+	} else {
+		<div class="flex flex-col items-center justify-center">
+			<p class="text-center">{ emptyText }</p>
+			<a href="/" class="btn btn-primary btn-sm mt-4">Create an issue</a>
+		</div>
+	}
+}
+
+templ DashboardIssueList(issues []*models.Issue, selectedID string) {
+	<section class="flex">
+		@base.Table(
+			[]templ.Component{
+				base.PlainText("ID"),
+				base.PlainText("Title"),
+				base.PlainText("Status"),
+				base.PlainText("Type"),
+				base.PlainText("Priority"),
+			},
+			[]templ.Component{
+				DashboardIssueRows(issues, selectedID),
+			},
+			templ.Attributes{},
+		)
+	</section>
+}
+
+templ DashboardIssueRows(issues []*models.Issue, selectedID string) {
+	if len(issues) == 0 {
+		<tr><td colspan="5" class="text-center py-4">No issues</td></tr>
+	}
+	for _, issue := range issues {
+		{{
+			var active string
+			if selectedID == issue.ID {
+				active = "bg-primary/10"
+			}
+		}}
+		<tr
+			hx-get="/"
+			class={ "hover cursor-pointer min-h-full w-full", active }
+			hx-target="main"
+			hx-vals={ `{"selected-issue": "` + issue.ID + `"}` }
+			hx-swap="innerHTML"
+		>
+			<td class="min-w-20 truncate">{ issue.ID }</td>
+			<td class="truncate max-w-60">{ issue.Title }</td>
+			<td>
+				@components.StatusBadge(issue.Status)
+			</td>
+			<td>
+				@components.TypeBadge(issue.IssueType)
+			</td>
+			<td>
+				@components.PriorityBadge(issue.Priority)
+			</td>
+		</tr>
 	}
 }

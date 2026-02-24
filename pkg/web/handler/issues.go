@@ -41,7 +41,7 @@ func CreateIssue(w http.ResponseWriter, r *http.Request) {
 
 	if err := ValidateForm(form); err != nil {
 		if hx.IsHxRequest() {
-			hx.WriteString("<div>Please fix the form errors</div>")
+			hx.WriteString("<div class=\"alert alert-error\">Please fix the form errors: " + err.Error() + "</div>")
 		} else {
 			http.Error(w, "Validation error: "+err.Error(), http.StatusUnprocessableEntity)
 		}
@@ -55,7 +55,15 @@ func CreateIssue(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if hx.IsHxRequest() {
-		hx.WriteString("<div>Issue created successfully</div>")
+		// Success: close modal by triggering event, and refresh issue list
+		w.Header().Set("HX-Trigger", `{"closeModal": "create-issue-modal", "issueCreated": "`+issue.ID+`"}`)
+		w.Header().Set("HX-Retarget", "#issue-list-container")
+		w.Header().Set("HX-Reswap", "innerHTML")
+
+		// Get updated issues list
+		filter := models.IssueFilter{Limit: 100}
+		issues, _ := app.Issues.SearchIssues(r.Context(), "", filter)
+		routes.DashboardIssueList(issues, "").Render(r.Context(), w)
 		return
 	}
 
@@ -110,25 +118,18 @@ func GetIssue(w http.ResponseWriter, r *http.Request) {
 	comments := r.Context().Value(commentsKey).([]*models.Comment)
 	hx := HTMX(r)
 
-	displayOwner := orDisplay(issue.Owner, "—")
-	displayAssignee := orDisplay(issue.Assignee, "—")
-
 	if !hx.IsHxRequest() && strings.Contains(r.Header.Get("Accept"), "text/html") {
 		routes.IssueDetail(routes.IssueDetailProps{
-			Issue:           *issue,
-			DisplayOwner:    displayOwner,
-			DisplayAssignee: displayAssignee,
-			Comments:        comments,
+			Issue:    issue,
+			Comments: comments,
 		}).Render(r.Context(), w)
 		return
 	}
 
 	if hx.IsHxRequest() {
 		routes.IssueDetailContent(routes.IssueDetailProps{
-			Issue:           *issue,
-			DisplayOwner:    displayOwner,
-			DisplayAssignee: displayAssignee,
-			Comments:        comments,
+			Issue:    issue,
+			Comments: comments,
 		}).Render(r.Context(), w)
 		return
 	}

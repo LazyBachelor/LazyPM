@@ -14,10 +14,8 @@ import (
 )
 
 type IssueDetailProps struct {
-	Issue           models.Issue
-	DisplayOwner    string
-	DisplayAssignee string
-	Comments        []*models.Comment
+	Issue    *models.Issue
+	Comments []*models.Comment
 }
 
 func IssueDetailContent(props IssueDetailProps) templ.Component {
@@ -41,7 +39,7 @@ func IssueDetailContent(props IssueDetailProps) templ.Component {
 			templ_7745c5c3_Var1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div class=\"container mx-auto px-4 py-6\"><div class=\"mb-4\"><a class=\"btn btn-ghost btn-sm\" hx-get=\"/\" hx-target=\"main\" hx-swap=\"innerHTML\" hx-push-url=\"true\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div class=\"p-2\"><div class=\"mb-4\"><a class=\"btn btn-ghost btn-sm\" hx-get=\"/\" hx-target=\"main\" hx-swap=\"innerHTML\" hx-push-url=\"true\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -53,7 +51,7 @@ func IssueDetailContent(props IssueDetailProps) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = components.IssueDetailCard(components.IssueDetailCardProps{Issue: props.Issue, DisplayOwner: props.DisplayOwner, DisplayAssignee: props.DisplayAssignee}).Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = components.IssueDetail(components.IssueDetailProps{Issue: props.Issue}).Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -115,7 +113,7 @@ func IssueDetail(props IssueDetailProps) templ.Component {
 			}
 			return nil
 		})
-		templ_7745c5c3_Err = BaseLayout(BaseLayoutProps{SearchQuery: ""}).Render(templ.WithChildren(ctx, templ_7745c5c3_Var3), templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = BaseLayout().Render(templ.WithChildren(ctx, templ_7745c5c3_Var3), templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

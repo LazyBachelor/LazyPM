@@ -15,6 +15,7 @@ type IssueFormProps struct {
 	IssueType   string
 	Class       string
 	Attrs       templ.Attributes
+	Target      string // Optional: if empty, server controls via HX-Target header
 }
 
 templ IssueForm(props IssueFormProps) {
@@ -22,7 +23,9 @@ templ IssueForm(props IssueFormProps) {
 		<form
 			class="form space-y-1"
 			hx-post={ props.Action }
-			hx-target="#result"
+			if props.Target != "" {
+				hx-target={ props.Target }
+			}
 			hx-swap="innerHTML"
 			{ props.Attrs... }
 		>
@@ -76,7 +79,9 @@ templ IssueForm(props IssueFormProps) {
 				Submit Issue
 			</button>
 		</form>
-		<div id="result"></div>
+		if props.Target == "" {
+			<div id="result"></div>
+		}
 	</div>
 }
 
