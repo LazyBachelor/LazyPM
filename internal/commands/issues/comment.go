@@ -2,6 +2,8 @@ package issuesCmd
 
 import (
 	"fmt"
+	"os"
+	"os/user"
 	"strings"
 
 	"github.com/spf13/cobra"
@@ -13,19 +15,17 @@ var commentFlags struct {
 	author  string
 }
 
-const commentCmdExample = `pm comment ISSUE-1 "Fix the login bug"
-pm comment ISSUE-1 "LGTM" --author "alice"
+const commentCmdExample = `pm comment ISSUE-1 Fix the login bug
+pm comment ISSUE-1 LGTM --author alice
 pm comment ISSUE-1 -m "Needs review"`
 
-// CommentCmd represents the comment command,
-// which allows users to add a comment on an existing issue by its ID.
 var CommentCmd = &cobra.Command{
-	Use:     "comment [issue ID] [message]",
+	Use:     "comment [issue ID] [message...]",
 	Short:   "Add a comment on an issue",
-	Long:    `Add a comment on an issue by ID. Message can be passed as an argument or via --message.`,
+	Long:    `Add a comment on an issue by ID. All arguments after the issue ID form the message (no quotes needed), or use --message.`,
 	Example: commentCmdExample,
 
-	Args:              cobra.RangeArgs(1, 2),
+	Args:              cobra.RangeArgs(1, 100), // issue ID + up to 99 words for the message
 	RunE:              runCommentCmd,
 	ValidArgsFunction: completeIssues,
 }
@@ -35,13 +35,13 @@ var CommentCmd = &cobra.Command{
 func runCommentCmd(cmd *cobra.Command, args []string) error {
 	issueID := args[0]
 	var text string
-	if len(args) >= 2 {
-		text = args[1]
+	if len(args) > 1 {
+		text = strings.Join(args[1:], " ")
 	} else {
 		text = commentFlags.message
 	}
 	if strings.TrimSpace(text) == "" {
-		return fmt.Errorf("comment text cannot be empty (use --message or pass as argument)")
+		return fmt.Errorf("comment text cannot be empty (use --message or pass words after the issue ID)")
 	}
 
 	app := AppFromContext(cmd.Context())
@@ -57,7 +57,7 @@ func runCommentCmd(cmd *cobra.Command, args []string) error {
 
 	author := commentFlags.author
 	if author == "" {
-		author = "cli"
+		author = defaultCommentAuthor()
 	}
 
 	comment, err := app.Issues.AddIssueComment(cmd.Context(), issue.ID, author, text)
@@ -70,7 +70,21 @@ func runCommentCmd(cmd *cobra.Command, args []string) error {
 	return nil
 }
 
+
+func defaultCommentAuthor() string {
+	if u, err := user.Current(); err == nil && u.Username != "" {
+		return u.Username
+	}
+	if s := os.Getenv("USER"); s != "" {
+		return s
+	}
+	if s := os.Getenv("USERNAME"); s != "" {
+		return s
+	}
+	return "user"
+}
+
 func init() {
-	CommentCmd.Flags().StringVarP(&commentFlags.message, "message", "m", "", "Comment text (alternative to positional argument)")
-	CommentCmd.Flags().StringVarP(&commentFlags.author, "author", "a", "cli", "Author name for the comment")
+	CommentCmd.Flags().StringVarP(&commentFlags.message, "message", "m", "", "Comment text (alternative to positional arguments)")
+	CommentCmd.Flags().StringVarP(&commentFlags.author, "author", "a", "", "Author name (default: current OS user)")
 }
