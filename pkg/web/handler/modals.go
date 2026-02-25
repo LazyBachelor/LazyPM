@@ -50,3 +50,25 @@ func EditIssueFormModal(w http.ResponseWriter, r *http.Request) {
 	})
 	modal.Render(r.Context(), w)
 }
+
+func AssigneeFormModal(w http.ResponseWriter, r *http.Request) {
+	issue := r.Context().Value(issueKey).(*models.Issue)
+
+	if issue == nil {
+		http.Error(w, "Issue not found in context", http.StatusInternalServerError)
+		return
+	}
+
+	modalContent := components.AssigneeForm(components.AssigneeFormProps{
+		PatchAction: "/issues/" + issue.ID + "/assignee",
+		Assignee:    issue.Assignee,
+	})
+
+	modal := components.Modal(components.ModalProps{
+		ID:      "assignee-modal",
+		Title:   "Change Assignee",
+		Content: modalContent,
+		Open:    true,
+	})
+	modal.Render(r.Context(), w)
+}

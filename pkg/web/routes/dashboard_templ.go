@@ -123,7 +123,7 @@ func DashboardContent(props DashboardProps) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, "\" hx-target=\"main\" hx-swap=\"innerHTML\">Details</a><div id=\"issue-detail-container\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, "\" hx-target=\"main\" hx-swap=\"innerHTML\" hx-push-url=\"true\">Details</a><div id=\"issue-detail-container\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -247,7 +247,7 @@ func DashboardIssueRows(issues []*models.Issue, selectedID string) templ.Compone
 			var templ_7745c5c3_Var9 string
 			templ_7745c5c3_Var9, templ_7745c5c3_Err = templ.JoinStringErrs(`{"selected-issue": "` + issue.ID + `"}`)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/web/routes/dashboard.templ`, Line: 96, Col: 53}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/web/routes/dashboard.templ`, Line: 97, Col: 53}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var9))
 			if templ_7745c5c3_Err != nil {
@@ -260,7 +260,7 @@ func DashboardIssueRows(issues []*models.Issue, selectedID string) templ.Compone
 			var templ_7745c5c3_Var10 string
 			templ_7745c5c3_Var10, templ_7745c5c3_Err = templ.JoinStringErrs(issue.ID)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/web/routes/dashboard.templ`, Line: 99, Col: 43}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/web/routes/dashboard.templ`, Line: 100, Col: 43}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var10))
 			if templ_7745c5c3_Err != nil {
@@ -273,7 +273,7 @@ func DashboardIssueRows(issues []*models.Issue, selectedID string) templ.Compone
 			var templ_7745c5c3_Var11 string
 			templ_7745c5c3_Var11, templ_7745c5c3_Err = templ.JoinStringErrs(issue.Title)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/web/routes/dashboard.templ`, Line: 100, Col: 46}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/web/routes/dashboard.templ`, Line: 101, Col: 46}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var11))
 			if templ_7745c5c3_Err != nil {

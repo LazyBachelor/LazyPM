@@ -186,6 +186,30 @@ func UpdateIssue(w http.ResponseWriter, r *http.Request) {
 	hx.WriteJSON(issue)
 }
 
+func UpdateAssignee(w http.ResponseWriter, r *http.Request) {
+	issue := r.Context().Value(issueKey).(*models.Issue)
+	assignee := r.FormValue("assignee")
+
+	if err := App(r).Issues.UpdateIssue(r.Context(), issue.ID, map[string]any{"assignee": assignee}, ""); err != nil {
+		http.Error(w, "Failed to update assignee", http.StatusInternalServerError)
+		return
+	}
+
+	issue, err := App(r).Issues.GetIssue(r.Context(), issue.ID)
+	if err != nil {
+		http.Error(w, "Failed to retrieve updated issue", http.StatusInternalServerError)
+		return
+	}
+
+	if HTMX(r).IsHxRequest() {
+		w.Header().Set("HX-Refresh", "true")
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	HTMX(r).WriteJSON(issue)
+}
+
 func DeleteIssue(w http.ResponseWriter, r *http.Request) {
 	issue := r.Context().Value(issueKey).(*models.Issue)
 
@@ -195,7 +219,7 @@ func DeleteIssue(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if HTMX(r).IsHxRequest() {
-		w.Header().Set("HX-Redirect", "/")
+		w.Header().Set("HX-Refresh", "true")
 		return
 	}
 

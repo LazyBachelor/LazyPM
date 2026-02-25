@@ -50,6 +50,7 @@ templ DashboardContent(props DashboardProps) {
 				hx-get={ "/issues/" + props.SelectedIssue.ID }
 				hx-target="main"
 				hx-swap="innerHTML"
+				hx-push-url="true"
 			>Details</a>
 			<div id="issue-detail-container">
 				@components.IssueDetail(components.IssueDetailProps{

@@ -18,6 +18,7 @@ templ IssueDetailContent(props IssueDetailProps) {
 				hx-get="/"
 				hx-target="main"
 				hx-swap="innerHTML"
+				hx-push-url="true"
 			>
 				@components.IconBack()
 				Back to Issues

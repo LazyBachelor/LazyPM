@@ -1,0 +1,22 @@
+package components
+
+import "github.com/LazyBachelor/LazyPM/pkg/web/components/base"
+
+type AssigneeFormProps struct {
+	PatchAction string
+	Assignee    string
+}
+
+templ AssigneeForm(props AssigneeFormProps) {
+	<form
+		hx-patch={ props.PatchAction }
+		hx-swap="innerHTML"
+	>
+		@base.Input(base.InputProps{
+			Name:  "assignee",
+			Type:  "text",
+			Value: props.Assignee,
+		})
+		<button class="btn btn-primary mt-2" type="submit">Set Assignee</button>
+	</form>
+}
