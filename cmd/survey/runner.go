@@ -70,8 +70,8 @@ func taskLoop(ctx context.Context, surveyTasks map[string]task.Tasker, interface
 		if err := task.RunTask(ctx, t, selected, tasks.InterfaceToType(selected)); err != nil {
 			return err
 		}
+		idx++
 	}
-	idx++
 	return nil
 }
 
