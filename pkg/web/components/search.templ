@@ -12,7 +12,7 @@ templ SearchForm(props SearchFormProps) {
 		hx-get={ props.RootURL }
 		hx-target={ props.Target }
 		hx-swap="innerHTML"
-		hx-trigger="input changed delay:400ms from:input[name='q']"
+		hx-trigger="input changed delay:400ms from:input[name='q'], submit"
 		hx-vals='{"partial": "true"}'
 	>
 		<input
