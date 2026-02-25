@@ -24,6 +24,16 @@ type issueStatusUpdatedMsg struct {
 	Err     error
 }
 
+type issuePriorityUpdatedMsg struct {
+	IssueID string
+	Err     error
+}
+
+type issueTypeUpdatedMsg struct {
+	IssueID string
+	Err     error
+}
+
 type selectIssueMsg struct {
 	IssueID string
 }
@@ -63,12 +73,29 @@ func updateIssueStatusCmd(app *service.App, issueID, status string) tea.Cmd {
 	}
 }
 
+func updateIssuePriorityCmd(app *service.App, issueID string, priority int) tea.Cmd {
+	return func() tea.Msg {
+		updates := map[string]interface{}{"priority": priority}
+		err := app.Issues.UpdateIssue(context.Background(), issueID, updates, "tui")
+		return issuePriorityUpdatedMsg{IssueID: issueID, Err: err}
+	}
+}
+
+func updateIssueTypeCmd(app *service.App, issueID string, issueType models.IssueType) tea.Cmd {
+	return func() tea.Msg {
+		updates := map[string]interface{}{"issue_type": string(issueType)}
+		err := app.Issues.UpdateIssue(context.Background(), issueID, updates, "tui")
+		return issueTypeUpdatedMsg{IssueID: issueID, Err: err}
+	}
+}
+
 func createIssueCmd(app *service.App, title string) tea.Cmd {
 	return func() tea.Msg {
 		issue := &models.Issue{
 			Title:     title,
 			Status:    models.StatusOpen,
 			IssueType: models.TypeTask,
+			Priority:  2,
 		}
 		err := app.Issues.CreateIssue(context.Background(), issue, "tui")
 		return issueCreatedMsg{Issue: issue, Err: err}
@@ -82,6 +109,25 @@ func deleteIssueCmd(app *service.App, issueID string, currentIndex int) tea.Cmd 
 	}
 }
 
+func (m *Model) refreshIssueListsAndSelectIssue(issueID string) tea.Cmd {
+	/* update handler for issueTitleUpdatedMsg, issueDescriptionUpdatedMsg, and issueStatusUpdatedMsg to avoid using nearly identical code for refreshing the issue lists and updating the detail view
+	Fetch all issues, update both lists, set the detail view for the given issue, and return a command to select that issue. Returns nil if fetch fails.
+	*/
+	issues, err := m.app.Issues.AllIssues(context.Background())
+	if err != nil {
+		return nil
+	}
+	setItemsCmd := m.issueList.SetIssues(OpenAndInProgressOnly(issues))
+	closedSetCmd := m.closedIssueList.SetIssues(ClosedOnly(issues))
+	for _, issue := range issues {
+		if issue.ID == issueID {
+			m.issueDetail.SetIssue(issue)
+			break
+		}
+	}
+	return tea.Sequence(setItemsCmd, closedSetCmd, func() tea.Msg { return selectIssueMsg{IssueID: issueID} })
+}
+
 func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case issueTitleUpdatedMsg:
@@ -91,19 +137,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if msg.Err != nil {
 			return m, nil
 		}
-		issues, err := m.app.Issues.AllIssues(context.Background())
-		if err != nil {
-			return m, nil
-		}
-		setItemsCmd := m.issueList.SetIssues(OpenAndInProgressOnly(issues))
-		closedSetCmd := m.closedIssueList.SetIssues(ClosedOnly(issues))
-		for _, issue := range issues {
-			if issue.ID == msg.IssueID {
-				m.issueDetail.SetIssue(issue)
-				break
-			}
-		}
-		return m, tea.Sequence(setItemsCmd, closedSetCmd, func() tea.Msg { return selectIssueMsg{IssueID: msg.IssueID} })
+		return m, m.refreshIssueListsAndSelectIssue(msg.IssueID)
 
 	case issueDescriptionUpdatedMsg:
 		m.editingDescription = false
@@ -112,19 +146,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if msg.Err != nil {
 			return m, nil
 		}
-		issues, err := m.app.Issues.AllIssues(context.Background())
-		if err != nil {
-			return m, nil
-		}
-		setItemsCmd := m.issueList.SetIssues(OpenAndInProgressOnly(issues))
-		closedSetCmd := m.closedIssueList.SetIssues(ClosedOnly(issues))
-		for _, issue := range issues {
-			if issue.ID == msg.IssueID {
-				m.issueDetail.SetIssue(issue)
-				break
-			}
-		}
-		return m, tea.Sequence(setItemsCmd, closedSetCmd, func() tea.Msg { return selectIssueMsg{IssueID: msg.IssueID} })
+		return m, m.refreshIssueListsAndSelectIssue(msg.IssueID)
 
 	case issueStatusUpdatedMsg:
 		m.choosingStatus = false
@@ -132,19 +154,23 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if msg.Err != nil {
 			return m, nil
 		}
-		issues, err := m.app.Issues.AllIssues(context.Background())
-		if err != nil {
+		return m, m.refreshIssueListsAndSelectIssue(msg.IssueID)
+
+	case issuePriorityUpdatedMsg:
+		m.choosingPriority = false
+		m.priorityIssueID = ""
+		if msg.Err != nil {
 			return m, nil
 		}
-		setItemsCmd := m.issueList.SetIssues(OpenAndInProgressOnly(issues))
-		closedSetCmd := m.closedIssueList.SetIssues(ClosedOnly(issues))
-		for _, issue := range issues {
-			if issue.ID == msg.IssueID {
-				m.issueDetail.SetIssue(issue)
-				break
-			}
+		return m, m.refreshIssueListsAndSelectIssue(msg.IssueID)
+
+	case issueTypeUpdatedMsg:
+		m.choosingType = false
+		m.typeIssueID = ""
+		if msg.Err != nil {
+			return m, nil
 		}
-		return m, tea.Sequence(setItemsCmd, closedSetCmd, func() tea.Msg { return selectIssueMsg{IssueID: msg.IssueID} })
+		return m, m.refreshIssueListsAndSelectIssue(msg.IssueID)
 
 	case selectIssueMsg:
 		m.issueList.SelectIssueID(msg.IssueID)
@@ -273,6 +299,59 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 		}
 
+		if m.choosingPriority {
+			switch msg.String() {
+			case "0", "1", "2", "3", "4":
+				issueID := m.priorityIssueID
+				priority := int(msg.String()[0] - '0')
+				m.choosingPriority = false
+				m.priorityIssueID = ""
+				return m, updateIssuePriorityCmd(m.app, issueID, priority)
+			case "esc":
+				m.choosingPriority = false
+				m.priorityIssueID = ""
+				return m, nil
+			default:
+				return m, nil
+			}
+		}
+
+		if m.choosingType {
+			switch msg.String() {
+			case "b":
+				issueID := m.typeIssueID
+				m.choosingType = false
+				m.typeIssueID = ""
+				return m, updateIssueTypeCmd(m.app, issueID, models.TypeBug)
+			case "f":
+				issueID := m.typeIssueID
+				m.choosingType = false
+				m.typeIssueID = ""
+				return m, updateIssueTypeCmd(m.app, issueID, models.TypeFeature)
+			case "t":
+				issueID := m.typeIssueID
+				m.choosingType = false
+				m.typeIssueID = ""
+				return m, updateIssueTypeCmd(m.app, issueID, models.TypeTask)
+			case "e":
+				issueID := m.typeIssueID
+				m.choosingType = false
+				m.typeIssueID = ""
+				return m, updateIssueTypeCmd(m.app, issueID, models.TypeEpic)
+			case "c":
+				issueID := m.typeIssueID
+				m.choosingType = false
+				m.typeIssueID = ""
+				return m, updateIssueTypeCmd(m.app, issueID, models.TypeChore)
+			case "esc":
+				m.choosingType = false
+				m.typeIssueID = ""
+				return m, nil
+			default:
+				return m, nil
+			}
+		}
+
 		if m.creatingIssue {
 			if msg.String() == "enter" {
 				title := m.createTitleInput.Value()
@@ -333,6 +412,11 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if focusedList.FilterState() == list.Filtering {
 			cmd, _ := focusedList.Update(msg)
 			return m, cmd
+		}
+
+		// On main dashboard, ESC does nothing; only q quits; like in lazybeads.
+		if msg.String() == "esc" {
+			return m, nil
 		}
 
 		cmd := m.handleKeyMsg(msg)

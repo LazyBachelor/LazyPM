@@ -7,6 +7,7 @@ import (
 
 func (m *Model) View() string {
 	if m.width == 0 || m.height == 0 {
+		// if there is no space just print a loading message
 		return "Loading..."
 	}
 
@@ -18,8 +19,14 @@ func (m *Model) View() string {
 	footer := m.footer()
 	footerHeight := lipgloss.Height(footer)
 
+	// To avoid layer overflow or clipping, the label heights are calculated and subtracted from the available height before calculating the list heights to avoid layout overflow or clipping.
 	contentHeight := m.height - headerHeight - footerHeight
-	halfHeight := contentHeight / 2
+
+	mainLabel := styles.LabelStyle.Render("Display issues")
+	closedLabel := styles.LabelStyle.Render("Closed issues")
+	labelHeight := lipgloss.Height(mainLabel) + lipgloss.Height(closedLabel)
+	availableForLists := contentHeight - labelHeight
+	halfHeight := availableForLists / 2
 	if halfHeight < 1 {
 		halfHeight = 1
 	}
@@ -36,8 +43,6 @@ func (m *Model) View() string {
 	closedListView := m.closedIssueList.View()
 	detailView := m.issueDetail.View()
 
-	mainLabel := styles.LabelStyle.Render("Display issues")
-	closedLabel := styles.LabelStyle.Render("Closed issues")
 	if m.focusedWindow == 0 {
 		mainLabel = lipgloss.NewStyle().Foreground(styles.Primary).Bold(true).Render("Display issues ▶")
 	} else {
@@ -119,6 +124,34 @@ func (m *Model) View() string {
 			BorderForeground(styles.PrimaryBorder).
 			Render(statusContent)
 		return lipgloss.Place(m.width, m.height, lipgloss.Center, lipgloss.Center, statusBox)
+	}
+
+	if m.choosingPriority {
+		priorityContent := lipgloss.JoinVertical(lipgloss.Left,
+			styles.LabelStyle.Render("Change priority for "+m.priorityIssueID+":"),
+			lipgloss.NewStyle().Foreground(styles.FaintText).Render("0 = irrelevant 1 = low  2 = normal  3 = high  4 = critical"),
+			lipgloss.NewStyle().Foreground(styles.FaintText).Render("Esc = cancel"),
+		)
+		priorityBoxWidth := min(60, m.width-4)
+		priorityBox := styles.ContainerStyle.
+			Width(priorityBoxWidth).
+			BorderForeground(styles.PrimaryBorder).
+			Render(priorityContent)
+		return lipgloss.Place(m.width, m.height, lipgloss.Center, lipgloss.Center, priorityBox)
+	}
+
+	if m.choosingType {
+		typeContent := lipgloss.JoinVertical(lipgloss.Left,
+			styles.LabelStyle.Render("Change type for "+m.typeIssueID+":"),
+			lipgloss.NewStyle().Foreground(styles.FaintText).Render("b = bug   f = feature   t = task   e = epic   c = chore"),
+			lipgloss.NewStyle().Foreground(styles.FaintText).Render("Esc = cancel"),
+		)
+		typeBoxWidth := min(65, m.width-4)
+		typeBox := styles.ContainerStyle.
+			Width(typeBoxWidth).
+			BorderForeground(styles.PrimaryBorder).
+			Render(typeContent)
+		return lipgloss.Place(m.width, m.height, lipgloss.Center, lipgloss.Center, typeBox)
 	}
 
 	return mainView

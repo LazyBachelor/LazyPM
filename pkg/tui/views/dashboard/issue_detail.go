@@ -53,6 +53,10 @@ func (i *IssueDetail) refreshContent() {
 		styles.LabelStyle.Render("Status:") + styles.StatusStyle(string(i.issue.Status)).Render(string(i.issue.Status)),
 	)
 
+	priorityRow := styles.RowStyle.Render(
+		styles.LabelStyle.Render("Priority:") + styles.ValueStyle.Render(priorityCodeName(i.issue.Priority)),
+	)
+
 	descLabel := styles.LabelStyle.Render("Description:")
 	descContent := styles.ValueStyle.Render(i.issue.Description)
 
@@ -61,6 +65,7 @@ func (i *IssueDetail) refreshContent() {
 		idRow,
 		typeRow,
 		statusRow,
+		priorityRow,
 		descLabel,
 		descContent,
 	)
