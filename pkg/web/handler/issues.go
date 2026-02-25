@@ -15,7 +15,7 @@ const commentsKey = "comments"
 
 type IssueForm struct {
 	Title       string           `form:"title" validate:"required,max=255"`
-	Description string           `form:"description" validate:"required,max=2000"`
+	Description string           `form:"description" validate:"max=2000"`
 	Status      models.Status    `form:"status" validate:"required,oneof=open in_progress closed"`
 	IssueType   models.IssueType `form:"issue_type" validate:"required,oneof=task bug feature chore"`
 	Priority    int              `form:"priority" validate:"gte=0,lte=4"`
@@ -41,7 +41,7 @@ func CreateIssue(w http.ResponseWriter, r *http.Request) {
 
 	if err := ValidateForm(form); err != nil {
 		if hx.IsHxRequest() {
-			hx.WriteString("<div>Please fix the form errors</div>")
+			hx.WriteString("<div class=\"alert alert-error\">Please fix the form errors: " + err.Error() + "</div>")
 		} else {
 			http.Error(w, "Validation error: "+err.Error(), http.StatusUnprocessableEntity)
 		}
@@ -49,13 +49,14 @@ func CreateIssue(w http.ResponseWriter, r *http.Request) {
 	}
 
 	issue := form.toIssue()
-	if err := app.Issues.CreateIssue(r.Context(), &issue, ""); err != nil {
+	issue.CreatedBy = "Me"
+	if err := app.Issues.CreateIssue(r.Context(), issue, "Me"); err != nil {
 		http.Error(w, "Failed to create issue: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	if hx.IsHxRequest() {
-		hx.WriteString("<div>Issue created successfully</div>")
+		w.Header().Set("HX-Refresh", "true")
 		return
 	}
 
@@ -110,25 +111,18 @@ func GetIssue(w http.ResponseWriter, r *http.Request) {
 	comments := r.Context().Value(commentsKey).([]*models.Comment)
 	hx := HTMX(r)
 
-	displayOwner := orDisplay(issue.Owner, "—")
-	displayAssignee := orDisplay(issue.Assignee, "—")
-
 	if !hx.IsHxRequest() && strings.Contains(r.Header.Get("Accept"), "text/html") {
 		routes.IssueDetail(routes.IssueDetailProps{
-			Issue:           *issue,
-			DisplayOwner:    displayOwner,
-			DisplayAssignee: displayAssignee,
-			Comments:        comments,
+			Issue:    issue,
+			Comments: comments,
 		}).Render(r.Context(), w)
 		return
 	}
 
 	if hx.IsHxRequest() {
 		routes.IssueDetailContent(routes.IssueDetailProps{
-			Issue:           *issue,
-			DisplayOwner:    displayOwner,
-			DisplayAssignee: displayAssignee,
-			Comments:        comments,
+			Issue:    issue,
+			Comments: comments,
 		}).Render(r.Context(), w)
 		return
 	}
@@ -170,28 +164,57 @@ func UpdateIssue(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if hx.IsHxRequest() {
+		w.Header().Set("HX-Refresh", "true")
+		return
+	}
+
 	w.Header().Set("Content-Type", "application/json")
 	hx.WriteJSON(issue)
 }
 
+func UpdateAssignee(w http.ResponseWriter, r *http.Request) {
+	issue := r.Context().Value(issueKey).(*models.Issue)
+	assignee := r.FormValue("assignee")
+
+	if err := App(r).Issues.UpdateIssue(r.Context(), issue.ID, map[string]any{"assignee": assignee}, ""); err != nil {
+		http.Error(w, "Failed to update assignee", http.StatusInternalServerError)
+		return
+	}
+
+	issue, err := App(r).Issues.GetIssue(r.Context(), issue.ID)
+	if err != nil {
+		http.Error(w, "Failed to retrieve updated issue", http.StatusInternalServerError)
+		return
+	}
+
+	if HTMX(r).IsHxRequest() {
+		w.Header().Set("HX-Refresh", "true")
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	HTMX(r).WriteJSON(issue)
+}
+
 func DeleteIssue(w http.ResponseWriter, r *http.Request) {
 	issue := r.Context().Value(issueKey).(*models.Issue)
-	hx := HTMX(r)
 
-	app := App(r)
-	if err := app.Issues.DeleteIssue(r.Context(), issue.ID); err != nil {
+	if err := App(r).Issues.DeleteIssue(r.Context(), issue.ID); err != nil {
 		http.Error(w, "Failed to delete issue", http.StatusInternalServerError)
 		return
 	}
 
-	if hx.IsHxRequest() {
-		w.Header().Set("HX-Redirect", "/dashboard")
+	if HTMX(r).IsHxRequest() {
+		w.Header().Set("HX-Redirect", "/")
+		return
 	}
+
 	w.WriteHeader(http.StatusNoContent)
 }
 
-func (f *IssueForm) toIssue() models.Issue {
-	return models.Issue{
+func (f *IssueForm) toIssue() *models.Issue {
+	return &models.Issue{
 		Title:       f.Title,
 		Description: f.Description,
 		Status:      f.Status,
