@@ -189,9 +189,13 @@ func UpdateIssue(w http.ResponseWriter, r *http.Request) {
 func DeleteIssue(w http.ResponseWriter, r *http.Request) {
 	issue := r.Context().Value(issueKey).(*models.Issue)
 
-	app := App(r)
-	if err := app.Issues.DeleteIssue(r.Context(), issue.ID); err != nil {
+	if err := App(r).Issues.DeleteIssue(r.Context(), issue.ID); err != nil {
 		http.Error(w, "Failed to delete issue", http.StatusInternalServerError)
+		return
+	}
+
+	if HTMX(r).IsHxRequest() {
+		w.Header().Set("HX-Redirect", "/")
 		return
 	}
 

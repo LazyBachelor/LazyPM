@@ -11,7 +11,7 @@ type IssueDetailProps struct {
 }
 
 templ IssueDetailContent(props IssueDetailProps) {
-	<div class="p-2">
+	<div class="max-w-2xl mx-auto">
 		<div class="mb-4">
 			<a
 				class="btn btn-ghost btn-sm"
@@ -21,14 +21,6 @@ templ IssueDetailContent(props IssueDetailProps) {
 			>
 				@components.IconBack()
 				Back to Issues
-			</a>
-			<a
-				class="btn btn-primary btn-sm"
-				hx-get={ "/issues/" + props.Issue.ID + "/edit" }
-				hx-target="#modal-container"
-				hx-swap="innerHTML"
-			>
-				Edit Issue
 			</a>
 		</div>
 		<div id="issue-detail-container" class="mb-6">

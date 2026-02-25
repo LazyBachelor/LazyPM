@@ -21,7 +21,7 @@ templ Dashboard(props DashboardProps) {
 }
 
 templ DashboardContent(props DashboardProps) {
-	<div class="flex flex-row">
+	<div class="flex flex-row mx-auto">
 		<div class="w-full flex flex-col border-r border-base-200 overflow-auto">
 			<div class="flex p-2 border-b border-base-200 justify-between items-center gap-2">
 				<div class="w-full">
@@ -40,31 +40,24 @@ templ DashboardContent(props DashboardProps) {
 					New Issue
 				</button>
 			</div>
-			<div
-				id="issue-list-container"
-			>
+			<div id="issue-list-container" class="p-2">
 				@DashboardIssueList(props.Issues, props.SelectedIssue.ID)
 			</div>
 		</div>
-		<div id="issue-detail-container" class="w-full max-[770px]:hidden">
-			@DashboardIssueDetail(props.SelectedIssue, props.EmptyText)
+		<div class="w-full p-2 max-[770px]:hidden">
+			<a
+				class="btn fixed right-3"
+				hx-get={ "/issues/" + props.SelectedIssue.ID }
+				hx-target="main"
+				hx-swap="innerHTML"
+			>Details</a>
+			<div id="issue-detail-container">
+				@components.IssueDetail(components.IssueDetailProps{
+					Issue: props.SelectedIssue,
+				})
+			</div>
 		</div>
 	</div>
-}
-
-templ DashboardIssueDetail(selectedIssue *models.Issue, emptyText string) {
-	if selectedIssue != nil {
-		<div class="max-w-2xl p-2">
-			@components.IssueDetail(components.IssueDetailProps{
-				Issue: selectedIssue,
-			})
-		</div>
-	} else {
-		<div class="flex flex-col items-center justify-center">
-			<p class="text-center">{ emptyText }</p>
-			<a href="/" class="btn btn-primary btn-sm mt-4">Create an issue</a>
-		</div>
-	}
 }
 
 templ DashboardIssueList(issues []*models.Issue, selectedID string) {

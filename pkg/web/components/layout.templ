@@ -14,10 +14,10 @@ templ Layout(props LayoutProps) {
 			@Header(props.Header)
 			<div class="flex">
 				//@Sidebar(props.Routes) Hidden until we need it
+				@props.Modal
 				<main class="flex-1 p-1 overflow-auto">
 					{ children... }
 				</main>
-				@props.Modal
 			</div>
 		</body>
 	</html>
