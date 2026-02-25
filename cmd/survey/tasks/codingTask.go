@@ -15,8 +15,20 @@ import (
 
 const codingDescription = `You are tasked with writing a simple function.
 
-Write a function that takes two integers and returns their sum.
-The function should be named "Add" and be part of the "coding" package.`
+This task will test your ability to write clean, working code.
+
+Your task:
+1. Review the requirements below
+2. Write a function that takes two integers and returns their sum
+3. The function should be named "Add"
+4. The function should be part of the "coding" package
+5. Save your code to the code.txt file
+
+Requirements:
+- Function name: Add
+- Parameters: two integers
+- Return value: integer (sum of the two inputs)
+- Package: coding`
 
 var textFileContent = codingDescription + `
 Please write your code below this line!

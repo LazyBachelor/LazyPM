@@ -15,7 +15,6 @@ func NewIssueBuilder() *IssueBuilder {
 
 func NewBaseIssue() *IssueBuilder {
 	return NewIssueBuilder().
-		WithID("pm-abc").
 		WithTitle("Basic Issue").
 		WithDescription("Basic Description").
 		WithStatus(StatusOpen).

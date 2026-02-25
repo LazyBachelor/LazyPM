@@ -15,10 +15,18 @@ import (
 	"github.com/go-git/go-git/v6"
 )
 
-var (
-	gitTaskDescription = `You are tasked with performing a Git operation.
-This task will test your ability to use Git effectively.`
-)
+const gitTaskDescription = `You are tasked with performing a Git operation.
+
+This task will test your ability to use Git effectively within a project management workflow.
+
+Your task:
+1. Initialize or open a Git repository
+2. Review the current repository status
+3. Make appropriate changes to complete the task
+4. Commit your changes with a meaningful message
+5. Update the task status to reflect completion
+
+The repository has been initialized in ./task/.git/ for you to work with.`
 
 type GitTask struct {
 	setupIssue *models.Issue
@@ -68,9 +76,11 @@ func (t *GitTask) Setup(ctx context.Context) error {
 		[]byte("This is a Git task. Please perform a Git operation here."),
 		os.FileMode(os.O_WRONLY|os.O_CREATE))
 
-	t.setupIssue = models.NewBaseIssue().
+	t.setupIssue = models.NewIssueBuilder().
 		WithTitle("Git Task Setup Issue").
-		WithDescription(gitTaskDescription).Build()
+		WithDescription(gitTaskDescription).
+		WithIssueType(models.TypeTask).
+		Build()
 
 	if err := t.app.Issues.CreateIssue(ctx, t.setupIssue, ""); err != nil {
 		return err

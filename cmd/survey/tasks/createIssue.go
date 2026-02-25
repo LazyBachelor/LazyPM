@@ -12,11 +12,17 @@ import (
 )
 
 const description = `You are tasked with creating a new issue in the project management system.
+
 This task will test your ability to use the issue creation workflow effectively.
 
-Assign this task to yourself and start creating a new issue.
-Make sure to fill out all the necessary details, including the title and description.
-Once you have created the issue, mark it as closed to complete the task.`
+Your task:
+1. Create a new issue with a clear title
+2. Add a detailed description explaining what needs to be done
+3. Assign the issue to yourself
+4. Mark the issue as in-progress when you start working on it
+5. Close the issue once you've completed the work
+
+Make sure to fill out all the necessary details to help others understand the work item.`
 
 type CreateIssueTask struct {
 	done      bool
@@ -46,7 +52,9 @@ func (t *CreateIssueTask) Setup(ctx context.Context) error {
 	}
 
 	t.setupTask = models.NewBaseIssue().
-		WithTitle("Create a New Issue").WithDescription(description).Build()
+		WithTitle("Create a New Issue").
+		WithDescription(description).
+		Build()
 
 	return t.app.Issues.CreateIssue(ctx, t.setupTask, "")
 }
@@ -57,11 +65,9 @@ func (t *CreateIssueTask) Validate(ctx context.Context) (bool, error) {
 		return false, err
 	}
 
-	/* Not implemented yet, as assigning to self is not supported in the current implementation
-	if t.setupTask.Assignee != "Me" {
+	if t.setupTask.Assignee == "" {
 		return false, fmt.Errorf("issue not assigned to self")
 	}
-	*/
 
 	if len(issues) < 2 {
 		return false, fmt.Errorf("issue not created")
@@ -87,11 +93,9 @@ func (t *CreateIssueTask) Validate(ctx context.Context) (bool, error) {
 		return false, fmt.Errorf("issue description is empty")
 	}
 
-	/* Not implemented yet, as assigning to self is not supported in the current implementation
-	if createdIssue.Assignee != "Me" {
+	if createdIssue.Assignee == "" {
 		return false, fmt.Errorf("issue not assigned to self")
 	}
-	*/
 
 	if createdIssue.Status != models.StatusClosed {
 		return false, fmt.Errorf("issue status is not closed")
