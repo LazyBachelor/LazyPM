@@ -45,13 +45,31 @@ templ DashboardContent(props DashboardProps) {
 			</div>
 		</div>
 		<div class="w-full p-2 max-[770px]:hidden">
-			<a
-				class="btn fixed right-3"
+			<button
+				type="button"
+				class="btn btn-primary btn-sm"
+				hx-get={ "/issues/" + props.SelectedIssue.ID + "/edit" }
+				hx-target="#modal-container"
+				hx-swap="innerHTML"
+			>
+				Edit
+			</button>
+			<button
+				type="button"
+				class="btn btn-error btn-sm btn-outline"
+				hx-delete={ "/issues/" + props.SelectedIssue.ID }
+				hx-confirm="Are you sure you want to delete this issue? This action cannot be undone."
+				hx-target="body"
+			>
+				Delete issue
+			</button>
+			<button
+				class="btn btn-sm fixed right-3"
 				hx-get={ "/issues/" + props.SelectedIssue.ID }
 				hx-target="main"
 				hx-swap="innerHTML"
 				hx-push-url="true"
-			>Details</a>
+			>Details</button>
 			<div id="issue-detail-container">
 				@components.IssueDetail(components.IssueDetailProps{
 					Issue: props.SelectedIssue,

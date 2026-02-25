@@ -23,6 +23,24 @@ templ IssueDetailContent(props IssueDetailProps) {
 				@components.IconBack()
 				Back to Issues
 			</a>
+			<button
+				type="button"
+				class="btn btn-primary btn-sm"
+				hx-get={ "/issues/" + props.Issue.ID + "/edit" }
+				hx-target="#modal-container"
+				hx-swap="innerHTML"
+			>
+				Edit
+			</button>
+			<button
+				type="button"
+				class="btn btn-error btn-sm btn-outline"
+				hx-delete={ "/issues/" + props.Issue.ID }
+				hx-confirm="Are you sure you want to delete this issue? This action cannot be undone."
+				hx-target="body"
+			>
+				Delete issue
+			</button>
 		</div>
 		<div id="issue-detail-container" class="mb-6">
 			@components.IssueDetail(components.IssueDetailProps{Issue: props.Issue})

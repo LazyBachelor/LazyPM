@@ -219,11 +219,10 @@ func DeleteIssue(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if HTMX(r).IsHxRequest() {
-		w.Header().Set("HX-Refresh", "true")
+		w.Header().Set("HX-Redirect", "/")
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusNoContent)
 }
 
