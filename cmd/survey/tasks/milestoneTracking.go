@@ -75,7 +75,7 @@ func (t *MilestoneTrackingTask) Setup(ctx context.Context) error {
 			Build(),
 		models.NewIssueBuilder().
 			WithTitle("Frontend dashboard").
-			WithDescription("Create main dashboard UI. In progress - 80%% complete").
+			WithDescription("Create main dashboard UI. In progress - 80% complete").
 			WithPriority(1).
 			WithStatus(models.StatusInProgress).
 			WithIssueType(models.TypeTask).
@@ -96,7 +96,7 @@ func (t *MilestoneTrackingTask) Setup(ctx context.Context) error {
 			Build(),
 		models.NewIssueBuilder().
 			WithTitle("Email notifications").
-			WithDescription("Setup email service for alerts. 50%% complete").
+			WithDescription("Setup email service for alerts. 50% complete").
 			WithPriority(2).
 			WithStatus(models.StatusInProgress).
 			WithIssueType(models.TypeTask).
