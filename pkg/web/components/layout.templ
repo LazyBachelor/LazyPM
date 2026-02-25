@@ -17,6 +17,7 @@ templ Layout(props LayoutProps) {
 				<main class="flex-1 p-1 overflow-auto">
 					{ children... }
 				</main>
+				@props.Modal
 			</div>
 		</body>
 	</html>
@@ -28,6 +29,7 @@ type LayoutProps struct {
 	Head        HeadProps
 	Header      HeaderProps
 	Routes      []NavRoutes
+	Modal       templ.Component
 }
 type NavRoutes struct {
 	Name string

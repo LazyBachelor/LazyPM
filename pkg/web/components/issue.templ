@@ -7,7 +7,8 @@ import (
 )
 
 type IssueFormProps struct {
-	Action      string
+	PostAction  string
+	PatchAction string
 	Title       string
 	Description string
 	Status      string
@@ -22,7 +23,12 @@ templ IssueForm(props IssueFormProps) {
 	<div class={ "w-full max-w-lg mx-auto ", props.Class }>
 		<form
 			class="form space-y-1"
-			hx-post={ props.Action }
+			if props.PatchAction != "" {
+				hx-patch={ props.PatchAction }
+			}
+			if props.PostAction != "" {
+				hx-post={ props.PostAction }
+			}
 			if props.Target != "" {
 				hx-target={ props.Target }
 			}

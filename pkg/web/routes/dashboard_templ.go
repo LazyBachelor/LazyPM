@@ -102,7 +102,7 @@ func DashboardContent(props DashboardProps) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "</div><button class=\"btn btn-primary\" hx-get=\"/create-issue\" hx-target=\"#modal-container\" hx-swap=\"innerHTML\">New Issue</button></div><div id=\"issue-list-container\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "</div><button class=\"btn btn-primary\" hx-get=\"/issues/create\" hx-target=\"#modal-container\" hx-swap=\"innerHTML\">New Issue</button></div><div id=\"issue-list-container\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -119,10 +119,6 @@ func DashboardContent(props DashboardProps) templ.Component {
 			return templ_7745c5c3_Err
 		}
 		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, "</div></div>")
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
-		}
-		templ_7745c5c3_Err = components.ModalContainer().Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -174,7 +170,7 @@ func DashboardIssueDetail(selectedIssue *models.Issue, emptyText string) templ.C
 			var templ_7745c5c3_Var5 string
 			templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.JoinStringErrs(emptyText)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/web/routes/dashboard.templ`, Line: 65, Col: 37}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/web/routes/dashboard.templ`, Line: 64, Col: 37}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var5))
 			if templ_7745c5c3_Err != nil {
@@ -295,7 +291,7 @@ func DashboardIssueRows(issues []*models.Issue, selectedID string) templ.Compone
 			var templ_7745c5c3_Var10 string
 			templ_7745c5c3_Var10, templ_7745c5c3_Err = templ.JoinStringErrs(`{"selected-issue": "` + issue.ID + `"}`)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/web/routes/dashboard.templ`, Line: 104, Col: 53}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/web/routes/dashboard.templ`, Line: 103, Col: 53}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var10))
 			if templ_7745c5c3_Err != nil {
@@ -308,7 +304,7 @@ func DashboardIssueRows(issues []*models.Issue, selectedID string) templ.Compone
 			var templ_7745c5c3_Var11 string
 			templ_7745c5c3_Var11, templ_7745c5c3_Err = templ.JoinStringErrs(issue.ID)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/web/routes/dashboard.templ`, Line: 107, Col: 43}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/web/routes/dashboard.templ`, Line: 106, Col: 43}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var11))
 			if templ_7745c5c3_Err != nil {
@@ -321,7 +317,7 @@ func DashboardIssueRows(issues []*models.Issue, selectedID string) templ.Compone
 			var templ_7745c5c3_Var12 string
 			templ_7745c5c3_Var12, templ_7745c5c3_Err = templ.JoinStringErrs(issue.Title)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/web/routes/dashboard.templ`, Line: 108, Col: 46}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/web/routes/dashboard.templ`, Line: 107, Col: 46}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var12))
 			if templ_7745c5c3_Err != nil {

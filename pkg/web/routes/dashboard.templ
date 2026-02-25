@@ -33,7 +33,7 @@ templ DashboardContent(props DashboardProps) {
 				</div>
 				<button
 					class="btn btn-primary"
-					hx-get="/create-issue"
+					hx-get="/issues/create"
 					hx-target="#modal-container"
 					hx-swap="innerHTML"
 				>
@@ -50,7 +50,6 @@ templ DashboardContent(props DashboardProps) {
 			@DashboardIssueDetail(props.SelectedIssue, props.EmptyText)
 		</div>
 	</div>
-	@components.ModalContainer()
 }
 
 templ DashboardIssueDetail(selectedIssue *models.Issue, emptyText string) {

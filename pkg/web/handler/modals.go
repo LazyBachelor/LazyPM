@@ -3,15 +3,16 @@ package handler
 import (
 	"net/http"
 
+	"github.com/LazyBachelor/LazyPM/internal/models"
 	"github.com/LazyBachelor/LazyPM/pkg/web/components"
 )
 
 func CreateIssueFormModal(w http.ResponseWriter, r *http.Request) {
 	modalContent := components.IssueForm(components.IssueFormProps{
-		Action:    "/issues",
-		Status:    "open",
-		IssueType: "task",
-		Priority:  0,
+		PostAction: "/issues",
+		Status:     "open",
+		IssueType:  "task",
+		Priority:   0,
 	})
 
 	modal := components.Modal(components.ModalProps{
@@ -21,5 +22,31 @@ func CreateIssueFormModal(w http.ResponseWriter, r *http.Request) {
 		Open:    true,
 	})
 
+	modal.Render(r.Context(), w)
+}
+
+func EditIssueFormModal(w http.ResponseWriter, r *http.Request) {
+	issue := r.Context().Value(issueKey).(*models.Issue)
+
+	if issue == nil {
+		http.Error(w, "Issue not found in context", http.StatusInternalServerError)
+		return
+	}
+
+	modalContent := components.IssueForm(components.IssueFormProps{
+		PatchAction: "/issues/" + issue.ID,
+		Title:       issue.Title,
+		Description: issue.Description,
+		Status:      string(issue.Status),
+		IssueType:   string(issue.IssueType),
+		Priority:    issue.Priority,
+	})
+
+	modal := components.Modal(components.ModalProps{
+		ID:      "edit-issue-modal",
+		Title:   "Edit Issue",
+		Content: modalContent,
+		Open:    true,
+	})
 	modal.Render(r.Context(), w)
 }

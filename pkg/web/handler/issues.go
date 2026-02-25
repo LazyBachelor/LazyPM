@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/LazyBachelor/LazyPM/internal/models"
+	"github.com/LazyBachelor/LazyPM/pkg/web/components"
 	"github.com/LazyBachelor/LazyPM/pkg/web/routes"
 	"github.com/go-chi/chi/v5"
 )
@@ -49,7 +50,7 @@ func CreateIssue(w http.ResponseWriter, r *http.Request) {
 	}
 
 	issue := form.toIssue()
-	if err := app.Issues.CreateIssue(r.Context(), &issue, ""); err != nil {
+	if err := app.Issues.CreateIssue(r.Context(), &issue, "Me"); err != nil {
 		http.Error(w, "Failed to create issue: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -167,6 +168,17 @@ func UpdateIssue(w http.ResponseWriter, r *http.Request) {
 	issue, err = app.Issues.GetIssue(r.Context(), issue.ID)
 	if err != nil {
 		http.Error(w, "Failed to retrieve updated issue", http.StatusInternalServerError)
+		return
+	}
+
+	if hx.IsHxRequest() {
+		w.Header().Set("HX-Trigger", `{"closeModal": "edit-issue-modal", "issueUpdated": "`+issue.ID+`"}`)
+		w.Header().Set("HX-Retarget", "#issue-detail-container")
+		w.Header().Set("HX-Reswap", "innerHTML")
+
+		components.IssueDetail(components.IssueDetailProps{
+			Issue: issue,
+		}).Render(r.Context(), w)
 		return
 	}
 

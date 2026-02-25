@@ -18,13 +18,20 @@ templ IssueDetailContent(props IssueDetailProps) {
 				hx-get="/"
 				hx-target="main"
 				hx-swap="innerHTML"
-				hx-push-url="true"
 			>
 				@components.IconBack()
 				Back to Issues
 			</a>
+			<a
+				class="btn btn-primary btn-sm"
+				hx-get={ "/issues/" + props.Issue.ID + "/edit" }
+				hx-target="#modal-container"
+				hx-swap="innerHTML"
+			>
+				Edit Issue
+			</a>
 		</div>
-		<div class="mb-6">
+		<div id="issue-detail-container" class="mb-6">
 			@components.IssueDetail(components.IssueDetailProps{Issue: props.Issue})
 		</div>
 		@components.CommentSection(components.CommentSectionProps{

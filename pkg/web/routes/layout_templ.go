@@ -39,6 +39,7 @@ var baseLayout = components.LayoutProps{
 		Title:     "LazyPM",
 		NavbarEnd: components.Status(),
 	},
+	Modal: components.ModalContainer(),
 }
 
 func BaseLayout() templ.Component {
