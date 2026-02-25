@@ -74,7 +74,7 @@ func (t *GitTask) Setup(ctx context.Context) error {
 
 	os.WriteFile("./task/README.md",
 		[]byte("This is a Git task. Please perform a Git operation here."),
-		os.FileMode(os.O_WRONLY|os.O_CREATE))
+		0o644)
 
 	t.setupIssue = models.NewIssueBuilder().
 		WithTitle("Git Task Setup Issue").
