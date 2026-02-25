@@ -3,7 +3,7 @@ package routes
 import "github.com/LazyBachelor/LazyPM/pkg/web/components"
 
 var baseLayout = components.LayoutProps{
-	Title:       "Beads Test Application",
+	Title:       "LazyPM - Project Management System",
 	Description: "A sample application using Beads storage service",
 	Head: components.HeadProps{
 		Links: []components.Link{
@@ -13,33 +13,24 @@ var baseLayout = components.LayoutProps{
 		},
 		Scripts: []components.Script{
 			{Src: "/assets/js/htmx.min.js", Defer: true},
-			{Src: "/assets/js/ajax.min.js", Defer: true},
+			{Src: "/assets/js/alpine.min.js", Defer: true},
 		},
 	},
-
 	Routes: []components.NavRoutes{
 		{Name: "Dashboard", Path: "/", Icon: components.IconDashboard()},
+		/* Add back when functionality is implemented
 		{Name: "Issues", Path: "/", Icon: components.IconIssues()},
 		{Name: "Agile Board", Path: "/board", Icon: components.IconAgileBoard()},
 		{Name: "Backlog", Path: "/backlog", Icon: components.IconBacklog()},
 		{Name: "Reports", Path: "/reports", Icon: components.IconReports()},
 		{Name: "Settings", Path: "/settings", Icon: components.IconSettings()},
+		*/
 	},
-
 	Header: components.HeaderProps{
-		Title: "LazyPM Dashboard",
-		/* Removed until properly implemented
-		NavbarCenter: base.Input(base.InputProps{
-			Name:        "search-issue",
-			Type:        "search",
-			Placeholder: "Search issues...",
-			Class:       "",
-			Attrs: templ.Attributes{
-				"class": "text-base-content",
-			},
-		}),*/
+		Title:     "LazyPM",
 		NavbarEnd: components.Status(),
 	},
+	Modal: components.ModalContainer(),
 }
 
 templ BaseLayout() {

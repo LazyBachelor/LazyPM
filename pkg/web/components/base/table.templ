@@ -2,7 +2,7 @@ package base
 
 templ Table(headers []templ.Component, rows []templ.Component, attrs templ.Attributes) {
 	<div class="overflow-x-auto">
-		<table { attrs... } class="table">
+		<table { attrs... } class="table table-sm">
 			<thead>
 				<tr>
 					for _, header := range headers {

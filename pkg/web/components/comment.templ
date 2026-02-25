@@ -11,9 +11,8 @@ type CommentSectionProps struct {
 }
 
 templ CommentSection(props CommentSectionProps) {
-	<div class="w-full max-w-2xl mx-auto mt-8">
+	<div class="w-full mx-auto mt-8">
 		<h2 class="text-xl font-semibold mb-4">Comments</h2>
-		
 		<div id="comments-list" class="space-y-4 mb-6">
 			if len(props.Comments) == 0 {
 				<p class="text-base-content/60 italic">No comments yet. Be the first to comment!</p>
@@ -23,7 +22,6 @@ templ CommentSection(props CommentSectionProps) {
 				}
 			}
 		</div>
-
 		@CommentForm(CommentFormProps{
 			IssueID: props.IssueID,
 		})
