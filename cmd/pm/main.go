@@ -22,5 +22,7 @@ func init() {
 	issuesCmd.RootCmd.AddCommand(issuesCmd.CreateCmd)
 	issuesCmd.RootCmd.AddCommand(issuesCmd.DeleteCmd)
 	issuesCmd.RootCmd.AddCommand(issuesCmd.UpdateCmd)
+	issuesCmd.RootCmd.AddCommand(issuesCmd.CommentCmd)
+	issuesCmd.RootCmd.AddCommand(issuesCmd.CommentsCmd)
 	issuesCmd.RootCmd.AddCommand(surveyCmd.StatusCmd)
 }

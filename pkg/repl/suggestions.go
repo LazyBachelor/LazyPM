@@ -28,6 +28,8 @@ var baseSuggestions = []prompt.Suggest{
 	{Text: "update", Description: "Update an existing issue by ID"},
 	{Text: "describe", Description: "Get issue details by ID"},
 	{Text: "list", Description: "List all issues"},
+	{Text: "comment", Description: "Add a comment on an issue by ID"},
+	{Text: "comments", Description: "List comments on an issue by ID"},
 }
 
 // createFlags is a list of prompt suggestions for the create command flags.
@@ -61,6 +63,13 @@ var listFlags = []prompt.Suggest{
 var deleteFlags = []prompt.Suggest{
 	{Text: "--yes", Description: "Confirm deletion without prompt"},
 	{Text: "--interactive", Description: "Select issues to delete interactively"},
+}
+
+var commentFlags = []prompt.Suggest{
+	{Text: "--message", Description: "Comment text (alternative to positional args)"},
+	{Text: "-m", Description: "Comment text (short)"},
+	{Text: "--author", Description: "Author name for the comment"},
+	{Text: "-a", Description: "Author name (short)"},
 }
 
 // statusValues is a list of prompt suggestions for status types
@@ -98,20 +107,24 @@ var isIDCommand = map[string]bool{
 	"close":    true,
 	"update":   true,
 	"edit":     true,
+	"comment":  true,
+	"comments": true,
 }
 
 var commandFlags = map[string][]prompt.Suggest{
-	"create": createFlags,
-	"add":    createFlags,
-	"update": updateFlags,
-	"edit":   updateFlags,
-	"list":   listFlags,
-	"ls":     listFlags,
-	"search": listFlags,
-	"delete": deleteFlags,
-	"del":    deleteFlags,
-	"rm":     deleteFlags,
-	"remove": deleteFlags,
+	"create":   createFlags,
+	"add":      createFlags,
+	"update":   updateFlags,
+	"edit":     updateFlags,
+	"list":     listFlags,
+	"ls":       listFlags,
+	"search":   listFlags,
+	"delete":   deleteFlags,
+	"del":      deleteFlags,
+	"rm":       deleteFlags,
+	"remove":   deleteFlags,
+	"comment":  commentFlags,
+	"comments": nil, // no flags, just issue ID
 }
 
 // commandSuggestions returns a list of prompt suggestions based on the current input words.
