@@ -31,6 +31,7 @@ type Flags struct {
 
 // RootCmd is the base command for the CLI application.
 var RootCmd = &cobra.Command{
+	Use:   "pm",
 	Short: "Project Management CLI",
 	Long:  `Project Management CLI for managing issues and tasks.`,
 	PersistentPreRun: func(cmd *cobra.Command, args []string) {

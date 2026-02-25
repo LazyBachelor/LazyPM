@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/LazyBachelor/LazyPM/cmd/survey/tasks"
+	issuesCmd "github.com/LazyBachelor/LazyPM/internal/commands/issues"
 	surveyCmd "github.com/LazyBachelor/LazyPM/internal/commands/survey"
 	"github.com/LazyBachelor/LazyPM/internal/service"
 	"github.com/LazyBachelor/LazyPM/pkg/repl"
@@ -15,6 +16,14 @@ import (
 
 func main() {
 	ctx := context.Background()
+	app, cleanup, err := initializeServices(ctx)
+	if err != nil {
+		return
+	}
+	defer cleanup()
+
+	surveyCmd.SetApp(app)
+	issuesCmd.SetApp(app)
 
 	if err := fang.Execute(ctx, surveyCmd.RootCmd,
 		fang.WithColorSchemeFunc(fang.AnsiColorScheme)); err != nil {
@@ -33,6 +42,7 @@ func init() {
 	surveyCmd.RootCmd.AddCommand(surveyCmd.StatusCmd)
 	surveyCmd.RootCmd.AddCommand(surveyCmd.ListTasksCmd)
 	surveyCmd.RootCmd.AddCommand(surveyCmd.ListInterfacesCmd)
+	surveyCmd.RootCmd.AddCommand(issuesCmd.RootCmd)
 
 	task.RegisterTask("create_issue", func(app *service.App) task.Tasker {
 		return tasks.NewCreateIssueTask(app)

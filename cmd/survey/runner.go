@@ -13,15 +13,9 @@ import (
 )
 
 func runStartCmd(cmd *cobra.Command, args []string) error {
+	app := surveyCmd.AppFromContext(cmd.Context())
 	interfaces := initInterfaces()
-
-	svc, cleanup, err := initializeServices(cmd.Context())
-	if err != nil {
-		return returnIfUserQuit(err, "failed to initialize services")
-	}
-	defer cleanup()
-
-	surveyTasks := initTasks(svc)
+	surveyTasks := initTasks(app)
 
 	if cmd.Flags().Changed("interface") {
 		if _, ok := interfaces[surveyCmd.InterfaceType]; !ok {
