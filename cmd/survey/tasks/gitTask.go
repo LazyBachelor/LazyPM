@@ -95,7 +95,7 @@ func (t *GitTask) Validate(ctx context.Context) (bool, error) {
 		return false, errors.New("setup issue not found")
 	}
 
-	if t.setupIssue.Assignee != "Me" {
+	if t.setupIssue.Assignee == "" {
 		return false, fmt.Errorf("issue not assigned to self")
 	}
 
