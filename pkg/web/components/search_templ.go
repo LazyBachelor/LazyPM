@@ -61,7 +61,7 @@ func SearchForm(props SearchFormProps) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "\" hx-swap=\"innerHTML\" hx-trigger=\"input changed delay:400ms from:input[name='q']\" hx-vals='{\"partial\": \"true\"}'><input type=\"search\" name=\"q\" value=\"")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "\" hx-swap=\"innerHTML\" hx-trigger=\"input changed delay:400ms from:input[name='q'], submit\" hx-vals='{\"partial\": \"true\"}'><input type=\"search\" name=\"q\" value=\"")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
