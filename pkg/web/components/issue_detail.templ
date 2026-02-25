@@ -35,18 +35,22 @@ templ IssueDetail(props IssueDetailProps) {
 			<span class="text-xs opacity-70 block">Updated</span>
 			<p>{ props.Issue.UpdatedAt.Format("Jan 2, 2006") }</p>
 		</div>
-		<div class="bg-base-200 rounded-lg p-2">
+		<div class="flex flex-row gap-1 bg-base-200 rounded-lg p-2">
 			<span class="text-xs opacity-70 block">Created by</span>
-			<p>{ props.Issue.Actor }</p>
+			<p class="text-xs opacity-70">{ props.Issue.CreatedBy }</p>
 		</div>
 		<a
-			class="btn flex flex-row gap-1 bg-base-200 rounded-lg p-2"
+			class="flex flex-row gap-1 bg-base-200 rounded-lg p-2"
 			hx-get={ "/issues/" + props.Issue.ID + "/assignee" }
 			hx-target="#modal-container"
 			hx-swap="innerHTML"
 		>
-			<span class="text-xs opacity-70 block">Assignee:</span>
-			<p class="text-xs opacity-70">{ props.Issue.Assignee }</p>
+			if props.Issue.Assignee == "" {
+				<span class="text-xs opacity-70 block">Unassigned</span>
+			} else {
+				<span class="text-xs opacity-70 block">Assignee:</span>
+				<p class="text-xs opacity-70">{ props.Issue.Assignee }</p>
+			}
 		</a>
 	</div>
 }

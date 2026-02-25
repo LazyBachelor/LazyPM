@@ -6,7 +6,6 @@ import (
 	"strings"
 
 	"github.com/LazyBachelor/LazyPM/internal/models"
-	"github.com/LazyBachelor/LazyPM/pkg/web/components"
 	"github.com/LazyBachelor/LazyPM/pkg/web/routes"
 	"github.com/go-chi/chi/v5"
 )
@@ -16,7 +15,7 @@ const commentsKey = "comments"
 
 type IssueForm struct {
 	Title       string           `form:"title" validate:"required,max=255"`
-	Description string           `form:"description" validate:"required,max=2000"`
+	Description string           `form:"description" validate:"max=2000"`
 	Status      models.Status    `form:"status" validate:"required,oneof=open in_progress closed"`
 	IssueType   models.IssueType `form:"issue_type" validate:"required,oneof=task bug feature chore"`
 	Priority    int              `form:"priority" validate:"gte=0,lte=4"`
@@ -50,20 +49,14 @@ func CreateIssue(w http.ResponseWriter, r *http.Request) {
 	}
 
 	issue := form.toIssue()
-	if err := app.Issues.CreateIssue(r.Context(), &issue, "Me"); err != nil {
+	issue.CreatedBy = "Me"
+	if err := app.Issues.CreateIssue(r.Context(), issue, "Me"); err != nil {
 		http.Error(w, "Failed to create issue: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	if hx.IsHxRequest() {
-		// Trigger issue list to refresh
-		w.Header().Set("HX-Trigger", `{"closeModal": "create-issue-modal", "issueCreated": "`+issue.ID+`"}`)
-		w.Header().Set("HX-Retarget", "#issue-list-container")
-		w.Header().Set("HX-Reswap", "innerHTML")
-
-		filter := models.IssueFilter{Limit: 100}
-		issues, _ := app.Issues.SearchIssues(r.Context(), "", filter)
-		routes.DashboardIssueList(issues, "").Render(r.Context(), w)
+		w.Header().Set("HX-Refresh", "true")
 		return
 	}
 
@@ -172,13 +165,7 @@ func UpdateIssue(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if hx.IsHxRequest() {
-		w.Header().Set("HX-Trigger", `{"closeModal": "edit-issue-modal", "issueUpdated": "`+issue.ID+`"}`)
-		w.Header().Set("HX-Retarget", "#issue-detail-container")
-		w.Header().Set("HX-Reswap", "innerHTML")
-
-		components.IssueDetail(components.IssueDetailProps{
-			Issue: issue,
-		}).Render(r.Context(), w)
+		w.Header().Set("HX-Refresh", "true")
 		return
 	}
 
@@ -226,8 +213,8 @@ func DeleteIssue(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNoContent)
 }
 
-func (f *IssueForm) toIssue() models.Issue {
-	return models.Issue{
+func (f *IssueForm) toIssue() *models.Issue {
+	return &models.Issue{
 		Title:       f.Title,
 		Description: f.Description,
 		Status:      f.Status,

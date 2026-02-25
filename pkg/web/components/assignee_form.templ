@@ -13,9 +13,10 @@ templ AssigneeForm(props AssigneeFormProps) {
 		hx-swap="innerHTML"
 	>
 		@base.Input(base.InputProps{
-			Name:  "assignee",
-			Type:  "text",
-			Value: props.Assignee,
+			Name:        "assignee",
+			Type:        "text",
+			Placeholder: "Enter assingee",
+			Value:       props.Assignee,
 		})
 		<button class="btn btn-primary mt-2" type="submit">Set Assignee</button>
 	</form>

@@ -54,9 +54,10 @@ func AssigneeForm(props AssigneeFormProps) templ.Component {
 			return templ_7745c5c3_Err
 		}
 		templ_7745c5c3_Err = base.Input(base.InputProps{
-			Name:  "assignee",
-			Type:  "text",
-			Value: props.Assignee,
+			Name:        "assignee",
+			Type:        "text",
+			Placeholder: "Enter assingee",
+			Value:       props.Assignee,
 		}).Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err

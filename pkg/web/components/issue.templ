@@ -43,11 +43,10 @@ templ IssueForm(props IssueFormProps) {
 				Required: true,
 			})
 			@base.Textarea(base.TextareaProps{
-				Name:     "description",
-				Label:    "Description",
-				Value:    props.Description,
-				Class:    "w-full",
-				Required: true,
+				Name:  "description",
+				Label: "Description",
+				Value: props.Description,
+				Class: "w-full",
 			})
 			@base.Select(base.SelectProps{
 				Name:     "status",
