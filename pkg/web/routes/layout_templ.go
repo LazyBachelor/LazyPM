@@ -11,7 +11,7 @@ import templruntime "github.com/a-h/templ/runtime"
 import "github.com/LazyBachelor/LazyPM/pkg/web/components"
 
 var baseLayout = components.LayoutProps{
-	Title:       "Beads Test Application",
+	Title:       "LazyPM - Project Management System",
 	Description: "A sample application using Beads storage service",
 	Head: components.HeadProps{
 		Links: []components.Link{
@@ -20,9 +20,8 @@ var baseLayout = components.LayoutProps{
 			{Href: "/assets/manifest.json", Rel: "manifest"},
 		},
 		Scripts: []components.Script{
-			{Src: "https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js", Defer: true},
 			{Src: "/assets/js/htmx.min.js", Defer: true},
-			{Src: "/assets/js/ajax.min.js", Defer: true},
+			{Src: "/assets/js/alpine.min.js", Defer: true},
 		},
 	},
 	Routes: []components.NavRoutes{
