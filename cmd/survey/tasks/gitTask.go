@@ -116,6 +116,7 @@ func (t *GitTask) initRepo() (*git.Repository, error) {
 			if err != nil {
 				return nil, err
 			}
+			return repo, nil
 		}
 		return nil, err
 	}
