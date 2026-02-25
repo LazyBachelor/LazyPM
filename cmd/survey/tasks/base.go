@@ -1,6 +1,9 @@
 package tasks
 
 import (
+	"fmt"
+	"time"
+
 	"github.com/LazyBachelor/LazyPM/internal/service"
 	"github.com/LazyBachelor/LazyPM/pkg/repl"
 	"github.com/LazyBachelor/LazyPM/pkg/task"
@@ -89,4 +92,13 @@ func TUIQuestion(interfaceType task.InterfaceType, fields ...huh.Field) *huh.Gro
 		return nil
 	}
 	return huh.NewGroup(fields...)
+}
+
+func EndTaskWithTimeout(taskDone *bool, message string, timeout time.Duration) (bool, error) {
+	if !*taskDone {
+		*taskDone = true
+		return false, fmt.Errorf("%s", message)
+	}
+	time.Sleep(timeout)
+	return true, nil
 }

@@ -26,15 +26,15 @@ func initInterfaces() map[string]task.Interface {
 	return interfaces
 }
 
-func initTasks(app *service.App) []task.Tasker {
-	var taskList []task.Tasker
+func initTasks(app *service.App) map[string]task.Tasker {
+	taskMap := make(map[string]task.Tasker)
 	for _, name := range task.ListTasks() {
-		t, err := task.GetTasks(name, app)
+		t, err := task.GetTask(name, app)
 		if err != nil {
 			continue
 		}
-		taskList = append(taskList, t)
+		taskMap[name] = t
 	}
 
-	return taskList
+	return taskMap
 }

@@ -40,7 +40,7 @@ func RegisterTask(name string, constructor func(*service.App) Tasker) {
 	taskRegistry[name] = constructor
 }
 
-func GetTasks(name string, app *service.App) (Tasker, error) {
+func GetTask(name string, app *service.App) (Tasker, error) {
 	constructor, ok := taskRegistry[name]
 	if !ok {
 		return nil, fmt.Errorf("task %q not found", name)

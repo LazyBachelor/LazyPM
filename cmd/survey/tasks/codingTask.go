@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/LazyBachelor/LazyPM/internal/service"
 	"github.com/LazyBachelor/LazyPM/pkg/task"
@@ -14,8 +15,20 @@ import (
 
 const codingDescription = `You are tasked with writing a simple function.
 
-Write a function that takes two integers and returns their sum.
-The function should be named "Add" and be part of the "coding" package.`
+This task will test your ability to write clean, working code.
+
+Your task:
+1. Review the requirements below
+2. Write a function that takes two integers and returns their sum
+3. The function should be named "Add"
+4. The function should be part of the "coding" package
+5. Save your code to the code.txt file
+
+Requirements:
+- Function name: Add
+- Parameters: two integers
+- Return value: integer (sum of the two inputs)
+- Package: coding`
 
 var textFileContent = codingDescription + `
 Please write your code below this line!
@@ -23,11 +36,12 @@ Please write your code below this line!
 `
 
 type CodingTask struct {
-	app *service.App
+	done bool
+	app  *service.App
 }
 
 func NewCodingTask(app *service.App) *CodingTask {
-	return &CodingTask{app: app}
+	return &CodingTask{app: app, done: false}
 }
 
 func (t *CodingTask) Config() task.Config {
@@ -99,5 +113,5 @@ func (t *CodingTask) Validate(ctx context.Context) (bool, error) {
 		return false, fmt.Errorf("the function does not contain a return statement")
 	}
 
-	return true, nil
+	return EndTaskWithTimeout(&t.done, "Task completed!", 5*time.Second)
 }

@@ -15,7 +15,6 @@ func NewIssueBuilder() *IssueBuilder {
 
 func NewBaseIssue() *IssueBuilder {
 	return NewIssueBuilder().
-		WithID("pm-abc").
 		WithTitle("Basic Issue").
 		WithDescription("Basic Description").
 		WithStatus(StatusOpen).
@@ -53,8 +52,8 @@ func (b *IssueBuilder) WithPriority(priority int) *IssueBuilder {
 	return b
 }
 
-func (b IssueBuilder) Build() Issue {
-	return Issue{
+func (b IssueBuilder) Build() *Issue {
+	return &Issue{
 		ID:          b.ID,
 		Title:       b.Title,
 		Description: b.Description,
