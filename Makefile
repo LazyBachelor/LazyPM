@@ -12,10 +12,11 @@ clean:
 	@rm package.json
 
 build: tidy
-	go build -o ./bin/pm ./cmd/pm
-	go build -o ./bin/tui ./cmd/tui
-	go build -o ./bin/web ./cmd/web
-	go build -o ./bin/survey ./cmd/survey
+	@go build -o ./bin/pm ./cmd/pm
+	@go build -o ./bin/tui ./cmd/tui
+	@go build -o ./bin/web ./cmd/web
+	@go build -o ./bin/survey ./cmd/survey
+	@echo "Build completed successfully. Binaries are located in the ./bin directory."
 
 enable-multiplatform-build:
 	@docker buildx create --name multiplatform --use 2>/dev/null || docker buildx use multiplatform
@@ -33,9 +34,19 @@ docker-run:
 docker-push:
 	@docker push telikz/lazypm:latest
 
-build-os: build
+os-build: build
 	@cp ./bin/survey ./build/survey
 	@docker build -t lazyos ./build
+	@echo "Built lazyos image successfully. You can run it using 'make os-run'."
+
+os-run: os-build
+	@docker run -d   --name=lazyos   -e PUID=1000   -e PGID=1000   -e TZ=Etc/UTC   -p 3000:3000   -p 3001:3001   --shm-size="1gb"   lazyos:latest
+	@echo "Started lazyos container successfully. You can access the web interface at http://localhost:3000."
+
+os-stop:
+	@docker stop lazyos
+	@docker rm lazyos
+	@echo "Stopped and removed lazyos container successfully."
 
 start:
 	@go run ./cmd/survey start
