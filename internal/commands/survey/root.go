@@ -43,5 +43,4 @@ func AppFromContext(ctx context.Context) *service.App {
 }
 
 func init() {
-	RootCmd.CompletionOptions.DisableDefaultCmd = true
 }

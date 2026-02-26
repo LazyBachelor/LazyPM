@@ -33,22 +33,25 @@ docker-run:
 docker-push:
 	@docker push telikz/lazypm:latest
 
-os-build: build
+os-build: build completions
+	@cp ./bin/pm ./build/pm
 	@cp ./bin/survey ./build/survey
-	@docker build -t telikz/lazypm:os ./build
+	@cp ./bin/survey_bash.sh ./build/survey_bash.sh
+	@cp ./bin/pm_bash.sh ./build/pm_bash.sh
+	@docker build -t telikz/lazyos ./build
 	@echo "Built lazyos image successfully. You can run it using 'make os-run'."
 
 os-run: os-build
-	@docker run -d   --name=lazyos   -e PUID=1000   -e PGID=1000   -e TZ=Etc/UTC   -p 3000:3000   -p 3001:3001   --shm-size="1gb"   telikz/lazypm:os
+	@docker run -d   --name=lazyos   -e PUID=1000   -e PGID=1000   -e TZ=Etc/UTC   -p 3000:3000   -p 3001:3001   --shm-size="1gb"   telikz/lazyos
 	@echo "Started lazyos container successfully. You can access the web interface at http://localhost:3000."
 
 os-stop:
 	@docker stop lazyos
-	@docker rm lazyos
+	@docker rm -v --force lazyos
 	@echo "Stopped and removed lazyos container successfully."
 
 os-push:
-	@docker push telikz/lazypm:os
+	@docker push telikz/lazyos
 
 start:
 	@go run ./cmd/survey start
@@ -74,8 +77,10 @@ tw: tw-install
 
 
 completions:
-	@go build -o ./bin/pm ./cmd/pm
 	@mkdir -p ./bin
+	@go build -o ./bin/pm ./cmd/pm
+	@go build -o ./bin/survey ./cmd/survey
+	@./bin/survey completion bash > ./bin/survey_bash.sh
 	@./bin/pm completion bash > ./bin/pm_bash.sh
 	@./bin/pm completion zsh > ./bin/pm_zsh.sh
 	@./bin/pm completion fish > ./bin/pm_fish.sh
