@@ -2,7 +2,10 @@ package server
 
 import (
 	"embed"
+	"io/fs"
+	"log"
 	"net/http"
+	"os"
 	"strings"
 	"time"
 
@@ -53,7 +56,18 @@ func (s *Server) RegisterRoutes(assets embed.FS) http.Handler {
 }
 
 func (s *Server) handleAssets(r chi.Router, assets embed.FS) {
-	fileServer := http.FileServer(http.Dir("pkg/web/assets"))
+	var fileServer http.Handler
+
+	if os.Getenv("DEV") == "True" {
+		log.Println("Running in development mode: serving assets from disk")
+		fileServer = http.FileServer(http.Dir("pkg/web/assets"))
+	} else {
+		subFS, err := fs.Sub(assets, "assets")
+		if err != nil {
+			log.Fatalf("failed to create sub filesystem: %v", err)
+		}
+		fileServer = http.FileServer(http.FS(subFS))
+	}
 
 	r.Handle("/assets/*",
 		http.StripPrefix("/assets/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

@@ -33,6 +33,10 @@ docker-run:
 docker-push:
 	@docker push telikz/lazypm:latest
 
+build-os: build
+	@cp ./bin/survey ./build/survey
+	@docker build -t lazyos ./build
+
 start:
 	@go run ./cmd/survey start
 

@@ -10,5 +10,7 @@ node_modules/
 package-lock.json
 package.json
 
+build/survey
+
 # Added by goreleaser init:
 dist/

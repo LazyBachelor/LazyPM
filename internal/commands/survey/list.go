@@ -6,8 +6,8 @@ import (
 )
 
 var ListTasksCmd = &cobra.Command{
-	Use:     "list-tasks",
-	Aliases: []string{"ls-t"},
+	Use:     "tasks",
+	Aliases: []string{"t"},
 	Short:   "List available tasks",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		for i, name := range task.ListTasks() {
@@ -18,8 +18,8 @@ var ListTasksCmd = &cobra.Command{
 }
 
 var ListInterfacesCmd = &cobra.Command{
-	Use:     "list-interfaces",
-	Aliases: []string{"ls-i"},
+	Use:     "interfaces",
+	Aliases: []string{"i"},
 	Short:   "List available interfaces",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		for i, name := range task.ListInterfaces() {
