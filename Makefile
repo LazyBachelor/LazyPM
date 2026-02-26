@@ -27,7 +27,6 @@ docker-build: enable-multiplatform-build
   -t telikz/lazypm:latest \
   --push .
 
-
 docker-run:
 	@docker run -it -p 8080:8080 -v "$PWD:/data" telikz/lazypm:latest start
 
@@ -36,17 +35,20 @@ docker-push:
 
 os-build: build
 	@cp ./bin/survey ./build/survey
-	@docker build -t lazyos ./build
+	@docker build -t telikz/lazypm:os ./build
 	@echo "Built lazyos image successfully. You can run it using 'make os-run'."
 
 os-run: os-build
-	@docker run -d   --name=lazyos   -e PUID=1000   -e PGID=1000   -e TZ=Etc/UTC   -p 3000:3000   -p 3001:3001   --shm-size="1gb"   lazyos:latest
+	@docker run -d   --name=lazyos   -e PUID=1000   -e PGID=1000   -e TZ=Etc/UTC   -p 3000:3000   -p 3001:3001   --shm-size="1gb"   telikz/lazypm:os
 	@echo "Started lazyos container successfully. You can access the web interface at http://localhost:3000."
 
 os-stop:
 	@docker stop lazyos
 	@docker rm lazyos
 	@echo "Stopped and removed lazyos container successfully."
+
+os-push:
+	@docker push telikz/lazypm:os
 
 start:
 	@go run ./cmd/survey start
