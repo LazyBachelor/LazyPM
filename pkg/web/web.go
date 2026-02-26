@@ -6,9 +6,11 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/LazyBachelor/LazyPM/internal/service"
+	"github.com/LazyBachelor/LazyPM/internal/utils"
 	"github.com/LazyBachelor/LazyPM/pkg/task"
 	"github.com/LazyBachelor/LazyPM/pkg/web/handler"
 	"github.com/LazyBachelor/LazyPM/pkg/web/server"
@@ -43,6 +45,16 @@ func (w *Web) Run(ctx context.Context, config Config) error {
 	})
 
 	fmt.Printf("Starting web server on %s...\n", config.WebAddress)
+
+	address := config.WebAddress
+	if !strings.Contains(address, "http") {
+		address = "http://localhost" + address
+	}
+
+	err = utils.OpenBrowser(address)
+	if err != nil {
+		return fmt.Errorf("failed to open browser: %w", err)
+	}
 
 	serverErr := make(chan error, 1)
 	go func() {
