@@ -62,7 +62,7 @@ func (t *CreateIssueTask) Setup(ctx context.Context) error {
 func (t *CreateIssueTask) Validate(ctx context.Context) ValidationFeedback {
 	expect := utils.NewExpector()
 
-	issues, err := FetchIssues(t.app, t.setupIssue)
+	issues, err := FetchIssues(ctx, t.app, t.setupIssue)
 	if err != nil {
 		return expect.ValidationFeedback
 	}
