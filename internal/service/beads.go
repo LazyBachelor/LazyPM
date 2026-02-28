@@ -19,7 +19,6 @@ func NewBeadsService(ctx context.Context, storage beads.Storage, prefix string) 
 		if err := storage.SetConfig(ctx, "issue_prefix", prefix); err != nil {
 			return nil, fmt.Errorf("failed to set issue_prefix: %w", err)
 		}
-		fmt.Println("Initialized with prefix:", prefix)
 	}
 
 	return &BeadsService{

@@ -18,9 +18,11 @@ import (
 func NewServices(ctx context.Context, config Config) (*App, func(), error) {
 	var cleanupFuncs []func()
 
-	if !initialized(config.BeadsDBPath) {
-		fmt.Println("PM is not initialized")
-		os.Exit(0)
+	if !config.AutoInit {
+		if !initialized(config.BeadsDBPath) {
+			fmt.Println("PM is not initialized")
+			os.Exit(0)
+		}
 	}
 
 	store, err := beads.NewSQLiteStorage(ctx, config.BeadsDBPath)

@@ -1,6 +1,7 @@
 package service
 
 type Config struct {
+	AutoInit              bool
 	RootCmd               string
 	WebAddress            string
 	BeadsDBPath           string
@@ -9,11 +10,17 @@ type Config struct {
 }
 
 var BaseConfig = Config{
+	AutoInit:              false,
 	RootCmd:               "pm",
 	IssuePrefix:           "pm",
 	WebAddress:            ":8080",
 	BeadsDBPath:           "./.pm/db.db",
 	StatisticsStoragePath: "./.pm/stats.json",
+}
+
+func (c Config) WithAutoInit(autoInit bool) Config {
+	c.AutoInit = autoInit
+	return c
 }
 
 func (c Config) WithRootCmd(rootCmd string) Config {
