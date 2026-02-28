@@ -20,6 +20,8 @@ EOF
 chmod +x /config/Desktop/LazyPM.desktop
 chown abc:abc /config/Desktop/LazyPM.desktop
 
+survey // initialize the service to ensure the database is set up
+
 echo "**** Setting default browser to Chromium... ****"
 
 xdg-settings set default-web-browser chromium.desktop
