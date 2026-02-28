@@ -4,14 +4,14 @@ import (
 	"context"
 
 	"github.com/LazyBachelor/LazyPM/cmd/survey/tasks"
-	"github.com/LazyBachelor/LazyPM/internal/service"
+	"github.com/LazyBachelor/LazyPM/internal/app"
 	"github.com/LazyBachelor/LazyPM/pkg/task"
 
 	_ "github.com/LazyBachelor/LazyPM/cmd/survey/tasks"
 )
 
-func initializeServices(ctx context.Context) (*service.App, func(), error) {
-	return service.NewApp(ctx, tasks.BaseConfig().WithAutoInit(true))
+func initializeServices(ctx context.Context) (*app.App, func(), error) {
+	return app.New(ctx, tasks.BaseConfig().WithAutoInit(true))
 }
 
 func initInterfaces() map[string]task.Interface {
@@ -26,7 +26,7 @@ func initInterfaces() map[string]task.Interface {
 	return interfaces
 }
 
-func initTasks(app *service.App) map[string]task.Tasker {
+func initTasks(app *app.App) map[string]task.Tasker {
 	taskMap := make(map[string]task.Tasker)
 	for _, name := range task.ListTasks() {
 		t, err := task.GetTask(name, app)

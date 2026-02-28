@@ -4,7 +4,7 @@ import (
 	"context"
 	"os"
 
-	"github.com/LazyBachelor/LazyPM/internal/utils"
+	"github.com/LazyBachelor/LazyPM/internal/utils/check"
 	"github.com/charmbracelet/huh"
 )
 
@@ -80,7 +80,7 @@ func (t *CodingTask) Setup(ctx context.Context) error {
 }
 
 func (t *CodingTask) Validate(ctx context.Context) ValidationFeedback {
-	expect := utils.NewExpector()
+	expect := check.NewExpector()
 	expect.Assert(true, "This task is always valid")
 	return expect.Complete()
 }

@@ -162,7 +162,7 @@ func issueIDSuggestions(partial string, hasCommand bool) []prompt.Suggest {
 		return nil
 	}
 
-	issues, _ := issuesCmd.GetIssueCompletions(context.Background(), partial)
+	issues, _ := issues.GetIssueCompletions(context.Background(), partial)
 
 	var suggestions []prompt.Suggest
 	for _, issue := range issues {

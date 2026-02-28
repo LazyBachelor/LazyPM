@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/LazyBachelor/LazyPM/internal/utils"
+	"github.com/LazyBachelor/LazyPM/internal/utils/check"
 )
 
 const description = `You are tasked with creating a new issue in the project management system.
@@ -56,7 +56,7 @@ func (t *CreateIssueTask) Setup(ctx context.Context) error {
 }
 
 func (t *CreateIssueTask) Validate(ctx context.Context) ValidationFeedback {
-	expect := utils.NewExpector()
+	expect := check.NewExpector()
 
 	issues, err := FetchIssues(ctx, t.app, t.setupIssue)
 	if err != nil {

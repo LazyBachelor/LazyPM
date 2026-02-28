@@ -4,9 +4,9 @@ import (
 	"context"
 
 	"github.com/LazyBachelor/LazyPM/cmd/survey/tasks"
-	issuesCmd "github.com/LazyBachelor/LazyPM/internal/commands/issues"
-	surveyCmd "github.com/LazyBachelor/LazyPM/internal/commands/survey"
-	"github.com/LazyBachelor/LazyPM/internal/service"
+	"github.com/LazyBachelor/LazyPM/internal/app"
+	issues "github.com/LazyBachelor/LazyPM/internal/commands/issues"
+	survey "github.com/LazyBachelor/LazyPM/internal/commands/survey"
 	"github.com/LazyBachelor/LazyPM/pkg/repl"
 	"github.com/LazyBachelor/LazyPM/pkg/task"
 	"github.com/LazyBachelor/LazyPM/pkg/tui"
@@ -22,10 +22,10 @@ func main() {
 	}
 	defer cleanup()
 
-	surveyCmd.SetApp(app)
-	issuesCmd.SetApp(app)
+	survey.SetApp(app)
+	issues.SetApp(app)
 
-	if err := fang.Execute(ctx, surveyCmd.RootCmd,
+	if err := fang.Execute(ctx, survey.RootCmd,
 		fang.WithColorSchemeFunc(fang.AnsiColorScheme)); err != nil {
 		return
 	}
@@ -36,69 +36,69 @@ func init() {
 	task.RegisterInterface("web", web.New())
 	task.RegisterInterface("repl", repl.New())
 
-	task.RegisterTask("create_issue", func(app *service.App) task.Tasker {
+	task.RegisterTask("create_issue", func(app *app.App) task.Tasker {
 		return tasks.NewCreateIssueTask(app)
 	})
-	task.RegisterTask("coding_task", func(app *service.App) task.Tasker {
+	task.RegisterTask("coding_task", func(app *app.App) task.Tasker {
 		return tasks.NewCodingTask(app)
 	})
-	task.RegisterTask("git_task", func(app *service.App) task.Tasker {
+	task.RegisterTask("git_task", func(app *app.App) task.Tasker {
 		return tasks.NewGitTask(app)
 	})
-	task.RegisterTask("sprint_planning", func(app *service.App) task.Tasker {
+	task.RegisterTask("sprint_planning", func(app *app.App) task.Tasker {
 		return tasks.NewSprintPlanningTask(app)
 	})
-	task.RegisterTask("issue_triage", func(app *service.App) task.Tasker {
+	task.RegisterTask("issue_triage", func(app *app.App) task.Tasker {
 		return tasks.NewIssueTriageTask(app)
 	})
-	task.RegisterTask("milestone_tracking", func(app *service.App) task.Tasker {
+	task.RegisterTask("milestone_tracking", func(app *app.App) task.Tasker {
 		return tasks.NewMilestoneTrackingTask(app)
 	})
-	task.RegisterTask("dependency_management", func(app *service.App) task.Tasker {
+	task.RegisterTask("dependency_management", func(app *app.App) task.Tasker {
 		return tasks.NewDependencyManagementTask(app)
 	})
-	task.RegisterTask("team_capacity", func(app *service.App) task.Tasker {
+	task.RegisterTask("team_capacity", func(app *app.App) task.Tasker {
 		return tasks.NewTeamCapacityTask(app)
 	})
-	task.RegisterTask("report_generation", func(app *service.App) task.Tasker {
+	task.RegisterTask("report_generation", func(app *app.App) task.Tasker {
 		return tasks.NewReportGenerationTask(app)
 	})
-	task.RegisterTask("stakeholder_update", func(app *service.App) task.Tasker {
+	task.RegisterTask("stakeholder_update", func(app *app.App) task.Tasker {
 		return tasks.NewStakeholderUpdateTask(app)
 	})
-	task.RegisterTask("priority_management", func(app *service.App) task.Tasker {
+	task.RegisterTask("priority_management", func(app *app.App) task.Tasker {
 		return tasks.NewPriorityManagementTask(app)
 	})
-	task.RegisterTask("backlog_refinement", func(app *service.App) task.Tasker {
+	task.RegisterTask("backlog_refinement", func(app *app.App) task.Tasker {
 		return tasks.NewBacklogRefinementTask(app)
 	})
 
 	// Basic survey commands
-	surveyCmd.StartCmd.RunE = runStartCmd
-	surveyCmd.RootCmd.AddCommand(surveyCmd.StartCmd)
-	surveyCmd.RootCmd.AddCommand(surveyCmd.SubmitCmd)
-	surveyCmd.RootCmd.AddCommand(surveyCmd.StatusCmd)
-	surveyCmd.RootCmd.AddCommand(surveyCmd.ListTasksCmd)
-	surveyCmd.RootCmd.AddCommand(surveyCmd.ListInterfacesCmd)
-	surveyCmd.RootCmd.AddCommand(surveyCmd.IssuesCmd)
+	survey.StartCmd.RunE = runStartCmd
+	survey.RootCmd.AddCommand(survey.StartCmd)
+	survey.RootCmd.AddCommand(survey.SubmitCmd)
+	survey.RootCmd.AddCommand(survey.StatusCmd)
+	survey.RootCmd.AddCommand(survey.ListTasksCmd)
+	survey.RootCmd.AddCommand(survey.ListInterfacesCmd)
+	survey.RootCmd.AddCommand(survey.IssuesCmd)
 
 	// Issue related commands
-	surveyCmd.IssuesCmd.AddCommand(issuesCmd.ListCmd)
-	surveyCmd.IssuesCmd.AddCommand(issuesCmd.CreateCmd)
-	surveyCmd.IssuesCmd.AddCommand(issuesCmd.UpdateCmd)
-	surveyCmd.IssuesCmd.AddCommand(issuesCmd.DeleteCmd)
-	surveyCmd.IssuesCmd.AddCommand(issuesCmd.CloseCmd)
-	surveyCmd.IssuesCmd.AddCommand(issuesCmd.CommentCmd)
-	surveyCmd.IssuesCmd.AddCommand(issuesCmd.CommentsCmd)
+	survey.IssuesCmd.AddCommand(issues.ListCmd)
+	survey.IssuesCmd.AddCommand(issues.CreateCmd)
+	survey.IssuesCmd.AddCommand(issues.UpdateCmd)
+	survey.IssuesCmd.AddCommand(issues.DeleteCmd)
+	survey.IssuesCmd.AddCommand(issues.CloseCmd)
+	survey.IssuesCmd.AddCommand(issues.CommentCmd)
+	survey.IssuesCmd.AddCommand(issues.CommentsCmd)
 
 	// Issue commands for the REPL interface
-	issuesCmd.RootCmd.AddCommand(issuesCmd.GetCmd)
-	issuesCmd.RootCmd.AddCommand(issuesCmd.ListCmd)
-	issuesCmd.RootCmd.AddCommand(issuesCmd.CloseCmd)
-	issuesCmd.RootCmd.AddCommand(issuesCmd.CreateCmd)
-	issuesCmd.RootCmd.AddCommand(issuesCmd.DeleteCmd)
-	issuesCmd.RootCmd.AddCommand(issuesCmd.UpdateCmd)
-	issuesCmd.RootCmd.AddCommand(issuesCmd.CommentCmd)
-	issuesCmd.RootCmd.AddCommand(issuesCmd.CommentsCmd)
-	issuesCmd.RootCmd.AddCommand(surveyCmd.StatusCmd)
+	issues.RootCmd.AddCommand(issues.GetCmd)
+	issues.RootCmd.AddCommand(issues.ListCmd)
+	issues.RootCmd.AddCommand(issues.CloseCmd)
+	issues.RootCmd.AddCommand(issues.CreateCmd)
+	issues.RootCmd.AddCommand(issues.DeleteCmd)
+	issues.RootCmd.AddCommand(issues.UpdateCmd)
+	issues.RootCmd.AddCommand(issues.CommentCmd)
+	issues.RootCmd.AddCommand(issues.CommentsCmd)
+	issues.RootCmd.AddCommand(survey.StatusCmd)
 }

@@ -7,9 +7,9 @@ import (
 	"os"
 	"strings"
 
-	issuesCmd "github.com/LazyBachelor/LazyPM/internal/commands/issues"
+	"github.com/LazyBachelor/LazyPM/internal/app"
+	issues "github.com/LazyBachelor/LazyPM/internal/commands/issues"
 	"github.com/LazyBachelor/LazyPM/internal/models"
-	"github.com/LazyBachelor/LazyPM/internal/service"
 	"github.com/LazyBachelor/LazyPM/internal/style"
 	"github.com/LazyBachelor/LazyPM/pkg/cli"
 	"github.com/LazyBachelor/LazyPM/pkg/task"
@@ -54,14 +54,14 @@ func (r *REPL) Run(ctx context.Context, config cli.Config) error {
 	defer term.Restore(int(os.Stdin.Fd()), oldState)
 
 	// Initialize services for beads, config and stats.
-	app, cleanup, err := service.NewApp(ctx, config)
+	app, cleanup, err := app.New(ctx, config)
 	if err != nil {
 		return fmt.Errorf("failed to initialize services: %w", err)
 	}
 	defer cleanup()
 
 	// Make sure to set app, to ensure they are available.
-	issuesCmd.SetApp(app)
+	issues.SetApp(app)
 
 	// Store app reference for updating feedback
 	r.app = app

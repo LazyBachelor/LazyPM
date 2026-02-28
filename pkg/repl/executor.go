@@ -44,6 +44,6 @@ func executePMCommand(input string) (string, error) {
 		return "", nil
 	}
 
-	output, err := issuesCmd.ExecuteArgsString(parts)
+	output, err := issues.ExecuteArgsString(parts)
 	return output, err
 }

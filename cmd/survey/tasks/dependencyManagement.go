@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/LazyBachelor/LazyPM/internal/models"
-	"github.com/LazyBachelor/LazyPM/internal/utils"
+	"github.com/LazyBachelor/LazyPM/internal/utils/check"
 	"github.com/charmbracelet/huh"
 )
 
@@ -23,7 +23,7 @@ Resolving dependencies in the right order is critical for efficient team workflo
 type DependencyManagementTask struct {
 	done       bool
 	app        *App
-	setupIssue *models.Issue
+	setupIssue *Issue
 }
 
 func NewDependencyManagementTask(app *App) *DependencyManagementTask {
@@ -62,35 +62,35 @@ func (t *DependencyManagementTask) Setup(ctx context.Context) error {
 	}
 
 	depIssues := []*models.Issue{
-		models.NewIssueBuilder().
+		NewIssueBuilder().
 			WithTitle("Setup database connection").
 			WithDescription("Configure database connection pool.").
 			WithPriority(1).
 			WithStatus(models.StatusOpen).
 			WithIssueType(models.TypeTask).
 			Build(),
-		models.NewIssueBuilder().
+		NewIssueBuilder().
 			WithTitle("Define API contract").
 			WithDescription("Create OpenAPI spec.").
 			WithPriority(1).
 			WithStatus(models.StatusOpen).
 			WithIssueType(models.TypeTask).
 			Build(),
-		models.NewIssueBuilder().
+		NewIssueBuilder().
 			WithTitle("Implement user repository").
 			WithDescription("Implement data access layer for user management.").
 			WithPriority(2).
 			WithStatus(models.StatusBlocked).
 			WithIssueType(models.TypeTask).
 			Build(),
-		models.NewIssueBuilder().
+		NewIssueBuilder().
 			WithTitle("Create user endpoints").
 			WithDescription("REST API for users.").
 			WithPriority(2).
 			WithStatus(models.StatusBlocked).
 			WithIssueType(models.TypeTask).
 			Build(),
-		models.NewIssueBuilder().
+		NewIssueBuilder().
 			WithTitle("Build user profile UI").
 			WithDescription("Frontend user profile page.").
 			WithPriority(3).
@@ -103,7 +103,7 @@ func (t *DependencyManagementTask) Setup(ctx context.Context) error {
 		return err
 	}
 
-	t.setupIssue = models.NewBaseIssue().
+	t.setupIssue = NewIssueBuilder().
 		WithTitle("Dependency Management").
 		WithDescription(dependencyManagementDescription).
 		Build()
@@ -112,7 +112,7 @@ func (t *DependencyManagementTask) Setup(ctx context.Context) error {
 }
 
 func (t *DependencyManagementTask) Validate(ctx context.Context) ValidationFeedback {
-	expect := utils.NewExpector()
+	expect := check.NewExpector()
 
 	return expect.Complete()
 }

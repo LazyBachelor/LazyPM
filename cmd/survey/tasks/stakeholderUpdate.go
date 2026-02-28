@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/LazyBachelor/LazyPM/internal/models"
-	"github.com/LazyBachelor/LazyPM/internal/utils"
+	"github.com/LazyBachelor/LazyPM/internal/utils/check"
 	"github.com/charmbracelet/huh"
 )
 
@@ -108,7 +108,7 @@ func (t *StakeholderUpdateTask) Setup(ctx context.Context) error {
 }
 
 func (t *StakeholderUpdateTask) Validate(ctx context.Context) ValidationFeedback {
-	expect := utils.NewExpector()
+	expect := check.NewExpector()
 
 	return expect.Complete()
 }

@@ -3,8 +3,8 @@ package tui
 import (
 	"context"
 
+	"github.com/LazyBachelor/LazyPM/internal/app"
 	"github.com/LazyBachelor/LazyPM/internal/models"
-	"github.com/LazyBachelor/LazyPM/internal/service"
 	"github.com/LazyBachelor/LazyPM/pkg/tui/views"
 	tea "github.com/charmbracelet/bubbletea"
 )
@@ -22,7 +22,7 @@ func New() *Tui {
 }
 
 func (t *Tui) Run(ctx context.Context, config Config) error {
-	app, cleanup, err := service.NewApp(ctx, config)
+	app, cleanup, err := app.New(ctx, config)
 	if err != nil {
 		return err
 	}

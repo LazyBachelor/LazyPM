@@ -3,8 +3,8 @@ package dashboard
 import (
 	"context"
 
+	"github.com/LazyBachelor/LazyPM/internal/app"
 	"github.com/LazyBachelor/LazyPM/internal/models"
-	"github.com/LazyBachelor/LazyPM/internal/service"
 	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
 )
@@ -49,7 +49,7 @@ type issueDeletedMsg struct {
 	PreviousIndex int
 }
 
-func updateIssueTitleCmd(app *service.App, issueID, newTitle string) tea.Cmd {
+func updateIssueTitleCmd(app *app.App, issueID, newTitle string) tea.Cmd {
 	return func() tea.Msg {
 		updates := map[string]interface{}{"title": newTitle}
 		err := app.Issues.UpdateIssue(context.Background(), issueID, updates, "tui")
@@ -57,7 +57,7 @@ func updateIssueTitleCmd(app *service.App, issueID, newTitle string) tea.Cmd {
 	}
 }
 
-func updateIssueDescriptionCmd(app *service.App, issueID, newDescription string) tea.Cmd {
+func updateIssueDescriptionCmd(app *app.App, issueID, newDescription string) tea.Cmd {
 	return func() tea.Msg {
 		updates := map[string]interface{}{"description": newDescription}
 		err := app.Issues.UpdateIssue(context.Background(), issueID, updates, "tui")
@@ -65,7 +65,7 @@ func updateIssueDescriptionCmd(app *service.App, issueID, newDescription string)
 	}
 }
 
-func updateIssueStatusCmd(app *service.App, issueID, status string) tea.Cmd {
+func updateIssueStatusCmd(app *app.App, issueID, status string) tea.Cmd {
 	return func() tea.Msg {
 		updates := map[string]interface{}{"status": status}
 		err := app.Issues.UpdateIssue(context.Background(), issueID, updates, "tui")
@@ -73,7 +73,7 @@ func updateIssueStatusCmd(app *service.App, issueID, status string) tea.Cmd {
 	}
 }
 
-func updateIssuePriorityCmd(app *service.App, issueID string, priority int) tea.Cmd {
+func updateIssuePriorityCmd(app *app.App, issueID string, priority int) tea.Cmd {
 	return func() tea.Msg {
 		updates := map[string]interface{}{"priority": priority}
 		err := app.Issues.UpdateIssue(context.Background(), issueID, updates, "tui")
@@ -81,7 +81,7 @@ func updateIssuePriorityCmd(app *service.App, issueID string, priority int) tea.
 	}
 }
 
-func updateIssueTypeCmd(app *service.App, issueID string, issueType models.IssueType) tea.Cmd {
+func updateIssueTypeCmd(app *app.App, issueID string, issueType models.IssueType) tea.Cmd {
 	return func() tea.Msg {
 		updates := map[string]interface{}{"issue_type": string(issueType)}
 		err := app.Issues.UpdateIssue(context.Background(), issueID, updates, "tui")
@@ -89,7 +89,7 @@ func updateIssueTypeCmd(app *service.App, issueID string, issueType models.Issue
 	}
 }
 
-func createIssueCmd(app *service.App, title string) tea.Cmd {
+func createIssueCmd(app *app.App, title string) tea.Cmd {
 	return func() tea.Msg {
 		issue := &models.Issue{
 			Title:     title,
@@ -102,7 +102,7 @@ func createIssueCmd(app *service.App, title string) tea.Cmd {
 	}
 }
 
-func deleteIssueCmd(app *service.App, issueID string, currentIndex int) tea.Cmd {
+func deleteIssueCmd(app *app.App, issueID string, currentIndex int) tea.Cmd {
 	return func() tea.Msg {
 		err := app.Issues.DeleteIssue(context.Background(), issueID)
 		return issueDeletedMsg{IssueID: issueID, Err: err, PreviousIndex: currentIndex}

@@ -6,8 +6,8 @@ import (
 	"io"
 	"sort"
 
+	"github.com/LazyBachelor/LazyPM/internal/app"
 	"github.com/LazyBachelor/LazyPM/internal/models"
-	"github.com/LazyBachelor/LazyPM/internal/service"
 	"github.com/LazyBachelor/LazyPM/pkg/tui/styles"
 	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
@@ -17,7 +17,7 @@ import (
 
 type IssueList struct {
 	list   list.Model
-	app    *service.App
+	app    *app.App
 	width  int
 	height int
 }
@@ -77,7 +77,7 @@ func renderHeaders(cols []TableColumn) string {
 	return lipgloss.JoinHorizontal(lipgloss.Left, parts...)
 }
 
-func NewIssueList(app *service.App, width, height int) IssueList {
+func NewIssueList(app *app.App, width, height int) IssueList {
 	issues, err := app.Issues.SearchIssues(context.Background(), "", models.IssueFilter{})
 	if err != nil {
 		return IssueList{}
@@ -111,7 +111,7 @@ func NewIssueList(app *service.App, width, height int) IssueList {
 	}
 }
 
-func NewIssueListFromIssues(app *service.App, issues []*models.Issue, width, height int) IssueList {
+func NewIssueListFromIssues(app *app.App, issues []*models.Issue, width, height int) IssueList {
 	// for making an IssueList from a pre-existing list of issues.
 	listIssues := make([]list.Item, len(issues))
 	for i, issue := range issues {

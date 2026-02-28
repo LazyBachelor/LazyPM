@@ -3,8 +3,8 @@ package tasks
 import (
 	"context"
 
+	"github.com/LazyBachelor/LazyPM/internal/app"
 	"github.com/LazyBachelor/LazyPM/internal/models"
-	"github.com/LazyBachelor/LazyPM/internal/service"
 	"github.com/LazyBachelor/LazyPM/pkg/repl"
 	"github.com/LazyBachelor/LazyPM/pkg/task"
 	"github.com/LazyBachelor/LazyPM/pkg/tui"
@@ -12,7 +12,7 @@ import (
 	"github.com/charmbracelet/huh"
 )
 
-type App = service.App
+type App = app.App
 type Config = models.Config
 type ValidationFeedback = models.ValidationFeedback
 
@@ -113,7 +113,7 @@ func TUIQuestion(interfaceType InterfaceType, fields ...huh.Field) *huh.Group {
 
 // FetchIssues retrives all issues from the app and returns those that are relevant for validation,
 // excluding the setup issue. It also updates the setup issue with the latest data from the app.
-func FetchIssues(ctx context.Context, app *service.App, setupIssue *models.Issue) ([]*models.Issue, error) {
+func FetchIssues(ctx context.Context, app *app.App, setupIssue *models.Issue) ([]*models.Issue, error) {
 	issues, err := app.Issues.SearchIssues(ctx, "", models.IssueFilter{})
 	if err != nil {
 		return nil, err

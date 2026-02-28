@@ -6,8 +6,7 @@ import (
 	"os"
 
 	"github.com/LazyBachelor/LazyPM/internal/models"
-	"github.com/LazyBachelor/LazyPM/internal/service"
-	"github.com/LazyBachelor/LazyPM/internal/utils"
+	"github.com/LazyBachelor/LazyPM/internal/utils/check"
 	"github.com/charmbracelet/huh"
 	"github.com/go-git/go-git/v6"
 )
@@ -26,11 +25,10 @@ Your task:
 The repository has been initialized in ./task/.git/ for you to work with.`
 
 type GitTask struct {
-	setupIssue *models.Issue
-	repo       *git.Repository
+	app        *App
 	done       bool
-
-	app *service.App
+	repo       *git.Repository
+	setupIssue *Issue
 }
 
 func NewGitTask(app *App) *GitTask {
@@ -72,7 +70,7 @@ func (t *GitTask) Setup(ctx context.Context) error {
 	os.WriteFile("./task/README.md",
 		[]byte("This is a Git task. Please perform a Git operation here."), 0o644)
 
-	t.setupIssue = models.NewIssueBuilder().
+	t.setupIssue = NewIssueBuilder().
 		WithTitle("Git Task Setup Issue").
 		WithDescription(gitTaskDescription).
 		WithIssueType(models.TypeTask).
@@ -86,7 +84,7 @@ func (t *GitTask) Setup(ctx context.Context) error {
 }
 
 func (t *GitTask) Validate(ctx context.Context) ValidationFeedback {
-	expect := utils.NewExpector()
+	expect := check.NewExpector()
 
 	return expect.Complete()
 }

@@ -1,4 +1,4 @@
-package issuesCmd
+package issues
 
 import (
 	"bytes"
