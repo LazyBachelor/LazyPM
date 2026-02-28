@@ -8,7 +8,7 @@ import (
 )
 
 func main() {
-	if err := tui.NewTui().Run(context.Background(), models.BaseConfig); err != nil {
+	if err := tui.New().Run(context.Background(), models.BaseConfig); err != nil {
 		return
 	}
 }

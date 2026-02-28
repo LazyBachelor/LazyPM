@@ -6,10 +6,10 @@ import (
 	"time"
 
 	"github.com/LazyBachelor/LazyPM/internal/models"
-	taskui "github.com/LazyBachelor/LazyPM/pkg/task/ui"
 	tea "github.com/charmbracelet/bubbletea"
 )
 
+type App = models.App
 type Config = models.Config
 
 type Tasker = models.Tasker
@@ -43,7 +43,7 @@ func RunTask(ctx context.Context, t Tasker, i Interface, iType InterfaceType) er
 	}
 
 	// Show task intro
-	detailsScreen := taskui.NewTaskModel(t.Details())
+	detailsScreen := NewTaskModel(t.Details())
 	model, err := tea.NewProgram(detailsScreen, tea.WithAltScreen()).Run()
 	if err != nil {
 		return err
@@ -79,7 +79,7 @@ func RunTask(ctx context.Context, t Tasker, i Interface, iType InterfaceType) er
 
 	// Show questionnaire
 	questions := t.Questions(iType)
-	questionare := taskui.NewQuestionnaireModel(questions)
+	questionare := NewQuestionnaireModel(questions)
 	model, err = tea.NewProgram(questionare, tea.WithAltScreen()).Run()
 	if err != nil {
 		return err

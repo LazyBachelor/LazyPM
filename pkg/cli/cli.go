@@ -18,7 +18,7 @@ type CLI struct {
 	RootCmd *cobra.Command
 }
 
-func NewCli(rootCmd *cobra.Command) *CLI {
+func New(rootCmd *cobra.Command) *CLI {
 	return &CLI{
 		RootCmd: rootCmd,
 	}

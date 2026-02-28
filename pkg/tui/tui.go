@@ -17,7 +17,7 @@ type Tui struct {
 	quitChan     chan bool
 }
 
-func NewTui() *Tui {
+func New() *Tui {
 	return &Tui{}
 }
 

@@ -4,10 +4,7 @@ import (
 	"context"
 
 	"github.com/LazyBachelor/LazyPM/internal/models"
-	"github.com/LazyBachelor/LazyPM/internal/service"
 	"github.com/LazyBachelor/LazyPM/internal/utils"
-	"github.com/LazyBachelor/LazyPM/pkg/task"
-	taskui "github.com/LazyBachelor/LazyPM/pkg/task/ui"
 	"github.com/charmbracelet/huh"
 )
 
@@ -26,19 +23,19 @@ The milestone deadline is 2 weeks away. Some issues have dependencies that need 
 
 type MilestoneTrackingTask struct {
 	done       bool
-	app        *service.App
-	setupIssue *models.Issue
+	app        *App
+	setupIssue *Issue
 }
 
-func NewMilestoneTrackingTask(app *service.App) *MilestoneTrackingTask {
+func NewMilestoneTrackingTask(app *App) *MilestoneTrackingTask {
 	return &MilestoneTrackingTask{app: app, done: false}
 }
 
-func (t *MilestoneTrackingTask) Config() task.Config {
+func (t *MilestoneTrackingTask) Config() Config {
 	return BaseConfig().WithStatisticsStoragePath("./.pm/milestone-task-stats.json")
 }
 
-func (t *MilestoneTrackingTask) Details() taskui.TaskDetails {
+func (t *MilestoneTrackingTask) Details() TaskDetails {
 	return BaseDetails().
 		WithTitle("Milestone Tracking Task").
 		WithDescription(milestoneTrackingDescription).
@@ -46,7 +43,7 @@ func (t *MilestoneTrackingTask) Details() taskui.TaskDetails {
 		WithDifficulty("Easy")
 }
 
-func (t *MilestoneTrackingTask) Questions(interfaceType task.InterfaceType) taskui.Questions {
+func (t *MilestoneTrackingTask) Questions(interfaceType InterfaceType) Questions {
 	return BaseQuestions(interfaceType).With(
 		huh.NewGroup(
 			huh.NewSelect[int]().
@@ -66,35 +63,35 @@ func (t *MilestoneTrackingTask) Setup(ctx context.Context) error {
 	}
 
 	milestoneIssues := []*models.Issue{
-		models.NewIssueBuilder().
+		NewIssueBuilder().
 			WithTitle("Core API endpoints").
 			WithDescription("Implement REST API for core functionality. COMPLETED").
 			WithPriority(1).
 			WithStatus(models.StatusClosed).
 			WithIssueType(models.TypeTask).
 			Build(),
-		models.NewIssueBuilder().
+		NewIssueBuilder().
 			WithTitle("Frontend dashboard").
 			WithDescription("Create main dashboard UI. In progress - 80% complete").
 			WithPriority(1).
 			WithStatus(models.StatusInProgress).
 			WithIssueType(models.TypeTask).
 			Build(),
-		models.NewIssueBuilder().
+		NewIssueBuilder().
 			WithTitle("User management module").
 			WithDescription("Depends on Core API. Add user CRUD operations. Currently blocked").
 			WithPriority(2).
 			WithStatus(models.StatusBlocked).
 			WithIssueType(models.TypeTask).
 			Build(),
-		models.NewIssueBuilder().
+		NewIssueBuilder().
 			WithTitle("Analytics reporting").
 			WithDescription("Generate usage analytics reports. Not started yet").
 			WithPriority(3).
 			WithStatus(models.StatusOpen).
 			WithIssueType(models.TypeTask).
 			Build(),
-		models.NewIssueBuilder().
+		NewIssueBuilder().
 			WithTitle("Email notifications").
 			WithDescription("Setup email service for alerts. 50% complete").
 			WithPriority(2).
@@ -107,7 +104,7 @@ func (t *MilestoneTrackingTask) Setup(ctx context.Context) error {
 		return err
 	}
 
-	t.setupIssue = models.NewBaseIssue().
+	t.setupIssue = NewIssueBuilder().
 		WithTitle("Q1 Release Milestone Tracking").
 		WithDescription(milestoneTrackingDescription).
 		Build()

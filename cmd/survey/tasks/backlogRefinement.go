@@ -4,10 +4,7 @@ import (
 	"context"
 
 	"github.com/LazyBachelor/LazyPM/internal/models"
-	"github.com/LazyBachelor/LazyPM/internal/service"
 	"github.com/LazyBachelor/LazyPM/internal/utils"
-	"github.com/LazyBachelor/LazyPM/pkg/task"
-	taskui "github.com/LazyBachelor/LazyPM/pkg/task/ui"
 	"github.com/charmbracelet/huh"
 )
 
@@ -26,19 +23,19 @@ Focus on making the backlog a reliable source of upcoming work.`
 
 type BacklogRefinementTask struct {
 	done       bool
-	app        *service.App
-	setupIssue *models.Issue
+	app        *App
+	setupIssue *Issue
 }
 
-func NewBacklogRefinementTask(app *service.App) *BacklogRefinementTask {
+func NewBacklogRefinementTask(app *App) *BacklogRefinementTask {
 	return &BacklogRefinementTask{app: app, done: false}
 }
 
-func (t *BacklogRefinementTask) Config() task.Config {
+func (t *BacklogRefinementTask) Config() Config {
 	return BaseConfig().WithStatisticsStoragePath("./.pm/refinement-task-stats.json")
 }
 
-func (t *BacklogRefinementTask) Details() taskui.TaskDetails {
+func (t *BacklogRefinementTask) Details() TaskDetails {
 	return BaseDetails().
 		WithTitle("Backlog Refinement Task").
 		WithDescription(backlogRefinementDescription).
@@ -46,7 +43,7 @@ func (t *BacklogRefinementTask) Details() taskui.TaskDetails {
 		WithDifficulty("Medium")
 }
 
-func (t *BacklogRefinementTask) Questions(interfaceType task.InterfaceType) taskui.Questions {
+func (t *BacklogRefinementTask) Questions(interfaceType InterfaceType) Questions {
 	return BaseQuestions(interfaceType).With(
 		huh.NewGroup(
 			huh.NewSelect[int]().
@@ -66,42 +63,42 @@ func (t *BacklogRefinementTask) Setup(ctx context.Context) error {
 	}
 
 	refinementIssues := []*models.Issue{
-		models.NewIssueBuilder().
+		NewIssueBuilder().
 			WithTitle("Old feature request: Fax integration").
 			WithDescription("Allow sending reports via fax. DEPRECATED - nobody uses fax anymore").
 			WithPriority(3).
 			WithStatus(models.StatusOpen).
 			WithIssueType(models.TypeTask).
 			Build(),
-		models.NewIssueBuilder().
+		NewIssueBuilder().
 			WithTitle("User profile page").
 			WithDescription("Create page for users to view profile. DUPLICATE of user-management epic").
 			WithPriority(2).
 			WithStatus(models.StatusOpen).
 			WithIssueType(models.TypeTask).
 			Build(),
-		models.NewIssueBuilder().
+		NewIssueBuilder().
 			WithTitle("Mobile app redesign").
 			WithDescription("Redesign mobile interface with modern UI patterns. Still relevant, needs clarity").
 			WithPriority(1).
 			WithStatus(models.StatusOpen).
 			WithIssueType(models.TypeTask).
 			Build(),
-		models.NewIssueBuilder().
+		NewIssueBuilder().
 			WithTitle("Legacy data export tool").
 			WithDescription("Tool for exporting data in old format. OBSOLETE - format no longer supported").
 			WithPriority(3).
 			WithStatus(models.StatusOpen).
 			WithIssueType(models.TypeTask).
 			Build(),
-		models.NewIssueBuilder().
+		NewIssueBuilder().
 			WithTitle("API v1 documentation").
 			WithDescription("Document old API version. DEPRECATED - migrating to v2").
 			WithPriority(3).
 			WithStatus(models.StatusOpen).
 			WithIssueType(models.TypeTask).
 			Build(),
-		models.NewIssueBuilder().
+		NewIssueBuilder().
 			WithTitle("Customer feedback system").
 			WithDescription("Build system for collecting user feedback. HIGH VALUE - prioritize").
 			WithPriority(2).
@@ -114,7 +111,7 @@ func (t *BacklogRefinementTask) Setup(ctx context.Context) error {
 		return err
 	}
 
-	t.setupIssue = models.NewBaseIssue().
+	t.setupIssue = NewIssueBuilder().
 		WithTitle("Backlog Refinement Session").
 		WithDescription(backlogRefinementDescription).
 		Build()

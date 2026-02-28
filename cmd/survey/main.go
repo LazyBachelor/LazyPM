@@ -32,9 +32,9 @@ func main() {
 }
 
 func init() {
-	task.RegisterInterface("tui", tui.NewTui())
-	task.RegisterInterface("web", web.NewWeb())
-	task.RegisterInterface("repl", repl.NewRepl())
+	task.RegisterInterface("tui", tui.New())
+	task.RegisterInterface("web", web.New())
+	task.RegisterInterface("repl", repl.New())
 
 	task.RegisterTask("create_issue", func(app *service.App) task.Tasker {
 		return tasks.NewCreateIssueTask(app)

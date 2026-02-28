@@ -4,10 +4,7 @@ import (
 	"context"
 
 	"github.com/LazyBachelor/LazyPM/internal/models"
-	"github.com/LazyBachelor/LazyPM/internal/service"
 	"github.com/LazyBachelor/LazyPM/internal/utils"
-	"github.com/LazyBachelor/LazyPM/pkg/task"
-	taskui "github.com/LazyBachelor/LazyPM/pkg/task/ui"
 	"github.com/charmbracelet/huh"
 )
 
@@ -25,19 +22,19 @@ Resolving dependencies in the right order is critical for efficient team workflo
 
 type DependencyManagementTask struct {
 	done       bool
-	app        *service.App
+	app        *App
 	setupIssue *models.Issue
 }
 
-func NewDependencyManagementTask(app *service.App) *DependencyManagementTask {
+func NewDependencyManagementTask(app *App) *DependencyManagementTask {
 	return &DependencyManagementTask{app: app, done: false}
 }
 
-func (t *DependencyManagementTask) Config() task.Config {
+func (t *DependencyManagementTask) Config() Config {
 	return BaseConfig().WithStatisticsStoragePath("./.pm/dependency-task-stats.json")
 }
 
-func (t *DependencyManagementTask) Details() taskui.TaskDetails {
+func (t *DependencyManagementTask) Details() TaskDetails {
 	return BaseDetails().
 		WithTitle("Dependency Management Task").
 		WithDescription(dependencyManagementDescription).
@@ -45,7 +42,7 @@ func (t *DependencyManagementTask) Details() taskui.TaskDetails {
 		WithDifficulty("Hard")
 }
 
-func (t *DependencyManagementTask) Questions(interfaceType task.InterfaceType) taskui.Questions {
+func (t *DependencyManagementTask) Questions(interfaceType InterfaceType) Questions {
 	return BaseQuestions(interfaceType).With(
 		huh.NewGroup(
 			huh.NewSelect[int]().

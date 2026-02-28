@@ -7,15 +7,27 @@ import (
 	"github.com/LazyBachelor/LazyPM/internal/service"
 	"github.com/LazyBachelor/LazyPM/pkg/repl"
 	"github.com/LazyBachelor/LazyPM/pkg/task"
-	taskui "github.com/LazyBachelor/LazyPM/pkg/task/ui"
 	"github.com/LazyBachelor/LazyPM/pkg/tui"
 	"github.com/LazyBachelor/LazyPM/pkg/web"
 	"github.com/charmbracelet/huh"
 )
 
+type App = service.App
+type Config = models.Config
 type ValidationFeedback = models.ValidationFeedback
-type InterfaceType = models.InterfaceType
+
+type Issue = models.Issue
+type IssueFilter = models.IssueFilter
+
+type Questions = models.Questions
+type TaskDetails = models.TaskDetails
+
 type Interface = task.Interface
+type InterfaceType = models.InterfaceType
+
+func NewIssueBuilder() *models.IssueBuilder {
+	return models.NewIssueBuilder()
+}
 
 const (
 	InterfaceTypeCLI  = models.InterfaceTypeCLI
@@ -37,8 +49,8 @@ func InterfaceToType(it Interface) InterfaceType {
 	}
 }
 
-func BaseDetails() taskui.TaskDetails {
-	return taskui.TaskDetails{
+func BaseDetails() TaskDetails {
+	return TaskDetails{
 		Title:          "Base Task",
 		Description:    "This is a base task.",
 		TimeToComplete: "10m",
@@ -46,17 +58,17 @@ func BaseDetails() taskui.TaskDetails {
 	}
 }
 
-func BaseConfig() task.Config {
+func BaseConfig() Config {
 	return models.BaseConfig
 }
 
-func ClearIssues(app *service.App) error {
+func ClearIssues(app *App) error {
 	return app.Issues.DeleteIssues()
 }
 
-func BaseQuestions(interfaceType task.InterfaceType) taskui.Questions {
+func BaseQuestions(interfaceType InterfaceType) Questions {
 	var taskRating int
-	return taskui.Questions{
+	return Questions{
 		huh.NewGroup(
 			huh.NewConfirm().
 				Title("Did you complete the task?"),
@@ -78,21 +90,21 @@ func Question(fields ...huh.Field) *huh.Group {
 	return huh.NewGroup(fields...)
 }
 
-func ReplQuestion(interfaceType task.InterfaceType, fields ...huh.Field) *huh.Group {
+func ReplQuestion(interfaceType InterfaceType, fields ...huh.Field) *huh.Group {
 	if interfaceType != InterfaceTypeREPL {
 		return nil
 	}
 	return huh.NewGroup(fields...)
 }
 
-func WebQuestion(interfaceType task.InterfaceType, fields ...huh.Field) *huh.Group {
+func WebQuestion(interfaceType InterfaceType, fields ...huh.Field) *huh.Group {
 	if interfaceType != InterfaceTypeWeb {
 		return nil
 	}
 	return huh.NewGroup(fields...)
 }
 
-func TUIQuestion(interfaceType task.InterfaceType, fields ...huh.Field) *huh.Group {
+func TUIQuestion(interfaceType InterfaceType, fields ...huh.Field) *huh.Group {
 	if interfaceType != InterfaceTypeTUI {
 		return nil
 	}

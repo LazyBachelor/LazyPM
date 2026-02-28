@@ -30,15 +30,15 @@ You can also run shell commands directly. Type 'exit' or 'quit' to leave.`
 )
 
 type REPL struct {
-	feedbackChan chan task.ValidationFeedback
+	feedbackChan chan ValidationFeedback
 	quitChan     chan bool
 	app          *App
 
-	currentFeedback task.ValidationFeedback
+	currentFeedback ValidationFeedback
 	exitRequested   bool
 }
 
-func NewRepl() *REPL {
+func New() *REPL {
 	return &REPL{}
 }
 

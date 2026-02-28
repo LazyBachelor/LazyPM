@@ -24,7 +24,7 @@ type Web struct {
 	quitChan     chan bool
 }
 
-func NewWeb() *Web {
+func New() *Web {
 	return &Web{}
 }
 

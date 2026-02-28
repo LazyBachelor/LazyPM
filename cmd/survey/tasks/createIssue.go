@@ -4,11 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/LazyBachelor/LazyPM/internal/models"
-	"github.com/LazyBachelor/LazyPM/internal/service"
 	"github.com/LazyBachelor/LazyPM/internal/utils"
-	"github.com/LazyBachelor/LazyPM/pkg/task"
-	taskui "github.com/LazyBachelor/LazyPM/pkg/task/ui"
 )
 
 const description = `You are tasked with creating a new issue in the project management system.
@@ -26,23 +22,23 @@ Make sure to fill out all the necessary details to help others understand the wo
 
 type CreateIssueTask struct {
 	done       bool
-	app        *service.App
-	setupIssue *models.Issue
+	app        *App
+	setupIssue *Issue
 }
 
-func NewCreateIssueTask(app *service.App) *CreateIssueTask {
+func NewCreateIssueTask(app *App) *CreateIssueTask {
 	return &CreateIssueTask{app: app, done: false}
 }
 
-func (t *CreateIssueTask) Config() task.Config {
+func (t *CreateIssueTask) Config() Config {
 	return BaseConfig().WithStatisticsStoragePath("./.pm/create-issue-stats.json")
 }
 
-func (t *CreateIssueTask) Details() taskui.TaskDetails {
+func (t *CreateIssueTask) Details() TaskDetails {
 	return BaseDetails().WithTitle("Create Issue Task").WithDescription(description)
 }
 
-func (t *CreateIssueTask) Questions(interfaceType task.InterfaceType) taskui.Questions {
+func (t *CreateIssueTask) Questions(interfaceType InterfaceType) Questions {
 	return BaseQuestions(interfaceType)
 }
 
@@ -51,7 +47,7 @@ func (t *CreateIssueTask) Setup(ctx context.Context) error {
 		return err
 	}
 
-	t.setupIssue = models.NewBaseIssue().
+	t.setupIssue = NewIssueBuilder().
 		WithTitle("Create a New Issue").
 		WithDescription(description).
 		Build()

@@ -4,10 +4,7 @@ import (
 	"context"
 
 	"github.com/LazyBachelor/LazyPM/internal/models"
-	"github.com/LazyBachelor/LazyPM/internal/service"
 	"github.com/LazyBachelor/LazyPM/internal/utils"
-	"github.com/LazyBachelor/LazyPM/pkg/task"
-	taskui "github.com/LazyBachelor/LazyPM/pkg/task/ui"
 	"github.com/charmbracelet/huh"
 )
 
@@ -27,19 +24,19 @@ The goal is to create a realistic sprint plan that delivers value while respecti
 
 type SprintPlanningTask struct {
 	done       bool
-	app        *service.App
-	setupIssue *models.Issue
+	app        *App
+	setupIssue *Issue
 }
 
-func NewSprintPlanningTask(app *service.App) *SprintPlanningTask {
+func NewSprintPlanningTask(app *App) *SprintPlanningTask {
 	return &SprintPlanningTask{app: app, done: false}
 }
 
-func (t *SprintPlanningTask) Config() task.Config {
+func (t *SprintPlanningTask) Config() Config {
 	return BaseConfig().WithStatisticsStoragePath("./.pm/sprint-planning-stats.json")
 }
 
-func (t *SprintPlanningTask) Details() taskui.TaskDetails {
+func (t *SprintPlanningTask) Details() TaskDetails {
 	return BaseDetails().
 		WithTitle("Sprint Planning Task").
 		WithDescription(sprintPlanningDescription).
@@ -47,7 +44,7 @@ func (t *SprintPlanningTask) Details() taskui.TaskDetails {
 		WithDifficulty("Medium")
 }
 
-func (t *SprintPlanningTask) Questions(interfaceType task.InterfaceType) taskui.Questions {
+func (t *SprintPlanningTask) Questions(interfaceType InterfaceType) Questions {
 	return BaseQuestions(interfaceType).With(
 		huh.NewGroup(
 			huh.NewSelect[int]().
@@ -67,35 +64,35 @@ func (t *SprintPlanningTask) Setup(ctx context.Context) error {
 	}
 
 	backlogIssues := []*models.Issue{
-		models.NewIssueBuilder().
+		NewIssueBuilder().
 			WithTitle("Implement user authentication").
 			WithDescription("Add login/logout functionality. Priority: High").
 			WithPriority(1).
 			WithStatus(models.StatusOpen).
 			WithIssueType(models.TypeTask).
 			Build(),
-		models.NewIssueBuilder().
+		NewIssueBuilder().
 			WithTitle("Design database schema").
 			WithDescription("Create tables for users and orders. Priority: High").
 			WithPriority(1).
 			WithStatus(models.StatusOpen).
 			WithIssueType(models.TypeTask).
 			Build(),
-		models.NewIssueBuilder().
+		NewIssueBuilder().
 			WithTitle("Setup CI/CD pipeline").
 			WithDescription("Configure automated testing and deployment. Currently blocked by server setup").
 			WithPriority(2).
 			WithStatus(models.StatusBlocked).
 			WithIssueType(models.TypeTask).
 			Build(),
-		models.NewIssueBuilder().
+		NewIssueBuilder().
 			WithTitle("Create API documentation").
 			WithDescription("Document all REST endpoints. Priority: Low").
 			WithPriority(3).
 			WithStatus(models.StatusOpen).
 			WithIssueType(models.TypeTask).
 			Build(),
-		models.NewIssueBuilder().
+		NewIssueBuilder().
 			WithTitle("Implement search functionality").
 			WithDescription("Depends on database schema. Priority: Medium").
 			WithPriority(2).
@@ -108,7 +105,7 @@ func (t *SprintPlanningTask) Setup(ctx context.Context) error {
 		return err
 	}
 
-	t.setupIssue = models.NewBaseIssue().
+	t.setupIssue = NewIssueBuilder().
 		WithTitle("Sprint Planning - Week 1").
 		WithDescription(sprintPlanningDescription).
 		Build()

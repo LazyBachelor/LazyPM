@@ -8,8 +8,6 @@ import (
 	"github.com/LazyBachelor/LazyPM/internal/models"
 	"github.com/LazyBachelor/LazyPM/internal/service"
 	"github.com/LazyBachelor/LazyPM/internal/utils"
-	"github.com/LazyBachelor/LazyPM/pkg/task"
-	taskui "github.com/LazyBachelor/LazyPM/pkg/task/ui"
 	"github.com/charmbracelet/huh"
 	"github.com/go-git/go-git/v6"
 )
@@ -35,19 +33,19 @@ type GitTask struct {
 	app *service.App
 }
 
-func NewGitTask(app *service.App) *GitTask {
+func NewGitTask(app *App) *GitTask {
 	return &GitTask{app: app, done: false}
 }
 
-func (t *GitTask) Config() task.Config {
+func (t *GitTask) Config() Config {
 	return BaseConfig().WithStatisticsStoragePath("./.pm/git-task-stats.json")
 }
 
-func (t *GitTask) Details() taskui.TaskDetails {
+func (t *GitTask) Details() TaskDetails {
 	return BaseDetails().WithTitle("Git Task").WithDescription(gitTaskDescription)
 }
 
-func (t *GitTask) Questions(interfaceType task.InterfaceType) taskui.Questions {
+func (t *GitTask) Questions(interfaceType InterfaceType) Questions {
 	return BaseQuestions(interfaceType).With(
 		huh.NewGroup(
 			huh.NewSelect[string]().Title("What Git Interface did you use?").
@@ -72,8 +70,7 @@ func (t *GitTask) Setup(ctx context.Context) error {
 	}
 
 	os.WriteFile("./task/README.md",
-		[]byte("This is a Git task. Please perform a Git operation here."),
-		0o644)
+		[]byte("This is a Git task. Please perform a Git operation here."), 0o644)
 
 	t.setupIssue = models.NewIssueBuilder().
 		WithTitle("Git Task Setup Issue").

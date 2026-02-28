@@ -2,8 +2,6 @@ package task
 
 import (
 	"fmt"
-
-	"github.com/LazyBachelor/LazyPM/internal/service"
 )
 
 var interfaceRegistry = make(map[string]Interface)
@@ -31,16 +29,16 @@ func ListInterfaces() []string {
 	return names
 }
 
-var taskRegistry = make(map[string]func(*service.App) Tasker)
+var taskRegistry = make(map[string]func(*App) Tasker)
 
-func RegisterTask(name string, constructor func(*service.App) Tasker) {
+func RegisterTask(name string, constructor func(*App) Tasker) {
 	if _, exists := taskRegistry[name]; exists {
 		panic(fmt.Sprintf("task %q already registered", name))
 	}
 	taskRegistry[name] = constructor
 }
 
-func GetTask(name string, app *service.App) (Tasker, error) {
+func GetTask(name string, app *App) (Tasker, error) {
 	constructor, ok := taskRegistry[name]
 	if !ok {
 		return nil, fmt.Errorf("task %q not found", name)

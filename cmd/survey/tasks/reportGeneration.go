@@ -4,10 +4,7 @@ import (
 	"context"
 
 	"github.com/LazyBachelor/LazyPM/internal/models"
-	"github.com/LazyBachelor/LazyPM/internal/service"
 	"github.com/LazyBachelor/LazyPM/internal/utils"
-	"github.com/LazyBachelor/LazyPM/pkg/task"
-	taskui "github.com/LazyBachelor/LazyPM/pkg/task/ui"
 	"github.com/charmbracelet/huh"
 )
 
@@ -26,19 +23,19 @@ Add summary comments to at least 3 key issues that stakeholders should know abou
 
 type ReportGenerationTask struct {
 	done       bool
-	app        *service.App
-	setupIssue *models.Issue
+	app        *App
+	setupIssue *Issue
 }
 
-func NewReportGenerationTask(app *service.App) *ReportGenerationTask {
+func NewReportGenerationTask(app *App) *ReportGenerationTask {
 	return &ReportGenerationTask{app: app, done: false}
 }
 
-func (t *ReportGenerationTask) Config() task.Config {
+func (t *ReportGenerationTask) Config() Config {
 	return BaseConfig().WithStatisticsStoragePath("./.pm/report-task-stats.json")
 }
 
-func (t *ReportGenerationTask) Details() taskui.TaskDetails {
+func (t *ReportGenerationTask) Details() TaskDetails {
 	return BaseDetails().
 		WithTitle("Status Report Generation").
 		WithDescription(reportGenerationDescription).
@@ -46,7 +43,7 @@ func (t *ReportGenerationTask) Details() taskui.TaskDetails {
 		WithDifficulty("Easy")
 }
 
-func (t *ReportGenerationTask) Questions(interfaceType task.InterfaceType) taskui.Questions {
+func (t *ReportGenerationTask) Questions(interfaceType InterfaceType) Questions {
 	return BaseQuestions(interfaceType).With(
 		huh.NewGroup(
 			huh.NewSelect[int]().
@@ -66,35 +63,35 @@ func (t *ReportGenerationTask) Setup(ctx context.Context) error {
 	}
 
 	reportIssues := []*models.Issue{
-		models.NewIssueBuilder().
+		NewIssueBuilder().
 			WithTitle("User login feature").
 			WithDescription("Allow users to login with email/password.").
 			WithPriority(1).
 			WithStatus(models.StatusClosed).
 			WithIssueType(models.TypeTask).
 			Build(),
-		models.NewIssueBuilder().
+		NewIssueBuilder().
 			WithTitle("Password reset").
 			WithDescription("Email-based password reset flow. In Progress").
 			WithPriority(2).
 			WithStatus(models.StatusInProgress).
 			WithIssueType(models.TypeTask).
 			Build(),
-		models.NewIssueBuilder().
+		NewIssueBuilder().
 			WithTitle("Database optimization").
 			WithDescription("Optimize slow queries identified in profiling.").
 			WithPriority(1).
 			WithStatus(models.StatusBlocked).
 			WithIssueType(models.TypeTask).
 			Build(),
-		models.NewIssueBuilder().
+		NewIssueBuilder().
 			WithTitle("Mobile responsive design").
 			WithDescription("Make UI work on mobile devices.").
 			WithPriority(2).
 			WithStatus(models.StatusClosed).
 			WithIssueType(models.TypeTask).
 			Build(),
-		models.NewIssueBuilder().
+		NewIssueBuilder().
 			WithTitle("Third-party API integration").
 			WithDescription("Waiting for vendor API documentation.").
 			WithPriority(1).
@@ -103,13 +100,11 @@ func (t *ReportGenerationTask) Setup(ctx context.Context) error {
 			Build(),
 	}
 
-	for _, issue := range reportIssues {
-		if err := t.app.Issues.CreateIssue(ctx, issue, ""); err != nil {
-			return err
-		}
+	if err := t.app.Issues.CreateIssues(ctx, reportIssues, ""); err != nil {
+		return err
 	}
 
-	t.setupIssue = models.NewBaseIssue().
+	t.setupIssue = NewIssueBuilder().
 		WithTitle("Weekly Status Report").
 		WithDescription(reportGenerationDescription).
 		Build()

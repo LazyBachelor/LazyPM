@@ -10,7 +10,7 @@ import (
 )
 
 func main() {
-	if err := cli.NewCli(issuesCmd.RootCmd).Run(context.Background(), models.BaseConfig); err != nil {
+	if err := cli.New(issuesCmd.RootCmd).Run(context.Background(), models.BaseConfig); err != nil {
 		return
 	}
 }

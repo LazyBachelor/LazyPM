@@ -4,10 +4,7 @@ import (
 	"context"
 
 	"github.com/LazyBachelor/LazyPM/internal/models"
-	"github.com/LazyBachelor/LazyPM/internal/service"
 	"github.com/LazyBachelor/LazyPM/internal/utils"
-	"github.com/LazyBachelor/LazyPM/pkg/task"
-	taskui "github.com/LazyBachelor/LazyPM/pkg/task/ui"
 	"github.com/charmbracelet/huh"
 )
 
@@ -27,19 +24,19 @@ The stakeholder is interested in the Dashboard Enhancement and Export Features s
 
 type StakeholderUpdateTask struct {
 	done       bool
-	app        *service.App
-	setupIssue *models.Issue
+	app        *App
+	setupIssue *Issue
 }
 
-func NewStakeholderUpdateTask(app *service.App) *StakeholderUpdateTask {
+func NewStakeholderUpdateTask(app *App) *StakeholderUpdateTask {
 	return &StakeholderUpdateTask{app: app, done: false}
 }
 
-func (t *StakeholderUpdateTask) Config() task.Config {
+func (t *StakeholderUpdateTask) Config() Config {
 	return BaseConfig().WithStatisticsStoragePath("./.pm/stakeholder-task-stats.json")
 }
 
-func (t *StakeholderUpdateTask) Details() taskui.TaskDetails {
+func (t *StakeholderUpdateTask) Details() TaskDetails {
 	return BaseDetails().
 		WithTitle("Stakeholder Update Task").
 		WithDescription(stakeholderUpdateDescription).
@@ -47,7 +44,7 @@ func (t *StakeholderUpdateTask) Details() taskui.TaskDetails {
 		WithDifficulty("Easy")
 }
 
-func (t *StakeholderUpdateTask) Questions(interfaceType task.InterfaceType) taskui.Questions {
+func (t *StakeholderUpdateTask) Questions(interfaceType InterfaceType) Questions {
 	return BaseQuestions(interfaceType).With(
 		huh.NewGroup(
 			huh.NewSelect[int]().
@@ -68,28 +65,28 @@ func (t *StakeholderUpdateTask) Setup(ctx context.Context) error {
 	}
 
 	stakeholderIssues := []*models.Issue{
-		models.NewIssueBuilder().
+		NewIssueBuilder().
 			WithTitle("Dashboard Enhancement - Charts").
 			WithDescription("Add interactive charts to the main dashboard (stakeholder request). COMPLETED").
 			WithPriority(1).
 			WithStatus(models.StatusClosed).
 			WithIssueType(models.TypeTask).
 			Build(),
-		models.NewIssueBuilder().
+		NewIssueBuilder().
 			WithTitle("Dashboard Enhancement - Filters").
 			WithDescription("Add date range filters to dashboard (stakeholder request). In Progress").
 			WithPriority(2).
 			WithStatus(models.StatusInProgress).
 			WithIssueType(models.TypeTask).
 			Build(),
-		models.NewIssueBuilder().
+		NewIssueBuilder().
 			WithTitle("Export to PDF").
 			WithDescription("Allow exporting reports to PDF format (stakeholder request). In Progress").
 			WithPriority(1).
 			WithStatus(models.StatusInProgress).
 			WithIssueType(models.TypeTask).
 			Build(),
-		models.NewIssueBuilder().
+		NewIssueBuilder().
 			WithTitle("Export to Excel").
 			WithDescription("Allow exporting data to Excel format (stakeholder request). BLOCKED - waiting for library approval").
 			WithPriority(2).
@@ -102,7 +99,7 @@ func (t *StakeholderUpdateTask) Setup(ctx context.Context) error {
 		return err
 	}
 
-	t.setupIssue = models.NewBaseIssue().
+	t.setupIssue = NewIssueBuilder().
 		WithTitle("Stakeholder Update Preparation").
 		WithDescription(stakeholderUpdateDescription).
 		Build()
