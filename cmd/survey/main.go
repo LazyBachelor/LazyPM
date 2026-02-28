@@ -36,14 +36,6 @@ func init() {
 	task.RegisterInterface("web", web.NewWeb())
 	task.RegisterInterface("repl", repl.NewRepl())
 
-	surveyCmd.StartCmd.RunE = runStartCmd
-	surveyCmd.RootCmd.AddCommand(surveyCmd.StartCmd)
-	surveyCmd.RootCmd.AddCommand(surveyCmd.SubmitCmd)
-	surveyCmd.RootCmd.AddCommand(surveyCmd.StatusCmd)
-	surveyCmd.RootCmd.AddCommand(surveyCmd.ListTasksCmd)
-	surveyCmd.RootCmd.AddCommand(surveyCmd.ListInterfacesCmd)
-	surveyCmd.RootCmd.AddCommand(issuesCmd.RootCmd)
-
 	task.RegisterTask("create_issue", func(app *service.App) task.Tasker {
 		return tasks.NewCreateIssueTask(app)
 	})
@@ -81,4 +73,11 @@ func init() {
 		return tasks.NewBacklogRefinementTask(app)
 	})
 
+	surveyCmd.StartCmd.RunE = runStartCmd
+	surveyCmd.RootCmd.AddCommand(surveyCmd.StartCmd)
+	surveyCmd.RootCmd.AddCommand(surveyCmd.SubmitCmd)
+	surveyCmd.RootCmd.AddCommand(surveyCmd.StatusCmd)
+	surveyCmd.RootCmd.AddCommand(surveyCmd.ListTasksCmd)
+	surveyCmd.RootCmd.AddCommand(surveyCmd.ListInterfacesCmd)
+	surveyCmd.RootCmd.AddCommand(issuesCmd.RootCmd)
 }

@@ -3,6 +3,7 @@ package issuesCmd
 import (
 	"strings"
 
+	"github.com/LazyBachelor/LazyPM/internal/commands"
 	"github.com/LazyBachelor/LazyPM/internal/models"
 	"github.com/spf13/cobra"
 )
@@ -78,7 +79,7 @@ func init() {
 
 	ListCmd.Flags().IntVarP(&listFlags.limit, "limit", "l", 25, "Limit the number of issues returned")
 
-	ListCmd.RegisterFlagCompletionFunc("status", completionFunc(statusOptions))
-	ListCmd.RegisterFlagCompletionFunc("type", completionFunc(typeOptions))
-	ListCmd.RegisterFlagCompletionFunc("priority", completionFunc(priorityRange))
+	ListCmd.RegisterFlagCompletionFunc("status", commands.CompletionFunc(statusOptions))
+	ListCmd.RegisterFlagCompletionFunc("type", commands.CompletionFunc(typeOptions))
+	ListCmd.RegisterFlagCompletionFunc("priority", commands.CompletionFunc(priorityRange))
 }

@@ -15,13 +15,6 @@ var (
 	priorityRange = []string{"0", "1", "2", "3", "4"}
 )
 
-// completionFunc returns a function that provides shell completion for the given options.
-func completionFunc(options []string) func(*cobra.Command, []string, string) ([]string, cobra.ShellCompDirective) {
-	return func(_ *cobra.Command, _ []string, _ string) ([]string, cobra.ShellCompDirective) {
-		return options, cobra.ShellCompDirectiveDefault
-	}
-}
-
 // completeIssues provides shell completion for issue IDs and titles.
 func completeIssues(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 	issues, _ := GetIssueCompletions(cmd.Context(), toComplete)
