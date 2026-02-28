@@ -3,16 +3,17 @@ package tui
 import (
 	"context"
 
+	"github.com/LazyBachelor/LazyPM/internal/models"
 	"github.com/LazyBachelor/LazyPM/internal/service"
-	"github.com/LazyBachelor/LazyPM/pkg/task"
 	"github.com/LazyBachelor/LazyPM/pkg/tui/views"
 	tea "github.com/charmbracelet/bubbletea"
 )
 
-type Config = service.Config
+type Config = models.Config
+type ValidationFeedback = models.ValidationFeedback
 
 type Tui struct {
-	feedbackChan chan task.ValidationFeedback
+	feedbackChan chan ValidationFeedback
 	quitChan     chan bool
 }
 
@@ -21,7 +22,7 @@ func NewTui() *Tui {
 }
 
 func (t *Tui) Run(ctx context.Context, config Config) error {
-	app, cleanup, err := service.NewServices(ctx, config)
+	app, cleanup, err := service.NewApp(ctx, config)
 	if err != nil {
 		return err
 	}
@@ -45,7 +46,7 @@ func (t *Tui) Run(ctx context.Context, config Config) error {
 	return nil
 }
 
-func (t *Tui) SetChannels(feedbackChan chan task.ValidationFeedback, quitChan chan bool) {
+func (t *Tui) SetChannels(feedbackChan chan ValidationFeedback, quitChan chan bool) {
 	t.feedbackChan = feedbackChan
 	t.quitChan = quitChan
 }

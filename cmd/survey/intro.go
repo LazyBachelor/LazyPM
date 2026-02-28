@@ -3,8 +3,8 @@ package main
 import (
 	"strings"
 
+	"github.com/LazyBachelor/LazyPM/internal/models"
 	"github.com/LazyBachelor/LazyPM/internal/style"
-	"github.com/LazyBachelor/LazyPM/pkg/task"
 	"github.com/charmbracelet/bubbles/key"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
@@ -75,7 +75,7 @@ func (m introModel) Run() error {
 		return err
 	}
 	if m, ok := model.(introModel); ok && m.userQuit {
-		return task.ErrUserQuit
+		return models.ErrUserQuit
 	}
 	return nil
 }

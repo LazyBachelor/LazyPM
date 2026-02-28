@@ -3,15 +3,15 @@ package dashboard
 import (
 	"context"
 
+	"github.com/LazyBachelor/LazyPM/internal/models"
 	"github.com/LazyBachelor/LazyPM/internal/service"
-	"github.com/LazyBachelor/LazyPM/pkg/task"
 	"github.com/charmbracelet/bubbles/textarea"
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
 )
 
 type ValidationFeedbackMsg struct {
-	Feedback task.ValidationFeedback
+	Feedback models.ValidationFeedback
 }
 
 type Model struct {
@@ -24,9 +24,9 @@ type Model struct {
 	app               *service.App
 	width             int
 	height            int
-	focusedWindow     	 int // 0 = main (display issues), 1 = closed issues
+	focusedWindow     int // 0 = main (display issues), 1 = closed issues
 	focusedPaneMain   int // 0 = list, 1 = detail
-	focusedPaneClosed 	 int
+	focusedPaneClosed int
 	editingTitle      bool // true while we are editing a title
 	titleInput        textinput.Model
 	editingIssueID    string
@@ -42,18 +42,18 @@ type Model struct {
 	deleteConfirmIndex int
 
 	choosingStatus   bool // true while choosing a status
-	statusIssueID   string
-	choosingPriority  bool // true while choosing a priority
-	priorityIssueID   string
-	choosingType      bool // true while choosing a type
-	typeIssueID        string
-	feedbackChan    chan task.ValidationFeedback
-	quitChan        chan bool
-	currentFeedback task.ValidationFeedback
-	showComplete    bool
+	statusIssueID    string
+	choosingPriority bool // true while choosing a priority
+	priorityIssueID  string
+	choosingType     bool // true while choosing a type
+	typeIssueID      string
+	feedbackChan     chan models.ValidationFeedback
+	quitChan         chan bool
+	currentFeedback  models.ValidationFeedback
+	showComplete     bool
 }
 
-func NewDashboard(app *service.App, feedbackChan chan task.ValidationFeedback, quitChan chan bool) *Model {
+func NewDashboard(app *service.App, feedbackChan chan models.ValidationFeedback, quitChan chan bool) *Model {
 	m := &Model{
 		header:            NewHeader("Project Manager Dashboard"),
 		keyMap:            defaultDashboardKeyMap,
@@ -67,7 +67,7 @@ func NewDashboard(app *service.App, feedbackChan chan task.ValidationFeedback, q
 		quitChan:          quitChan,
 	}
 
-	allIssues, _ := app.Issues.AllIssues(context.Background())
+	allIssues, _ := app.Issues.SearchIssues(context.Background(), "", models.IssueFilter{})
 	m.issueList = NewIssueListFromIssues(app, OpenAndInProgressOnly(allIssues), 0, 0)
 	m.issueDetail = NewIssueDetail()
 	m.closedIssueList = NewIssueListFromIssues(app, ClosedOnly(allIssues), 0, 0)

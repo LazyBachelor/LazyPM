@@ -68,7 +68,7 @@ func ListIssues(w http.ResponseWriter, r *http.Request) {
 	app := App(r)
 	hx := HTMX(r)
 
-	issues, err := app.Issues.AllIssues(r.Context())
+	issues, err := app.Issues.SearchIssues(r.Context(), "", models.IssueFilter{})
 	if err != nil {
 		http.Error(w, "Failed to retrieve issues", http.StatusInternalServerError)
 		return

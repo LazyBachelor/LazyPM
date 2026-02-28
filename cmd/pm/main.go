@@ -5,12 +5,12 @@ import (
 
 	issuesCmd "github.com/LazyBachelor/LazyPM/internal/commands/issues"
 	surveyCmd "github.com/LazyBachelor/LazyPM/internal/commands/survey"
-	"github.com/LazyBachelor/LazyPM/internal/service"
+	"github.com/LazyBachelor/LazyPM/internal/models"
 	"github.com/LazyBachelor/LazyPM/pkg/cli"
 )
 
 func main() {
-	if err := cli.NewCli(issuesCmd.RootCmd).Run(context.Background(), service.BaseConfig); err != nil {
+	if err := cli.NewCli(issuesCmd.RootCmd).Run(context.Background(), models.BaseConfig); err != nil {
 		return
 	}
 }

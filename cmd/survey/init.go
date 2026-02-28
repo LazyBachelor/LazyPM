@@ -11,7 +11,7 @@ import (
 )
 
 func initializeServices(ctx context.Context) (*service.App, func(), error) {
-	return service.NewServices(ctx, tasks.BaseConfig().WithAutoInit(true))
+	return service.NewApp(ctx, tasks.BaseConfig().WithAutoInit(true))
 }
 
 func initInterfaces() map[string]task.Interface {

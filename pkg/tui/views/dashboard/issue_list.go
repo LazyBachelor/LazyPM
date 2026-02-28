@@ -78,14 +78,14 @@ func renderHeaders(cols []TableColumn) string {
 }
 
 func NewIssueList(app *service.App, width, height int) IssueList {
-	issues, err := app.Issues.AllIssues(context.Background())
+	issues, err := app.Issues.SearchIssues(context.Background(), "", models.IssueFilter{})
 	if err != nil {
 		return IssueList{}
 	}
 
 	listIssues := []ListIssue{}
 	for _, issue := range issues {
-		listIssues = append(listIssues, ListIssue{Issue: issue})
+		listIssues = append(listIssues, ListIssue{Issue: *issue})
 	}
 
 	items := make([]list.Item, len(listIssues))
@@ -111,11 +111,11 @@ func NewIssueList(app *service.App, width, height int) IssueList {
 	}
 }
 
-func NewIssueListFromIssues(app *service.App, issues []models.Issue, width, height int) IssueList {
+func NewIssueListFromIssues(app *service.App, issues []*models.Issue, width, height int) IssueList {
 	// for making an IssueList from a pre-existing list of issues.
 	listIssues := make([]list.Item, len(issues))
 	for i, issue := range issues {
-		listIssues[i] = ListIssue{Issue: issue}
+		listIssues[i] = ListIssue{Issue: *issue}
 	}
 	l := list.New(listIssues, NewIssueListDelegate(width), width, height)
 	l.SetShowTitle(false)
@@ -134,9 +134,9 @@ func NewIssueListFromIssues(app *service.App, issues []models.Issue, width, heig
 	}
 }
 
-func OpenAndInProgressOnly(issues []models.Issue) []models.Issue {
+func OpenAndInProgressOnly(issues []*models.Issue) []*models.Issue {
 	// used to display open & in-progress issues in the first window in the dashboard
-	out := make([]models.Issue, 0, len(issues))
+	out := make([]*models.Issue, 0, len(issues))
 	for _, issue := range issues {
 		if issue.Status == models.StatusOpen || issue.Status == models.StatusInProgress {
 			out = append(out, issue)
@@ -146,9 +146,9 @@ func OpenAndInProgressOnly(issues []models.Issue) []models.Issue {
 	return out
 }
 
-func ClosedOnly(issues []models.Issue) []models.Issue {
+func ClosedOnly(issues []*models.Issue) []*models.Issue {
 	// used to display issues in the second window in the dashboard
-	out := make([]models.Issue, 0, len(issues))
+	out := make([]*models.Issue, 0, len(issues))
 	for _, issue := range issues {
 		if issue.Status == models.StatusClosed {
 			out = append(out, issue)
@@ -158,7 +158,7 @@ func ClosedOnly(issues []models.Issue) []models.Issue {
 	return out
 }
 
-func sortByPriorityDesc(issues []models.Issue) {
+func sortByPriorityDesc(issues []*models.Issue) {
 	// sorts issues by priority, highest first.
 	sort.Slice(issues, func(i, j int) bool {
 		return issues[i].Priority > issues[j].Priority
@@ -248,10 +248,10 @@ func (l IssueList) FilterState() list.FilterState {
 	return l.list.FilterState()
 }
 
-func (l *IssueList) SetIssues(issues []models.Issue) tea.Cmd {
+func (l *IssueList) SetIssues(issues []*models.Issue) tea.Cmd {
 	listIssues := make([]list.Item, len(issues))
 	for i, issue := range issues {
-		listIssues[i] = ListIssue{Issue: issue}
+		listIssues[i] = ListIssue{Issue: *issue}
 	}
 	return l.list.SetItems(listIssues)
 }

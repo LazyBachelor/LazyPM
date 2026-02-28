@@ -1,4 +1,4 @@
-package service
+package models
 
 type Config struct {
 	AutoInit              bool

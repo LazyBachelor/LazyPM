@@ -113,7 +113,7 @@ func (m *Model) refreshIssueListsAndSelectIssue(issueID string) tea.Cmd {
 	/* update handler for issueTitleUpdatedMsg, issueDescriptionUpdatedMsg, and issueStatusUpdatedMsg to avoid using nearly identical code for refreshing the issue lists and updating the detail view
 	Fetch all issues, update both lists, set the detail view for the given issue, and return a command to select that issue. Returns nil if fetch fails.
 	*/
-	issues, err := m.app.Issues.AllIssues(context.Background())
+	issues, err := m.app.Issues.SearchIssues(context.Background(), "", models.IssueFilter{})
 	if err != nil {
 		return nil
 	}
@@ -121,7 +121,7 @@ func (m *Model) refreshIssueListsAndSelectIssue(issueID string) tea.Cmd {
 	closedSetCmd := m.closedIssueList.SetIssues(ClosedOnly(issues))
 	for _, issue := range issues {
 		if issue.ID == issueID {
-			m.issueDetail.SetIssue(issue)
+			m.issueDetail.SetIssue(*issue)
 			break
 		}
 	}
@@ -184,7 +184,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if msg.Err != nil || msg.Issue == nil {
 			return m, nil
 		}
-		issues, err := m.app.Issues.AllIssues(context.Background())
+		issues, err := m.app.Issues.SearchIssues(context.Background(), "", models.IssueFilter{})
 		if err != nil {
 			return m, nil
 		}
@@ -197,7 +197,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			for _, issue := range issues {
 				// Prefer an issue that matches the created issue's title when ID is not yet known.
 				if issue.Title == msg.Issue.Title {
-					selectedIssue = &issue
+					selectedIssue = issue
 					break
 				}
 			}
@@ -211,7 +211,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if msg.Err != nil {
 			return m, nil
 		}
-		issues, err := m.app.Issues.AllIssues(context.Background())
+		issues, err := m.app.Issues.SearchIssues(context.Background(), "", models.IssueFilter{})
 		if err != nil {
 			return m, nil
 		}
@@ -226,7 +226,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 
 		// Determine which list to use for the next selection.
-		var targetIssues []models.Issue
+		var targetIssues []*models.Issue
 		if m.focusedWindow == 0 {
 			targetIssues = openIssues
 			if len(targetIssues) == 0 && len(closedIssues) > 0 {
@@ -254,7 +254,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			newIndex = len(targetIssues) - 1
 		}
 		selectedIssue := targetIssues[newIndex]
-		m.issueDetail.SetIssue(selectedIssue)
+		m.issueDetail.SetIssue(*selectedIssue)
 		return m, tea.Sequence(setItemsCmd, closedSetCmd, func() tea.Msg {
 			return selectIssueMsg{IssueID: selectedIssue.ID}
 		})

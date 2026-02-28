@@ -3,12 +3,11 @@ package tasks
 import (
 	"context"
 	"errors"
-	"fmt"
 	"os"
-	"time"
 
 	"github.com/LazyBachelor/LazyPM/internal/models"
 	"github.com/LazyBachelor/LazyPM/internal/service"
+	"github.com/LazyBachelor/LazyPM/internal/utils"
 	"github.com/LazyBachelor/LazyPM/pkg/task"
 	taskui "github.com/LazyBachelor/LazyPM/pkg/task/ui"
 	"github.com/charmbracelet/huh"
@@ -89,23 +88,10 @@ func (t *GitTask) Setup(ctx context.Context) error {
 	return nil
 }
 
-func (t *GitTask) Validate(ctx context.Context) (bool, error) {
+func (t *GitTask) Validate(ctx context.Context) ValidationFeedback {
+	expect := utils.NewExpector()
 
-	if t.setupIssue == nil {
-		return false, errors.New("setup issue not found")
-	}
-
-	if t.setupIssue.Assignee == "" {
-		return false, fmt.Errorf("issue not assigned to self")
-	}
-
-	if t.setupIssue.Status != models.StatusInProgress {
-		return false, fmt.Errorf("issue status is not in progress")
-	}
-
-	// Git related validation can be added here, such as checking for commits, branches, etc.
-
-	return EndTaskWithTimeout(&t.done, "Task completed!", 5*time.Second)
+	return expect.Complete()
 }
 
 func (t *GitTask) initRepo() (*git.Repository, error) {

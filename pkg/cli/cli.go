@@ -4,14 +4,15 @@ package cli
 import (
 	"context"
 
-	"github.com/LazyBachelor/LazyPM/internal/commands/issues"
+	issuesCmd "github.com/LazyBachelor/LazyPM/internal/commands/issues"
+	"github.com/LazyBachelor/LazyPM/internal/models"
 	"github.com/LazyBachelor/LazyPM/internal/service"
 	"github.com/charmbracelet/fang"
 	"github.com/spf13/cobra"
 )
 
 // Config is an alias for service.Config, used to configure the CLI.
-type Config = service.Config
+type Config = models.Config
 
 type CLI struct {
 	RootCmd *cobra.Command
@@ -25,7 +26,7 @@ func NewCli(rootCmd *cobra.Command) *CLI {
 
 // Run initializes the services and executes the CLI commands.
 func (c *CLI) Run(ctx context.Context, config Config) error {
-	app, cleanup, err := service.NewServices(ctx, config)
+	app, cleanup, err := service.NewApp(ctx, config)
 	if err != nil {
 		return err
 	}
@@ -44,7 +45,7 @@ func (c *CLI) Run(ctx context.Context, config Config) error {
 
 // RunWithArgs initializes the services and executes the CLI commands with the provided arguments.
 func (c *CLI) RunWithArgs(ctx context.Context, config Config, args []string) error {
-	app, cleanup, err := service.NewServices(ctx, config)
+	app, cleanup, err := service.NewApp(ctx, config)
 	if err != nil {
 		return err
 	}

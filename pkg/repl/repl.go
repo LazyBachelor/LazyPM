@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	issuesCmd "github.com/LazyBachelor/LazyPM/internal/commands/issues"
+	"github.com/LazyBachelor/LazyPM/internal/models"
 	"github.com/LazyBachelor/LazyPM/internal/service"
 	"github.com/LazyBachelor/LazyPM/internal/style"
 	"github.com/LazyBachelor/LazyPM/pkg/cli"
@@ -16,6 +17,9 @@ import (
 	"github.com/c-bata/go-prompt"
 	"golang.org/x/term"
 )
+
+type App = models.App
+type ValidationFeedback = models.ValidationFeedback
 
 const (
 	ReplHelp = `Type 'pm help' for available PM commands.
@@ -28,7 +32,7 @@ You can also run shell commands directly. Type 'exit' or 'quit' to leave.`
 type REPL struct {
 	feedbackChan chan task.ValidationFeedback
 	quitChan     chan bool
-	app          *service.App
+	app          *App
 
 	currentFeedback task.ValidationFeedback
 	exitRequested   bool
@@ -50,7 +54,7 @@ func (r *REPL) Run(ctx context.Context, config cli.Config) error {
 	defer term.Restore(int(os.Stdin.Fd()), oldState)
 
 	// Initialize services for beads, config and stats.
-	app, cleanup, err := service.NewServices(ctx, config)
+	app, cleanup, err := service.NewApp(ctx, config)
 	if err != nil {
 		return fmt.Errorf("failed to initialize services: %w", err)
 	}
@@ -118,7 +122,7 @@ func (r *REPL) watchValidation() {
 			r.currentFeedback = feedback
 			// Update app's CurrentFeedback so status command can access it
 			if r.app != nil {
-				r.app.CurrentFeedback = &service.ValidationFeedback{
+				r.app.CurrentFeedback = &ValidationFeedback{
 					Success: feedback.Success,
 					Message: feedback.Message,
 				}
