@@ -26,18 +26,18 @@ func completeIssues(cmd *cobra.Command, args []string, toComplete string) ([]str
 }
 
 // GetIssueCompletions fetches issues matching the toComplete string for shell completion.
-func GetIssueCompletions(ctx context.Context, toComplete string) ([]models.Issue, cobra.ShellCompDirective) {
+func GetIssueCompletions(ctx context.Context, toComplete string) ([]*models.Issue, cobra.ShellCompDirective) {
 	app := AppFromContext(ctx)
 	if app == nil {
 		return nil, cobra.ShellCompDirectiveNoFileComp
 	}
 
-	issues, err := app.Issues.AllIssues(ctx)
+	issues, err := app.Issues.SearchIssues(ctx, "", models.IssueFilter{})
 	if err != nil {
 		return nil, cobra.ShellCompDirectiveNoFileComp
 	}
 
-	var completions []models.Issue
+	var completions []*models.Issue
 	for _, issue := range issues {
 		if strings.HasPrefix(issue.ID, toComplete) {
 			completions = append(completions, issue)

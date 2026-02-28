@@ -1,4 +1,4 @@
-package service
+package storage
 
 import (
 	"context"
@@ -13,7 +13,7 @@ type BeadsService struct {
 	beads.Storage
 }
 
-func NewBeadsService(ctx context.Context, storage beads.Storage, prefix string) (*BeadsService, error) {
+func NewBeadsIssueStorage(ctx context.Context, storage beads.Storage, prefix string) (*BeadsService, error) {
 	issue_prefix, err := storage.GetConfig(ctx, "issue_prefix")
 	if err != nil || issue_prefix == "" {
 		if err := storage.SetConfig(ctx, "issue_prefix", prefix); err != nil {

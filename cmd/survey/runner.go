@@ -8,6 +8,7 @@ import (
 
 	"github.com/LazyBachelor/LazyPM/cmd/survey/tasks"
 	surveyCmd "github.com/LazyBachelor/LazyPM/internal/commands/survey"
+	"github.com/LazyBachelor/LazyPM/internal/models"
 	"github.com/LazyBachelor/LazyPM/pkg/task"
 	"github.com/spf13/cobra"
 )
@@ -70,7 +71,7 @@ func taskLoop(ctx context.Context, surveyTasks map[string]task.Tasker, interface
 }
 
 func returnIfUserQuit(err error, msg string) error {
-	if errors.Is(err, task.ErrUserQuit) {
+	if errors.Is(err, models.ErrUserQuit) {
 		return nil
 	}
 	return fmt.Errorf("%s: %w", msg, err)

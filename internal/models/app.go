@@ -1,10 +1,9 @@
-package service
+package models
 
 import (
 	"context"
 	"log/slog"
 
-	"github.com/LazyBachelor/LazyPM/internal/models"
 	"github.com/steveyegge/beads"
 )
 
@@ -15,22 +14,19 @@ type App struct {
 
 	Logger *slog.Logger
 
+	Tasks      *map[string]Tasker
+	Interfaces *map[string]Interface
+
 	CurrentFeedback *ValidationFeedback
 }
 
 type IssueService interface {
-	beads.Storage
-	AllIssues(ctx context.Context) ([]models.Issue, error)
+	beads.Storage // Want to get rid of this dependency, but it provides a lot of useful methods that would be a pain to re-implement right now
 	DeleteIssues() error
 }
 
 type StatsService interface {
 	Load(ctx context.Context) error
 	Save(ctx context.Context) error
-	GetStatistics() (models.Statistics, error)
-}
-
-type ValidationFeedback struct {
-	Success bool
-	Message string
+	GetStatistics() (Statistics, error)
 }

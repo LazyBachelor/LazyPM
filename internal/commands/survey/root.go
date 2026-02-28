@@ -3,9 +3,13 @@ package surveyCmd
 import (
 	"context"
 
-	"github.com/LazyBachelor/LazyPM/internal/service"
+	"github.com/LazyBachelor/LazyPM/internal/models"
 	"github.com/spf13/cobra"
 )
+
+type App = models.App
+
+var app *App
 
 const appKey string = "app"
 const long string = `Project Management Interface Survey
@@ -18,8 +22,6 @@ This survey will present you with a series of tasks to complete using various in
 Please answer the questions honestly and to the best of your ability.
 Your responses will be kept confidential and used solely for research purposes.`
 
-var app *service.App
-
 // RootCmd is the base command for the survey CLI.
 var RootCmd = &cobra.Command{
 	Use:  "survey",
@@ -31,12 +33,12 @@ var RootCmd = &cobra.Command{
 	},
 }
 
-func SetApp(application *service.App) {
+func SetApp(application *App) {
 	app = application
 }
 
-func AppFromContext(ctx context.Context) *service.App {
-	if a, ok := ctx.Value(appKey).(*service.App); ok {
+func AppFromContext(ctx context.Context) *App {
+	if a, ok := ctx.Value(appKey).(*App); ok {
 		return a
 	}
 	return app

@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"context"
 
-	"github.com/LazyBachelor/LazyPM/internal/service"
+	"github.com/LazyBachelor/LazyPM/internal/models"
 	"github.com/charmbracelet/fang"
 
 	"github.com/spf13/cobra"
@@ -14,8 +14,9 @@ type contextKey string
 
 const appKey contextKey = "app"
 
-// app is a package-level variable used during command setup
-var app *service.App
+type App = models.App
+
+var app *App
 
 // Flags struct to hold command-line flag values for issues.
 type Flags struct {
@@ -44,14 +45,14 @@ var RootCmd = &cobra.Command{
 
 // SetApp sets the app variable for use in command execution.
 // Must be called before executing any commands to ensure services are available.
-func SetApp(application *service.App) {
+func SetApp(application *App) {
 	app = application
 	RootCmd.Use = app.Config.RootCmd
 }
 
 // AppFromContext retrieves the App from the command context
-func AppFromContext(ctx context.Context) *service.App {
-	if a, ok := ctx.Value(appKey).(*service.App); ok {
+func AppFromContext(ctx context.Context) *App {
+	if a, ok := ctx.Value(appKey).(*App); ok {
 		return a
 	}
 	// Fallback to package-level app (for testing or edge cases)

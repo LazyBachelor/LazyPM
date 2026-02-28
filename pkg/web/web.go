@@ -9,17 +9,18 @@ import (
 	"strings"
 	"time"
 
+	"github.com/LazyBachelor/LazyPM/internal/models"
 	"github.com/LazyBachelor/LazyPM/internal/service"
 	"github.com/LazyBachelor/LazyPM/internal/utils"
-	"github.com/LazyBachelor/LazyPM/pkg/task"
 	"github.com/LazyBachelor/LazyPM/pkg/web/handler"
 	"github.com/LazyBachelor/LazyPM/pkg/web/server"
 )
 
-type Config = service.Config
+type Config = models.Config
+type ValidationFeedback = models.ValidationFeedback
 
 type Web struct {
-	feedbackChan chan task.ValidationFeedback
+	feedbackChan chan ValidationFeedback
 	quitChan     chan bool
 }
 
@@ -31,7 +32,7 @@ func NewWeb() *Web {
 var assets embed.FS
 
 func (w *Web) Run(ctx context.Context, config Config) error {
-	app, cleanup, err := service.NewServices(ctx, config)
+	app, cleanup, err := service.NewApp(ctx, config)
 	if err != nil {
 		return err
 	}
@@ -84,7 +85,7 @@ func (w *Web) Run(ctx context.Context, config Config) error {
 	}
 }
 
-func (w *Web) SetChannels(feedbackChan chan task.ValidationFeedback, quitChan chan bool) {
+func (w *Web) SetChannels(feedbackChan chan ValidationFeedback, quitChan chan bool) {
 	w.feedbackChan = feedbackChan
 	w.quitChan = quitChan
 }

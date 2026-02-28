@@ -3,8 +3,8 @@ package issuesCmd
 import (
 	"fmt"
 
-	"github.com/LazyBachelor/LazyPM/internal/commands"
 	"github.com/LazyBachelor/LazyPM/internal/models"
+	"github.com/LazyBachelor/LazyPM/internal/utils"
 	"github.com/spf13/cobra"
 )
 
@@ -62,9 +62,9 @@ func init() {
 	UpdateCmd.Flags().StringVarP(&updateFlags.issueType, "type", "t", "", "New issue type(bug, feature, task)")
 	UpdateCmd.Flags().IntVarP(&updateFlags.priority, "priority", "p", 0, "New issue priority(0-5)")
 
-	UpdateCmd.RegisterFlagCompletionFunc("type", commands.CompletionFunc(typeOptions))
-	UpdateCmd.RegisterFlagCompletionFunc("status", commands.CompletionFunc(statusOptions))
-	UpdateCmd.RegisterFlagCompletionFunc("priority", commands.CompletionFunc(priorityRange))
+	UpdateCmd.RegisterFlagCompletionFunc("type", utils.CompletionFunc(typeOptions))
+	UpdateCmd.RegisterFlagCompletionFunc("status", utils.CompletionFunc(statusOptions))
+	UpdateCmd.RegisterFlagCompletionFunc("priority", utils.CompletionFunc(priorityRange))
 }
 
 func getUpdateValues(cmd *cobra.Command) (map[string]interface{}, error) {

@@ -3,10 +3,10 @@ package tasks
 import (
 	"context"
 	"fmt"
-	"time"
 
 	"github.com/LazyBachelor/LazyPM/internal/models"
 	"github.com/LazyBachelor/LazyPM/internal/service"
+	"github.com/LazyBachelor/LazyPM/internal/utils"
 	"github.com/LazyBachelor/LazyPM/pkg/task"
 	taskui "github.com/LazyBachelor/LazyPM/pkg/task/ui"
 )
@@ -25,9 +25,9 @@ Your task:
 Make sure to fill out all the necessary details to help others understand the work item.`
 
 type CreateIssueTask struct {
-	done      bool
-	app       *service.App
-	setupTask *models.Issue
+	done       bool
+	app        *service.App
+	setupIssue *models.Issue
 }
 
 func NewCreateIssueTask(app *service.App) *CreateIssueTask {
@@ -51,59 +51,34 @@ func (t *CreateIssueTask) Setup(ctx context.Context) error {
 		return err
 	}
 
-	t.setupTask = models.NewBaseIssue().
+	t.setupIssue = models.NewBaseIssue().
 		WithTitle("Create a New Issue").
 		WithDescription(description).
 		Build()
 
-	return t.app.Issues.CreateIssue(ctx, t.setupTask, "")
+	return t.app.Issues.CreateIssue(ctx, t.setupIssue, "")
 }
 
-func (t *CreateIssueTask) Validate(ctx context.Context) (bool, error) {
-	issues, err := t.app.Issues.SearchIssues(ctx, "", models.IssueFilter{})
+func (t *CreateIssueTask) Validate(ctx context.Context) ValidationFeedback {
+	expect := utils.NewExpector()
+
+	issues, err := FetchIssues(t.app, t.setupIssue)
 	if err != nil {
-		return false, err
+		return expect.ValidationFeedback
 	}
 
-	if t.setupTask.Assignee == "" {
-		return false, fmt.Errorf("issue not assigned to self")
+	expect.NotEmptyString(t.setupIssue.Assignee,
+		fmt.Sprintf("%s is not assigned to anyone", t.setupIssue.ID))
+
+	if len(issues) == 0 {
+		expect.Fail("No new issues created")
+		return expect.ValidationFeedback
 	}
 
-	if len(issues) < 2 {
-		return false, fmt.Errorf("issue not created")
-	}
+	issue := issues[0]
 
-	var createdIssue *models.Issue
-	for i := range issues {
-		if issues[i].ID != "pm-abc" {
-			createdIssue = issues[i]
-			break
-		}
-	}
+	expect.Assert(len(issues) < 2, "Multiple issues were created instead of one")
+	expect.NotEmptyString(issue.Description, "Issue description should not be empty")
 
-	if createdIssue == nil {
-		return false, fmt.Errorf("new issue not found")
-	}
-
-	if createdIssue.Title == "" {
-		return false, fmt.Errorf("issue title is empty")
-	}
-
-	if createdIssue.Description == "" {
-		return false, fmt.Errorf("issue description is empty")
-	}
-
-	if createdIssue.Assignee == "" {
-		return false, fmt.Errorf("issue not assigned to self")
-	}
-
-	if createdIssue.Status != models.StatusClosed {
-		return false, fmt.Errorf("issue status is not closed")
-	}
-
-	if t.setupTask.Status != models.StatusClosed {
-		return false, fmt.Errorf("setup issue status is not closed")
-	}
-
-	return EndTaskWithTimeout(&t.done, "Task completed!", 5*time.Second)
+	return expect.Complete()
 }

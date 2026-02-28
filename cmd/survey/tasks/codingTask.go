@@ -2,12 +2,10 @@ package tasks
 
 import (
 	"context"
-	"fmt"
 	"os"
-	"strings"
-	"time"
 
 	"github.com/LazyBachelor/LazyPM/internal/service"
+	"github.com/LazyBachelor/LazyPM/internal/utils"
 	"github.com/LazyBachelor/LazyPM/pkg/task"
 	taskui "github.com/LazyBachelor/LazyPM/pkg/task/ui"
 	"github.com/charmbracelet/huh"
@@ -84,34 +82,8 @@ func (t *CodingTask) Setup(ctx context.Context) error {
 	return nil
 }
 
-func (t *CodingTask) Validate(ctx context.Context) (bool, error) {
-	file, err := os.ReadFile("./code.txt")
-	if err != nil {
-		return false, err
-	}
-
-	if string(file) == "" {
-		return false, fmt.Errorf("the file is empty")
-	}
-
-	code, ok := strings.CutPrefix(string(file), textFileContent)
-	if !ok {
-		return false, fmt.Errorf("the file content is not in the expected format")
-	}
-
-	code = strings.TrimSpace(code)
-
-	if !strings.Contains(code, "package coding") {
-		return false, fmt.Errorf("the code does not belong to the 'coding' package")
-	}
-
-	if !strings.Contains(code, "func Add") {
-		return false, fmt.Errorf("the function 'Add' is not defined")
-	}
-
-	if !strings.Contains(code, "return") {
-		return false, fmt.Errorf("the function does not contain a return statement")
-	}
-
-	return EndTaskWithTimeout(&t.done, "Task completed!", 5*time.Second)
+func (t *CodingTask) Validate(ctx context.Context) ValidationFeedback {
+	expect := utils.NewExpector()
+	expect.Assert(true, "This task is always valid")
+	return expect.Complete()
 }

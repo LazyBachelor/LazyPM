@@ -2,10 +2,10 @@ package tasks
 
 import (
 	"context"
-	"time"
 
 	"github.com/LazyBachelor/LazyPM/internal/models"
 	"github.com/LazyBachelor/LazyPM/internal/service"
+	"github.com/LazyBachelor/LazyPM/internal/utils"
 	"github.com/LazyBachelor/LazyPM/pkg/task"
 	taskui "github.com/LazyBachelor/LazyPM/pkg/task/ui"
 	"github.com/charmbracelet/huh"
@@ -122,7 +122,8 @@ func (t *BacklogRefinementTask) Setup(ctx context.Context) error {
 	return t.app.Issues.CreateIssue(ctx, t.setupIssue, "")
 }
 
-func (t *BacklogRefinementTask) Validate(ctx context.Context) (bool, error) {
+func (t *BacklogRefinementTask) Validate(ctx context.Context) ValidationFeedback {
+	expect := utils.NewExpector()
 
-	return EndTaskWithTimeout(&t.done, "Backlog refinement task completed!", 5*time.Second)
+	return expect.Complete()
 }

@@ -1,7 +1,7 @@
 package surveyCmd
 
 import (
-	"github.com/LazyBachelor/LazyPM/internal/commands"
+	"github.com/LazyBachelor/LazyPM/internal/utils"
 	"github.com/LazyBachelor/LazyPM/pkg/task"
 	"github.com/spf13/cobra"
 )
@@ -20,6 +20,6 @@ var StartCmd = &cobra.Command{
 func init() {
 	StartCmd.Flags().StringVarP(&Task, "task", "t", "", "Specify task.")
 	StartCmd.Flags().StringVarP(&InterfaceType, "interface", "i", "", "Specify interface.")
-	StartCmd.RegisterFlagCompletionFunc("task", commands.CompletionFunc(task.ListTasks()))
-	StartCmd.RegisterFlagCompletionFunc("interface", commands.CompletionFunc(task.ListInterfaces()))
+	StartCmd.RegisterFlagCompletionFunc("task", utils.CompletionFunc(task.ListTasks()))
+	StartCmd.RegisterFlagCompletionFunc("interface", utils.CompletionFunc(task.ListInterfaces()))
 }

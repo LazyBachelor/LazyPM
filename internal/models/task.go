@@ -1,6 +1,34 @@
-package taskui
+package models
 
-import "github.com/charmbracelet/huh"
+import (
+	"context"
+
+	"github.com/charmbracelet/huh"
+)
+
+type Tasker interface {
+	Config() Config
+	Details() TaskDetails
+	Setup(context.Context) error
+	Questions(InterfaceType) Questions
+	Validate(context.Context) ValidationFeedback
+}
+
+type ValidationFeedback struct {
+	Success bool
+	Message string
+	Checks  []Check
+}
+
+type Check struct {
+	Message string
+	Valid   bool
+}
+
+type ValidatedInterface interface {
+	Interface
+	SetChannels(feedbackChan chan ValidationFeedback, quitChan chan bool)
+}
 
 type TaskDetails struct {
 	Title          string

@@ -5,9 +5,22 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/LazyBachelor/LazyPM/internal/models"
 	taskui "github.com/LazyBachelor/LazyPM/pkg/task/ui"
 	tea "github.com/charmbracelet/bubbletea"
 )
+
+type Config = models.Config
+
+type Tasker = models.Tasker
+
+type Interface = models.Interface
+type InterfaceType = models.InterfaceType
+
+type ValidatedInterface = models.ValidatedInterface
+type ValidationFeedback = models.ValidationFeedback
+
+var ErrUserQuit = models.ErrUserQuit
 
 // RunTask orchestrates the complete task execution flow:
 // 1. Setup the task
@@ -85,21 +98,15 @@ func startValidationLoop(ctx context.Context, t Tasker, feedbackChan chan Valida
 	for {
 		select {
 		case <-ticker.C:
-			ok, err := t.Validate(ctx)
-			feedback := ValidationFeedback{
-				Success: ok,
-			}
-			if ok {
+			feedback := t.Validate(ctx)
+			if feedback.Success {
 				feedback.Message = "Task completed successfully!"
 				feedbackChan <- feedback
+				time.Sleep(4 * time.Second)
 				doneChan <- true
 				return
 			}
-			if err != nil {
-				feedback.Message = err.Error()
-			} else {
-				feedback.Message = "Task not yet complete"
-			}
+			feedback.Message = "Task not completed!"
 			feedbackChan <- feedback
 		case <-quitChan:
 			return

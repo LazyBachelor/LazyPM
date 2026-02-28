@@ -2,10 +2,10 @@ package tasks
 
 import (
 	"context"
-	"time"
 
 	"github.com/LazyBachelor/LazyPM/internal/models"
 	"github.com/LazyBachelor/LazyPM/internal/service"
+	"github.com/LazyBachelor/LazyPM/internal/utils"
 	"github.com/LazyBachelor/LazyPM/pkg/task"
 	taskui "github.com/LazyBachelor/LazyPM/pkg/task/ui"
 	"github.com/charmbracelet/huh"
@@ -116,6 +116,9 @@ func (t *SprintPlanningTask) Setup(ctx context.Context) error {
 	return t.app.Issues.CreateIssue(ctx, t.setupIssue, "")
 }
 
-func (t *SprintPlanningTask) Validate(ctx context.Context) (bool, error) {
-	return EndTaskWithTimeout(&t.done, "Sprint planning task completed!", 5*time.Second)
+func (t *SprintPlanningTask) Validate(ctx context.Context) ValidationFeedback {
+	expect := utils.NewExpector()
+
+	return expect.Complete()
+
 }

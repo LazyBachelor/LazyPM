@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/LazyBachelor/LazyPM/internal/commands"
 	"github.com/LazyBachelor/LazyPM/internal/models"
+	"github.com/LazyBachelor/LazyPM/internal/utils"
 	"github.com/charmbracelet/huh"
 
 	"github.com/spf13/cobra"
@@ -112,7 +112,7 @@ func init() {
 	CreateCmd.Flags().StringVarP(&createFlags.issueType, "type", "t", "task", "Issue type(bug, feature, task)")
 	CreateCmd.Flags().IntVarP(&createFlags.priority, "priority", "p", 0, "Issue priority(0-4)")
 
-	CreateCmd.RegisterFlagCompletionFunc("type", commands.CompletionFunc(typeOptions))
-	CreateCmd.RegisterFlagCompletionFunc("status", commands.CompletionFunc(statusOptions))
-	CreateCmd.RegisterFlagCompletionFunc("priority", commands.CompletionFunc(priorityRange))
+	CreateCmd.RegisterFlagCompletionFunc("type", utils.CompletionFunc(typeOptions))
+	CreateCmd.RegisterFlagCompletionFunc("status", utils.CompletionFunc(statusOptions))
+	CreateCmd.RegisterFlagCompletionFunc("priority", utils.CompletionFunc(priorityRange))
 }

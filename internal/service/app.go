@@ -10,12 +10,13 @@ import (
 	"github.com/LazyBachelor/LazyPM/internal/models"
 	"github.com/LazyBachelor/LazyPM/internal/storage"
 	"github.com/charmbracelet/huh"
-
-	"github.com/google/uuid"
 	"github.com/steveyegge/beads"
 )
 
-func NewServices(ctx context.Context, config Config) (*App, func(), error) {
+type App = models.App
+type Config = models.Config
+
+func NewApp(ctx context.Context, config Config) (*App, func(), error) {
 	var cleanupFuncs []func()
 
 	if !config.AutoInit {
@@ -31,14 +32,14 @@ func NewServices(ctx context.Context, config Config) (*App, func(), error) {
 	}
 	cleanupFuncs = append(cleanupFuncs, func() { store.Close() })
 
-	beadsSvc, err := NewBeadsService(ctx, store, config.IssuePrefix)
+	beadsSvc, err := storage.NewBeadsIssueStorage(ctx, store, config.IssuePrefix)
 	if err != nil {
 		return nil, nil, err
 	}
 	cleanupFuncs = append(cleanupFuncs, func() { beadsSvc.Close() })
 
 	statStore := storage.NewJsonStorage(config.StatisticsStoragePath, &models.Statistics{
-		ID:        uuid.New(),
+		ID:        0,
 		StartTime: time.Now(),
 	})
 

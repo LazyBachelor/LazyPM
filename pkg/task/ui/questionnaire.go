@@ -2,10 +2,13 @@ package taskui
 
 import (
 	"charm.land/lipgloss/v2"
+	"github.com/LazyBachelor/LazyPM/internal/models"
 	"github.com/LazyBachelor/LazyPM/internal/style"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/huh"
 )
+
+type Questions = models.Questions
 
 type QuestionnaireModel struct {
 	Questions
