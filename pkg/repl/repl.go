@@ -7,8 +7,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/LazyBachelor/LazyPM/internal/commands/issues"
-	surveyCmd "github.com/LazyBachelor/LazyPM/internal/commands/survey"
+	issuesCmd "github.com/LazyBachelor/LazyPM/internal/commands/issues"
 	"github.com/LazyBachelor/LazyPM/internal/service"
 	"github.com/LazyBachelor/LazyPM/internal/style"
 	"github.com/LazyBachelor/LazyPM/pkg/cli"
@@ -141,16 +140,4 @@ func (r *REPL) watchValidation() {
 func (r *REPL) SetChannels(feedbackChan chan task.ValidationFeedback, quitChan chan bool) {
 	r.feedbackChan = feedbackChan
 	r.quitChan = quitChan
-}
-
-func init() {
-	issuesCmd.RootCmd.AddCommand(issuesCmd.GetCmd)
-	issuesCmd.RootCmd.AddCommand(issuesCmd.ListCmd)
-	issuesCmd.RootCmd.AddCommand(issuesCmd.CloseCmd)
-	issuesCmd.RootCmd.AddCommand(issuesCmd.CreateCmd)
-	issuesCmd.RootCmd.AddCommand(issuesCmd.DeleteCmd)
-	issuesCmd.RootCmd.AddCommand(issuesCmd.UpdateCmd)
-	issuesCmd.RootCmd.AddCommand(issuesCmd.CommentCmd)
-	issuesCmd.RootCmd.AddCommand(issuesCmd.CommentsCmd)
-	issuesCmd.RootCmd.AddCommand(surveyCmd.StatusCmd)
 }

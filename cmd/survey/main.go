@@ -73,11 +73,32 @@ func init() {
 		return tasks.NewBacklogRefinementTask(app)
 	})
 
+	// Basic survey commands
 	surveyCmd.StartCmd.RunE = runStartCmd
 	surveyCmd.RootCmd.AddCommand(surveyCmd.StartCmd)
 	surveyCmd.RootCmd.AddCommand(surveyCmd.SubmitCmd)
 	surveyCmd.RootCmd.AddCommand(surveyCmd.StatusCmd)
 	surveyCmd.RootCmd.AddCommand(surveyCmd.ListTasksCmd)
 	surveyCmd.RootCmd.AddCommand(surveyCmd.ListInterfacesCmd)
-	surveyCmd.RootCmd.AddCommand(issuesCmd.RootCmd)
+	surveyCmd.RootCmd.AddCommand(surveyCmd.IssuesCmd)
+
+	// Issue related commands
+	surveyCmd.IssuesCmd.AddCommand(issuesCmd.ListCmd)
+	surveyCmd.IssuesCmd.AddCommand(issuesCmd.CreateCmd)
+	surveyCmd.IssuesCmd.AddCommand(issuesCmd.UpdateCmd)
+	surveyCmd.IssuesCmd.AddCommand(issuesCmd.DeleteCmd)
+	surveyCmd.IssuesCmd.AddCommand(issuesCmd.CloseCmd)
+	surveyCmd.IssuesCmd.AddCommand(issuesCmd.CommentCmd)
+	surveyCmd.IssuesCmd.AddCommand(issuesCmd.CommentsCmd)
+
+	// Issue commands for the REPL interface
+	issuesCmd.RootCmd.AddCommand(issuesCmd.GetCmd)
+	issuesCmd.RootCmd.AddCommand(issuesCmd.ListCmd)
+	issuesCmd.RootCmd.AddCommand(issuesCmd.CloseCmd)
+	issuesCmd.RootCmd.AddCommand(issuesCmd.CreateCmd)
+	issuesCmd.RootCmd.AddCommand(issuesCmd.DeleteCmd)
+	issuesCmd.RootCmd.AddCommand(issuesCmd.UpdateCmd)
+	issuesCmd.RootCmd.AddCommand(issuesCmd.CommentCmd)
+	issuesCmd.RootCmd.AddCommand(issuesCmd.CommentsCmd)
+	issuesCmd.RootCmd.AddCommand(surveyCmd.StatusCmd)
 }
