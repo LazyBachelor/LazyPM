@@ -105,7 +105,9 @@ install-powershell-temp: completions
 
 install-cli: completions
 	@go install ./cmd/pm
+	@go install ./cmd/survey
 	@sudo cp ./bin/pm_bash.sh /etc/bash_completion.d/pm
+	@sudo cp ./bin/survey_bash.sh /etc/bash_completion.d/survey
 
 
 .PHONY: tidy clean build cli tui web dev tw completions install-bash-temp install-zsh-temp install-fish-temp install-powershell-temp install-cli
