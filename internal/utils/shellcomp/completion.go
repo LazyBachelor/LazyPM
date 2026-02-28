@@ -1,4 +1,4 @@
-package utils
+package shellcomp
 
 import "github.com/spf13/cobra"
 

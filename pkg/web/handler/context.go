@@ -4,7 +4,7 @@ import (
 	"context"
 	"net/http"
 
-	"github.com/LazyBachelor/LazyPM/internal/service"
+	"github.com/LazyBachelor/LazyPM/internal/app"
 	"github.com/donseba/go-htmx"
 )
 
@@ -15,7 +15,7 @@ const (
 	htmxKey contextKey = "htmx"
 )
 
-func AppMiddleware(app *service.App) func(http.Handler) http.Handler {
+func AppMiddleware(app *app.App) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			ctx := context.WithValue(r.Context(), appKey, app)
@@ -33,8 +33,8 @@ func HTMXMiddleware(next http.Handler) http.Handler {
 	})
 }
 
-func App(r *http.Request) *service.App {
-	return r.Context().Value(appKey).(*service.App)
+func App(r *http.Request) *app.App {
+	return r.Context().Value(appKey).(*app.App)
 }
 
 func HTMX(r *http.Request) *htmx.Handler {

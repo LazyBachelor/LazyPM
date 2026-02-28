@@ -1,4 +1,4 @@
-package taskui
+package task
 
 import (
 	"fmt"

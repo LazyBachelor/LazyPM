@@ -5,13 +5,13 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/LazyBachelor/LazyPM/internal/service"
+	"github.com/LazyBachelor/LazyPM/internal/app"
 )
 
 type Server struct {
 	Address string
 	Assets  embed.FS
-	App     *service.App
+	App     *app.App
 }
 
 // NewServer creates and configures a new HTTP server instance.

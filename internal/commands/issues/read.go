@@ -1,4 +1,4 @@
-package issuesCmd
+package issues
 
 import (
 	"github.com/LazyBachelor/LazyPM/internal/models"

@@ -1,4 +1,4 @@
-package issuesCmd
+package issues
 
 import (
 	"fmt"
@@ -69,7 +69,6 @@ func runCommentCmd(cmd *cobra.Command, args []string) error {
 	cmd.Printf("  %s @ %s: %s\n", comment.Author, comment.CreatedAt.Format("2006-01-02 15:04"), comment.Text)
 	return nil
 }
-
 
 func defaultCommentAuthor() string {
 	if u, err := user.Current(); err == nil && u.Username != "" {

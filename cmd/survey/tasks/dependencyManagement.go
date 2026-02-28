@@ -4,10 +4,7 @@ import (
 	"context"
 
 	"github.com/LazyBachelor/LazyPM/internal/models"
-	"github.com/LazyBachelor/LazyPM/internal/service"
-	"github.com/LazyBachelor/LazyPM/internal/utils"
-	"github.com/LazyBachelor/LazyPM/pkg/task"
-	taskui "github.com/LazyBachelor/LazyPM/pkg/task/ui"
+	"github.com/LazyBachelor/LazyPM/internal/utils/check"
 	"github.com/charmbracelet/huh"
 )
 
@@ -25,19 +22,19 @@ Resolving dependencies in the right order is critical for efficient team workflo
 
 type DependencyManagementTask struct {
 	done       bool
-	app        *service.App
-	setupIssue *models.Issue
+	app        *App
+	setupIssue *Issue
 }
 
-func NewDependencyManagementTask(app *service.App) *DependencyManagementTask {
+func NewDependencyManagementTask(app *App) *DependencyManagementTask {
 	return &DependencyManagementTask{app: app, done: false}
 }
 
-func (t *DependencyManagementTask) Config() task.Config {
+func (t *DependencyManagementTask) Config() Config {
 	return BaseConfig().WithStatisticsStoragePath("./.pm/dependency-task-stats.json")
 }
 
-func (t *DependencyManagementTask) Details() taskui.TaskDetails {
+func (t *DependencyManagementTask) Details() TaskDetails {
 	return BaseDetails().
 		WithTitle("Dependency Management Task").
 		WithDescription(dependencyManagementDescription).
@@ -45,7 +42,7 @@ func (t *DependencyManagementTask) Details() taskui.TaskDetails {
 		WithDifficulty("Hard")
 }
 
-func (t *DependencyManagementTask) Questions(interfaceType task.InterfaceType) taskui.Questions {
+func (t *DependencyManagementTask) Questions(interfaceType InterfaceType) Questions {
 	return BaseQuestions(interfaceType).With(
 		huh.NewGroup(
 			huh.NewSelect[int]().
@@ -65,35 +62,35 @@ func (t *DependencyManagementTask) Setup(ctx context.Context) error {
 	}
 
 	depIssues := []*models.Issue{
-		models.NewIssueBuilder().
+		NewIssueBuilder().
 			WithTitle("Setup database connection").
 			WithDescription("Configure database connection pool.").
 			WithPriority(1).
 			WithStatus(models.StatusOpen).
 			WithIssueType(models.TypeTask).
 			Build(),
-		models.NewIssueBuilder().
+		NewIssueBuilder().
 			WithTitle("Define API contract").
 			WithDescription("Create OpenAPI spec.").
 			WithPriority(1).
 			WithStatus(models.StatusOpen).
 			WithIssueType(models.TypeTask).
 			Build(),
-		models.NewIssueBuilder().
+		NewIssueBuilder().
 			WithTitle("Implement user repository").
 			WithDescription("Implement data access layer for user management.").
 			WithPriority(2).
 			WithStatus(models.StatusBlocked).
 			WithIssueType(models.TypeTask).
 			Build(),
-		models.NewIssueBuilder().
+		NewIssueBuilder().
 			WithTitle("Create user endpoints").
 			WithDescription("REST API for users.").
 			WithPriority(2).
 			WithStatus(models.StatusBlocked).
 			WithIssueType(models.TypeTask).
 			Build(),
-		models.NewIssueBuilder().
+		NewIssueBuilder().
 			WithTitle("Build user profile UI").
 			WithDescription("Frontend user profile page.").
 			WithPriority(3).
@@ -106,7 +103,7 @@ func (t *DependencyManagementTask) Setup(ctx context.Context) error {
 		return err
 	}
 
-	t.setupIssue = models.NewBaseIssue().
+	t.setupIssue = NewIssueBuilder().
 		WithTitle("Dependency Management").
 		WithDescription(dependencyManagementDescription).
 		Build()
@@ -115,7 +112,7 @@ func (t *DependencyManagementTask) Setup(ctx context.Context) error {
 }
 
 func (t *DependencyManagementTask) Validate(ctx context.Context) ValidationFeedback {
-	expect := utils.NewExpector()
+	expect := check.NewExpector()
 
 	return expect.Complete()
 }

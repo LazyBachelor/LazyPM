@@ -4,10 +4,7 @@ import (
 	"context"
 
 	"github.com/LazyBachelor/LazyPM/internal/models"
-	"github.com/LazyBachelor/LazyPM/internal/service"
-	"github.com/LazyBachelor/LazyPM/internal/utils"
-	"github.com/LazyBachelor/LazyPM/pkg/task"
-	taskui "github.com/LazyBachelor/LazyPM/pkg/task/ui"
+	"github.com/LazyBachelor/LazyPM/internal/utils/check"
 	"github.com/charmbracelet/huh"
 )
 
@@ -25,19 +22,19 @@ Make decisions quickly but thoughtfully. Not everything is high priority!`
 
 type IssueTriageTask struct {
 	done       bool
-	app        *service.App
+	app        *App
 	setupIssue *models.Issue
 }
 
-func NewIssueTriageTask(app *service.App) *IssueTriageTask {
+func NewIssueTriageTask(app *App) *IssueTriageTask {
 	return &IssueTriageTask{app: app, done: false}
 }
 
-func (t *IssueTriageTask) Config() task.Config {
+func (t *IssueTriageTask) Config() Config {
 	return BaseConfig().WithStatisticsStoragePath("./.pm/triage-task-stats.json")
 }
 
-func (t *IssueTriageTask) Details() taskui.TaskDetails {
+func (t *IssueTriageTask) Details() TaskDetails {
 	return BaseDetails().
 		WithTitle("Issue Triage Task").
 		WithDescription(issueTriageDescription).
@@ -45,7 +42,7 @@ func (t *IssueTriageTask) Details() taskui.TaskDetails {
 		WithDifficulty("Medium")
 }
 
-func (t *IssueTriageTask) Questions(interfaceType task.InterfaceType) taskui.Questions {
+func (t *IssueTriageTask) Questions(interfaceType InterfaceType) Questions {
 	return BaseQuestions(interfaceType).With(
 		huh.NewGroup(
 			huh.NewSelect[int]().
@@ -116,7 +113,7 @@ func (t *IssueTriageTask) Setup(ctx context.Context) error {
 }
 
 func (t *IssueTriageTask) Validate(ctx context.Context) ValidationFeedback {
-	expect := utils.NewExpector()
+	expect := check.NewExpector()
 
 	return expect.Complete()
 }

@@ -10,7 +10,7 @@ import (
 )
 
 func main() {
-	if err := web.NewWeb().Run(context.Background(), models.BaseConfig); err != nil {
+	if err := web.New().Run(context.Background(), models.BaseConfig); err != nil {
 		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
 		os.Exit(1)
 	}

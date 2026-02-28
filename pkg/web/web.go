@@ -9,9 +9,9 @@ import (
 	"strings"
 	"time"
 
+	"github.com/LazyBachelor/LazyPM/internal/app"
 	"github.com/LazyBachelor/LazyPM/internal/models"
-	"github.com/LazyBachelor/LazyPM/internal/service"
-	"github.com/LazyBachelor/LazyPM/internal/utils"
+	"github.com/LazyBachelor/LazyPM/internal/utils/browser"
 	"github.com/LazyBachelor/LazyPM/pkg/web/handler"
 	"github.com/LazyBachelor/LazyPM/pkg/web/server"
 )
@@ -24,7 +24,7 @@ type Web struct {
 	quitChan     chan bool
 }
 
-func NewWeb() *Web {
+func New() *Web {
 	return &Web{}
 }
 
@@ -32,7 +32,7 @@ func NewWeb() *Web {
 var assets embed.FS
 
 func (w *Web) Run(ctx context.Context, config Config) error {
-	app, cleanup, err := service.NewApp(ctx, config)
+	app, cleanup, err := app.New(ctx, config)
 	if err != nil {
 		return err
 	}
@@ -52,7 +52,7 @@ func (w *Web) Run(ctx context.Context, config Config) error {
 		address = "http://localhost" + address
 	}
 
-	err = utils.OpenBrowser(address)
+	err = browser.Open(address)
 	if err != nil {
 		return fmt.Errorf("failed to open browser: %w", err)
 	}

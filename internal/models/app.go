@@ -14,8 +14,8 @@ type App struct {
 
 	Logger *slog.Logger
 
-	Tasks      *map[string]Tasker
-	Interfaces *map[string]Interface
+	Tasks      map[string]Tasker
+	Interfaces map[string]Interface
 
 	CurrentFeedback *ValidationFeedback
 }

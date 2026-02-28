@@ -4,10 +4,7 @@ import (
 	"context"
 
 	"github.com/LazyBachelor/LazyPM/internal/models"
-	"github.com/LazyBachelor/LazyPM/internal/service"
-	"github.com/LazyBachelor/LazyPM/internal/utils"
-	"github.com/LazyBachelor/LazyPM/pkg/task"
-	taskui "github.com/LazyBachelor/LazyPM/pkg/task/ui"
+	"github.com/LazyBachelor/LazyPM/internal/utils/check"
 	"github.com/charmbracelet/huh"
 )
 
@@ -26,19 +23,19 @@ Team member Alice is on vacation next week (mentioned in her issues). Bob can on
 
 type TeamCapacityTask struct {
 	done       bool
-	app        *service.App
-	setupIssue *models.Issue
+	app        *App
+	setupIssue *Issue
 }
 
-func NewTeamCapacityTask(app *service.App) *TeamCapacityTask {
+func NewTeamCapacityTask(app *App) *TeamCapacityTask {
 	return &TeamCapacityTask{app: app, done: false}
 }
 
-func (t *TeamCapacityTask) Config() task.Config {
+func (t *TeamCapacityTask) Config() Config {
 	return BaseConfig().WithStatisticsStoragePath("./.pm/capacity-task-stats.json")
 }
 
-func (t *TeamCapacityTask) Details() taskui.TaskDetails {
+func (t *TeamCapacityTask) Details() TaskDetails {
 	return BaseDetails().
 		WithTitle("Team Capacity Management").
 		WithDescription(teamCapacityDescription).
@@ -46,7 +43,7 @@ func (t *TeamCapacityTask) Details() taskui.TaskDetails {
 		WithDifficulty("Medium")
 }
 
-func (t *TeamCapacityTask) Questions(interfaceType task.InterfaceType) taskui.Questions {
+func (t *TeamCapacityTask) Questions(interfaceType InterfaceType) Questions {
 	return BaseQuestions(interfaceType).With(
 		huh.NewGroup(
 			huh.NewSelect[int]().
@@ -66,42 +63,42 @@ func (t *TeamCapacityTask) Setup(ctx context.Context) error {
 	}
 
 	capacityIssues := []*models.Issue{
-		models.NewIssueBuilder().
+		NewIssueBuilder().
 			WithTitle("Authentication module").
 			WithDescription("Implement OAuth2 flow. Assigned to: Alice (on vacation next week)").
 			WithPriority(1).
 			WithStatus(models.StatusInProgress).
 			WithIssueType(models.TypeTask).
 			Build(),
-		models.NewIssueBuilder().
+		NewIssueBuilder().
 			WithTitle("Payment integration").
 			WithDescription("Integrate Stripe API. Assigned to: Alice (on vacation next week)").
 			WithPriority(1).
 			WithStatus(models.StatusOpen).
 			WithIssueType(models.TypeTask).
 			Build(),
-		models.NewIssueBuilder().
+		NewIssueBuilder().
 			WithTitle("Dashboard widgets").
 			WithDescription("Create reusable widget components. Assigned to: Bob (50% capacity)").
 			WithPriority(2).
 			WithStatus(models.StatusInProgress).
 			WithIssueType(models.TypeTask).
 			Build(),
-		models.NewIssueBuilder().
+		NewIssueBuilder().
 			WithTitle("API rate limiting").
 			WithDescription("Add rate limiting middleware. Assigned to: Bob (50% capacity)").
 			WithPriority(2).
 			WithStatus(models.StatusOpen).
 			WithIssueType(models.TypeTask).
 			Build(),
-		models.NewIssueBuilder().
+		NewIssueBuilder().
 			WithTitle("Data migration").
 			WithDescription("Migrate legacy data to new schema. Assigned to: Charlie (full capacity)").
 			WithPriority(3).
 			WithStatus(models.StatusOpen).
 			WithIssueType(models.TypeTask).
 			Build(),
-		models.NewIssueBuilder().
+		NewIssueBuilder().
 			WithTitle("Bug fixes batch").
 			WithDescription("Fix reported bugs from QA. Assigned to: Diana (full capacity)").
 			WithPriority(1).
@@ -114,7 +111,7 @@ func (t *TeamCapacityTask) Setup(ctx context.Context) error {
 		return err
 	}
 
-	t.setupIssue = models.NewBaseIssue().
+	t.setupIssue = NewIssueBuilder().
 		WithTitle("Team Capacity Planning").
 		WithDescription(teamCapacityDescription).
 		Build()
@@ -123,7 +120,7 @@ func (t *TeamCapacityTask) Setup(ctx context.Context) error {
 }
 
 func (t *TeamCapacityTask) Validate(ctx context.Context) ValidationFeedback {
-	expect := utils.NewExpector()
+	expect := check.NewExpector()
 
 	return expect.Complete()
 }

@@ -3,8 +3,8 @@ package dashboard
 import (
 	"context"
 
+	"github.com/LazyBachelor/LazyPM/internal/app"
 	"github.com/LazyBachelor/LazyPM/internal/models"
-	"github.com/LazyBachelor/LazyPM/internal/service"
 	"github.com/charmbracelet/bubbles/textarea"
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
@@ -21,7 +21,7 @@ type Model struct {
 	closedIssueList   IssueList
 	helpBar           HelpBar
 	keyMap            DashboardKeyMap
-	app               *service.App
+	app               *app.App
 	width             int
 	height            int
 	focusedWindow     int // 0 = main (display issues), 1 = closed issues
@@ -46,14 +46,14 @@ type Model struct {
 	choosingPriority bool // true while choosing a priority
 	priorityIssueID  string
 	choosingType     bool // true while choosing a type
-	typeIssueID      string
-	feedbackChan     chan models.ValidationFeedback
-	quitChan         chan bool
-	currentFeedback  models.ValidationFeedback
-	showComplete     bool
+	typeIssueID     string
+	feedbackChan    chan models.ValidationFeedback
+	quitChan        chan bool
+	currentFeedback models.ValidationFeedback
+	showComplete    bool
 }
 
-func NewDashboard(app *service.App, feedbackChan chan models.ValidationFeedback, quitChan chan bool) *Model {
+func NewDashboard(app *app.App, feedbackChan chan models.ValidationFeedback, quitChan chan bool) *Model {
 	m := &Model{
 		header:            NewHeader("Project Manager Dashboard"),
 		keyMap:            defaultDashboardKeyMap,

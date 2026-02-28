@@ -3,26 +3,26 @@ package main
 import (
 	"context"
 
-	issuesCmd "github.com/LazyBachelor/LazyPM/internal/commands/issues"
-	surveyCmd "github.com/LazyBachelor/LazyPM/internal/commands/survey"
+	issues "github.com/LazyBachelor/LazyPM/internal/commands/issues"
+	survey "github.com/LazyBachelor/LazyPM/internal/commands/survey"
 	"github.com/LazyBachelor/LazyPM/internal/models"
 	"github.com/LazyBachelor/LazyPM/pkg/cli"
 )
 
 func main() {
-	if err := cli.NewCli(issuesCmd.RootCmd).Run(context.Background(), models.BaseConfig); err != nil {
+	if err := cli.New(issues.RootCmd).Run(context.Background(), models.BaseConfig); err != nil {
 		return
 	}
 }
 
 func init() {
-	issuesCmd.RootCmd.AddCommand(issuesCmd.GetCmd)
-	issuesCmd.RootCmd.AddCommand(issuesCmd.ListCmd)
-	issuesCmd.RootCmd.AddCommand(issuesCmd.CloseCmd)
-	issuesCmd.RootCmd.AddCommand(issuesCmd.CreateCmd)
-	issuesCmd.RootCmd.AddCommand(issuesCmd.DeleteCmd)
-	issuesCmd.RootCmd.AddCommand(issuesCmd.UpdateCmd)
-	issuesCmd.RootCmd.AddCommand(issuesCmd.CommentCmd)
-	issuesCmd.RootCmd.AddCommand(issuesCmd.CommentsCmd)
-	issuesCmd.RootCmd.AddCommand(surveyCmd.StatusCmd)
+	issues.RootCmd.AddCommand(issues.GetCmd)
+	issues.RootCmd.AddCommand(issues.ListCmd)
+	issues.RootCmd.AddCommand(issues.CloseCmd)
+	issues.RootCmd.AddCommand(issues.CreateCmd)
+	issues.RootCmd.AddCommand(issues.DeleteCmd)
+	issues.RootCmd.AddCommand(issues.UpdateCmd)
+	issues.RootCmd.AddCommand(issues.CommentCmd)
+	issues.RootCmd.AddCommand(issues.CommentsCmd)
+	issues.RootCmd.AddCommand(survey.StatusCmd)
 }

@@ -4,10 +4,7 @@ import (
 	"context"
 	"os"
 
-	"github.com/LazyBachelor/LazyPM/internal/service"
-	"github.com/LazyBachelor/LazyPM/internal/utils"
-	"github.com/LazyBachelor/LazyPM/pkg/task"
-	taskui "github.com/LazyBachelor/LazyPM/pkg/task/ui"
+	"github.com/LazyBachelor/LazyPM/internal/utils/check"
 	"github.com/charmbracelet/huh"
 )
 
@@ -35,22 +32,22 @@ Please write your code below this line!
 
 type CodingTask struct {
 	done bool
-	app  *service.App
+	app  *App
 }
 
-func NewCodingTask(app *service.App) *CodingTask {
+func NewCodingTask(app *App) *CodingTask {
 	return &CodingTask{app: app, done: false}
 }
 
-func (t *CodingTask) Config() task.Config {
+func (t *CodingTask) Config() Config {
 	return BaseConfig().WithStatisticsStoragePath("./.pm/coding-task-stats.json")
 }
 
-func (t *CodingTask) Details() taskui.TaskDetails {
+func (t *CodingTask) Details() TaskDetails {
 	return BaseDetails().WithTitle("Coding Task").WithDescription(codingDescription)
 }
 
-func (t *CodingTask) Questions(interfaceType task.InterfaceType) (questions taskui.Questions) {
+func (t *CodingTask) Questions(interfaceType InterfaceType) (questions Questions) {
 	return BaseQuestions(interfaceType).
 		With(
 			ReplQuestion(interfaceType,
@@ -83,7 +80,7 @@ func (t *CodingTask) Setup(ctx context.Context) error {
 }
 
 func (t *CodingTask) Validate(ctx context.Context) ValidationFeedback {
-	expect := utils.NewExpector()
+	expect := check.NewExpector()
 	expect.Assert(true, "This task is always valid")
 	return expect.Complete()
 }

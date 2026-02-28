@@ -1,4 +1,4 @@
-package utils
+package check
 
 import (
 	"fmt"
@@ -7,8 +7,8 @@ import (
 	"github.com/LazyBachelor/LazyPM/internal/models"
 )
 
-type ValidationFeedback = models.ValidationFeedback
 type Check = models.Check
+type ValidationFeedback = models.ValidationFeedback
 
 func NewCheck(message string, valid bool) Check {
 	return Check{

@@ -4,10 +4,7 @@ import (
 	"context"
 
 	"github.com/LazyBachelor/LazyPM/internal/models"
-	"github.com/LazyBachelor/LazyPM/internal/service"
-	"github.com/LazyBachelor/LazyPM/internal/utils"
-	"github.com/LazyBachelor/LazyPM/pkg/task"
-	taskui "github.com/LazyBachelor/LazyPM/pkg/task/ui"
+	"github.com/LazyBachelor/LazyPM/internal/utils/check"
 	"github.com/charmbracelet/huh"
 )
 
@@ -26,19 +23,19 @@ The production database is experiencing intermittent connection failures affecti
 
 type PriorityManagementTask struct {
 	done       bool
-	app        *service.App
-	setupIssue *models.Issue
+	app        *App
+	setupIssue *Issue
 }
 
-func NewPriorityManagementTask(app *service.App) *PriorityManagementTask {
+func NewPriorityManagementTask(app *App) *PriorityManagementTask {
 	return &PriorityManagementTask{app: app, done: false}
 }
 
-func (t *PriorityManagementTask) Config() task.Config {
+func (t *PriorityManagementTask) Config() Config {
 	return BaseConfig().WithStatisticsStoragePath("./.pm/priority-task-stats.json")
 }
 
-func (t *PriorityManagementTask) Details() taskui.TaskDetails {
+func (t *PriorityManagementTask) Details() TaskDetails {
 	return BaseDetails().
 		WithTitle("Priority Management Task").
 		WithDescription(priorityManagementDescription).
@@ -46,18 +43,19 @@ func (t *PriorityManagementTask) Details() taskui.TaskDetails {
 		WithDifficulty("Easy")
 }
 
-func (t *PriorityManagementTask) Questions(interfaceType task.InterfaceType) taskui.Questions {
-	return BaseQuestions(interfaceType).With(
-		huh.NewGroup(
-			huh.NewSelect[int]().
-				Title("How many issues did you reprioritize or comment on?").
-				Options(
-					huh.NewOption("1-2", 1),
-					huh.NewOption("3-4", 2),
-					huh.NewOption("5+", 3),
-				),
-		),
-	)
+func (t *PriorityManagementTask) Questions(interfaceType InterfaceType) Questions {
+	return BaseQuestions(interfaceType).
+		With(
+			huh.NewGroup(
+				huh.NewSelect[int]().
+					Title("How many issues did you reprioritize or comment on?").
+					Options(
+						huh.NewOption("1-2", 1),
+						huh.NewOption("3-4", 2),
+						huh.NewOption("5+", 3),
+					),
+			),
+		)
 }
 
 func (t *PriorityManagementTask) Setup(ctx context.Context) error {
@@ -66,35 +64,35 @@ func (t *PriorityManagementTask) Setup(ctx context.Context) error {
 	}
 
 	priorityIssues := []*models.Issue{
-		models.NewIssueBuilder().
+		NewIssueBuilder().
 			WithTitle("Database connection failures").
 			WithDescription("PRODUCTION CRITICAL: Intermittent DB connection failures affecting all users. Needs immediate attention.").
 			WithPriority(1).
 			WithStatus(models.StatusOpen).
 			WithIssueType(models.TypeTask).
 			Build(),
-		models.NewIssueBuilder().
+		NewIssueBuilder().
 			WithTitle("UI theme updates").
 			WithDescription("Update color scheme per new brand guidelines. Currently in progress but can wait.").
 			WithPriority(1).
 			WithStatus(models.StatusInProgress).
 			WithIssueType(models.TypeTask).
 			Build(),
-		models.NewIssueBuilder().
+		NewIssueBuilder().
 			WithTitle("Feature: Dark mode").
 			WithDescription("Add dark mode toggle to settings. Nice to have, can be deferred.").
 			WithPriority(2).
 			WithStatus(models.StatusOpen).
 			WithIssueType(models.TypeTask).
 			Build(),
-		models.NewIssueBuilder().
+		NewIssueBuilder().
 			WithTitle("API rate limiting").
 			WithDescription("Add rate limiting to public API endpoints. Security enhancement.").
 			WithPriority(2).
 			WithStatus(models.StatusInProgress).
 			WithIssueType(models.TypeTask).
 			Build(),
-		models.NewIssueBuilder().
+		NewIssueBuilder().
 			WithTitle("Documentation updates").
 			WithDescription("Update API documentation for v2 endpoints. Can be deferred.").
 			WithPriority(3).
@@ -107,7 +105,7 @@ func (t *PriorityManagementTask) Setup(ctx context.Context) error {
 		return err
 	}
 
-	t.setupIssue = models.NewBaseIssue().
+	t.setupIssue = NewIssueBuilder().
 		WithTitle("Priority Rebalancing").
 		WithDescription(priorityManagementDescription).
 		Build()
@@ -116,7 +114,7 @@ func (t *PriorityManagementTask) Setup(ctx context.Context) error {
 }
 
 func (t *PriorityManagementTask) Validate(ctx context.Context) ValidationFeedback {
-	expect := utils.NewExpector()
+	expect := check.NewExpector()
 
 	return expect.Complete()
 }

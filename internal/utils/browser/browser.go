@@ -1,4 +1,4 @@
-package utils
+package browser
 
 import (
 	"fmt"
@@ -7,7 +7,7 @@ import (
 )
 
 // Taken and modified from https://gist.github.com/hyg/9c4afcd91fe24316cbf0
-func OpenBrowser(url string) error {
+func Open(url string) error {
 	var err error
 
 	switch runtime.GOOS {

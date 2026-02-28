@@ -7,33 +7,33 @@ import (
 	"math/rand"
 
 	"github.com/LazyBachelor/LazyPM/cmd/survey/tasks"
-	surveyCmd "github.com/LazyBachelor/LazyPM/internal/commands/survey"
+	survey "github.com/LazyBachelor/LazyPM/internal/commands/survey"
 	"github.com/LazyBachelor/LazyPM/internal/models"
 	"github.com/LazyBachelor/LazyPM/pkg/task"
 	"github.com/spf13/cobra"
 )
 
 func runStartCmd(cmd *cobra.Command, args []string) error {
-	app := surveyCmd.AppFromContext(cmd.Context())
+	app := survey.AppFromContext(cmd.Context())
 	interfaces := initInterfaces()
 	surveyTasks := initTasks(app)
 
 	if cmd.Flags().Changed("interface") {
-		if _, ok := interfaces[surveyCmd.InterfaceType]; !ok {
+		if _, ok := interfaces[survey.InterfaceType]; !ok {
 			return fmt.Errorf("invalid interface, valid are %v", task.ListInterfaces())
 		}
 		interfaces = map[string]task.Interface{
-			surveyCmd.InterfaceType: interfaces[surveyCmd.InterfaceType],
+			survey.InterfaceType: interfaces[survey.InterfaceType],
 		}
 	}
 
 	if cmd.Flags().Changed("task") {
-		if surveyTask := surveyTasks[surveyCmd.Task]; surveyTask == nil {
+		if surveyTask := surveyTasks[survey.Task]; surveyTask == nil {
 			return fmt.Errorf("invalid task, valid are %v", task.ListTasks())
 		}
 
 		surveyTasks = map[string]task.Tasker{
-			surveyCmd.Task: surveyTasks[surveyCmd.Task],
+			survey.Task: surveyTasks[survey.Task],
 		}
 	}
 

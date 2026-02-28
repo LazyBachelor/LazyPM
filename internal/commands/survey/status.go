@@ -1,4 +1,4 @@
-package surveyCmd
+package survey
 
 import (
 	"github.com/LazyBachelor/LazyPM/internal/commands/issues"
@@ -14,7 +14,7 @@ var StatusCmd = &cobra.Command{
 }
 
 func runStatusCmd(cmd *cobra.Command, args []string) error {
-	app := issuesCmd.AppFromContext(cmd.Context())
+	app := issues.AppFromContext(cmd.Context())
 	if app == nil || app.CurrentFeedback == nil {
 		cmd.Println("No validation status available.")
 		return nil

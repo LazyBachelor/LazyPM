@@ -1,4 +1,4 @@
-package surveyCmd
+package survey
 
 import (
 	"context"
