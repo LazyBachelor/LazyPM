@@ -80,31 +80,19 @@ func (e *Expector) NotContains(s, substr, message string) *Expector {
 	return e
 }
 
-func (e *Expector) Equal(a, b any, message string) *Expector {
-	check := NewCheck(message, a == b)
-	e.Checks = append(e.Checks, check)
-	return e
-}
-
-func (e *Expector) NotEqual(a, b any, message string) *Expector {
-	check := NewCheck(message, a != b)
-	e.Checks = append(e.Checks, check)
-	return e
-}
-
 func (e *Expector) NotEmptyString(s string, message string) *Expector {
 	check := NewCheck(message, s != "")
 	e.Checks = append(e.Checks, check)
 	return e
 }
 
-func (e *Expector) EmptySlice(s []*any, message string) *Expector {
+func (e *Expector) EmptySlice(s []any, message string) *Expector {
 	check := NewCheck(message, len(s) == 0)
 	e.Checks = append(e.Checks, check)
 	return e
 }
 
-func (e *Expector) NotEmptySlice(s []*any, message string) *Expector {
+func (e *Expector) NotEmptySlice(s []any, message string) *Expector {
 	check := NewCheck(message, len(s) > 0)
 	e.Checks = append(e.Checks, check)
 	return e
