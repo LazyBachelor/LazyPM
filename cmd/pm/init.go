@@ -13,8 +13,6 @@ import (
 	"github.com/LazyBachelor/LazyPM/pkg/tui"
 	"github.com/LazyBachelor/LazyPM/pkg/web"
 	"github.com/spf13/cobra"
-
-	_ "github.com/LazyBachelor/LazyPM/cmd/pm/tasks"
 )
 
 func init() {
