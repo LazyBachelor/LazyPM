@@ -8,7 +8,6 @@ import (
 	"github.com/LazyBachelor/LazyPM/internal/models"
 	"github.com/LazyBachelor/LazyPM/pkg/web/components"
 	"github.com/a-h/templ"
-	"github.com/donseba/go-htmx"
 )
 
 type ValidationFeedback = models.ValidationFeedback
@@ -34,7 +33,7 @@ func HandleTaskStatusModal(w http.ResponseWriter, r *http.Request) {
 	err := components.Modal(components.ModalProps{
 		ID:      "task-status-modal",
 		Title:   "Task Status",
-		Content: feedbackList(HTMX(r), taskFeedback),
+		Content: feedbackList(taskFeedback),
 		Open:    true,
 	}).Render(r.Context(), w)
 
@@ -43,11 +42,11 @@ func HandleTaskStatusModal(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func feedbackList(hx *htmx.Handler, feedback ValidationFeedback) templ.Component {
+func feedbackList(feedback ValidationFeedback) templ.Component {
 	return templ.ComponentFunc(func(ctx context.Context, w io.Writer) error {
 		for _, check := range feedback.Checks {
 			if !check.Valid {
-				hx.WriteString(`<p class="my-2 text-red-500">` + check.Message + `</p>`)
+				io.WriteString(w, `<p class="my-2 text-red-500">`+check.Message+`</p>`)
 			}
 		}
 		return nil
