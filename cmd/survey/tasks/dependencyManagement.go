@@ -61,7 +61,7 @@ func (t *DependencyManagementTask) Setup(ctx context.Context) error {
 		return err
 	}
 
-	depIssues := []*models.Issue{
+	depIssues := []*Issue{
 		NewIssueBuilder().
 			WithTitle("Setup database connection").
 			WithDescription("Configure database connection pool.").

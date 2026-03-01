@@ -26,7 +26,9 @@ type Interface = task.Interface
 type InterfaceType = models.InterfaceType
 
 func NewIssueBuilder() *models.IssueBuilder {
-	return models.NewIssueBuilder()
+	return models.NewIssueBuilder().
+		WithStatus(models.StatusOpen).
+		WithIssueType(models.TypeTask)
 }
 
 const (
