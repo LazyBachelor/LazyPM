@@ -3,8 +3,6 @@ package models
 import (
 	"context"
 	"log/slog"
-
-	"github.com/steveyegge/beads"
 )
 
 type App struct {
@@ -20,9 +18,24 @@ type App struct {
 	CurrentFeedback *ValidationFeedback
 }
 
+// IssueService defines the interface for managing issues in the application.
+// This a siplification of the Beads issue storage interface, tailored to our needs.
 type IssueService interface {
-	beads.Storage // Want to get rid of this dependency, but it provides a lot of useful methods that would be a pain to re-implement right now
+	CreateIssue(ctx context.Context, issue *Issue, actor string) error
+	CreateIssues(ctx context.Context, issues []*Issue, actor string) error
+
+	UpdateIssue(ctx context.Context, id string, updates map[string]any, actor string) error
+
+	CloseIssue(ctx context.Context, id string, reason string, actor string, session string) error
+	DeleteIssue(ctx context.Context, id string) error
 	DeleteIssues() error
+
+	GetIssue(ctx context.Context, id string) (*Issue, error)
+	SearchIssues(ctx context.Context, query string, filter IssueFilter) ([]*Issue, error)
+
+	AddIssueComment(ctx context.Context, issueID, author, text string) (*Comment, error)
+	GetIssueComments(ctx context.Context, issueID string) ([]*Comment, error)
+	GetCommentCounts(ctx context.Context, issueIDs []string) (map[string]int, error)
 }
 
 type StatsService interface {
