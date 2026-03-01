@@ -20,7 +20,7 @@ pm comment ISSUE-1 LGTM --author alice
 pm comment ISSUE-1 -m "Needs review"`
 
 var CommentCmd = &cobra.Command{
-	Use:     "comment [issue ID] [message...]",
+	Use:     "comment [id] [message...]",
 	Short:   "Add a comment on an issue",
 	Long:    `Add a comment on an issue by ID. All arguments after the issue ID form the message (no quotes needed), or use --message.`,
 	Example: commentCmdExample,

@@ -13,15 +13,12 @@ clean:
 	@rm -f package-lock.json
 	@rm -f package.json
 	@rm -f ./build/pm
-	@rm -f ./build/survey
-	@rm -f ./build/survey_bash.sh
 	@rm -f ./build/pm_bash.sh
 
 build: tidy
 	@go build -o ./bin/pm ./cmd/pm
 	@go build -o ./bin/tui ./cmd/tui
 	@go build -o ./bin/web ./cmd/web
-	@go build -o ./bin/survey ./cmd/survey
 	@echo "Build completed successfully. Binaries are located in the ./bin directory."
 
 enable-multiplatform-build:
@@ -41,8 +38,6 @@ docker-push:
 
 os-build: build completions
 	@cp ./bin/pm ./build/pm
-	@cp ./bin/survey ./build/survey
-	@cp ./bin/survey_bash.sh ./build/survey_bash.sh
 	@cp ./bin/pm_bash.sh ./build/pm_bash.sh
 	@docker build -t telikz/lazyos ./build
 	@echo "Built lazyos image successfully. You can run it using 'make os-run'."
@@ -60,7 +55,7 @@ os-push:
 	@docker push telikz/lazyos
 
 start:
-	@go run ./cmd/survey start
+	@go run ./cmd/pm survey start
 
 cli: tidy
 	go run ./cmd/pm
@@ -85,12 +80,10 @@ tw: tw-install
 completions:
 	@mkdir -p ./bin
 	@go build -o ./bin/pm ./cmd/pm
-	@go build -o ./bin/survey ./cmd/survey
-	@./bin/survey completion bash > ./bin/survey_bash.sh
-	@./bin/pm completion bash > ./bin/pm_bash.sh
-	@./bin/pm completion zsh > ./bin/pm_zsh.sh
-	@./bin/pm completion fish > ./bin/pm_fish.sh
-	@./bin/pm completion powershell > ./bin/pm_powershell.ps1
+	@DEV=True ./bin/pm completion bash > ./bin/pm_bash.sh
+	@DEV=True ./bin/pm completion zsh > ./bin/pm_zsh.sh
+	@DEV=True ./bin/pm completion fish > ./bin/pm_fish.sh
+	@DEV=True ./bin/pm completion powershell > ./bin/pm_powershell.ps1
 
 install-bash-temp: completions
 	@go install ./cmd/pm
@@ -111,9 +104,7 @@ install-powershell-temp: completions
 
 install-cli: completions
 	@go install ./cmd/pm
-	@go install ./cmd/survey
 	@sudo cp ./bin/pm_bash.sh /etc/bash_completion.d/pm
-	@sudo cp ./bin/survey_bash.sh /etc/bash_completion.d/survey
 
 
 .PHONY: tidy clean build docker-build docker-run docker-push os-build os-run os-stop os-push start cli tui web tw-install dev tw completions install-bash-temp install-zsh-temp install-fish-temp install-powershell-temp install-cli

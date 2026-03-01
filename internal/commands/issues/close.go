@@ -14,6 +14,7 @@ var CloseCmd = &cobra.Command{
 	Short:   "Close an existing issue",
 	Long:    `Close an existing issue by its ID.`,
 	Example: `pm close pm-abc`,
+	
 
 	Args: cobra.ExactArgs(1),
 	RunE: runCloseCmd,

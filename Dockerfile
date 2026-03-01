@@ -15,7 +15,7 @@ RUN CGO_ENABLED=0 GOOS=${TARGETOS} GOARCH=${TARGETARCH} go build \
     -a -installsuffix cgo \
     -ldflags="-w -s" \
     -trimpath \
-    -o pm ./cmd/survey/
+    -o pm ./cmd/pm/
 
 FROM gcr.io/distroless/static-debian13
 WORKDIR /data

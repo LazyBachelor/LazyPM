@@ -20,7 +20,7 @@ pm list -p 1 -l 10`
 
 // ListCmd represents the get issues command.
 var ListCmd = &cobra.Command{
-	Use:     "list [search query]",
+	Use:     "list [query]",
 	Short:   "List all issues",
 	Long:    `List all issues in the project management system.`,
 	Example: lsExamples,

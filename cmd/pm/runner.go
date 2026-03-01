@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"math/rand"
 
-	"github.com/LazyBachelor/LazyPM/cmd/survey/tasks"
+	"github.com/LazyBachelor/LazyPM/cmd/pm/tasks"
 	survey "github.com/LazyBachelor/LazyPM/internal/commands/survey"
 	"github.com/LazyBachelor/LazyPM/internal/models"
 	"github.com/LazyBachelor/LazyPM/pkg/task"

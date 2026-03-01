@@ -3,26 +3,29 @@ package main
 import (
 	"context"
 
+	"github.com/LazyBachelor/LazyPM/internal/app"
 	issues "github.com/LazyBachelor/LazyPM/internal/commands/issues"
 	survey "github.com/LazyBachelor/LazyPM/internal/commands/survey"
-	"github.com/LazyBachelor/LazyPM/internal/models"
-	"github.com/LazyBachelor/LazyPM/pkg/cli"
+	"github.com/charmbracelet/fang"
 )
 
+var App *app.App
+var RootCmd = issues.RootCmd
+
 func main() {
-	if err := cli.New(issues.RootCmd).Run(context.Background(), models.BaseConfig); err != nil {
+	ctx := context.Background()
+	app, cleanup, err := initializeServices(ctx)
+	if err != nil {
 		return
 	}
-}
+	defer cleanup()
 
-func init() {
-	issues.RootCmd.AddCommand(issues.GetCmd)
-	issues.RootCmd.AddCommand(issues.ListCmd)
-	issues.RootCmd.AddCommand(issues.CloseCmd)
-	issues.RootCmd.AddCommand(issues.CreateCmd)
-	issues.RootCmd.AddCommand(issues.DeleteCmd)
-	issues.RootCmd.AddCommand(issues.UpdateCmd)
-	issues.RootCmd.AddCommand(issues.CommentCmd)
-	issues.RootCmd.AddCommand(issues.CommentsCmd)
-	issues.RootCmd.AddCommand(survey.StatusCmd)
+	App = app
+	survey.SetApp(App)
+	issues.SetApp(App)
+
+	if err := fang.Execute(ctx, RootCmd,
+		fang.WithColorSchemeFunc(fang.AnsiColorScheme)); err != nil {
+		return
+	}
 }
