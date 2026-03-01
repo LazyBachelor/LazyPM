@@ -1,9 +1,12 @@
 .pm
 .git
-bin
+.github
 
 .idea
 .vscode
+
+bin
+build
 
 node_modules/
 package-lock.json

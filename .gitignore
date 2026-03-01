@@ -2,6 +2,8 @@
 *.db
 *.ext
 bin
+build
+
 
 .idea
 .vscode
@@ -10,7 +12,9 @@ node_modules/
 package-lock.json
 package.json
 
-build
+
+*.db
+*.ext
 
 # Added by goreleaser init:
 dist/
