@@ -5,11 +5,17 @@ tidy:
 
 clean:
 	@go clean
-	@rm -rf ./bin
 	@rm -rf ./.pm
+	@rm -rf ./bin
+	@rm -rf ./dist
+	@rm -rf ./.idea
 	@rm -rf node_modules
-	@rm package-lock.json
-	@rm package.json
+	@rm -f package-lock.json
+	@rm -f package.json
+	@rm -f ./build/pm
+	@rm -f ./build/survey
+	@rm -f ./build/survey_bash.sh
+	@rm -f ./build/pm_bash.sh
 
 build: tidy
 	@go build -o ./bin/pm ./cmd/pm
@@ -110,4 +116,4 @@ install-cli: completions
 	@sudo cp ./bin/survey_bash.sh /etc/bash_completion.d/survey
 
 
-.PHONY: tidy clean build cli tui web dev tw completions install-bash-temp install-zsh-temp install-fish-temp install-powershell-temp install-cli
+.PHONY: tidy clean build docker-build docker-run docker-push os-build os-run os-stop os-push start cli tui web tw-install dev tw completions install-bash-temp install-zsh-temp install-fish-temp install-powershell-temp install-cli
