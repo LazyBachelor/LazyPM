@@ -21,7 +21,7 @@ pm create Fix bug --desc "Bug description" --status in_progress --type bug --pri
 
 // CreateCmd represents the create command, which allows users to create a new issue with specified details.
 var CreateCmd = &cobra.Command{
-	Use:     "create [title]",
+	Use:     "create [title...]",
 	Short:   "Create a new issue",
 	Long:    `Create a new issue with the specified details.`,
 	Example: createCmdExample,

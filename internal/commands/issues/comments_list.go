@@ -8,7 +8,7 @@ import (
 
 // CommentsCmd represents the command to list comments on an issue.
 var CommentsCmd = &cobra.Command{
-	Use:   "comments [issue ID]",
+	Use:   "comments [id]",
 	Short: "List comments on an issue",
 	Long:  `List all comments on an issue by ID.`,
 

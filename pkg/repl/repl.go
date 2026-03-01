@@ -11,7 +11,6 @@ import (
 	issues "github.com/LazyBachelor/LazyPM/internal/commands/issues"
 	"github.com/LazyBachelor/LazyPM/internal/models"
 	"github.com/LazyBachelor/LazyPM/internal/style"
-	"github.com/LazyBachelor/LazyPM/pkg/cli"
 	"github.com/LazyBachelor/LazyPM/pkg/task"
 	"github.com/LazyBachelor/LazyPM/pkg/tui/styles"
 	"github.com/c-bata/go-prompt"
@@ -43,7 +42,7 @@ func New() *REPL {
 }
 
 // Run starts the interactive Read-Eval-Print Loop for the PM CLI.
-func (r *REPL) Run(ctx context.Context, config cli.Config) error {
+func (r *REPL) Run(ctx context.Context, config app.Config) error {
 	// Set terminal to raw mode to capture input properly in the REPL.
 	// This allows us to handle input character by character and provide a better user experience.
 	// We also ensure that the terminal state is restored when the REPL exits, even if an error occurs.

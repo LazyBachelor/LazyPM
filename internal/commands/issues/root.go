@@ -85,11 +85,3 @@ func ExecuteArgsStringWithContext(ctx context.Context, args []string) (string, e
 
 	return buf.String(), err
 }
-
-// init function to set up the command hierarchy and options.
-func init() {
-	RootCmd.CompletionOptions.DisableDefaultCmd = false
-	RootCmd.AddGroup(&cobra.Group{ID: "help", Title: "Helping Commands"})
-	RootCmd.SetCompletionCommandGroupID("help")
-	RootCmd.SetHelpCommandGroupID("help")
-}

@@ -11,7 +11,7 @@ import (
 var updateFlags Flags
 
 var UpdateCmd = &cobra.Command{
-	Use:               "update [issue ID]",
+	Use:               "update [id]",
 	Short:             "Update an existing issue",
 	Long:              `Update an existing issue by its ID with the specified details.`,
 	Example:           `pm update pm-001 --title "New title" -d "Description" -s in_progress --type task -p 3`,

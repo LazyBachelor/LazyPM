@@ -7,13 +7,13 @@ import (
 
 // GetCmd represents the get issue command.
 var GetCmd = &cobra.Command{
-	Use:   "describe [issue ID]",
+	Use:   "read [id]",
 	Short: "Get issue details",
 	Long:  `Get issue details by ID`,
 
 	ValidArgsFunction: completeIssues,
 
-	Aliases: []string{"get", "read"},
+	Aliases: []string{"get", "describe", "details"},
 	Args:    cobra.ExactArgs(1),
 	RunE:    runGetCmd,
 }
