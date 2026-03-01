@@ -11,7 +11,7 @@ Version=1.0
 Type=Application
 Name=PM Survey
 Comment=Launch the Prompt Manageragment Survey
-Exec=/usr/local/bin/survey start
+Exec=/usr/local/bin/pm survey start
 Icon=utilities-terminal
 Terminal=true
 Categories=Utility;
@@ -20,7 +20,7 @@ EOF
 chmod +x /config/Desktop/LazyPM.desktop
 chown abc:abc /config/Desktop/LazyPM.desktop
 
-survey // initialize the service to ensure the database is set up
+pm # initialize the service to ensure the database is set up
 
 echo "**** Setting default browser to Chromium... ****"
 
