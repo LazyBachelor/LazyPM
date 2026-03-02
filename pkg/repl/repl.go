@@ -100,8 +100,13 @@ func (r *REPL) Run(ctx context.Context, config app.Config) error {
 
 		// If the user types "exit" or "quit", break the loop and exit the REPL.
 		if input == "exit" || input == "quit" {
+			r.logAction("repl exit requested")
 			fmt.Println("Goodbye!")
 			break
+		}
+
+		if input != "" {
+			r.logAction("repl command: " + input)
 		}
 
 		// Add the input to the history for future navigation.
@@ -143,4 +148,13 @@ func (r *REPL) watchValidation() {
 func (r *REPL) SetChannels(feedbackChan chan task.ValidationFeedback, quitChan chan bool) {
 	r.feedbackChan = feedbackChan
 	r.quitChan = quitChan
+}
+
+func (r *REPL) logAction(action string) {
+	if r.app != nil {
+		r.app.LogAction(models.EncodeActionEvent(models.ActionEvent{
+			Source: "repl",
+			Action: action,
+		}))
+	}
 }
