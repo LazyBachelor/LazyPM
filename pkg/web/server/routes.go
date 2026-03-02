@@ -9,6 +9,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/LazyBachelor/LazyPM/internal/models"
 	"github.com/LazyBachelor/LazyPM/pkg/web/handler"
 	"github.com/NYTimes/gziphandler"
 	"github.com/go-chi/chi/v5"
@@ -26,6 +27,7 @@ func (s *Server) RegisterRoutes(assets embed.FS) http.Handler {
 
 	r.Use(handler.HTMXMiddleware)
 	r.Use(handler.AppMiddleware(s.App))
+	r.Use(actionLoggingMiddleware(s.App))
 
 	s.handleAssets(r, assets)
 
@@ -54,6 +56,35 @@ func (s *Server) RegisterRoutes(assets embed.FS) http.Handler {
 		})
 	})
 	return gziphandler.GzipHandler(r)
+}
+
+func actionLoggingMiddleware(app interface{ LogAction(string) }) func(http.Handler) http.Handler {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			if app != nil && shouldLogWebAction(r.URL.Path) {
+				app.LogAction(models.EncodeActionEvent(models.ActionEvent{
+					Source: "web",
+					Action: "request",
+					Target: r.Method + " " + r.URL.Path,
+					Result: "ok",
+				}))
+			}
+			next.ServeHTTP(w, r)
+		})
+	}
+}
+
+func shouldLogWebAction(path string) bool {
+	if strings.HasPrefix(path, "/assets/") {
+		return false
+	}
+
+	switch path {
+	case "/status":
+		return false
+	default:
+		return true
+	}
 }
 
 func (s *Server) handleAssets(r chi.Router, assets embed.FS) {
