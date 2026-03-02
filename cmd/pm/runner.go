@@ -55,13 +55,13 @@ func runStartCmd(cmd *cobra.Command, args []string) error {
 		return returnIfUserQuit(err, "failed to run intro")
 	}
 
-	if err := taskLoop(cmd.Context(), surveyTasks, interfaces); err != nil {
+	if err := taskLoop(cmd.Context(), app, surveyTasks, interfaces); err != nil {
 		return returnIfUserQuit(err, "task loop failed")
 	}
 	return nil
 }
 
-func taskLoop(ctx context.Context, surveyTasks map[string]task.Tasker, interfaces map[string]task.Interface) error {
+func taskLoop(ctx context.Context, application *models.App, surveyTasks map[string]task.Tasker, interfaces map[string]task.Interface) error {
 	var iNames []string
 	for name := range interfaces {
 		iNames = append(iNames, name)
@@ -84,7 +84,7 @@ func taskLoop(ctx context.Context, surveyTasks map[string]task.Tasker, interface
 		iIdx := idx % len(iNames)
 		selected := interfaces[iNames[iIdx]]
 
-		if err := task.RunTask(ctx, t, selected, tasks.InterfaceToType(selected)); err != nil {
+		if err := task.RunTask(ctx, application, t, selected, tasks.InterfaceToType(selected)); err != nil {
 			return err
 		}
 		idx++
