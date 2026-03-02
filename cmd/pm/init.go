@@ -65,6 +65,8 @@ func init() {
 		issues.RootCmd.CompletionOptions.DisableDefaultCmd = true
 	}
 
+	setupLazyInitialization()
+
 	RootCmd.AddGroup(&cobra.Group{ID: "issues", Title: "Issue Management"})
 	issues.CreateCmd.GroupID = "issues"
 	issues.GetCmd.GroupID = "issues"
@@ -115,8 +117,72 @@ var replCmd = &cobra.Command{
 	},
 }
 
-func initializeServices(ctx context.Context) (*app.App, func(), error) {
+func initializeApp(ctx context.Context) (*app.App, func(), error) {
 	return app.New(ctx, tasks.BaseConfig().WithAutoInit(true))
+}
+
+func setupLazyInitialization() {
+	prevPreRun := RootCmd.PersistentPreRun
+	prevPreRunE := RootCmd.PersistentPreRunE
+
+	RootCmd.PersistentPreRunE = func(cmd *cobra.Command, args []string) error {
+		if commandNeedsApp(cmd) {
+			if err := ensureAppInitialized(cmd.Context()); err != nil {
+				return err
+			}
+		}
+
+		if prevPreRunE != nil {
+			if err := prevPreRunE(cmd, args); err != nil {
+				return err
+			}
+		}
+
+		if prevPreRun != nil {
+			prevPreRun(cmd, args)
+		}
+
+		return nil
+	}
+}
+
+func commandNeedsApp(cmd *cobra.Command) bool {
+	name := cmd.Name()
+	switch name {
+	case "help", "completion", "__complete", "__completeNoDesc":
+		return false
+	}
+
+	if cmd == RootCmd || name == "survey" {
+		return false
+	}
+
+	if parent := cmd.Parent(); parent != nil && parent.Name() == "survey" {
+		switch name {
+		case "tasks", "interfaces":
+			return false
+		}
+	}
+
+	return true
+}
+
+func ensureAppInitialized(ctx context.Context) error {
+	if App != nil {
+		return nil
+	}
+
+	application, cleanup, err := initializeApp(ctx)
+	if err != nil {
+		return err
+	}
+
+	App = application
+	appCleanup = cleanup
+	survey.SetApp(App)
+	issues.SetApp(App)
+
+	return nil
 }
 
 func initInterfaces() map[string]task.Interface {

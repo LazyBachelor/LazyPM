@@ -15,6 +15,20 @@ import (
 
 func runStartCmd(cmd *cobra.Command, args []string) error {
 	app := survey.AppFromContext(cmd.Context())
+	if app == nil {
+		if err := ensureAppInitialized(cmd.Context()); err != nil {
+			return fmt.Errorf("failed to initialize services: %w", err)
+		}
+		app = survey.AppFromContext(cmd.Context())
+		if app == nil {
+			app = App
+		}
+	}
+
+	if app == nil {
+		return fmt.Errorf("application services are not available")
+	}
+
 	interfaces := initInterfaces()
 	surveyTasks := initTasks(app)
 
@@ -51,6 +65,14 @@ func taskLoop(ctx context.Context, surveyTasks map[string]task.Tasker, interface
 	var iNames []string
 	for name := range interfaces {
 		iNames = append(iNames, name)
+	}
+
+	if len(iNames) == 0 {
+		return fmt.Errorf("no interfaces are available")
+	}
+
+	if len(surveyTasks) == 0 {
+		return fmt.Errorf("no tasks are available")
 	}
 
 	rand.Shuffle(len(iNames), func(i, j int) {
