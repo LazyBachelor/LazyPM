@@ -29,7 +29,7 @@ func (t *Tui) Run(ctx context.Context, config Config) error {
 
 	defer cleanup()
 
-	p := tea.NewProgram(views.NewDashboardView(app, t.feedbackChan, t.quitChan),
+	p := tea.NewProgram(views.NewRootView(app, t.feedbackChan, t.quitChan),
 		tea.WithAltScreen(), tea.WithMouseAllMotion())
 
 	if t.quitChan != nil {

@@ -1,4 +1,4 @@
-package dashboard
+package dashboard2
 
 import (
 	"github.com/LazyBachelor/LazyPM/pkg/tui/styles"
@@ -32,7 +32,7 @@ func (h HelpBar) View() string {
 func (h HelpBar) shortHelp() string {
 	keys := []string{
 		styles.HighlightKey("tab") + " switch",
-		styles.HighlightKey("ctrl+2") + " dash2",
+		styles.HighlightKey("ctrl+1") + " dash1",
 		styles.HighlightKey("↑/k") + " up",
 		styles.HighlightKey("↓/j") + " down",
 		styles.HighlightKey("pgup/pgdn") + " page",
@@ -78,7 +78,7 @@ func (h HelpBar) fullHelp() string {
 		renderRow("e", "edit title", "d", "edit description"),
 		renderRow("s", "change status", "p", "change priority"),
 		renderRow("t", "change type", "x", "delete issue"),
-		renderRow("ctrl+2", "dashboard 2", "q", "quit"),
+		renderRow("ctrl+1", "dashboard 1", "q", "quit"),
 		renderRow("?", "help", "", ""),
 	}
 	content := lipgloss.JoinVertical(lipgloss.Left, rows...)

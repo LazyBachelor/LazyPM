@@ -1,4 +1,4 @@
-package dashboard
+package dashboard2
 
 import (
 	"github.com/LazyBachelor/LazyPM/pkg/tui/msgs"
@@ -14,7 +14,7 @@ type DashboardKeyMap struct {
 	ScrollUp          key.Binding
 	ScrollDown        key.Binding
 	SwitchWindow      key.Binding
-	SwitchToDashboard2 key.Binding
+	SwitchToDashboard key.Binding
 	EditTitle         key.Binding
 	EditDescription   key.Binding
 	ChangeStatus      key.Binding
@@ -53,9 +53,9 @@ var defaultDashboardKeyMap = DashboardKeyMap{
 		key.WithKeys("tab"),
 		key.WithHelp("tab", "switch window"),
 	),
-	SwitchToDashboard2: key.NewBinding(
-		key.WithKeys("2"),
-		key.WithHelp("2", "dashboard 2"),
+	SwitchToDashboard: key.NewBinding(
+		key.WithKeys("1"),
+		key.WithHelp("1", "dashboard 1"),
 	),
 	EditTitle: key.NewBinding(
 		key.WithKeys("e"),
@@ -97,8 +97,8 @@ func (d *Model) handleKeyMsg(msg tea.KeyMsg) tea.Cmd {
 		return tea.Quit
 	case key.Matches(msg, d.keyMap.SwitchWindow):
 		d.ToggleFocusedWindow()
-	case !d.editingTitle && !d.creatingIssue && !d.editingDescription && !d.choosingStatus && !d.choosingPriority && !d.confirmingDelete && !d.choosingType && key.Matches(msg, d.keyMap.SwitchToDashboard2):
-		return func() tea.Msg { return msgs.SwitchToDashboard2Msg{} }
+	case !d.editingTitle && !d.creatingIssue && !d.editingDescription && !d.choosingStatus && !d.choosingPriority && !d.confirmingDelete && !d.choosingType && key.Matches(msg, d.keyMap.SwitchToDashboard):
+		return func() tea.Msg { return msgs.SwitchToDashboardMsg{} }
 	case d.IsFocusedOnList() && key.Matches(msg, d.keyMap.SelectIssue):
 		d.FocusDetail()
 	case d.IsFocusedOnDetail() && key.Matches(msg, d.keyMap.BackToList):
