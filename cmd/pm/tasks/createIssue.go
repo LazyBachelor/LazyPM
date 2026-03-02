@@ -42,6 +42,11 @@ func (t *CreateIssueTask) Questions(interfaceType InterfaceType) Questions {
 	return BaseQuestions(interfaceType)
 }
 
+func (t *CreateIssueTask) QuestionnaireKeys(interfaceType InterfaceType) []string {
+	_ = interfaceType
+	return []string{"task_completed", "task_difficulty"}
+}
+
 func (t *CreateIssueTask) Setup(ctx context.Context) error {
 	if err := ClearIssues(t.app); err != nil {
 		return err

@@ -13,17 +13,19 @@ type Questions = models.Questions
 type QuestionnaireModel struct {
 	Questions
 	form          *huh.Form
+	keys          []string
 	width, height int
 	userQuit      bool
 }
 
-func NewQuestionnaireModel(questions Questions) *QuestionnaireModel {
+func NewQuestionnaireModel(questions Questions, keys []string) *QuestionnaireModel {
 	form := huh.NewForm(questions...).
 		WithTheme(style.HuhCenterTheme()).WithLayout(huh.LayoutGrid(1, 1))
 
 	return &QuestionnaireModel{
 		Questions: questions,
 		form:      form,
+		keys:      keys,
 	}
 }
 
@@ -71,4 +73,27 @@ func (q *QuestionnaireModel) SetSize(width, height int) {
 
 func (q QuestionnaireModel) GetUserQuit() bool {
 	return q.userQuit
+}
+
+func (q QuestionnaireModel) GetCompleted() bool {
+	return q.form != nil && q.form.State == huh.StateCompleted
+}
+
+func (q QuestionnaireModel) GetAnswers() map[string]any {
+	if q.form == nil || len(q.keys) == 0 {
+		return nil
+	}
+
+	answers := make(map[string]any)
+	for _, key := range q.keys {
+		if key == "" {
+			continue
+		}
+		answers[key] = q.form.Get(key)
+	}
+	if len(answers) == 0 {
+		return nil
+	}
+
+	return answers
 }

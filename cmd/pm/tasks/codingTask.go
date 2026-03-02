@@ -51,20 +51,33 @@ func (t *CodingTask) Questions(interfaceType InterfaceType) (questions Questions
 	return BaseQuestions(interfaceType).
 		With(
 			ReplQuestion(interfaceType,
-				huh.NewConfirm().Title("Question only for REPL interface")),
+				huh.NewConfirm().Key("repl_experience").Title("Question only for REPL interface")),
 		).
 		With(
 			WebQuestion(interfaceType,
-				huh.NewInput().Title("Question only for Web interface")),
+				huh.NewInput().Key("web_feedback").Title("Question only for Web interface")),
 		).
 		With(
 			TUIQuestion(interfaceType,
-				huh.NewConfirm().Title("Question only for TUI interface")),
+				huh.NewConfirm().Key("tui_experience").Title("Question only for TUI interface")),
 		).
 		With(
 			Question(
-				huh.NewConfirm().Title("One last question for all interfaces!")),
+				huh.NewConfirm().Key("final_confirmation").Title("One last question for all interfaces!")),
 		)
+}
+
+func (t *CodingTask) QuestionnaireKeys(interfaceType InterfaceType) []string {
+	keys := []string{"task_completed", "task_difficulty", "final_confirmation"}
+	switch interfaceType {
+	case InterfaceTypeREPL:
+		keys = append(keys, "repl_experience")
+	case InterfaceTypeWeb:
+		keys = append(keys, "web_feedback")
+	case InterfaceTypeTUI:
+		keys = append(keys, "tui_experience")
+	}
+	return keys
 }
 
 func (t *CodingTask) Setup(ctx context.Context) error {
