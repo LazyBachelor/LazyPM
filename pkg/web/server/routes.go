@@ -20,7 +20,9 @@ import (
 func (s *Server) RegisterRoutes(assets embed.FS) http.Handler {
 	r := chi.NewRouter()
 
-	r.Use(middleware.Logger)
+	if os.Getenv("DEV") == "True" {
+		r.Use(middleware.Logger)
+	}
 	r.Use(middleware.Recoverer)
 	r.Use(cors.AllowAll().Handler)
 	r.Use(middleware.CleanPath)
