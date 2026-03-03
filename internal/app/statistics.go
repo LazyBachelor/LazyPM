@@ -2,7 +2,7 @@ package app
 
 import (
 	"context"
-	"errors"
+	"fmt"
 	"log/slog"
 	"sync"
 	"time"
@@ -37,7 +37,7 @@ func (s *StatisticsService) Save(ctx context.Context) error {
 
 func (s *StatisticsService) GetStatistics() (models.Statistics, error) {
 	if s.storage.Data == nil {
-		return models.Statistics{}, errors.New("statistics data not initialized")
+		return models.Statistics{}, fmt.Errorf("statistics data not initialized")
 	}
 	return *s.storage.Data, nil
 }
@@ -49,7 +49,7 @@ func (s *StatisticsService) RecordTaskRun(ctx context.Context, run models.TaskRu
 	defer s.mu.Unlock()
 
 	if s.storage.Data == nil {
-		return errors.New("statistics data not initialized")
+		return fmt.Errorf("statistics data not initialized")
 	}
 
 	stats := s.storage.Data

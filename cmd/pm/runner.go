@@ -83,7 +83,9 @@ func taskLoop(ctx context.Context, application *task.App, surveyTasks map[string
 		iIdx := idx % len(iNames)
 		selected := interfaces[iNames[iIdx]]
 
-		if err := task.RunTask(ctx, application, t, selected, tasks.InterfaceToType(selected)); err != nil {
+		runner := task.NewTaskRunner(application)
+
+		if err := runner.Run(ctx, t, selected, tasks.InterfaceToType(selected)); err != nil {
 			return err
 		}
 		idx++

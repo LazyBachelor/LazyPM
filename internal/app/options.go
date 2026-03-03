@@ -26,7 +26,7 @@ type AppBuilder struct {
 
 func defaultBuilder(ctx context.Context, config Config) *AppBuilder {
 	lifecycle := NewLifecycle()
-	logger := newDefaultLogger(config, lifecycle)
+	logger := defaultLogger(config, lifecycle)
 
 	return &AppBuilder{
 		ctx:         ctx,
@@ -37,7 +37,7 @@ func defaultBuilder(ctx context.Context, config Config) *AppBuilder {
 	}
 }
 
-func newDefaultLogger(config Config, lifecycle *Lifecycle) *slog.Logger {
+func defaultLogger(config Config, lifecycle *Lifecycle) *slog.Logger {
 	statsDir := filepath.Dir(config.StatisticsStoragePath)
 	if statsDir == "" {
 		statsDir = "."
