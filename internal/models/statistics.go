@@ -30,11 +30,6 @@ type Statistics struct {
 
 	LastTaskName string       `json:"last_task_name"`
 	LastRunID    int          `json:"last_run_id"`
-	ButtonClicks ButtonClicks `json:"button_clicks"`
-}
-
-type ButtonClicks struct {
-	Clicks int `json:"clicks"`
 }
 
 type TaskMetricsFile struct {

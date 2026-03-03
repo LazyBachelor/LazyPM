@@ -94,7 +94,6 @@ func (s *StatisticsService) RecordTaskRun(ctx context.Context, run models.TaskRu
 		}
 	}
 	stats.TotalUserActions += userActions
-	stats.ButtonClicks.Clicks += userActions
 	if run.QuestionnaireCompleted {
 		stats.QuestionnairesCompleted++
 	}
