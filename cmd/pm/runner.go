@@ -7,8 +7,7 @@ import (
 	"math/rand"
 
 	"github.com/LazyBachelor/LazyPM/cmd/pm/tasks"
-	survey "github.com/LazyBachelor/LazyPM/internal/commands/survey"
-	"github.com/LazyBachelor/LazyPM/internal/models"
+	"github.com/LazyBachelor/LazyPM/internal/commands/survey"
 	"github.com/LazyBachelor/LazyPM/pkg/task"
 	"github.com/spf13/cobra"
 )
@@ -61,7 +60,7 @@ func runStartCmd(cmd *cobra.Command, args []string) error {
 	return nil
 }
 
-func taskLoop(ctx context.Context, application *models.App, surveyTasks map[string]task.Tasker, interfaces map[string]task.Interface) error {
+func taskLoop(ctx context.Context, application *task.App, surveyTasks map[string]task.Tasker, interfaces map[string]task.Interface) error {
 	var iNames []string
 	for name := range interfaces {
 		iNames = append(iNames, name)
@@ -93,7 +92,7 @@ func taskLoop(ctx context.Context, application *models.App, surveyTasks map[stri
 }
 
 func returnIfUserQuit(err error, msg string) error {
-	if errors.Is(err, models.ErrUserQuit) {
+	if errors.Is(err, task.ErrUserQuit) {
 		return nil
 	}
 	return fmt.Errorf("%s: %w", msg, err)

@@ -117,13 +117,13 @@ func TUIQuestion(interfaceType InterfaceType, fields ...huh.Field) *huh.Group {
 
 // FetchIssues retrieves all issues from the app and returns those that are relevant for validation,
 // excluding the setup issue. It also updates the setup issue with the latest data from the app.
-func FetchIssues(ctx context.Context, app *app.App, setupIssue *models.Issue) ([]*models.Issue, error) {
+func FetchIssues(ctx context.Context, app *App, setupIssue *Issue) ([]*Issue, error) {
 	issues, err := app.Issues.SearchIssues(ctx, "", models.IssueFilter{})
 	if err != nil {
 		return nil, err
 	}
 
-	var relevantIssues []*models.Issue
+	var relevantIssues []*Issue
 	for _, issue := range issues {
 		if issue.ID != setupIssue.ID {
 			relevantIssues = append(relevantIssues, issue)
