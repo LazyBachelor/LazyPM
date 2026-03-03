@@ -229,7 +229,6 @@ func (c *taskRunCollector) finalize() models.TaskRunMetrics {
 }
 
 func normalizeUserAction(raw string) (source, actionText, target, result string) {
-
 	trimmed := strings.TrimSpace(raw)
 	if trimmed == "" {
 		return "unknown", "unknown_action", "", "unknown"

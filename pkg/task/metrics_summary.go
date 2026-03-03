@@ -5,7 +5,6 @@ import (
 )
 
 func buildTaskStatsSummary(runs []models.TaskRunMetrics) models.TaskStatsSummary {
-
 	var summary models.TaskStatsSummary
 
 	if len(runs) == 0 {
