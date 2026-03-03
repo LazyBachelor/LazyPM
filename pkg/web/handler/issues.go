@@ -56,7 +56,16 @@ func CreateIssue(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if hx.IsHxRequest() {
-		w.Header().Set("HX-Refresh", "true")
+		// Check if 'from' parameter says board view
+		from := r.URL.Query().Get("from")
+		referer := r.Header.Get("Referer")
+		boardView := from == "board" || strings.Contains(referer, "board=true")
+		
+		if boardView {
+			w.Header().Set("HX-Redirect", "/?board=true")
+		} else {
+			w.Header().Set("HX-Redirect", "/?selected-issue="+issue.ID)
+		}
 		return
 	}
 
@@ -111,19 +120,20 @@ func GetIssue(w http.ResponseWriter, r *http.Request) {
 	comments := r.Context().Value(commentsKey).([]*models.Comment)
 	hx := HTMX(r)
 
+	from := r.URL.Query().Get("from")
+	detailProps := routes.IssueDetailProps{
+		Issue:    issue,
+		Comments: comments,
+		From:     from,
+	}
+
 	if !hx.IsHxRequest() && strings.Contains(r.Header.Get("Accept"), "text/html") {
-		routes.IssueDetail(routes.IssueDetailProps{
-			Issue:    issue,
-			Comments: comments,
-		}).Render(r.Context(), w)
+		routes.IssueDetail(detailProps).Render(r.Context(), w)
 		return
 	}
 
 	if hx.IsHxRequest() {
-		routes.IssueDetailContent(routes.IssueDetailProps{
-			Issue:    issue,
-			Comments: comments,
-		}).Render(r.Context(), w)
+		routes.IssueDetailContent(detailProps).Render(r.Context(), w)
 		return
 	}
 
@@ -165,7 +175,16 @@ func UpdateIssue(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if hx.IsHxRequest() {
-		w.Header().Set("HX-Refresh", "true")
+		// Check if 'from' parameter says board view
+		from := r.URL.Query().Get("from")
+		referer := r.Header.Get("Referer")
+		boardView := from == "board" || strings.Contains(referer, "board=true")
+		
+		if boardView {
+			w.Header().Set("HX-Redirect", "/?board=true")
+		} else {
+			w.Header().Set("HX-Redirect", "/?selected-issue="+issue.ID)
+		}
 		return
 	}
 
@@ -189,7 +208,15 @@ func UpdateAssignee(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if HTMX(r).IsHxRequest() {
-		w.Header().Set("HX-Refresh", "true")
+		// Check if we're in board view
+		referer := r.Header.Get("Referer")
+		boardView := strings.Contains(referer, "board=true")
+		
+		if boardView {
+			w.Header().Set("HX-Redirect", "/?board=true&selected-issue="+issue.ID)
+		} else {
+			w.Header().Set("HX-Redirect", "/?selected-issue="+issue.ID)
+		}
 		return
 	}
 
@@ -206,7 +233,16 @@ func DeleteIssue(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if HTMX(r).IsHxRequest() {
-		w.Header().Set("HX-Redirect", "/")
+		// Check if 'from' parameter indicates board view
+		from := r.URL.Query().Get("from")
+		referer := r.Header.Get("Referer")
+		boardView := from == "board" || strings.Contains(referer, "board=true")
+		
+		if boardView {
+			w.Header().Set("HX-Redirect", "/?board=true")
+		} else {
+			w.Header().Set("HX-Redirect", "/")
+		}
 		return
 	}
 

@@ -40,16 +40,15 @@ templ IssueDetail(props IssueDetailProps) {
 			<p class="text-xs opacity-70">{ props.Issue.CreatedBy }</p>
 		</div>
 		<a
-			class="flex flex-row gap-1 bg-base-200 rounded-lg p-2"
+			class="btn btn-primary btn-sm flex flex-row gap-1 items-center justify-center"
 			hx-get={ "/issues/" + props.Issue.ID + "/assignee" }
 			hx-target="#modal-container"
 			hx-swap="innerHTML"
 		>
 			if props.Issue.Assignee == "" {
-				<span class="text-xs opacity-70 block">Unassigned</span>
+				<span>Unassigned (click to assign)</span>
 			} else {
-				<span class="text-xs opacity-70 block">Assignee:</span>
-				<p class="text-xs opacity-70">{ props.Issue.Assignee }</p>
+				<span>Assignee: { props.Issue.Assignee }</span>
 			}
 		</a>
 	</div>

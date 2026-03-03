@@ -8,8 +8,15 @@ import (
 )
 
 func CreateIssueFormModal(w http.ResponseWriter, r *http.Request) {
+	// Get the 'from' parameter to track where the user came from
+	from := r.URL.Query().Get("from")
+	postAction := "/issues"
+	if from != "" {
+		postAction += "?from=" + from
+	}
+
 	modalContent := components.IssueForm(components.IssueFormProps{
-		PostAction: "/issues",
+		PostAction: postAction,
 		Status:     "open",
 		IssueType:  "task",
 		Priority:   0,
@@ -33,13 +40,23 @@ func EditIssueFormModal(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Get the 'from' parameter to track where the user came from
+	from := r.URL.Query().Get("from")
+	patchAction := "/issues/" + issue.ID
+	deleteAction := "/issues/" + issue.ID + "/delete"
+	if from != "" {
+		patchAction += "?from=" + from
+		deleteAction += "?from=" + from
+	}
+
 	modalContent := components.IssueForm(components.IssueFormProps{
-		PatchAction: "/issues/" + issue.ID,
-		Title:       issue.Title,
-		Description: issue.Description,
-		Status:      string(issue.Status),
-		IssueType:   string(issue.IssueType),
-		Priority:    issue.Priority,
+		PatchAction:  patchAction,
+		DeleteAction: deleteAction,
+		Title:        issue.Title,
+		Description:  issue.Description,
+		Status:       string(issue.Status),
+		IssueType:    string(issue.IssueType),
+		Priority:     issue.Priority,
 	})
 
 	modal := components.Modal(components.ModalProps{
@@ -71,4 +88,32 @@ func AssigneeFormModal(w http.ResponseWriter, r *http.Request) {
 		Open:    true,
 	})
 	modal.Render(r.Context(), w)
+}
+
+func DeleteIssueConfirmModal(w http.ResponseWriter, r *http.Request) {
+	issue := r.Context().Value(issueKey).(*models.Issue)
+
+	if issue == nil {
+		http.Error(w, "Issue not found in context", http.StatusInternalServerError)
+		return
+	}
+
+	// Get the 'from' parameter to track where the user came from
+	from := r.URL.Query().Get("from")
+	deleteAction := "/issues/" + issue.ID
+	if from != "" {
+		deleteAction += "?from=" + from
+	}
+
+	confirmModal := components.ConfirmModal(components.ConfirmModalProps{
+		Title:         "Delete Issue",
+		Message:       "Are you sure you want to delete this issue? This action cannot be undone.",
+		ConfirmText:   "Delete Issue",
+		CancelText:    "Cancel",
+		ConfirmAction: deleteAction,
+		ConfirmClass:  "btn-error",
+		IssueID:       issue.ID,
+	})
+
+	confirmModal.Render(r.Context(), w)
 }

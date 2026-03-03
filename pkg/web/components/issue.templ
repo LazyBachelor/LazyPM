@@ -7,16 +7,17 @@ import (
 )
 
 type IssueFormProps struct {
-	PostAction  string
-	PatchAction string
-	Title       string
-	Description string
-	Status      string
-	Priority    int
-	IssueType   string
-	Class       string
-	Attrs       templ.Attributes
-	Target      string // Optional: if empty, server controls via HX-Target header
+	PostAction   string
+	PatchAction  string
+	DeleteAction string // Optional: URL for delete confirmation modal
+	Title        string
+	Description  string
+	Status       string
+	Priority     int
+	IssueType    string
+	Class        string
+	Attrs        templ.Attributes
+	Target       string // Optional: if empty, server controls via HX-Target header
 }
 
 templ IssueForm(props IssueFormProps) {
@@ -84,6 +85,17 @@ templ IssueForm(props IssueFormProps) {
 				Submit Issue
 			</button>
 		</form>
+		if props.DeleteAction != "" {
+			<button
+				type="button"
+				class="btn btn-error w-full mt-2"
+				hx-get={ props.DeleteAction }
+				hx-target="#modal-container"
+				hx-swap="innerHTML"
+			>
+				Delete Issue
+			</button>
+		}
 		if props.Target == "" {
 			<div id="result"></div>
 		}
