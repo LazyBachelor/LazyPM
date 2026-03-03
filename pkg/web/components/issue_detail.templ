@@ -46,7 +46,7 @@ templ IssueDetail(props IssueDetailProps) {
 			hx-swap="innerHTML"
 		>
 			if props.Issue.Assignee == "" {
-				<span>Unassigned (click to assign)</span>
+				<span>Unassigned (click to assign) </span>
 			} else {
 				<span>Assignee: { props.Issue.Assignee }</span>
 			}
