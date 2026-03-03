@@ -29,7 +29,6 @@ func NewFileMetricsStore(path string, logger *slog.Logger) *FileMetricsStore {
 }
 
 func (s *FileMetricsStore) Append(ctx context.Context, taskName string, run models.TaskRunMetrics) error {
-
 	if s.path == "" {
 		return nil
 	}
@@ -46,14 +45,8 @@ func (s *FileMetricsStore) Append(ctx context.Context, taskName string, run mode
 		Runs:     []models.TaskRunMetrics{},
 	}
 
-	if bytes, err := os.ReadFile(s.path); err == nil {
-		if len(bytes) > 0 {
-			if err := json.Unmarshal(bytes, &metrics); err != nil {
-				return fmt.Errorf("parse metrics file: %w", err)
-			}
-		}
-	} else if !os.IsNotExist(err) {
-		return fmt.Errorf("read metrics file: %w", err)
+	if err := readMetrics(&metrics, s.path); err != nil {
+		return err
 	}
 
 	if metrics.TaskName == "" {
@@ -74,14 +67,24 @@ func (s *FileMetricsStore) Append(ctx context.Context, taskName string, run mode
 		return fmt.Errorf("write metrics file: %w", err)
 	}
 
-	if s.logger != nil {
-		s.logger.Info(
-			"task metrics persisted",
-			"path", s.path,
-			"task", taskName,
-			"run_id", run.RunID,
-		)
+	if s.logger == nil {
+		return fmt.Errorf("logger is nil")
 	}
 
+	s.logger.Info("task metrics persisted", "path", s.path, "task", taskName, "run_id", run.RunID)
+
+	return nil
+}
+
+func readMetrics(metrics *models.TaskMetricsFile, path string) error {
+	if bytes, err := os.ReadFile(path); err == nil {
+		if len(bytes) > 0 {
+			if err := json.Unmarshal(bytes, metrics); err != nil {
+				return fmt.Errorf("failed to parse metrics file: %w", err)
+			}
+		}
+	} else if !os.IsNotExist(err) {
+		return fmt.Errorf("failed to read metrics file: %w", err)
+	}
 	return nil
 }
