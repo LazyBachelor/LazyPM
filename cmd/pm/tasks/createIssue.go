@@ -73,7 +73,7 @@ func (t *CreateIssueTask) Validate(ctx context.Context) ValidationFeedback {
 
 	issue := issues[0]
 
-	expect.Assert(len(issues) < 2, "Multiple issues were created instead of one delete the extra issues and try again")
+	expect.Assert(len(issues) < 2, "Multiple issues were created instead of one. Delete the extra issues and try again.")
 
 	expect.NotEmptyString(issue.Title, "Issue title should not be empty")
 	expect.Assert(issue.Title == "My first Issue",
