@@ -18,7 +18,7 @@ The MongoDB Driver dependency in the file is outdated and needs to be updated to
 This is a common task for developers, and it requires attention to detail and the ability to follow instructions carefully.
 
 Your task:
-1. Assing this Issue to yourself as "Me" and mark it as "In Progress"
+1. Assign this Issue to yourself as "Me" and mark it as "In Progress"
 2. Create a New Issue and give it these details:
 	- Title: "Upgrade MongoDB Driver Dependency"
 	- Description: "We need to upgrade the MongoDB Driver dependency to the latest version."
