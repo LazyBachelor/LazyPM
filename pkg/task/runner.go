@@ -100,7 +100,9 @@ func startValidationLoop(ctx context.Context, t Tasker, feedbackChan chan Valida
 		case <-ticker.C:
 			feedback := t.Validate(ctx)
 			if feedback.Success {
-				feedback.Message = "Task completed successfully!"
+				if feedback.Message == "" {
+					feedback.Message = "Task completed successfully! Going back to the survey menu..."
+				}
 				feedbackChan <- feedback
 				time.Sleep(4 * time.Second)
 				doneChan <- true

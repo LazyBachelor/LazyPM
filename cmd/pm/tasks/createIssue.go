@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/LazyBachelor/LazyPM/internal/models"
 	"github.com/LazyBachelor/LazyPM/internal/utils/check"
 )
 
@@ -12,10 +13,10 @@ const description = `You are tasked with creating a new issue in the project man
 This task will test your ability to use the issue creation workflow effectively.
 
 Your task:
-1. Create a new issue with a clear title
-2. Add a detailed description explaining what needs to be done
-3. Assign the issue to yourself
-4. Mark the issue as in-progress when you start working on it
+1. Create a new issue with the title "My first Issue"
+2. Add this detailed description "I need to do some coding"
+3. Assign the issue to yourself as "Me"
+4. Mark the issue as In Progress when you start working on it
 5. Close the issue once you've completed the work
 
 Make sure to fill out all the necessary details to help others understand the work item.`
@@ -55,6 +56,8 @@ func (t *CreateIssueTask) Setup(ctx context.Context) error {
 	return t.app.Issues.CreateIssue(ctx, t.setupIssue, "")
 }
 
+var isInProgress = false
+
 func (t *CreateIssueTask) Validate(ctx context.Context) ValidationFeedback {
 	expect := check.NewExpector()
 
@@ -63,9 +66,6 @@ func (t *CreateIssueTask) Validate(ctx context.Context) ValidationFeedback {
 		return expect.ValidationFeedback
 	}
 
-	expect.NotEmptyString(t.setupIssue.Assignee,
-		fmt.Sprintf("%s is not assigned to anyone", t.setupIssue.ID))
-
 	if len(issues) == 0 {
 		expect.Fail("No new issues created")
 		return expect.ValidationFeedback
@@ -73,8 +73,30 @@ func (t *CreateIssueTask) Validate(ctx context.Context) ValidationFeedback {
 
 	issue := issues[0]
 
-	expect.Assert(len(issues) < 2, "Multiple issues were created instead of one")
+	expect.Assert(len(issues) < 2, "Multiple issues were created instead of one. Delete the extra issues and try again.")
+
+	expect.NotEmptyString(issue.Title, "Issue title should not be empty")
+	expect.Assert(issue.Title == "My first Issue",
+		fmt.Sprintf("Issue title does not match the expected value 'My first Issue', but was '%s'", issue.Title))
+
 	expect.NotEmptyString(issue.Description, "Issue description should not be empty")
+	expect.Assert(issue.Description == "I need to do some coding",
+		fmt.Sprintf("Issue description does not match the expected value 'I need to do some coding', but was '%s'", issue.Description))
+
+	expect.Assert(issue.Assignee == "Me",
+		fmt.Sprintf("Issue should be assigned to 'Me', but was assigned to '%s'", issue.Assignee))
+
+	if issue.Status == models.StatusInProgress || isInProgress {
+		isInProgress = true
+	} else {
+		expect.Fail("Issue should be marked as in-progress when work starts")
+	}
+
+	if !isInProgress {
+		return expect.ValidationFeedback
+	} else if issue.Status != models.StatusClosed {
+		expect.Fail("Issue should be set to Closed once the work is completed")
+	}
 
 	return expect.Complete()
 }
