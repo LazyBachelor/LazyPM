@@ -25,6 +25,13 @@ func runStatusCmd(cmd *cobra.Command, args []string) error {
 		return nil
 	}
 
-	cmd.Print(app.CurrentFeedback.Message)
+	cmd.Println(app.CurrentFeedback.Message)
+	for _, check := range app.CurrentFeedback.Checks {
+		if check.Valid {
+			cmd.Printf("✅ %s\n", check.Message)
+		} else {
+			cmd.Printf("❌ %s\n", check.Message)
+		}
+	}
 	return nil
 }

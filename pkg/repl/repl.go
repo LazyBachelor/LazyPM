@@ -129,6 +129,7 @@ func (r *REPL) watchValidation() {
 				r.app.CurrentFeedback = &ValidationFeedback{
 					Success: feedback.Success,
 					Message: feedback.Message,
+					Checks:  feedback.Checks,
 				}
 			}
 			if feedback.Success {
