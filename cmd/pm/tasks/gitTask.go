@@ -47,6 +47,7 @@ func (t *GitTask) Questions(interfaceType InterfaceType) Questions {
 	return BaseQuestions(interfaceType).With(
 		huh.NewGroup(
 			huh.NewSelect[string]().Title("What Git Interface did you use?").
+				Key("git_interface_used").
 				Options(
 					huh.Option[string]{Value: "cli", Key: "Command Line Interface"},
 					huh.Option[string]{Value: "tui", Key: "Terminal User Interface"},
@@ -54,6 +55,11 @@ func (t *GitTask) Questions(interfaceType InterfaceType) Questions {
 				),
 		),
 	)
+}
+
+func (t *GitTask) QuestionnaireKeys(interfaceType InterfaceType) []string {
+	_ = interfaceType
+	return []string{"task_completed", "task_difficulty", "git_interface_used"}
 }
 
 func (t *GitTask) Setup(ctx context.Context) error {

@@ -46,14 +46,14 @@ type Model struct {
 	choosingPriority bool // true while choosing a priority
 	priorityIssueID  string
 	choosingType     bool // true while choosing a type
-	typeIssueID     string
-	addingComment   bool // true while adding a comment
-	commentInput    textarea.Model
-	commentIssueID  string
-	feedbackChan    chan models.ValidationFeedback
-	quitChan        chan bool
-	currentFeedback models.ValidationFeedback
-	showComplete    bool
+	typeIssueID      string
+	addingComment    bool // true while adding a comment
+	commentInput     textarea.Model
+	commentIssueID   string
+	feedbackChan     chan models.ValidationFeedback
+	quitChan         chan bool
+	currentFeedback  models.ValidationFeedback
+	showComplete     bool
 }
 
 func NewDashboard(app *app.App, feedbackChan chan models.ValidationFeedback, quitChan chan bool) *Model {
@@ -123,6 +123,15 @@ func (m *Model) startAddComment(selected ListIssue) {
 	m.commentIssueID = selected.ID
 	m.commentInput.SetValue("")
 	m.commentInput.Reset()
+}
+
+func (m *Model) logAction(action string) {
+	if m.app != nil {
+		m.app.LogAction(models.EncodeActionEvent(models.ActionEvent{
+			Source: "tui",
+			Action: action,
+		}))
+	}
 }
 
 func (m *Model) startEditTitle(selected ListIssue) {

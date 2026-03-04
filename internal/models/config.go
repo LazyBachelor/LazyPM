@@ -7,6 +7,7 @@ type Config struct {
 	BeadsDBPath           string
 	IssuePrefix           string
 	StatisticsStoragePath string
+	ActionLogger          func(string)
 }
 
 var BaseConfig = Config{
@@ -45,5 +46,10 @@ func (c Config) WithIssuePrefix(issuePrefix string) Config {
 
 func (c Config) WithStatisticsStoragePath(path string) Config {
 	c.StatisticsStoragePath = path
+	return c
+}
+
+func (c Config) WithActionLogger(logger func(string)) Config {
+	c.ActionLogger = logger
 	return c
 }
