@@ -12,7 +12,7 @@ import (
 
 const codingDescription = `You are tasked with doing a chore in the codebase.
 
-This task will test your ablity to read and understand instructions, change text, and save it to a file.
+This task will test your ability to read and understand instructions, change text, and save it to a file.
 
 The MongoDB Driver dependency in the file is outdated and needs to be updated to the latest version.
 This is a common task for developers, and it requires attention to detail and the ability to follow instructions carefully.
