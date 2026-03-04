@@ -31,15 +31,16 @@ func (h HelpBar) View() string {
 
 func (h HelpBar) shortHelp() string {
 	keys := []string{
-		styles.HighlightKey("tab") + " switch",
-		styles.HighlightKey("↑/k") + " up",
-		styles.HighlightKey("↓/j") + " down",
-		styles.HighlightKey("pgup/pgdn") + " page",
-		styles.HighlightKey("a") + " add",
-		styles.HighlightKey("e/d/s/p/t/c") + " edit",
-		styles.HighlightKey("x") + " delete",
-		styles.HighlightKey("q") + " quit",
-		styles.HighlightKey("?") + " help",
+		styles.HighlightKey("tab") + "switch ",
+		styles.HighlightKey("↑/k") + "up ",
+		styles.HighlightKey("↓/j") + "down ",
+		styles.HighlightKey("pgup/pgdn") + "page ",
+		styles.HighlightKey("a") + "add ",
+		styles.HighlightKey("e/d/s/p/t/c") + "edit ",
+		styles.HighlightKey("x") + "delete ",
+		styles.HighlightKey("q") + "quit ",
+		styles.HighlightKey("S") + "submit ",
+		styles.HighlightKey("?") + "help ",
 	}
 	content := lipgloss.JoinHorizontal(lipgloss.Left, keys...)
 	return lipgloss.NewStyle().

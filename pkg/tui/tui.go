@@ -15,6 +15,7 @@ type ValidationFeedback = models.ValidationFeedback
 type Tui struct {
 	feedbackChan chan ValidationFeedback
 	quitChan     chan bool
+	submitChan   chan<- struct{}
 }
 
 func New() *Tui {
@@ -29,7 +30,7 @@ func (t *Tui) Run(ctx context.Context, config Config) error {
 
 	defer cleanup()
 
-	p := tea.NewProgram(views.NewDashboardView(app, t.feedbackChan, t.quitChan),
+	p := tea.NewProgram(views.NewDashboardView(app, t.feedbackChan, t.quitChan, t.submitChan),
 		tea.WithAltScreen(), tea.WithMouseAllMotion())
 
 	if t.quitChan != nil {
@@ -49,4 +50,8 @@ func (t *Tui) Run(ctx context.Context, config Config) error {
 func (t *Tui) SetChannels(feedbackChan chan ValidationFeedback, quitChan chan bool) {
 	t.feedbackChan = feedbackChan
 	t.quitChan = quitChan
+}
+
+func (t *Tui) SetSubmitChan(submitChan chan<- struct{}) {
+	t.submitChan = submitChan
 }
