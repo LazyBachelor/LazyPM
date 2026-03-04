@@ -5,7 +5,7 @@ import (
 	"github.com/LazyBachelor/LazyPM/internal/models"
 	"github.com/LazyBachelor/LazyPM/pkg/tui/msgs"
 	"github.com/LazyBachelor/LazyPM/pkg/tui/views/dashboard"
-	"github.com/LazyBachelor/LazyPM/pkg/tui/views/dashboard2"
+	"github.com/LazyBachelor/LazyPM/pkg/tui/views/kanban"
 	tea "github.com/charmbracelet/bubbletea"
 )
 
@@ -57,14 +57,14 @@ func (r *RootModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 		cmds = append(cmds, tea.ClearScreen, r.currentView.Init())
 		return r, tea.Batch(cmds...)
-	case msgs.SwitchToDashboard2Msg:
-		// switch to dashboard 2 and apply the last known size.
-		r.currentView = dashboard2.NewDashboard(r.app, r.feedbackChan, r.quitChan)
+	case msgs.SwitchToKanbanBoardMsg:
+		// switch to kanban board and apply the last known size.
+		r.currentView = kanban.NewDashboard(r.app, r.feedbackChan, r.quitChan)
 		var cmds []tea.Cmd
 		if r.hasSize {
 			// check if there is a size, and then update it
 			var sizeCmd tea.Cmd
-			// set size of dashboard2 to the size before switching
+			// set size of kanban board to the size before switching
 			r.currentView, sizeCmd = r.currentView.Update(r.lastSize)
 			if sizeCmd != nil {
 				cmds = append(cmds, sizeCmd)

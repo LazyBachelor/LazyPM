@@ -5,21 +5,26 @@ import (
 
 	"github.com/LazyBachelor/LazyPM/internal/app"
 	"github.com/LazyBachelor/LazyPM/internal/models"
+	"github.com/LazyBachelor/LazyPM/pkg/tui/components"
 	"github.com/charmbracelet/bubbles/textarea"
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
 )
 
-type ValidationFeedbackMsg struct {
-	Feedback models.ValidationFeedback
-}
+// Use shared types from components for consistency.
+type (
+	Header      = components.Header
+	IssueList   = components.IssueList
+	IssueDetail = components.IssueDetail
+	ListIssue   = components.ListIssue
+)
 
 type Model struct {
 	header            Header
 	issueList         IssueList
 	issueDetail       IssueDetail
 	closedIssueList   IssueList
-	helpBar           HelpBar
+	helpBar           components.HelpBar
 	keyMap            DashboardKeyMap
 	app               *app.App
 	width             int
@@ -55,7 +60,7 @@ type Model struct {
 
 func NewDashboard(app *app.App, feedbackChan chan models.ValidationFeedback, quitChan chan bool) *Model {
 	m := &Model{
-		header:            NewHeader("Project Manager Dashboard"),
+		header:            components.NewHeader("Project Manager Dashboard"),
 		keyMap:            defaultDashboardKeyMap,
 		app:               app,
 		width:             80,
@@ -68,26 +73,15 @@ func NewDashboard(app *app.App, feedbackChan chan models.ValidationFeedback, qui
 	}
 
 	allIssues, _ := app.Issues.SearchIssues(context.Background(), "", models.IssueFilter{})
-	m.issueList = NewIssueListFromIssues(app, OpenAndInProgressOnly(allIssues), 0, 0)
-	m.issueDetail = NewIssueDetail()
-	m.closedIssueList = NewIssueListFromIssues(app, ClosedOnly(allIssues), 0, 0)
-	m.helpBar = NewHelpBar(m.keyMap)
+	m.issueList = components.NewIssueListFromIssues(app, components.OpenAndInProgressOnly(allIssues), 0, 0)
+	m.issueDetail = components.NewIssueDetail()
+	m.closedIssueList = components.NewIssueListFromIssues(app, components.ClosedOnly(allIssues), 0, 0)
+	m.helpBar = components.NewHelpBar(components.ViewIssues)
 
-	ti := textinput.New()
-	ti.Placeholder = "Issue title ..."
-	ti.CharLimit = 256
-	m.titleInput = ti
-
-	createTi := textinput.New()
-	createTi.Placeholder = "New issue title ..."
-	createTi.CharLimit = 256
-	m.createTitleInput = createTi
-
-	descTa := textarea.New()
-	descTa.Placeholder = "Issue description..."
-	descTa.SetWidth(56)
-	descTa.SetHeight(8)
-	m.descriptionInput = descTa
+	inputs := components.NewIssueInputs()
+	m.titleInput = inputs.Title
+	m.createTitleInput = inputs.CreateTitle
+	m.descriptionInput = inputs.Description
 
 	if selected := m.issueList.SelectedItem(); selected.ID != "" {
 		m.issueDetail.SetIssue(selected.Issue)
@@ -140,14 +134,13 @@ func (m *Model) startChooseType(selected ListIssue) {
 }
 
 func (m *Model) Init() tea.Cmd {
-	return m.listenForValidation()
+	return components.ListenForValidation(m.feedbackChan)
 }
 
-func (m *Model) listenForValidation() tea.Cmd {
-	return func() tea.Msg {
-		feedback := <-m.feedbackChan
-		return ValidationFeedbackMsg{Feedback: feedback}
-	}
+// IsInModal returns true when a modal (edit, create, delete confirm, choose status/priority/type) is active.
+func (m *Model) IsInModal() bool {
+	return m.editingTitle || m.creatingIssue || m.editingDescription ||
+		m.choosingStatus || m.choosingPriority || m.confirmingDelete || m.choosingType
 }
 
 func (m *Model) IsFocusedOnList() bool {

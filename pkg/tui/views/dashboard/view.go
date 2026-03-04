@@ -1,6 +1,7 @@
 package dashboard
 
 import (
+	"github.com/LazyBachelor/LazyPM/pkg/tui/components"
 	"github.com/LazyBachelor/LazyPM/pkg/tui/styles"
 	"github.com/charmbracelet/lipgloss"
 )
@@ -16,7 +17,7 @@ func (m *Model) View() string {
 	header := m.header.View(m.width)
 	headerHeight := m.header.Height()
 
-	footer := m.footer()
+	footer := components.RenderFooter(m.width, &m.helpBar, m.currentFeedback)
 	footerHeight := lipgloss.Height(footer)
 
 	// To avoid layer overflow or clipping, the label heights are calculated and subtracted from the available height before calculating the list heights to avoid layout overflow or clipping.
@@ -39,6 +40,10 @@ func (m *Model) View() string {
 	m.closedIssueList.SetSize(listWidth, halfHeight)
 	m.issueDetail.SetSize(detailWidth, contentHeight)
 
+	// Only highlight the focused list; unfocused list should not show selection highlight.
+	m.issueList.SetHighlightSelected(m.focusedWindow == 0 && m.focusedPaneMain == 0)
+	m.closedIssueList.SetHighlightSelected(m.focusedWindow == 1 && m.focusedPaneClosed == 0)
+
 	listView := m.issueList.View()
 	closedListView := m.closedIssueList.View()
 	detailView := m.issueDetail.View()
@@ -56,115 +61,29 @@ func (m *Model) View() string {
 
 	mainView := lipgloss.JoinVertical(lipgloss.Left, header, content, footer)
 
-	if m.editingTitle {
-		editBoxWidth := min(60, m.width-4)
-		m.titleInput.Width = editBoxWidth - 2
-		editContent := lipgloss.JoinVertical(lipgloss.Left,
-			styles.LabelStyle.Render("Edit title (Enter to save, Esc to cancel):"),
-			m.titleInput.View(),
-		)
-		editBox := styles.ContainerStyle.
-			Width(editBoxWidth).
-			BorderForeground(styles.PrimaryBorder).
-			Render(editContent)
-		return lipgloss.Place(m.width, m.height, lipgloss.Center, lipgloss.Center, editBox)
-	}
-
-	if m.editingDescription {
-		editBoxWidth := min(60, m.width-4)
-		m.descriptionInput.SetWidth(editBoxWidth - 2)
-		m.descriptionInput.SetHeight(10)
-		editContent := lipgloss.JoinVertical(lipgloss.Left,
-			styles.LabelStyle.Render("Edit description (Ctrl+S to save, Esc to cancel):"),
-			m.descriptionInput.View(),
-		)
-		editBox := styles.ContainerStyle.
-			Width(editBoxWidth).
-			BorderForeground(styles.PrimaryBorder).
-			Render(editContent)
-		return lipgloss.Place(m.width, m.height, lipgloss.Center, lipgloss.Center, editBox)
-	}
-
-	if m.creatingIssue {
-		createBoxWidth := min(60, m.width-4)
-		m.createTitleInput.Width = createBoxWidth - 2
-		createContent := lipgloss.JoinVertical(lipgloss.Left,
-			styles.LabelStyle.Render("New issue (Enter to create, Esc to cancel):"),
-			m.createTitleInput.View(),
-		)
-		createBox := styles.ContainerStyle.
-			Width(createBoxWidth).
-			BorderForeground(styles.PrimaryBorder).
-			Render(createContent)
-		return lipgloss.Place(m.width, m.height, lipgloss.Center, lipgloss.Center, createBox)
-	}
-
-	if m.confirmingDelete {
-		confirmContent := lipgloss.JoinVertical(lipgloss.Left,
-			styles.LabelStyle.Render("Delete issue "+m.deleteConfirmID+"?"),
-			lipgloss.NewStyle().Foreground(styles.FaintText).Render("Press y to delete, n or Esc to cancel"),
-		)
-		confirmBoxWidth := min(50, m.width-4)
-		confirmBox := styles.ContainerStyle.
-			Width(confirmBoxWidth).
-			BorderForeground(styles.PrimaryBorder).
-			Render(confirmContent)
-		return lipgloss.Place(m.width, m.height, lipgloss.Center, lipgloss.Center, confirmBox)
-	}
-
-	if m.choosingStatus {
-		statusContent := lipgloss.JoinVertical(lipgloss.Left,
-			styles.LabelStyle.Render("Change status for "+m.statusIssueID+":"),
-			lipgloss.NewStyle().Foreground(styles.FaintText).Render("o = open   i = in_progress   c = closed"),
-			lipgloss.NewStyle().Foreground(styles.FaintText).Render("Esc = cancel"),
-		)
-		statusBoxWidth := min(50, m.width-4)
-		statusBox := styles.ContainerStyle.
-			Width(statusBoxWidth).
-			BorderForeground(styles.PrimaryBorder).
-			Render(statusContent)
-		return lipgloss.Place(m.width, m.height, lipgloss.Center, lipgloss.Center, statusBox)
-	}
-
-	if m.choosingPriority {
-		priorityContent := lipgloss.JoinVertical(lipgloss.Left,
-			styles.LabelStyle.Render("Change priority for "+m.priorityIssueID+":"),
-			lipgloss.NewStyle().Foreground(styles.FaintText).Render("0 = irrelevant 1 = low  2 = normal  3 = high  4 = critical"),
-			lipgloss.NewStyle().Foreground(styles.FaintText).Render("Esc = cancel"),
-		)
-		priorityBoxWidth := min(60, m.width-4)
-		priorityBox := styles.ContainerStyle.
-			Width(priorityBoxWidth).
-			BorderForeground(styles.PrimaryBorder).
-			Render(priorityContent)
-		return lipgloss.Place(m.width, m.height, lipgloss.Center, lipgloss.Center, priorityBox)
-	}
-
-	if m.choosingType {
-		typeContent := lipgloss.JoinVertical(lipgloss.Left,
-			styles.LabelStyle.Render("Change type for "+m.typeIssueID+":"),
-			lipgloss.NewStyle().Foreground(styles.FaintText).Render("b = bug   f = feature   t = task   e = epic   c = chore"),
-			lipgloss.NewStyle().Foreground(styles.FaintText).Render("Esc = cancel"),
-		)
-		typeBoxWidth := min(65, m.width-4)
-		typeBox := styles.ContainerStyle.
-			Width(typeBoxWidth).
-			BorderForeground(styles.PrimaryBorder).
-			Render(typeContent)
-		return lipgloss.Place(m.width, m.height, lipgloss.Center, lipgloss.Center, typeBox)
-	}
-
-	return mainView
+	return components.RenderModals(
+		m.width,
+		m.height,
+		m.editingTitle,
+		m.titleInput.View(),
+		m.editingDescription,
+		m.descriptionInput.View(),
+		m.creatingIssue,
+		m.createTitleInput.View(),
+		m.confirmingDelete,
+		m.deleteConfirmID,
+		m.choosingStatus,
+		m.statusIssueID,
+		m.choosingPriority,
+		m.priorityIssueID,
+		m.choosingType,
+		m.typeIssueID,
+		mainView,
+	)
 
 }
 
 func (m *Model) footer() string {
-	feedbackStatus := m.currentFeedback.Message
-
-	if feedbackStatus == "" {
-		return m.helpBar.View()
-	}
-
-	m.helpBar.SetWidth(m.width - lipgloss.Width(feedbackStatus))
-	return lipgloss.JoinHorizontal(lipgloss.Left, m.helpBar.View(), feedbackStatus)
+	// Kept for backwards compatibility; delegate to the shared helper.
+	return components.RenderFooter(m.width, &m.helpBar, m.currentFeedback)
 }
