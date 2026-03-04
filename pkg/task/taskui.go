@@ -69,7 +69,7 @@ func (m TaskModel) View() string {
 			style.TextStyle.Render("Terminal too small."))
 	}
 
-	boxWidth := min(m.width-10, 80)
+	boxWidth := min(m.width-10, 120)
 
 	detailsText := fmt.Sprintf("Time to complete: %s | Difficulty: %s", m.TimeToComplete, m.Difficulty)
 
