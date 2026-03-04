@@ -28,6 +28,7 @@ type Check struct {
 type ValidatedInterface interface {
 	Interface
 	SetChannels(feedbackChan chan ValidationFeedback, quitChan chan bool)
+	SetSubmitChan(submitChan chan<- struct{})
 }
 
 type TaskDetails struct {
