@@ -24,7 +24,7 @@ Your task:
 	- Description: "We need to upgrade the MongoDB Driver dependency to the latest version."
 	- Status: "In Progress"
 	- Issue Type: "Chore"
-3. A file will appear on your desktop named "code.txt".
+3. A file will appear in the current directory named "code.txt".
    Open it and follow the instructions inside. And save the file after you are done.
 4. When you are done, mark this and the issue you made as "Closed".`
 
