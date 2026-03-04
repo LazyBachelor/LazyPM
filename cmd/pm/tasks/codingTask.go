@@ -131,6 +131,7 @@ func (t *CodingTask) Validate(ctx context.Context) ValidationFeedback {
 	}
 
 	expect.Assert(t.setupIssue.Assignee == "Me", "The original issue should be assigned to 'Me'. Please assign the issue to yourself.")
+	expect.Assert(t.setupIssue.Status == models.StatusInProgress, "The original issue should be marked as In Progress before starting work. Please update the issue status to In Progress.")
 	expect.Assert(len(issues) > 0, "No new issues created. Please create an issue with the specified details.")
 
 	if len(issues) == 0 {
