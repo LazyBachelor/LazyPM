@@ -22,6 +22,7 @@ type ValidationFeedback = models.ValidationFeedback
 type Web struct {
 	feedbackChan chan ValidationFeedback
 	quitChan     chan bool
+	submitChan   chan<- struct{}
 }
 
 func New() *Web {
@@ -72,6 +73,10 @@ func (w *Web) Run(ctx context.Context, config Config) error {
 		}()
 	}
 
+	if w.submitChan != nil {
+		handler.SetSubmitChan(w.submitChan)
+	}
+
 	select {
 	case <-w.quitChan:
 		fmt.Println("Task completed! Shutting down server...")
@@ -88,4 +93,8 @@ func (w *Web) Run(ctx context.Context, config Config) error {
 func (w *Web) SetChannels(feedbackChan chan ValidationFeedback, quitChan chan bool) {
 	w.feedbackChan = feedbackChan
 	w.quitChan = quitChan
+}
+
+func (w *Web) SetSubmitChan(submitChan chan<- struct{}) {
+	w.submitChan = submitChan
 }
