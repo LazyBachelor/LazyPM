@@ -122,6 +122,8 @@ func (t *CodingTask) Setup(ctx context.Context) error {
 	return nil
 }
 
+var codeTaskInProgress = false
+
 func (t *CodingTask) Validate(ctx context.Context) ValidationFeedback {
 	expect := check.NewExpector()
 
@@ -130,9 +132,14 @@ func (t *CodingTask) Validate(ctx context.Context) ValidationFeedback {
 		return expect.ValidationFeedback
 	}
 
-	expect.Assert(t.setupIssue.Assignee == "Me", "The original issue should be assigned to 'Me'. Please assign the issue to yourself.")
-	expect.Assert(t.setupIssue.Status == models.StatusInProgress, "The original issue should be marked as In Progress before starting work. Please update the issue status to In Progress.")
-	expect.Assert(len(issues) > 0, "No new issues created. Please create an issue with the specified details.")
+	expect.Assert(t.setupIssue.Assignee == "Me",
+		"The original issue should be assigned to 'Me'.")
+
+	expect.Assert(t.setupIssue.Status == models.StatusInProgress,
+		"The original issue should be marked as In Progress before starting work.")
+
+	expect.Assert(len(issues) > 0,
+		"No new issues created. Please create an issue with the specified details.")
 
 	if len(issues) == 0 {
 		expect.Fail("No new issues created")
@@ -141,15 +148,20 @@ func (t *CodingTask) Validate(ctx context.Context) ValidationFeedback {
 
 	issue := issues[0]
 
-	expect.Assert(len(issues) < 2, "Multiple issues were created instead of one. Delete the extra issues and try again.")
+	expect.Assert(len(issues) < 2,
+		"Multiple issues were created instead of one. Delete the extra issues and try again.")
 
-	expect.NotEmptyString(issue.Title, "Issue title should not be empty")
+	expect.NotEmptyString(issue.Title,
+		"Issue title should not be empty")
+
 	expect.Assert(issue.Title == "Upgrade MongoDB Driver Dependency",
 		fmt.Sprintf("Issue title does not match the expected value 'Upgrade MongoDB Driver Dependency', but was '%s'", issue.Title))
 
-	expect.NotEmptyString(issue.Description, "Issue description should not be empty")
+	expect.NotEmptyString(issue.Description,
+		"Issue description should not be empty")
+
 	expect.Assert(issue.Description == "We need to upgrade the MongoDB Driver dependency to the latest version.",
-		fmt.Sprintf("Issue description does not match the expected value 'We need to upgrade the MongoDB Driver dependency to the latest version.', but was '%s'", issue.Description))
+		fmt.Sprintf("Issue description does not match 'We need to upgrade the MongoDB Driver dependency to the latest version.', but was '%s'", issue.Description))
 
 	expect.Assert(issue.IssueType == models.TypeChore,
 		fmt.Sprintf("Issue type should be 'Chore', but was '%s'", issue.IssueType))
@@ -157,14 +169,14 @@ func (t *CodingTask) Validate(ctx context.Context) ValidationFeedback {
 	expect.Assert(issue.Assignee == "Me",
 		fmt.Sprintf("Issue should be assigned to 'Me', but was assigned to '%s'", issue.Assignee))
 
-	if issue.Status == models.StatusInProgress || isInProgress {
-		isInProgress = true
+	if issue.Status == models.StatusInProgress || codeTaskInProgress {
+		codeTaskInProgress = true
 	} else {
-		expect.Fail("Issue should be marked as in-progress when work starts")
+		expect.Fail("Issue should be marked as In Progress when work starts")
 	}
 
 	if _, err := os.Stat("./code.txt"); os.IsNotExist(err) {
-		expect.Fail("The code.txt file should exist on the desktop. Please create the file with the specified content.")
+		expect.Fail("The code.txt file should exist on the desktop.")
 		return expect.ValidationFeedback
 	}
 
@@ -176,14 +188,14 @@ func (t *CodingTask) Validate(ctx context.Context) ValidationFeedback {
 
 	code, ok := strings.CutPrefix(string(fileContent), codingDescription+textFileDescription+"\n")
 	if !ok {
-		expect.Fail("The content of code.txt does not match the expected format. Please ensure the file contains the correct instructions and code.")
+		expect.Fail("The content of code.txt does not match the expected format.")
 		return expect.ValidationFeedback
 	}
 
 	expect.Assert(strings.Contains(code, "go.mongodb.org/mongo-driver v1.17.9"),
-		"The go.mod snippet in code.txt should contain the updated MongoDB Driver version (v1.17.9). Please make sure you have updated the dependency in the snippet accordingly.")
+		"The MongoDB Driver dependency should be updated to version v1.17.9 in the file.")
 
-	if !isInProgress {
+	if !codeTaskInProgress {
 		return expect.ValidationFeedback
 	} else if issue.Status != models.StatusClosed {
 		expect.Fail("Issue should be set to Closed once the work is completed")
