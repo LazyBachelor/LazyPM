@@ -32,7 +32,7 @@ func (h HelpBar) View() string {
 func (h HelpBar) shortHelp() string {
 	keys := []string{
 		styles.HighlightKey("tab") + " switch",
-		styles.HighlightKey("ctrl+1") + " dash1",
+		styles.HighlightKey("1") + " dash1",
 		styles.HighlightKey("↑/k") + " up",
 		styles.HighlightKey("↓/j") + " down",
 		styles.HighlightKey("pgup/pgdn") + " page",
