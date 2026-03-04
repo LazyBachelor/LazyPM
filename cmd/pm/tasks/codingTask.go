@@ -95,7 +95,7 @@ func (t *CodingTask) Questions(interfaceType InterfaceType) (questions Questions
 }
 
 func (t *CodingTask) QuestionnaireKeys(interfaceType InterfaceType) []string {
-	keys := []string{"task_completed", "task_difficulty", "final_confirmation"}
+	keys := []string{"task_completed", "task_difficulty"}
 	return keys
 }
 
