@@ -67,12 +67,9 @@ func (s *FileMetricsStore) Append(ctx context.Context, taskName string, run mode
 		return fmt.Errorf("write metrics file: %w", err)
 	}
 
-	if s.logger == nil {
-		return fmt.Errorf("logger is nil")
+	if s.logger != nil {
+		s.logger.Info("task metrics persisted", "path", s.path, "task", taskName, "run_id", run.RunID)
 	}
-
-	s.logger.Info("task metrics persisted", "path", s.path, "task", taskName, "run_id", run.RunID)
-
 	return nil
 }
 
