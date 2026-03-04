@@ -14,6 +14,8 @@ type RootModel struct {
 	app          *app.App
 	feedbackChan chan models.ValidationFeedback
 	quitChan     chan bool
+	lastSize     tea.WindowSizeMsg
+	hasSize      bool
 }
 
 func NewRootView(app *app.App, feedbackChan chan models.ValidationFeedback, quitChan chan bool) *RootModel {
@@ -31,13 +33,45 @@ func (r *RootModel) Init() tea.Cmd {
 }
 
 func (r *RootModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
-	switch msg.(type) {
-	case msgs.SwitchToDashboard2Msg:
-		r.currentView = dashboard2.NewDashboard(r.app, r.feedbackChan, r.quitChan)
-		return r, r.currentView.Init()
+	// switch dashboards based on msg
+	switch m := msg.(type) {
+	case tea.WindowSizeMsg:
+		// remember the latest window size and forward it to the current view.
+		r.hasSize = true
+		r.lastSize = m
+		var cmd tea.Cmd
+		r.currentView, cmd = r.currentView.Update(msg)
+		return r, cmd
 	case msgs.SwitchToDashboardMsg:
+		// switch back to dashboard 1 and apply the last known size.
 		r.currentView = dashboard.NewDashboard(r.app, r.feedbackChan, r.quitChan)
-		return r, r.currentView.Init()
+		var cmds []tea.Cmd
+		if r.hasSize {
+			// check if there is a size, and then update it
+			var sizeCmd tea.Cmd
+			// set size of dashboard1 to the size before switching
+			r.currentView, sizeCmd = r.currentView.Update(r.lastSize)
+			if sizeCmd != nil {
+				cmds = append(cmds, sizeCmd)
+			}
+		}
+		cmds = append(cmds, tea.ClearScreen, r.currentView.Init())
+		return r, tea.Batch(cmds...)
+	case msgs.SwitchToDashboard2Msg:
+		// switch to dashboard 2 and apply the last known size.
+		r.currentView = dashboard2.NewDashboard(r.app, r.feedbackChan, r.quitChan)
+		var cmds []tea.Cmd
+		if r.hasSize {
+			// check if there is a size, and then update it
+			var sizeCmd tea.Cmd
+			// set size of dashboard2 to the size before switching
+			r.currentView, sizeCmd = r.currentView.Update(r.lastSize)
+			if sizeCmd != nil {
+				cmds = append(cmds, sizeCmd)
+			}
+		}
+		cmds = append(cmds, tea.ClearScreen, r.currentView.Init())
+		return r, tea.Batch(cmds...)
 	}
 
 	var cmd tea.Cmd
