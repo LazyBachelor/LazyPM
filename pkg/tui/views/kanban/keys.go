@@ -19,8 +19,8 @@ type KanbanKeyMap struct {
 var defaultKanbanKeyMap = KanbanKeyMap{
 	CommonKeyMap: components.DefaultCommonKeyMap(),
 	SwitchToDashboard: key.NewBinding(
-		key.WithKeys("1"),
-		key.WithHelp("1", "dashboard 1"),
+		key.WithKeys("v"),
+		key.WithHelp("v", "dashboard 1"),
 	),
 	MoveColumnLeft: key.NewBinding(
 		key.WithKeys("h"),
@@ -68,7 +68,7 @@ func (d *Model) handleKeyMsg(msg tea.KeyMsg) tea.Cmd {
 		cmd = d.moveIssue(-1)
 	case d.IsFocusedOnList() && key.Matches(msg, d.keyMap.SelectIssue):
 		d.FocusDetail()
-	case d.IsFocusedOnDetail() && key.Matches(msg, d.keyMap.BackToList):
+	case d.IsFocusedOnDetail() && (key.Matches(msg, d.keyMap.BackToList) || key.Matches(msg, d.keyMap.SelectIssue)):
 		d.FocusList()
 	case d.IsFocusedOnDetail() && key.Matches(msg, d.keyMap.ScrollUp):
 		d.issueDetail.ScrollUp(1)

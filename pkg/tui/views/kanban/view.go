@@ -66,7 +66,15 @@ func (m *Model) View() string {
 	board := lipgloss.JoinHorizontal(lipgloss.Left, todoCol, inProgCol, doneCol)
 	content := lipgloss.JoinVertical(lipgloss.Left, board, m.issueDetail.View())
 
+	// Add spacer to lock footer to bottom of screen when content is shorter than available space
+	// This is to avoid having the footer floating above the bottom of the screen
 	mainView := lipgloss.JoinVertical(lipgloss.Left, header, content, footer)
+	mainViewHeight := lipgloss.Height(mainView)
+	if mainViewHeight < m.height {
+		spacerHeight := m.height - mainViewHeight
+		spacer := lipgloss.NewStyle().Height(spacerHeight).Width(m.width).Render("")
+		mainView = lipgloss.JoinVertical(lipgloss.Left, header, content, spacer, footer)
+	}
 
 	return components.RenderModals(
 		m.width,

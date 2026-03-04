@@ -24,12 +24,10 @@ type FullRow struct {
 	RightDesc string
 }
 
-
 type HelpBarConfig struct {
 	ShortItems []ShortItem
 	FullRows   []FullRow
 }
-
 
 type HelpBar struct {
 	view    ViewKind
@@ -38,7 +36,6 @@ type HelpBar struct {
 	width   int
 }
 
-
 func NewHelpBar(view ViewKind) HelpBar {
 	return HelpBar{view: view, config: helpBarConfig(view)}
 }
@@ -46,7 +43,6 @@ func NewHelpBar(view ViewKind) HelpBar {
 func (h *HelpBar) SetWidth(width int) {
 	h.width = width
 }
-
 
 func (h HelpBar) View() string {
 	if h.width == 0 {
@@ -111,7 +107,6 @@ func (h HelpBar) Height() int {
 	return lipgloss.Height(h.View())
 }
 
-
 func (h HelpBar) IsExpanded() bool {
 	return h.showAll
 }
@@ -126,7 +121,7 @@ func helpBarConfig(view ViewKind) HelpBarConfig {
 		return HelpBarConfig{
 			ShortItems: []ShortItem{
 				{Key: "tab", Desc: "switch"},
-				{Key: "k", Desc: "kanban"},
+				{Key: "v", Desc: "kanban"},
 				{Key: "↑/k", Desc: "up"},
 				{Key: "↓/j", Desc: "down"},
 				{Key: "pgup/pgdn", Desc: "page"},
@@ -144,14 +139,14 @@ func helpBarConfig(view ViewKind) HelpBarConfig {
 				{LeftKey: "e", LeftDesc: "edit title", RightKey: "d", RightDesc: "edit description"},
 				{LeftKey: "s", LeftDesc: "change status", RightKey: "p", RightDesc: "change priority"},
 				{LeftKey: "t", LeftDesc: "change type", RightKey: "x", RightDesc: "delete issue"},
-				{LeftKey: "2", LeftDesc: "kanban", RightKey: "q", RightDesc: "quit"},
+				{LeftKey: "v", LeftDesc: "kanban", RightKey: "q", RightDesc: "quit"},
 				{LeftKey: "?", LeftDesc: "help", RightKey: "", RightDesc: ""},
 			},
 		}
 	case ViewKanban:
 		return HelpBarConfig{
 			ShortItems: []ShortItem{
-				{Key: "1", Desc: "issues"},
+				{Key: "v", Desc: "list view"},
 				{Key: "↑/k", Desc: "up"},
 				{Key: "↓/j", Desc: "down"},
 				{Key: "pgup/pgdn", Desc: "page"},
@@ -164,7 +159,7 @@ func helpBarConfig(view ViewKind) HelpBarConfig {
 				{Key: "?", Desc: "help"},
 			},
 			FullRows: []FullRow{
-				{LeftKey: "1", LeftDesc: "issues", RightKey: "↑/k", RightDesc: "up"},
+				{LeftKey: "v", LeftDesc: "list view", RightKey: "↑/k", RightDesc: "up"},
 				{LeftKey: "enter", LeftDesc: "view issue", RightKey: "↓/j", RightDesc: "down"},
 				{LeftKey: "pgup", LeftDesc: "page up", RightKey: "pgdn", RightDesc: "page down"},
 				{LeftKey: "h/l", LeftDesc: "switch column", RightKey: "←/→", RightDesc: "move issue"},

@@ -9,8 +9,8 @@ import (
 
 type DashboardKeyMap struct {
 	components.CommonKeyMap
-	SwitchWindow         key.Binding
-	SwitchToKanbanBoard  key.Binding
+	SwitchWindow        key.Binding
+	SwitchToKanbanBoard key.Binding
 }
 
 var defaultDashboardKeyMap = DashboardKeyMap{
@@ -20,8 +20,8 @@ var defaultDashboardKeyMap = DashboardKeyMap{
 		key.WithHelp("tab", "switch window"),
 	),
 	SwitchToKanbanBoard: key.NewBinding(
-		key.WithKeys("k"),
-		key.WithHelp("k", "switch to kanban"),
+		key.WithKeys("v"),
+		key.WithHelp("v", "switch to kanban"),
 	),
 }
 
@@ -39,7 +39,7 @@ func (d *Model) handleKeyMsg(msg tea.KeyMsg) tea.Cmd {
 		return func() tea.Msg { return msgs.SwitchToKanbanBoardMsg{} }
 	case d.IsFocusedOnList() && key.Matches(msg, d.keyMap.SelectIssue):
 		d.FocusDetail()
-	case d.IsFocusedOnDetail() && key.Matches(msg, d.keyMap.BackToList):
+	case d.IsFocusedOnDetail() && (key.Matches(msg, d.keyMap.BackToList) || key.Matches(msg, d.keyMap.SelectIssue)):
 		d.FocusList()
 	case d.IsFocusedOnDetail() && key.Matches(msg, d.keyMap.ScrollUp):
 		d.issueDetail.ScrollUp(1)
