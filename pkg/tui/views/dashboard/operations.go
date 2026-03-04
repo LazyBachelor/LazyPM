@@ -2,12 +2,27 @@ package dashboard
 
 import (
 	"context"
+	"os"
+	"os/user"
 
 	"github.com/LazyBachelor/LazyPM/internal/app"
 	"github.com/LazyBachelor/LazyPM/internal/models"
 	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
 )
+
+func defaultCommentAuthor() string {
+	if u, err := user.Current(); err == nil && u.Username != "" {
+		return u.Username
+	}
+	if s := os.Getenv("USER"); s != "" {
+		return s
+	}
+	if s := os.Getenv("USERNAME"); s != "" {
+		return s
+	}
+	return "user"
+}
 
 type issueTitleUpdatedMsg struct {
 	IssueID string
@@ -47,6 +62,18 @@ type issueDeletedMsg struct {
 	IssueID       string
 	Err           error
 	PreviousIndex int
+}
+
+type issueCommentAddedMsg struct {
+	IssueID string
+	Err     error
+}
+
+func addIssueCommentCmd(app *app.App, issueID, author, text string) tea.Cmd {
+	return func() tea.Msg {
+		_, err := app.Issues.AddIssueComment(context.Background(), issueID, author, text)
+		return issueCommentAddedMsg{IssueID: issueID, Err: err}
+	}
 }
 
 func updateIssueTitleCmd(app *app.App, issueID, newTitle string) tea.Cmd {
@@ -121,7 +148,7 @@ func (m *Model) refreshIssueListsAndSelectIssue(issueID string) tea.Cmd {
 	closedSetCmd := m.closedIssueList.SetIssues(ClosedOnly(issues))
 	for _, issue := range issues {
 		if issue.ID == issueID {
-			m.issueDetail.SetIssue(*issue)
+			m.setDetailIssueWithComments(*issue)
 			break
 		}
 	}
@@ -203,8 +230,17 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 		}
 
-		m.issueDetail.SetIssue(*selectedIssue)
+		m.setDetailIssueWithComments(*selectedIssue)
 		return m, tea.Sequence(setItemsCmd, closedSetCmd, func() tea.Msg { return selectIssueMsg{IssueID: selectedIssue.ID} })
+	case issueCommentAddedMsg:
+		m.addingComment = false
+		m.commentIssueID = ""
+		m.commentInput.Blur()
+		m.commentInput.Reset()
+		if msg.Err != nil {
+			return m, nil
+		}
+		return m, m.refreshIssueListsAndSelectIssue(msg.IssueID)
 	case issueDeletedMsg:
 		m.confirmingDelete = false
 		m.deleteConfirmID = ""
@@ -221,7 +257,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		closedSetCmd := m.closedIssueList.SetIssues(closedIssues)
 		// If there are no issues at all, clear the detail view and return.
 		if len(openIssues) == 0 && len(closedIssues) == 0 {
-			m.issueDetail.SetIssue(models.Issue{})
+			m.setDetailIssueWithComments(models.Issue{})
 			return m, tea.Sequence(setItemsCmd, closedSetCmd)
 		}
 
@@ -245,7 +281,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		// Safety: if targetIssues is still empty here, just clear detail and return.
 		if len(targetIssues) == 0 {
-			m.issueDetail.SetIssue(models.Issue{})
+			m.setDetailIssueWithComments(models.Issue{})
 			return m, tea.Sequence(setItemsCmd, closedSetCmd)
 		}
 
@@ -254,7 +290,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			newIndex = len(targetIssues) - 1
 		}
 		selectedIssue := targetIssues[newIndex]
-		m.issueDetail.SetIssue(*selectedIssue)
+		m.setDetailIssueWithComments(*selectedIssue)
 		return m, tea.Sequence(setItemsCmd, closedSetCmd, func() tea.Msg {
 			return selectIssueMsg{IssueID: selectedIssue.ID}
 		})
@@ -388,6 +424,30 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, cmd
 		}
 
+		if m.addingComment {
+			if msg.String() == "ctrl+s" || msg.String() == "enter" {
+				text := m.commentInput.Value()
+				if text != "" {
+					issueID := m.commentIssueID
+					m.addingComment = false
+					m.commentIssueID = ""
+					m.commentInput.Blur()
+					m.commentInput.Reset()
+					return m, addIssueCommentCmd(m.app, issueID, defaultCommentAuthor(), text)
+				}
+			}
+			if msg.String() == "esc" {
+				m.addingComment = false
+				m.commentIssueID = ""
+				m.commentInput.Blur()
+				m.commentInput.Reset()
+				return m, nil
+			}
+			var cmd tea.Cmd
+			m.commentInput, cmd = m.commentInput.Update(msg)
+			return m, cmd
+		}
+
 		if m.editingDescription {
 			if msg.String() == "ctrl+s" {
 				issueID := m.editingDescIssueID
@@ -441,7 +501,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		cmd, changed := m.issueList.Update(msg)
 		if changed {
 			if selected := m.issueList.SelectedItem(); selected.ID != "" {
-				m.issueDetail.SetIssue(selected.Issue)
+				m.setDetailIssueWithComments(selected.Issue)
 			}
 		}
 		return m, cmd
@@ -449,7 +509,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	cmd, changed := m.closedIssueList.Update(msg)
 	if changed {
 		if selected := m.closedIssueList.SelectedItem(); selected.ID != "" {
-			m.issueDetail.SetIssue(selected.Issue)
+			m.setDetailIssueWithComments(selected.Issue)
 		}
 	}
 	return m, cmd
