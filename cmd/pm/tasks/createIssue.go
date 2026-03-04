@@ -13,7 +13,7 @@ const description = `You are tasked with creating a new issue in the project man
 This task will test your ability to use the issue creation workflow effectively.
 
 Your task:
-1. Create a new issue with a the title "My first Issue"
+1. Create a new issue with the title "My first Issue"
 2. Add this detailed description "I need to do some coding"
 3. Assign the issue to yourself as "Me"
 4. Mark the issue as In Progress when you start working on it
