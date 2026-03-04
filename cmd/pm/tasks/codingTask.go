@@ -180,7 +180,7 @@ func (t *CodingTask) Validate(ctx context.Context) ValidationFeedback {
 	}
 
 	expect.Assert(strings.Contains(code, "go.mongodb.org/mongo-driver v1.17.9"),
-		"The go.mod file should still contain the old version of the MongoDB Driver (v1.17.8). Please make sure to update it to the latest version (v1.17.9).")
+		"The go.mod snippet in code.txt should contain the updated MongoDB Driver version (v1.17.9). Please make sure you have updated the dependency in the snippet accordingly.")
 
 	if !isInProgress {
 		return expect.ValidationFeedback
