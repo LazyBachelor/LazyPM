@@ -70,6 +70,21 @@ func (m *Model) View() string {
 		return lipgloss.Place(m.width, m.height, lipgloss.Center, lipgloss.Center, editBox)
 	}
 
+	if m.addingComment {
+		editBoxWidth := min(60, m.width-4)
+		m.commentInput.SetWidth(editBoxWidth - 2)
+		m.commentInput.SetHeight(8)
+		editContent := lipgloss.JoinVertical(lipgloss.Left,
+			styles.LabelStyle.Render("Add comment for "+m.commentIssueID+" (Ctrl+S or Enter to save, Esc to cancel):"),
+			m.commentInput.View(),
+		)
+		editBox := styles.ContainerStyle.
+			Width(editBoxWidth).
+			BorderForeground(styles.PrimaryBorder).
+			Render(editContent)
+		return lipgloss.Place(m.width, m.height, lipgloss.Center, lipgloss.Center, editBox)
+	}
+
 	if m.editingDescription {
 		editBoxWidth := min(60, m.width-4)
 		m.descriptionInput.SetWidth(editBoxWidth - 2)

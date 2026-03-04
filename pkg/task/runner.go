@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log/slog"
+	"time"
 
 	"github.com/LazyBachelor/LazyPM/internal/models"
 	tea "github.com/charmbracelet/bubbletea"
@@ -193,4 +194,31 @@ func runQuestionnaire(t Tasker, iType InterfaceType, collector *taskRunCollector
 	}
 
 	return nil
+}
+
+func startValidationLoop(ctx context.Context, t Tasker, feedbackChan chan ValidationFeedback, doneChan chan bool, quitChan chan bool) {
+	ticker := time.NewTicker(1 * time.Second)
+	defer ticker.Stop()
+
+	for {
+		select {
+		case <-ticker.C:
+			feedback := t.Validate(ctx)
+			if feedback.Success {
+				if feedback.Message == "" {
+					feedback.Message = "Task completed successfully! Going back to the survey menu..."
+				}
+				feedbackChan <- feedback
+				time.Sleep(4 * time.Second)
+				doneChan <- true
+				return
+			}
+			feedback.Message = "Task not completed!"
+			feedbackChan <- feedback
+		case <-quitChan:
+			return
+		case <-ctx.Done():
+			return
+		}
+	}
 }

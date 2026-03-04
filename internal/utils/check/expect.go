@@ -35,6 +35,14 @@ func (e *Expector) Complete() ValidationFeedback {
 	return e.ValidationFeedback
 }
 
+func (e *Expector) CompleteWithMessage(message string) ValidationFeedback {
+	e.Success = len(e.Errors()) == 0
+	if !e.Success {
+		e.Message = message
+	}
+	return e.ValidationFeedback
+}
+
 func (e *Expector) Fail(message string) ValidationFeedback {
 	e.Checks = append(e.Checks, NewCheck(message, false))
 	return e.ValidationFeedback
