@@ -186,6 +186,9 @@ func (t *CodingTask) Validate(ctx context.Context) ValidationFeedback {
 		return expect.ValidationFeedback
 	} else if issue.Status != models.StatusClosed {
 		expect.Fail("Issue should be set to Closed once the work is completed")
+	} else {
+		expect.Assert(t.setupIssue.Status == models.StatusClosed,
+			"The original setup issue should be set to Closed once the work is completed")
 	}
 
 	return expect.Complete()
