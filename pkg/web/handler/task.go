@@ -46,8 +46,11 @@ func feedbackList(feedback ValidationFeedback) templ.Component {
 	return templ.ComponentFunc(func(ctx context.Context, w io.Writer) error {
 		for _, check := range feedback.Checks {
 			if !check.Valid {
-				io.WriteString(w, `<p class="my-2 text-red-500">`+check.Message+`</p>`)
+				io.WriteString(w, `<p class="my-2 text-sm">`+"❌ "+check.Message+`</p>`)
+			} else {
+				io.WriteString(w, `<p class="my-2 text-sm">`+"✅ "+check.Message+`</p>`)
 			}
+
 		}
 		return nil
 	})
