@@ -13,12 +13,24 @@ import (
 type ValidationFeedback = models.ValidationFeedback
 
 var taskFeedback ValidationFeedback
+var submitChan chan<- struct{}
 
 func SetTaskFeedback(feedback ValidationFeedback) {
 	taskFeedback = feedback
 }
 
+func SetSubmitChan(ch chan<- struct{}) {
+	submitChan = ch
+}
+
 func HandleTaskStatus(w http.ResponseWriter, r *http.Request) {
+	if submitChan != nil {
+		select {
+		case submitChan <- struct{}{}:
+		default:
+		}
+	}
+
 	hx := HTMX(r)
 	if hx.IsHxRequest() {
 		hx.WriteString(`<a hx-get="/status/modal" hx-target="#modal-container" hx-swap="innerHTML">` + taskFeedback.Message + `</a>`)

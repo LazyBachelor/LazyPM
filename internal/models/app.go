@@ -17,6 +17,8 @@ type App struct {
 
 	CurrentFeedback *ValidationFeedback
 	ActionLogger    func(string)
+
+	SubmitChan chan<- struct{}
 }
 
 func (a *App) LogAction(action string) {
