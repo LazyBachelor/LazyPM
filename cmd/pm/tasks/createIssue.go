@@ -74,28 +74,11 @@ func (t *CreateIssueTask) Validate(ctx context.Context) ValidationFeedback {
 
 	issue := issues[0]
 
-	expect.Assert(len(issues) < 2, "Multiple issues were created instead of one. Delete the extra issues and try again.")
+	expect.Assert(len(issues) < 2, "Multiple issues were created instead of one")
 
-	if issue.Title == "" {
-		expect.Fail("Issue title should not be empty, but it is empty")
-	} else {
-		expect.Assert(issue.Title == "My first Issue",
-			fmt.Sprintf("Issue title does not match the expected value 'My first Issue', but was '%s'", issue.Title))
-	}
-
-	if issue.Description == "" {
-		expect.Fail("Issue description should not be empty, but it is empty")
-	} else {
-		expect.Assert(issue.Description == "I need to do some coding",
-			fmt.Sprintf("Issue description does not match the expected value 'I need to do some coding', but was '%s'", issue.Description))
-	}
-
-	if issue.Assignee == "" {
-		expect.Fail("Issue should be assigned to 'Me', but it is not assigned to anyone")
-	} else {
-		expect.Assert(issue.Assignee == "Me",
-			fmt.Sprintf("Issue should be assigned to 'Me', but was assigned to '%s'", issue.Assignee))
-	}
+	expect.NotEmptyAndEqual(issue.Title, "My first Issue", "Issue title")
+	expect.NotEmptyAndEqual(issue.Description, "I need to do some coding", "Issue description")
+	expect.NotEmptyAndEqual(issue.Assignee, "Me", "Issue assignee")
 
 	expect.Assert(issue.Status == models.StatusInProgress,
 		fmt.Sprintf("Issue status should be 'In Progress', but was '%s'", issue.Status))
