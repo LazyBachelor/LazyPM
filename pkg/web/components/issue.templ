@@ -13,7 +13,7 @@ type IssueFormProps struct {
 	Title        string
 	Description  string
 	Status       string
-	CloseReason  string // Shown when status is "closed"
+	CloseReason  string // Set when status is "closed"
 	Priority     int
 	IssueType    string
 	Class        string
@@ -59,9 +59,10 @@ templ IssueForm(props IssueFormProps) {
 					{Label: "In Progress", Value: "in_progress", Selected: props.Status == "in_progress"},
 					{Label: "Closed", Value: "closed", Selected: props.Status == "closed"},
 				},
-				Size: "md",
+				Size:  "md",
 				Attrs: templ.Attributes{"x-model": "status"},
 			})
+			// Show close reason input when status is closed; not adding close reason to db
 			if props.PatchAction != "" {
 				<div x-show="status === 'closed'" x-cloak>
 					@base.Textarea(base.TextareaProps{
