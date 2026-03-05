@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"log/slog"
-	"time"
 
 	"github.com/LazyBachelor/LazyPM/internal/models"
 	tea "github.com/charmbracelet/bubbletea"
@@ -69,19 +68,29 @@ func (r *TaskRunner) Run(ctx context.Context, t Tasker, i Interface, iType Inter
 	// Validation
 	feedbackChan := make(chan ValidationFeedback, 10)
 	quitChan := make(chan bool, 1)
+	submitChan := make(chan struct{}, 1)
 
 	if validated, ok := i.(ValidatedInterface); ok {
 		validated.SetChannels(feedbackChan, quitChan)
+		validated.SetSubmitChan(submitChan)
+	}
+
+	if r.app != nil {
+		r.app.SubmitChan = submitChan
 	}
 
 	engine := &ValidationEngine{task: t}
-	doneChan, stopChan := engine.Start(ctx, func(feedback ValidationFeedback) {
+	doneChan, stopChan := engine.Start(ctx, submitChan, func(feedback ValidationFeedback) {
 		collector.recordValidation(feedback)
 
 		if feedback.Success {
 			feedback.Message = "Task completed successfully!"
 		} else if feedback.Message == "" {
 			feedback.Message = "Task not completed!"
+		}
+
+		if r.app != nil {
+			r.app.CurrentFeedback = &feedback
 		}
 
 		select {
@@ -194,31 +203,4 @@ func runQuestionnaire(t Tasker, iType InterfaceType, collector *taskRunCollector
 	}
 
 	return nil
-}
-
-func startValidationLoop(ctx context.Context, t Tasker, feedbackChan chan ValidationFeedback, doneChan chan bool, quitChan chan bool) {
-	ticker := time.NewTicker(1 * time.Second)
-	defer ticker.Stop()
-
-	for {
-		select {
-		case <-ticker.C:
-			feedback := t.Validate(ctx)
-			if feedback.Success {
-				if feedback.Message == "" {
-					feedback.Message = "Task completed successfully! Going back to the survey menu..."
-				}
-				feedbackChan <- feedback
-				time.Sleep(4 * time.Second)
-				doneChan <- true
-				return
-			}
-			feedback.Message = "Task not completed!"
-			feedbackChan <- feedback
-		case <-quitChan:
-			return
-		case <-ctx.Done():
-			return
-		}
-	}
 }

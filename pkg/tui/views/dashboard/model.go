@@ -54,9 +54,10 @@ type Model struct {
 	quitChan         chan bool
 	currentFeedback  models.ValidationFeedback
 	showComplete     bool
+	submitChan       chan<- struct{}
 }
 
-func NewDashboard(app *app.App, feedbackChan chan models.ValidationFeedback, quitChan chan bool) *Model {
+func NewDashboard(app *app.App, feedbackChan chan models.ValidationFeedback, quitChan chan bool, submitChan chan<- struct{}) *Model {
 	m := &Model{
 		header:            NewHeader("Project Manager Dashboard"),
 		keyMap:            defaultDashboardKeyMap,
@@ -68,6 +69,7 @@ func NewDashboard(app *app.App, feedbackChan chan models.ValidationFeedback, qui
 		focusedPaneClosed: 0,
 		feedbackChan:      feedbackChan,
 		quitChan:          quitChan,
+		submitChan:        submitChan,
 	}
 
 	allIssues, _ := app.Issues.SearchIssues(context.Background(), "", models.IssueFilter{})

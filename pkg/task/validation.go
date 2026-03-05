@@ -9,17 +9,14 @@ type ValidationEngine struct {
 	task Tasker
 }
 
-func (v *ValidationEngine) Start(ctx context.Context, onFeedback func(ValidationFeedback)) (done <-chan struct{}, stop chan<- struct{}) {
+func (v *ValidationEngine) Start(ctx context.Context, submitChan <-chan struct{}, onFeedback func(ValidationFeedback)) (done <-chan struct{}, stop chan<- struct{}) {
 	doneChan := make(chan struct{}, 1)
 	stopChan := make(chan struct{}, 1)
 
 	go func() {
-		ticker := time.NewTicker(time.Second)
-		defer ticker.Stop()
-
 		for {
 			select {
-			case <-ticker.C:
+			case <-submitChan:
 				feedback := v.task.Validate(ctx)
 
 				if onFeedback != nil {

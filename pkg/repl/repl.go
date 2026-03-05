@@ -31,6 +31,7 @@ You can also run shell commands directly. Type 'exit' or 'quit' to leave.`
 type REPL struct {
 	feedbackChan chan ValidationFeedback
 	quitChan     chan bool
+	submitChan   chan<- struct{}
 	app          *App
 
 	currentFeedback ValidationFeedback
@@ -65,7 +66,11 @@ func (r *REPL) Run(ctx context.Context, config app.Config) error {
 	// Store app reference for updating feedback
 	r.app = app
 
-	fmt.Println(style.TitleStyle.Render(ReplTitle)) // Print REPL title.
+	if r.submitChan != nil {
+		r.app.SubmitChan = r.submitChan
+	}
+
+	fmt.Println(style.TitleStyle.Render(ReplTitle))
 
 	// Start goroutine to watch for validation feedback and quit signals
 	if r.feedbackChan != nil && r.quitChan != nil {
@@ -149,6 +154,10 @@ func (r *REPL) watchValidation() {
 func (r *REPL) SetChannels(feedbackChan chan task.ValidationFeedback, quitChan chan bool) {
 	r.feedbackChan = feedbackChan
 	r.quitChan = quitChan
+}
+
+func (r *REPL) SetSubmitChan(submitChan chan<- struct{}) {
+	r.submitChan = submitChan
 }
 
 func (r *REPL) logAction(action string) {

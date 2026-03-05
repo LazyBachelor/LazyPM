@@ -6,21 +6,22 @@ import (
 )
 
 type DashboardKeyMap struct {
-	Help            key.Binding
-	Quit            key.Binding
-	SelectIssue     key.Binding
-	BackToList      key.Binding
-	ScrollUp        key.Binding
-	ScrollDown      key.Binding
-	SwitchWindow    key.Binding
-	EditTitle       key.Binding
-	EditDescription key.Binding
-	ChangeStatus    key.Binding
-	ChangePriority  key.Binding
-	ChangeType      key.Binding
-	AddComment      key.Binding
-	AddIssue        key.Binding
-	DeleteIssue     key.Binding
+	Help             key.Binding
+	Quit             key.Binding
+	SelectIssue      key.Binding
+	BackToList       key.Binding
+	ScrollUp         key.Binding
+	ScrollDown       key.Binding
+	SwitchWindow     key.Binding
+	EditTitle        key.Binding
+	EditDescription  key.Binding
+	ChangeStatus     key.Binding
+	ChangePriority   key.Binding
+	ChangeType       key.Binding
+	AddComment       key.Binding
+	AddIssue         key.Binding
+	DeleteIssue      key.Binding
+	SubmitValidation key.Binding
 }
 
 var defaultDashboardKeyMap = DashboardKeyMap{
@@ -83,6 +84,10 @@ var defaultDashboardKeyMap = DashboardKeyMap{
 	DeleteIssue: key.NewBinding(
 		key.WithKeys("x"),
 		key.WithHelp("x", "delete issue"),
+	),
+	SubmitValidation: key.NewBinding(
+		key.WithKeys("S"),
+		key.WithHelp("S", "submit validation"),
 	),
 }
 
@@ -152,6 +157,14 @@ func (d *Model) handleKeyMsg(msg tea.KeyMsg) tea.Cmd {
 		if selected := fl.SelectedItem(); selected.ID != "" {
 			d.startConfirmDelete(selected.ID, fl.Index())
 			d.logAction("tui opened delete confirmation")
+		}
+	case key.Matches(msg, d.keyMap.SubmitValidation):
+		if d.submitChan != nil {
+			select {
+			case d.submitChan <- struct{}{}:
+				d.logAction("tui submitted validation")
+			default:
+			}
 		}
 	}
 

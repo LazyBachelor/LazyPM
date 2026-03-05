@@ -4,6 +4,7 @@ import (
 	"context"
 	"io"
 	"net/http"
+	"time"
 
 	"github.com/LazyBachelor/LazyPM/internal/models"
 	"github.com/LazyBachelor/LazyPM/pkg/web/components"
@@ -13,12 +14,20 @@ import (
 type ValidationFeedback = models.ValidationFeedback
 
 var taskFeedback ValidationFeedback
+var submitChan chan<- struct{}
 
 func SetTaskFeedback(feedback ValidationFeedback) {
 	taskFeedback = feedback
 }
 
+func SetSubmitChan(ch chan<- struct{}) {
+	submitChan = ch
+}
+
 func HandleTaskStatus(w http.ResponseWriter, r *http.Request) {
+	submitChan <- struct{}{}
+	time.Sleep(100 * time.Millisecond)
+
 	hx := HTMX(r)
 	if hx.IsHxRequest() {
 		hx.WriteString(`<a hx-get="/status/modal" hx-target="#modal-container" hx-swap="innerHTML">` + taskFeedback.Message + `</a>`)
@@ -46,8 +55,11 @@ func feedbackList(feedback ValidationFeedback) templ.Component {
 	return templ.ComponentFunc(func(ctx context.Context, w io.Writer) error {
 		for _, check := range feedback.Checks {
 			if !check.Valid {
-				io.WriteString(w, `<p class="my-2 text-red-500">`+check.Message+`</p>`)
+				io.WriteString(w, `<p class="my-2 text-sm">`+"❌ "+check.Message+`</p>`)
+			} else {
+				io.WriteString(w, `<p class="my-2 text-sm">`+"✅ "+check.Message+`</p>`)
 			}
+
 		}
 		return nil
 	})
