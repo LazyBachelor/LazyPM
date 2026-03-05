@@ -16,8 +16,7 @@ Your task:
 1. Create a new issue with the title "My first Issue"
 2. Add this detailed description "I need to do some coding"
 3. Assign the issue to yourself as "Me"
-4. Mark the issue as In Progress when you start working on it
-5. Close the issue once you've completed the work
+4. Mark the issue as In Progress when you are done.
 
 Make sure to fill out all the necessary details to help others understand the work item.`
 
@@ -43,8 +42,7 @@ func (t *CreateIssueTask) Questions(interfaceType InterfaceType) Questions {
 	return BaseQuestions(interfaceType)
 }
 
-func (t *CreateIssueTask) QuestionnaireKeys(interfaceType InterfaceType) []string {
-	_ = interfaceType
+func (t *CreateIssueTask) QuestionnaireKeys(_ InterfaceType) []string {
 	return []string{"task_completed", "task_difficulty"}
 }
 
@@ -60,8 +58,6 @@ func (t *CreateIssueTask) Setup(ctx context.Context) error {
 
 	return t.app.Issues.CreateIssue(ctx, t.setupIssue, "")
 }
-
-var isInProgress = false
 
 func (t *CreateIssueTask) Validate(ctx context.Context) ValidationFeedback {
 	expect := check.NewExpector()
@@ -80,28 +76,29 @@ func (t *CreateIssueTask) Validate(ctx context.Context) ValidationFeedback {
 
 	expect.Assert(len(issues) < 2, "Multiple issues were created instead of one. Delete the extra issues and try again.")
 
-	expect.NotEmptyString(issue.Title, "Issue title should not be empty")
-	expect.Assert(issue.Title == "My first Issue",
-		fmt.Sprintf("Issue title does not match the expected value 'My first Issue', but was '%s'", issue.Title))
-
-	expect.NotEmptyString(issue.Description, "Issue description should not be empty")
-	expect.Assert(issue.Description == "I need to do some coding",
-		fmt.Sprintf("Issue description does not match the expected value 'I need to do some coding', but was '%s'", issue.Description))
-
-	expect.Assert(issue.Assignee == "Me",
-		fmt.Sprintf("Issue should be assigned to 'Me', but was assigned to '%s'", issue.Assignee))
-
-	if issue.Status == models.StatusInProgress || isInProgress {
-		isInProgress = true
+	if issue.Title == "" {
+		expect.Fail("Issue title should not be empty, but it is empty")
 	} else {
-		expect.Fail("Issue should be marked as in-progress when work starts")
+		expect.Assert(issue.Title == "My first Issue",
+			fmt.Sprintf("Issue title does not match the expected value 'My first Issue', but was '%s'", issue.Title))
 	}
 
-	if !isInProgress {
-		return expect.ValidationFeedback
-	} else if issue.Status != models.StatusClosed {
-		expect.Fail("Issue should be set to Closed once the work is completed")
+	if issue.Description == "" {
+		expect.Fail("Issue description should not be empty, but it is empty")
+	} else {
+		expect.Assert(issue.Description == "I need to do some coding",
+			fmt.Sprintf("Issue description does not match the expected value 'I need to do some coding', but was '%s'", issue.Description))
 	}
+
+	if issue.Assignee == "" {
+		expect.Fail("Issue should be assigned to 'Me', but it is not assigned to anyone")
+	} else {
+		expect.Assert(issue.Assignee == "Me",
+			fmt.Sprintf("Issue should be assigned to 'Me', but was assigned to '%s'", issue.Assignee))
+	}
+
+	expect.Assert(issue.Status == models.StatusInProgress,
+		fmt.Sprintf("Issue status should be 'In Progress', but was '%s'", issue.Status))
 
 	return expect.Complete()
 }
