@@ -72,6 +72,13 @@ func (e *Expector) NotEmptyAndEqual(val, expected string, message string) *Expec
 	return e.Pass(message + " is correct")
 }
 
+func (e *Expector) Equal(val, expected any, message string) *Expector {
+	if val != expected {
+		return e.Fail(fmt.Sprintf(`%s expected "%v", got "%v"`, message, expected, val))
+	}
+	return e.Pass(message + " is correct")
+}
+
 func (e *Expector) Assert(condition bool, message string) *Expector {
 	check := NewCheck(message, condition)
 	e.Checks = append(e.Checks, check)
