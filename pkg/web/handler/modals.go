@@ -55,6 +55,7 @@ func EditIssueFormModal(w http.ResponseWriter, r *http.Request) {
 		Title:        issue.Title,
 		Description:  issue.Description,
 		Status:       string(issue.Status),
+		CloseReason:  issue.CloseReason,
 		IssueType:    string(issue.IssueType),
 		Priority:     issue.Priority,
 	})

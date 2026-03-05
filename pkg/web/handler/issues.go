@@ -25,6 +25,7 @@ type UpdateIssueForm struct {
 	Title       *string           `form:"title" validate:"omitempty,max=255"`
 	Description *string           `form:"description" validate:"omitempty,max=2000"`
 	Status      *models.Status    `form:"status" validate:"omitempty,oneof=open in_progress closed"`
+	CloseReason *string           `form:"close_reason" validate:"omitempty,max=2000"`
 	IssueType   *models.IssueType `form:"issue_type" validate:"omitempty,oneof=task bug feature chore"`
 	Priority    *int              `form:"priority" validate:"omitempty,gte=0,lte=4"`
 }
@@ -269,6 +270,9 @@ func (f *UpdateIssueForm) toChanges() map[string]any {
 	}
 	if f.Status != nil {
 		changes["status"] = *f.Status
+	}
+	if f.CloseReason != nil {
+		changes["close_reason"] = *f.CloseReason
 	}
 	if f.IssueType != nil {
 		changes["issue_type"] = *f.IssueType

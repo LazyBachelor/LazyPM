@@ -13,6 +13,7 @@ type IssueFormProps struct {
 	Title        string
 	Description  string
 	Status       string
+	CloseReason  string // Shown when status is "closed"
 	Priority     int
 	IssueType    string
 	Class        string
@@ -21,7 +22,7 @@ type IssueFormProps struct {
 }
 
 templ IssueForm(props IssueFormProps) {
-	<div class={ "w-full max-w-lg mx-auto ", props.Class }>
+	<div class={ "w-full max-w-lg mx-auto ", props.Class } x-data={ `{ status: '` + props.Status + `' }` }>
 		<form
 			class="form space-y-1"
 			if props.PatchAction != "" {
@@ -59,7 +60,20 @@ templ IssueForm(props IssueFormProps) {
 					{Label: "Closed", Value: "closed", Selected: props.Status == "closed"},
 				},
 				Size: "md",
+				Attrs: templ.Attributes{"x-model": "status"},
 			})
+			if props.PatchAction != "" {
+				<div x-show="status === 'closed'" x-cloak>
+					@base.Textarea(base.TextareaProps{
+						Name:        "close_reason",
+						Label:       "Reason for closing issue",
+						Value:       props.CloseReason,
+						Class:       "w-full",
+						Placeholder: "Describe why this issue is being closed...",
+						Rows:        3,
+					})
+				</div>
+			}
 			@base.Select(base.SelectProps{
 				Name:     "issue_type",
 				Label:    "Issue Type",
