@@ -148,7 +148,7 @@ func IssueDetail(props IssueDetailProps) templ.Component {
 			return templ_7745c5c3_Err
 		}
 		if props.Issue.Assignee == "" {
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 11, "<span>Unassigned (click to assign)</span>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 11, "<span>Unassigned (click to assign) </span>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}

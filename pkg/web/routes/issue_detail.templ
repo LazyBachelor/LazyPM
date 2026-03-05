@@ -49,15 +49,6 @@ templ IssueDetailContent(props IssueDetailProps) {
 			>
 				Edit
 			</button>
-			<button
-				type="button"
-				class="btn btn-error btn-sm btn-outline"
-				hx-delete={ deleteURL }
-				hx-confirm="Are you sure you want to delete this issue? This action cannot be undone."
-				hx-target="body"
-			>
-				Delete issue
-			</button>
 		</div>
 		<div id="issue-detail-container" class="mb-6">
 			@components.IssueDetail(components.IssueDetailProps{Issue: props.Issue})
