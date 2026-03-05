@@ -4,6 +4,7 @@ import (
 	"context"
 	"io"
 	"net/http"
+	"time"
 
 	"github.com/LazyBachelor/LazyPM/internal/models"
 	"github.com/LazyBachelor/LazyPM/pkg/web/components"
@@ -24,12 +25,8 @@ func SetSubmitChan(ch chan<- struct{}) {
 }
 
 func HandleTaskStatus(w http.ResponseWriter, r *http.Request) {
-	if submitChan != nil {
-		select {
-		case submitChan <- struct{}{}:
-		default:
-		}
-	}
+	submitChan <- struct{}{}
+	time.Sleep(100 * time.Millisecond)
 
 	hx := HTMX(r)
 	if hx.IsHxRequest() {
