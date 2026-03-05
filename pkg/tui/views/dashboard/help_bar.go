@@ -79,7 +79,7 @@ func (h HelpBar) fullHelp() string {
 		renderRow("c", "add comment", "", ""),
 		renderRow("s", "change status", "p", "change priority"),
 		renderRow("t", "change type", "x", "delete issue"),
-		renderRow("?", "help", "q", "quit"),
+		renderRow("S", "submit task", "q", "quit"),
 	}
 	content := lipgloss.JoinVertical(lipgloss.Left, rows...)
 	return lipgloss.NewStyle().
