@@ -21,11 +21,9 @@ templ IssueDetailContent(props IssueDetailProps) {
 	{{
 		backURL := "/"
 		editURL := "/issues/" + props.Issue.ID + "/edit"
-		deleteURL := "/issues/" + props.Issue.ID
 		if props.From == "board" {
 			backURL = "/?board=true"
 			editURL += "?from=board"
-			deleteURL += "?from=board"
 		}
 	}}
 	<div class="max-w-2xl mx-auto">
