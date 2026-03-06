@@ -48,6 +48,7 @@ func (t *BacklogRefinementTask) Questions(interfaceType InterfaceType) Questions
 	return BaseQuestions(interfaceType).With(
 		huh.NewGroup(
 			huh.NewSelect[int]().
+				Key("how-many-duplicate-issues").
 				Title("How many duplicate issues did you close during refinement?").
 				Options(
 					huh.NewOption("1", 1),
@@ -59,7 +60,7 @@ func (t *BacklogRefinementTask) Questions(interfaceType InterfaceType) Questions
 }
 
 func (t *BacklogRefinementTask) QuestionnaireKeys(_ InterfaceType) []string {
-	return []string{"task_completed", "task_difficulty"}
+	return []string{"task_completed", "task_difficulty", "how-many-duplicate-issues"}
 }
 
 func (t *BacklogRefinementTask) Setup(ctx context.Context) error {

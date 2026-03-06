@@ -7,11 +7,12 @@ type CloseIssueFormProps struct {
 }
 
 templ CloseIssueForm(props CloseIssueFormProps) {
+	<div id="close-issue-error" class="mb-4"></div>
 	<form
 		class="form space-y-4"
 		hx-post={ props.PostAction }
-		hx-target="body"
-		hx-swap="none"
+		hx-target="#close-issue-error"
+		hx-swap="innerHTML"
 	>
 		@base.Select(base.SelectProps{
 			Name:     "close_reason",

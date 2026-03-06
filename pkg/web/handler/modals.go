@@ -26,9 +26,9 @@ func CreateIssueFormModal(w http.ResponseWriter, r *http.Request) {
 }
 
 func EditIssueFormModal(w http.ResponseWriter, r *http.Request) {
-	issue := r.Context().Value(issueKey).(*models.Issue)
-
-	if issue == nil {
+	issueVal := r.Context().Value(issueKey)
+	issue, ok := issueVal.(*models.Issue)
+	if !ok || issue == nil {
 		http.Error(w, "Issue not found in context", http.StatusInternalServerError)
 		return
 	}
@@ -52,9 +52,9 @@ func EditIssueFormModal(w http.ResponseWriter, r *http.Request) {
 }
 
 func AssigneeFormModal(w http.ResponseWriter, r *http.Request) {
-	issue := r.Context().Value(issueKey).(*models.Issue)
-
-	if issue == nil {
+	issueVal := r.Context().Value(issueKey)
+	issue, ok := issueVal.(*models.Issue)
+	if !ok || issue == nil {
 		http.Error(w, "Issue not found in context", http.StatusInternalServerError)
 		return
 	}
@@ -74,9 +74,9 @@ func AssigneeFormModal(w http.ResponseWriter, r *http.Request) {
 }
 
 func CloseIssueFormModal(w http.ResponseWriter, r *http.Request) {
-	issue := r.Context().Value(issueKey).(*models.Issue)
-
-	if issue == nil {
+	issueVal := r.Context().Value(issueKey)
+	issue, ok := issueVal.(*models.Issue)
+	if !ok || issue == nil {
 		http.Error(w, "Issue not found in context", http.StatusInternalServerError)
 		return
 	}

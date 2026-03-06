@@ -2,6 +2,7 @@ package handler
 
 import (
 	"context"
+	"html"
 	"net/http"
 	"strings"
 
@@ -219,11 +220,18 @@ func CloseIssue(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	issue := r.Context().Value(issueKey).(*models.Issue)
+	issueVal := r.Context().Value(issueKey)
+	issue, ok := issueVal.(*models.Issue)
+	if !ok || issue == nil {
+		http.Error(w, "Issue not found in context", http.StatusInternalServerError)
+		return
+	}
+
 	closeReason := r.FormValue("close_reason")
 
 	if closeReason == "" {
 		if HTMX(r).IsHxRequest() {
+			w.WriteHeader(http.StatusBadRequest)
 			HTMX(r).WriteString("<div class=\"alert alert-error\">Closing reason is required</div>")
 		} else {
 			http.Error(w, "Closing reason is required", http.StatusBadRequest)
@@ -233,7 +241,8 @@ func CloseIssue(w http.ResponseWriter, r *http.Request) {
 
 	if err := App(r).Issues.CloseIssue(r.Context(), issue.ID, closeReason, "web", ""); err != nil {
 		if HTMX(r).IsHxRequest() {
-			HTMX(r).WriteString("<div class=\"alert alert-error\">Failed to close issue: " + err.Error() + "</div>")
+			w.WriteHeader(http.StatusInternalServerError)
+			HTMX(r).WriteString("<div class=\"alert alert-error\">Failed to close issue: " + html.EscapeString(err.Error()) + "</div>")
 		} else {
 			http.Error(w, "Failed to close issue: "+err.Error(), http.StatusInternalServerError)
 		}

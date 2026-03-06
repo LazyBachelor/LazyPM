@@ -56,6 +56,9 @@ func runCloseCmd(cmd *cobra.Command, args []string) error {
 			Title("Enter closing reason:").WithTheme(huh.ThemeBase()).Run(); err != nil {
 			return fmt.Errorf("error getting close reason: %w", err)
 		}
+		if closeReason == "" {
+			return fmt.Errorf("closing reason cannot be empty when selecting 'Other'")
+		}
 	}
 
 	err = app.Issues.CloseIssue(cmd.Context(), closeID, closeReason, "", "")
