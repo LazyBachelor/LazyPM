@@ -6,7 +6,7 @@ import (
 	"github.com/LazyBachelor/LazyPM/pkg/tui/views/dashboard"
 )
 
-func NewDashboardView(app *app.App, feedbackChan chan models.ValidationFeedback, quitChan chan bool) *dashboard.Model {
-	return dashboard.NewDashboard(app, feedbackChan, quitChan)
+func NewDashboardView(app *app.App, feedbackChan chan models.ValidationFeedback, quitChan chan bool, submitChan chan<- struct{}) *dashboard.Model {
+	return dashboard.NewDashboard(app, feedbackChan, quitChan, submitChan)
 }
 

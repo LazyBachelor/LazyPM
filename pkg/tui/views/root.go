@@ -18,8 +18,8 @@ type RootModel struct {
 	hasSize      bool
 }
 
-func NewRootView(app *app.App, feedbackChan chan models.ValidationFeedback, quitChan chan bool) *RootModel {
-	initialView := dashboard.NewDashboard(app, feedbackChan, quitChan)
+func NewRootView(app *app.App, feedbackChan chan models.ValidationFeedback, quitChan chan bool, submitChan chan<- struct{}) *RootModel {
+	initialView := dashboard.NewDashboard(app, feedbackChan, quitChan, submitChan)
 	return &RootModel{
 		currentView:  initialView,
 		app:          app,
@@ -44,7 +44,7 @@ func (r *RootModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return r, cmd
 	case msgs.SwitchToDashboardMsg:
 		// switch back to dashboard 1 and apply the last known size.
-		r.currentView = dashboard.NewDashboard(r.app, r.feedbackChan, r.quitChan)
+		r.currentView = dashboard.NewDashboard(r.app, r.feedbackChan, r.quitChan, r.app.SubmitChan)
 		var cmds []tea.Cmd
 		if r.hasSize {
 			// check if there is a size, and then update it

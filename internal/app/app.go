@@ -46,7 +46,7 @@ func New(ctx context.Context, config Config, opts ...Option) (*App, func(), erro
 			StartTime: time.Now(),
 		})
 
-		jsonStatService, err := NewStatisticsService(statStore)
+		jsonStatService, err := NewStatisticsService(statStore, b.logger)
 		if err != nil {
 			return nil, nil, err
 		}
@@ -58,8 +58,9 @@ func New(ctx context.Context, config Config, opts ...Option) (*App, func(), erro
 		Config: config,
 		Logger: b.logger,
 
-		Issues: b.issueService,
-		Stats:  b.statsService,
+		Issues:       b.issueService,
+		Stats:        b.statsService,
+		ActionLogger: config.ActionLogger,
 	}
 
 	return app, b.lifecycle.Close, nil

@@ -16,6 +16,21 @@ type App struct {
 	Interfaces map[string]Interface
 
 	CurrentFeedback *ValidationFeedback
+	ActionLogger    func(string)
+
+	SubmitChan chan<- struct{}
+}
+
+func (a *App) LogAction(action string) {
+	if a == nil || action == "" {
+		return
+	}
+	if a.Logger != nil {
+		a.Logger.Info("action event", "action", action)
+	}
+	if a.ActionLogger != nil {
+		a.ActionLogger(action)
+	}
 }
 
 // IssueService defines the interface for managing issues in the application.
@@ -42,4 +57,5 @@ type StatsService interface {
 	Load(ctx context.Context) error
 	Save(ctx context.Context) error
 	GetStatistics() (Statistics, error)
+	RecordTaskRun(ctx context.Context, run TaskRunMetrics) error
 }

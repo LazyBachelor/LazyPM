@@ -1,6 +1,8 @@
 package components
 
 import (
+	"time"
+
 	"github.com/LazyBachelor/LazyPM/internal/models"
 	"github.com/LazyBachelor/LazyPM/pkg/tui/styles"
 	"github.com/charmbracelet/bubbles/viewport"
@@ -10,6 +12,7 @@ import (
 type IssueDetail struct {
 	viewport viewport.Model
 	issue    models.Issue
+	comments []*models.Comment
 	focused  bool
 }
 
@@ -23,6 +26,12 @@ func NewIssueDetail() IssueDetail {
 
 func (i *IssueDetail) SetIssue(issue models.Issue) {
 	i.issue = issue
+	i.refreshContent()
+}
+
+// SetComments updates the list of comments displayed for the current issue.
+func (i *IssueDetail) SetComments(comments []*models.Comment) {
+	i.comments = comments
 	i.refreshContent()
 }
 
@@ -61,17 +70,32 @@ func (i *IssueDetail) refreshContent() {
 	descLabel := styles.LabelStyle.Render("Description:")
 	descContent := styles.ValueStyle.Render(i.issue.Description)
 
-	content := lipgloss.JoinVertical(lipgloss.Left,
-		titleRow,
-		idRow,
-		typeRow,
-		statusRow,
-		priorityRow,
-		descLabel,
-		descContent,
-	)
+	var parts []string
+	parts = append(parts, titleRow, idRow, typeRow, statusRow, priorityRow, descLabel, descContent)
 
+	// Comments section
+	commentsLabel := styles.LabelStyle.Render("Comments:")
+	parts = append(parts, commentsLabel)
+	if len(i.comments) == 0 {
+		parts = append(parts, lipgloss.NewStyle().Foreground(styles.FaintText).Render("  No comments yet."))
+	} else {
+		for _, c := range i.comments {
+			authorDate := lipgloss.NewStyle().Foreground(styles.Primary).Render(c.Author) + " " +
+				lipgloss.NewStyle().Foreground(styles.FaintText).Render(formatCommentTime(c.CreatedAt))
+			commentRow := lipgloss.JoinVertical(lipgloss.Left,
+				authorDate,
+				styles.ValueStyle.Render(c.Text),
+			)
+			parts = append(parts, commentRow)
+		}
+	}
+
+	content := lipgloss.JoinVertical(lipgloss.Left, parts...)
 	i.viewport.SetContent(content)
+}
+
+func formatCommentTime(t time.Time) string {
+	return t.Format("Jan 2, 15:04")
 }
 
 func (i IssueDetail) View() string {

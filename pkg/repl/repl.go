@@ -31,6 +31,7 @@ You can also run shell commands directly. Type 'exit' or 'quit' to leave.`
 type REPL struct {
 	feedbackChan chan ValidationFeedback
 	quitChan     chan bool
+	submitChan   chan<- struct{}
 	app          *App
 
 	currentFeedback ValidationFeedback
@@ -65,7 +66,11 @@ func (r *REPL) Run(ctx context.Context, config app.Config) error {
 	// Store app reference for updating feedback
 	r.app = app
 
-	fmt.Println(style.TitleStyle.Render(ReplTitle)) // Print REPL title.
+	if r.submitChan != nil {
+		r.app.SubmitChan = r.submitChan
+	}
+
+	fmt.Println(style.TitleStyle.Render(ReplTitle))
 
 	// Start goroutine to watch for validation feedback and quit signals
 	if r.feedbackChan != nil && r.quitChan != nil {
@@ -100,8 +105,13 @@ func (r *REPL) Run(ctx context.Context, config app.Config) error {
 
 		// If the user types "exit" or "quit", break the loop and exit the REPL.
 		if input == "exit" || input == "quit" {
+			r.logAction("repl exit requested")
 			fmt.Println("Goodbye!")
 			break
+		}
+
+		if input != "" {
+			r.logAction("repl command: " + input)
 		}
 
 		// Add the input to the history for future navigation.
@@ -124,6 +134,7 @@ func (r *REPL) watchValidation() {
 				r.app.CurrentFeedback = &ValidationFeedback{
 					Success: feedback.Success,
 					Message: feedback.Message,
+					Checks:  feedback.Checks,
 				}
 			}
 			if feedback.Success {
@@ -143,4 +154,17 @@ func (r *REPL) watchValidation() {
 func (r *REPL) SetChannels(feedbackChan chan task.ValidationFeedback, quitChan chan bool) {
 	r.feedbackChan = feedbackChan
 	r.quitChan = quitChan
+}
+
+func (r *REPL) SetSubmitChan(submitChan chan<- struct{}) {
+	r.submitChan = submitChan
+}
+
+func (r *REPL) logAction(action string) {
+	if r.app != nil {
+		r.app.LogAction(models.EncodeActionEvent(models.ActionEvent{
+			Source: "repl",
+			Action: action,
+		}))
+	}
 }

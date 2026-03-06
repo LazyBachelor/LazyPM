@@ -51,14 +51,18 @@ type Model struct {
 	choosingPriority bool // true while choosing a priority
 	priorityIssueID  string
 	choosingType     bool // true while choosing a type
-	typeIssueID     string
-	feedbackChan    chan models.ValidationFeedback
-	quitChan        chan bool
-	currentFeedback models.ValidationFeedback
-	showComplete    bool
+	typeIssueID      string
+	addingComment    bool // true while adding a comment
+	commentInput     textarea.Model
+	commentIssueID   string
+	feedbackChan     chan models.ValidationFeedback
+	quitChan         chan bool
+	currentFeedback  models.ValidationFeedback
+	showComplete     bool
+	submitChan       chan<- struct{}
 }
 
-func NewDashboard(app *app.App, feedbackChan chan models.ValidationFeedback, quitChan chan bool) *Model {
+func NewDashboard(app *app.App, feedbackChan chan models.ValidationFeedback, quitChan chan bool, submitChan chan<- struct{}) *Model {
 	m := &Model{
 		header:            components.NewHeader("Project Manager Dashboard"),
 		keyMap:            defaultDashboardKeyMap,
@@ -70,6 +74,7 @@ func NewDashboard(app *app.App, feedbackChan chan models.ValidationFeedback, qui
 		focusedPaneClosed: 0,
 		feedbackChan:      feedbackChan,
 		quitChan:          quitChan,
+		submitChan:        submitChan,
 	}
 
 	allIssues, _ := app.Issues.SearchIssues(context.Background(), "", models.IssueFilter{})
@@ -83,13 +88,46 @@ func NewDashboard(app *app.App, feedbackChan chan models.ValidationFeedback, qui
 	m.createTitleInput = inputs.CreateTitle
 	m.descriptionInput = inputs.Description
 
+	commentTa := textarea.New()
+	commentTa.Placeholder = "Write your comment..."
+	commentTa.SetWidth(56)
+	commentTa.SetHeight(6)
+	m.commentInput = commentTa
+
 	if selected := m.issueList.SelectedItem(); selected.ID != "" {
-		m.issueDetail.SetIssue(selected.Issue)
+		m.setDetailIssueWithComments(selected.Issue)
 	} else if selected := m.closedIssueList.SelectedItem(); selected.ID != "" {
-		m.issueDetail.SetIssue(selected.Issue)
+		m.setDetailIssueWithComments(selected.Issue)
 	}
 
 	return m
+}
+
+// setDetailIssueWithComments sets the issue in the detail pane and loads its comments.
+func (m *Model) setDetailIssueWithComments(issue models.Issue) {
+	m.issueDetail.SetIssue(issue)
+	if issue.ID == "" {
+		m.issueDetail.SetComments(nil)
+		return
+	}
+	comments, _ := m.app.Issues.GetIssueComments(context.Background(), issue.ID)
+	m.issueDetail.SetComments(comments)
+}
+
+func (m *Model) startAddComment(selected ListIssue) {
+	m.addingComment = true
+	m.commentIssueID = selected.ID
+	m.commentInput.SetValue("")
+	m.commentInput.Reset()
+}
+
+func (m *Model) logAction(action string) {
+	if m.app != nil {
+		m.app.LogAction(models.EncodeActionEvent(models.ActionEvent{
+			Source: "tui",
+			Action: action,
+		}))
+	}
 }
 
 func (m *Model) startEditTitle(selected ListIssue) {
@@ -196,11 +234,11 @@ func (m *Model) ToggleFocusedWindow() {
 	m.focusedWindow = 1 - m.focusedWindow
 	if m.focusedWindow == 0 {
 		if selected := m.issueList.SelectedItem(); selected.ID != "" {
-			m.issueDetail.SetIssue(selected.Issue)
+			m.setDetailIssueWithComments(selected.Issue)
 		}
 	} else {
 		if selected := m.closedIssueList.SelectedItem(); selected.ID != "" {
-			m.issueDetail.SetIssue(selected.Issue)
+			m.setDetailIssueWithComments(selected.Issue)
 		}
 	}
 	m.issueDetail.SetFocused(m.IsFocusedOnDetail())

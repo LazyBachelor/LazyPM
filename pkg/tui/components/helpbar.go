@@ -57,7 +57,7 @@ func (h HelpBar) View() string {
 func (h HelpBar) shortHelp() string {
 	keys := make([]string, 0, len(h.config.ShortItems))
 	for _, item := range h.config.ShortItems {
-		keys = append(keys, styles.HighlightKey(item.Key)+" "+item.Desc)
+		keys = append(keys, styles.HighlightKey(item.Key)+item.Desc+"  ")
 	}
 	content := lipgloss.JoinHorizontal(lipgloss.Left, keys...)
 	return lipgloss.NewStyle().
@@ -128,6 +128,7 @@ func helpBarConfig(view ViewKind) HelpBarConfig {
 				{Key: "a", Desc: "add"},
 				{Key: "e/d/s/p/t", Desc: "edit"},
 				{Key: "x", Desc: "delete"},
+				{Key: "S", Desc: "submit"},
 				{Key: "q", Desc: "quit"},
 				{Key: "?", Desc: "help"},
 			},
@@ -140,7 +141,7 @@ func helpBarConfig(view ViewKind) HelpBarConfig {
 				{LeftKey: "s", LeftDesc: "change status", RightKey: "p", RightDesc: "change priority"},
 				{LeftKey: "t", LeftDesc: "change type", RightKey: "x", RightDesc: "delete issue"},
 				{LeftKey: "v", LeftDesc: "kanban", RightKey: "q", RightDesc: "quit"},
-				{LeftKey: "?", LeftDesc: "help", RightKey: "", RightDesc: ""},
+				{LeftKey: "S", LeftDesc: "submit", RightKey: "?", RightDesc: "help"},
 			},
 		}
 	case ViewKanban:
@@ -156,6 +157,7 @@ func helpBarConfig(view ViewKind) HelpBarConfig {
 				{Key: "e/d/s/p/t", Desc: "edit"},
 				{Key: "x", Desc: "delete"},
 				{Key: "q", Desc: "quit"},
+				{Key: "S", Desc: "submit"},
 				{Key: "?", Desc: "help"},
 			},
 			FullRows: []FullRow{
@@ -167,7 +169,8 @@ func helpBarConfig(view ViewKind) HelpBarConfig {
 				{LeftKey: "e", LeftDesc: "edit title", RightKey: "d", RightDesc: "edit description"},
 				{LeftKey: "s", LeftDesc: "change status", RightKey: "p", RightDesc: "change priority"},
 				{LeftKey: "t", LeftDesc: "change type", RightKey: "x", RightDesc: "delete issue"},
-				{LeftKey: "q", LeftDesc: "quit", RightKey: "?", RightDesc: "help"},
+				{LeftKey: "q", LeftDesc: "quit", RightKey: "S", RightDesc: "submit"},
+				{LeftKey: "?", LeftDesc: "help", RightKey: "", RightDesc: ""},
 			},
 		}
 	default:
