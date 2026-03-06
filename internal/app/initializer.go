@@ -16,11 +16,9 @@ type InteractiveInitializer struct{}
 func (i InteractiveInitializer) Init(path string) error {
 	_, err := os.Stat(path)
 	if err == nil {
-		// Path exists; assume already initialized.
 		return nil
 	}
 	if !os.IsNotExist(err) {
-		// Some other filesystem error; propagate it to the caller.
 		return err
 	}
 

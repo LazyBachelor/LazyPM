@@ -7,8 +7,7 @@ import (
 	"math/rand"
 
 	"github.com/LazyBachelor/LazyPM/cmd/pm/tasks"
-	survey "github.com/LazyBachelor/LazyPM/internal/commands/survey"
-	"github.com/LazyBachelor/LazyPM/internal/models"
+	"github.com/LazyBachelor/LazyPM/internal/commands/survey"
 	"github.com/LazyBachelor/LazyPM/pkg/task"
 	"github.com/spf13/cobra"
 )
@@ -55,13 +54,13 @@ func runStartCmd(cmd *cobra.Command, args []string) error {
 		return returnIfUserQuit(err, "failed to run intro")
 	}
 
-	if err := taskLoop(cmd.Context(), surveyTasks, interfaces); err != nil {
+	if err := taskLoop(cmd.Context(), app, surveyTasks, interfaces); err != nil {
 		return returnIfUserQuit(err, "task loop failed")
 	}
 	return nil
 }
 
-func taskLoop(ctx context.Context, surveyTasks map[string]task.Tasker, interfaces map[string]task.Interface) error {
+func taskLoop(ctx context.Context, application *task.App, surveyTasks map[string]task.Tasker, interfaces map[string]task.Interface) error {
 	var iNames []string
 	for name := range interfaces {
 		iNames = append(iNames, name)
@@ -84,7 +83,9 @@ func taskLoop(ctx context.Context, surveyTasks map[string]task.Tasker, interface
 		iIdx := idx % len(iNames)
 		selected := interfaces[iNames[iIdx]]
 
-		if err := task.RunTask(ctx, t, selected, tasks.InterfaceToType(selected)); err != nil {
+		runner := task.NewTaskRunner(application)
+
+		if err := runner.Run(ctx, t, selected, tasks.InterfaceToType(selected)); err != nil {
 			return err
 		}
 		idx++
@@ -93,7 +94,7 @@ func taskLoop(ctx context.Context, surveyTasks map[string]task.Tasker, interface
 }
 
 func returnIfUserQuit(err error, msg string) error {
-	if errors.Is(err, models.ErrUserQuit) {
+	if errors.Is(err, task.ErrUserQuit) {
 		return nil
 	}
 	return fmt.Errorf("%s: %w", msg, err)

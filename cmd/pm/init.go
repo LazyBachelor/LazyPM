@@ -6,8 +6,8 @@ import (
 
 	"github.com/LazyBachelor/LazyPM/cmd/pm/tasks"
 	"github.com/LazyBachelor/LazyPM/internal/app"
-	issues "github.com/LazyBachelor/LazyPM/internal/commands/issues"
-	survey "github.com/LazyBachelor/LazyPM/internal/commands/survey"
+	"github.com/LazyBachelor/LazyPM/internal/commands/issues"
+	"github.com/LazyBachelor/LazyPM/internal/commands/survey"
 	"github.com/LazyBachelor/LazyPM/pkg/repl"
 	"github.com/LazyBachelor/LazyPM/pkg/task"
 	"github.com/LazyBachelor/LazyPM/pkg/tui"
@@ -149,7 +149,7 @@ func setupLazyInitialization() {
 func commandNeedsApp(cmd *cobra.Command) bool {
 	name := cmd.Name()
 	switch name {
-	case "help", "completion", "__complete", "__completeNoDesc":
+	case "help", "completion":
 		return false
 	}
 
