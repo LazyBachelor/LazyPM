@@ -2,6 +2,7 @@ package handler
 
 import (
 	"net/http"
+	"net/url"
 
 	"github.com/LazyBachelor/LazyPM/internal/models"
 	"github.com/LazyBachelor/LazyPM/pkg/web/components"
@@ -12,7 +13,9 @@ func CreateIssueFormModal(w http.ResponseWriter, r *http.Request) {
 	from := r.URL.Query().Get("from")
 	postAction := "/issues"
 	if from != "" {
-		postAction += "?from=" + from
+		v := url.Values{}
+		v.Set("from", from)
+		postAction += "?" + v.Encode()
 	}
 
 	modalContent := components.IssueForm(components.IssueFormProps{
@@ -45,8 +48,11 @@ func EditIssueFormModal(w http.ResponseWriter, r *http.Request) {
 	patchAction := "/issues/" + issue.ID
 	deleteAction := "/issues/" + issue.ID + "/delete"
 	if from != "" {
-		patchAction += "?from=" + from
-		deleteAction += "?from=" + from
+		v := url.Values{}
+		v.Set("from", from)
+		q := v.Encode()
+		patchAction += "?" + q
+		deleteAction += "?" + q
 	}
 
 	modalContent := components.IssueForm(components.IssueFormProps{
@@ -103,7 +109,9 @@ func DeleteIssueConfirmModal(w http.ResponseWriter, r *http.Request) {
 	from := r.URL.Query().Get("from")
 	deleteAction := "/issues/" + issue.ID
 	if from != "" {
-		deleteAction += "?from=" + from
+		v := url.Values{}
+		v.Set("from", from)
+		deleteAction += "?" + v.Encode()
 	}
 
 	confirmModal := components.ConfirmModal(components.ConfirmModalProps{
