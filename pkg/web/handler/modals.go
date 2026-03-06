@@ -26,9 +26,9 @@ func CreateIssueFormModal(w http.ResponseWriter, r *http.Request) {
 }
 
 func EditIssueFormModal(w http.ResponseWriter, r *http.Request) {
-	issue := r.Context().Value(issueKey).(*models.Issue)
-
-	if issue == nil {
+	issueVal := r.Context().Value(issueKey)
+	issue, ok := issueVal.(*models.Issue)
+	if !ok || issue == nil {
 		http.Error(w, "Issue not found in context", http.StatusInternalServerError)
 		return
 	}
@@ -52,9 +52,9 @@ func EditIssueFormModal(w http.ResponseWriter, r *http.Request) {
 }
 
 func AssigneeFormModal(w http.ResponseWriter, r *http.Request) {
-	issue := r.Context().Value(issueKey).(*models.Issue)
-
-	if issue == nil {
+	issueVal := r.Context().Value(issueKey)
+	issue, ok := issueVal.(*models.Issue)
+	if !ok || issue == nil {
 		http.Error(w, "Issue not found in context", http.StatusInternalServerError)
 		return
 	}
@@ -67,6 +67,32 @@ func AssigneeFormModal(w http.ResponseWriter, r *http.Request) {
 	modal := components.Modal(components.ModalProps{
 		ID:      "assignee-modal",
 		Title:   "Change Assignee",
+		Content: modalContent,
+		Open:    true,
+	})
+	modal.Render(r.Context(), w)
+}
+
+func CloseIssueFormModal(w http.ResponseWriter, r *http.Request) {
+	issueVal := r.Context().Value(issueKey)
+	issue, ok := issueVal.(*models.Issue)
+	if !ok || issue == nil {
+		http.Error(w, "Issue not found in context", http.StatusInternalServerError)
+		return
+	}
+
+	if issue.Status == models.StatusClosed {
+		http.Error(w, "Issue is already closed", http.StatusBadRequest)
+		return
+	}
+
+	modalContent := components.CloseIssueForm(components.CloseIssueFormProps{
+		PostAction: "/issues/" + issue.ID + "/close",
+	})
+
+	modal := components.Modal(components.ModalProps{
+		ID:      "close-issue-modal",
+		Title:   "Close Issue",
 		Content: modalContent,
 		Open:    true,
 	})
