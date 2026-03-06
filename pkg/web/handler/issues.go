@@ -213,6 +213,41 @@ func DeleteIssue(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNoContent)
 }
 
+func CloseIssue(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	issue := r.Context().Value(issueKey).(*models.Issue)
+	closeReason := r.FormValue("close_reason")
+
+	if closeReason == "" {
+		if HTMX(r).IsHxRequest() {
+			HTMX(r).WriteString("<div class=\"alert alert-error\">Closing reason is required</div>")
+		} else {
+			http.Error(w, "Closing reason is required", http.StatusBadRequest)
+		}
+		return
+	}
+
+	if err := App(r).Issues.CloseIssue(r.Context(), issue.ID, closeReason, "web", ""); err != nil {
+		if HTMX(r).IsHxRequest() {
+			HTMX(r).WriteString("<div class=\"alert alert-error\">Failed to close issue: " + err.Error() + "</div>")
+		} else {
+			http.Error(w, "Failed to close issue: "+err.Error(), http.StatusInternalServerError)
+		}
+		return
+	}
+
+	if HTMX(r).IsHxRequest() {
+		w.Header().Set("HX-Refresh", "true")
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
+}
+
 func (f *IssueForm) toIssue() *models.Issue {
 	return &models.Issue{
 		Title:       f.Title,

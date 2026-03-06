@@ -1,0 +1,33 @@
+package components
+
+import "github.com/LazyBachelor/LazyPM/pkg/web/components/base"
+
+type CloseIssueFormProps struct {
+	PostAction string
+}
+
+templ CloseIssueForm(props CloseIssueFormProps) {
+	<form
+		class="form space-y-4"
+		hx-post={ props.PostAction }
+		hx-target="body"
+		hx-swap="none"
+	>
+		@base.Select(base.SelectProps{
+			Name:     "close_reason",
+			Label:    "Reason for closing the issue",
+			Required: true,
+			Options: []base.SelectOption{
+				{Label: "Done", Value: "Done"},
+				{Label: "Duplicate issue", Value: "Duplicate issue"},
+				{Label: "Won't fix", Value: "Won't fix"},
+				{Label: "Obsolete", Value: "Obsolete"},
+				{Label: "Other", Value: "Other"},
+			},
+			Size: "md",
+		})
+		<button class="btn btn-primary w-full" type="submit">
+			Close issue
+		</button>
+	</form>
+}

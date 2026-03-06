@@ -32,6 +32,17 @@ templ IssueDetailContent(props IssueDetailProps) {
 			>
 				Edit
 			</button>
+			if props.Issue.Status != "closed" {
+				<button
+					type="button"
+					class="btn btn-warning btn-sm btn-outline"
+					hx-get={ "/issues/" + props.Issue.ID + "/close" }
+					hx-target="#modal-container"
+					hx-swap="innerHTML"
+				>
+					Close issue
+				</button>
+			}
 			<button
 				type="button"
 				class="btn btn-error btn-sm btn-outline"

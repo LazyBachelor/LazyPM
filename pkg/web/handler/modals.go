@@ -72,3 +72,29 @@ func AssigneeFormModal(w http.ResponseWriter, r *http.Request) {
 	})
 	modal.Render(r.Context(), w)
 }
+
+func CloseIssueFormModal(w http.ResponseWriter, r *http.Request) {
+	issue := r.Context().Value(issueKey).(*models.Issue)
+
+	if issue == nil {
+		http.Error(w, "Issue not found in context", http.StatusInternalServerError)
+		return
+	}
+
+	if issue.Status == models.StatusClosed {
+		http.Error(w, "Issue is already closed", http.StatusBadRequest)
+		return
+	}
+
+	modalContent := components.CloseIssueForm(components.CloseIssueFormProps{
+		PostAction: "/issues/" + issue.ID + "/close",
+	})
+
+	modal := components.Modal(components.ModalProps{
+		ID:      "close-issue-modal",
+		Title:   "Close Issue",
+		Content: modalContent,
+		Open:    true,
+	})
+	modal.Render(r.Context(), w)
+}

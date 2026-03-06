@@ -47,6 +47,8 @@ func (s *Server) RegisterRoutes(assets embed.FS) http.Handler {
 			r.Get("/", handler.GetIssue)
 			r.Patch("/", handler.UpdateIssue)
 			r.Get("/edit", handler.EditIssueFormModal)
+			r.Get("/close", handler.CloseIssueFormModal)
+			r.Post("/close", handler.CloseIssue)
 			r.Get("/assignee", handler.AssigneeFormModal)
 			r.Patch("/assignee", handler.UpdateAssignee)
 			r.Delete("/", handler.DeleteIssue)

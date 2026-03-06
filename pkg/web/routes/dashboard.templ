@@ -55,6 +55,17 @@ templ DashboardContent(props DashboardProps) {
 				>
 					Edit
 				</button>
+				if props.SelectedIssue.Status != "closed" {
+					<button
+						type="button"
+						class="btn btn-warning btn-sm btn-outline"
+						hx-get={ "/issues/" + props.SelectedIssue.ID + "/close" }
+						hx-target="#modal-container"
+						hx-swap="innerHTML"
+					>
+						Close issue
+					</button>
+				}
 				<button
 					type="button"
 					class="btn btn-error btn-sm btn-outline"
