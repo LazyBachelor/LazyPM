@@ -20,6 +20,27 @@ func DashboardHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Check if board view is requested
+	isBoardView := r.URL.Query().Get("board") == "true"
+
+	if isBoardView {
+		boardProps := routes.BoardViewProps{
+			BaseURL:    "/?board=true",
+			QueryParam: query,
+			Issues:     issues,
+			EmptyText:  "No issues found",
+		}
+
+		if hx.IsHxRequest() {
+			routes.BoardViewContent(boardProps).Render(r.Context(), w)
+			return
+		}
+
+		routes.BoardView(boardProps).Render(r.Context(), w)
+		return
+	}
+
+	// Regular dashboard view
 	var selectedIssue *models.Issue
 	if len(issues) > 0 {
 		selectedIssue = issues[0]

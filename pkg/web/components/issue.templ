@@ -7,20 +7,22 @@ import (
 )
 
 type IssueFormProps struct {
-	PostAction  string
-	PatchAction string
-	Title       string
-	Description string
-	Status      string
-	Priority    int
-	IssueType   string
-	Class       string
-	Attrs       templ.Attributes
-	Target      string // Optional: if empty, server controls via HX-Target header
+	PostAction   string
+	PatchAction  string
+	DeleteAction string // Optional: URL for delete confirmation modal
+	Title        string
+	Description  string
+	Status       string
+	CloseReason  string // Set when status is "closed"
+	Priority     int
+	IssueType    string
+	Class        string
+	Attrs        templ.Attributes
+	Target       string // Optional: if empty, server controls via HX-Target header
 }
 
 templ IssueForm(props IssueFormProps) {
-	<div class={ "w-full max-w-lg mx-auto ", props.Class }>
+	<div class={ "w-full max-w-lg mx-auto ", props.Class } x-data="{ status: $el.dataset.status }" data-status={ props.Status }>
 		<form
 			class="form space-y-1"
 			if props.PatchAction != "" {
@@ -57,8 +59,22 @@ templ IssueForm(props IssueFormProps) {
 					{Label: "In Progress", Value: "in_progress", Selected: props.Status == "in_progress"},
 					{Label: "Closed", Value: "closed", Selected: props.Status == "closed"},
 				},
-				Size: "md",
+				Size:  "md",
+				Attrs: templ.Attributes{"x-model": "status"},
 			})
+			// Show close reason input when status is closed; not adding close reason to db
+			if props.PatchAction != "" {
+				<div x-show="status === 'closed'" x-cloak>
+					@base.Textarea(base.TextareaProps{
+						Name:        "close_reason",
+						Label:       "Reason for closing issue",
+						Value:       props.CloseReason,
+						Class:       "w-full",
+						Placeholder: "Describe why this issue is being closed...",
+						Rows:        3,
+					})
+				</div>
+			}
 			@base.Select(base.SelectProps{
 				Name:     "issue_type",
 				Label:    "Issue Type",
@@ -84,6 +100,17 @@ templ IssueForm(props IssueFormProps) {
 				Submit Issue
 			</button>
 		</form>
+		if props.DeleteAction != "" {
+			<button
+				type="button"
+				class="btn btn-error w-full mt-2"
+				hx-get={ props.DeleteAction }
+				hx-target="#modal-container"
+				hx-swap="innerHTML"
+			>
+				Delete Issue
+			</button>
+		}
 		if props.Target == "" {
 			<div id="result"></div>
 		}

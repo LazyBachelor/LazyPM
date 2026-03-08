@@ -1,4 +1,10 @@
 @import 'tailwindcss';
+
+/* Alpine.js x-cloak: hide until Alpine initializes */
+[x-cloak] {
+  display: none !important;
+}
+
 @source "./**/*.templ";
 @source "./**/*.go";
 @source "./components/**/*.templ";
