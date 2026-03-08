@@ -129,8 +129,15 @@ templ DashboardIssueRows(issues []*models.Issue, selectedID string) {
 			hx-vals={ `{"selected-issue": "` + issue.ID + `"}` }
 			hx-swap="innerHTML"
 			data-issue-id={ issue.ID }
-			ondblclick="event.preventDefault(); var id = this.dataset.issueId; if(id) htmx.ajax('GET', '/issues/' + id + '/edit', {target: '#modal-container', swap: 'innerHTML'})"
 		>
+			<button
+				type="button"
+				class="hidden"
+				hx-get={ "/issues/" + issue.ID + "/edit" }
+				hx-target="#modal-container"
+				hx-swap="innerHTML"
+				hx-trigger="dblclick from:closest tr"
+			></button>
 			<td class="min-w-20 truncate">{ issue.ID }</td>
 			<td class="truncate max-w-60">{ issue.Title }</td>
 			<td>
