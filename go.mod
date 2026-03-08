@@ -25,7 +25,7 @@ require (
 // Web dependencies
 require (
 	github.com/NYTimes/gziphandler v1.1.1
-	github.com/a-h/templ v0.3.977
+	github.com/a-h/templ v0.3.1001
 	github.com/donseba/go-htmx v1.12.1
 	github.com/go-chi/chi/v5 v5.2.5
 	github.com/go-playground/form/v4 v4.3.0
@@ -69,7 +69,7 @@ require (
 	github.com/go-viper/mapstructure/v2 v2.5.0 // indirect
 	github.com/golang/groupcache v0.0.0-20241129210726-2c02b8208cf8 // indirect
 	github.com/golang/snappy v0.0.4 // indirect
-	github.com/haatos/goshipit v0.0.0-20260206030541-056850f43320 // indirect
+	github.com/haatos/goshipit v0.0.0-20260305043009-36e5c9a2e5c6 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/kevinburke/ssh_config v1.5.0 // indirect
 	github.com/klauspost/compress v1.18.0 // indirect

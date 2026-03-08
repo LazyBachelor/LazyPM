@@ -2,6 +2,7 @@ package tasks
 
 import (
 	"context"
+	"strings"
 
 	"github.com/LazyBachelor/LazyPM/internal/models"
 	"github.com/LazyBachelor/LazyPM/internal/utils/check"
@@ -12,12 +13,12 @@ const backlogRefinementDescription = `You are tasked with backlog refinement.
 
 The product backlog has become cluttered with old and unclear issues. You need to groom the backlog:
 
-1. Review all issues in the backlog
-2. Identify stale or obsolete issues (older items that are no longer relevant)
-3. Update issue descriptions for clarity where needed
-4. Close issues that are duplicates or no longer applicable
-5. Reprioritize issues based on current business value
-6. Ensure remaining issues are well-defined and actionable
+1. Go to the backlog.
+2. Find two issues that got the same name or describe the same problem.
+3. Open one of these issues.
+4. Select "Close issue"
+5. Choose "Duplicate issue" as closing reason.
+6. Save/close issue.
 
 Focus on making the backlog a reliable source of upcoming work.`
 
@@ -47,14 +48,19 @@ func (t *BacklogRefinementTask) Questions(interfaceType InterfaceType) Questions
 	return BaseQuestions(interfaceType).With(
 		huh.NewGroup(
 			huh.NewSelect[int]().
-				Title("How many issues did you close or update during refinement?").
+				Key("how-many-duplicate-issues").
+				Title("How many duplicate issues did you close during refinement?").
 				Options(
-					huh.NewOption("1-2", 1),
-					huh.NewOption("3-4", 2),
-					huh.NewOption("5+", 3),
+					huh.NewOption("1", 1),
+					huh.NewOption("2", 2),
+					huh.NewOption("3+", 3),
 				),
 		),
 	)
+}
+
+func (t *BacklogRefinementTask) QuestionnaireKeys(_ InterfaceType) []string {
+	return []string{"task_completed", "task_difficulty", "how-many-duplicate-issues"}
 }
 
 func (t *BacklogRefinementTask) Setup(ctx context.Context) error {
@@ -64,43 +70,43 @@ func (t *BacklogRefinementTask) Setup(ctx context.Context) error {
 
 	refinementIssues := []*models.Issue{
 		NewIssueBuilder().
-			WithTitle("Old feature request: Fax integration").
-			WithDescription("Allow sending reports via fax. DEPRECATED - nobody uses fax anymore").
-			WithPriority(3).
-			WithStatus(models.StatusOpen).
-			WithIssueType(models.TypeTask).
-			Build(),
-		NewIssueBuilder().
 			WithTitle("User profile page").
-			WithDescription("Create page for users to view profile. DUPLICATE of user-management epic").
+			WithDescription("Create page for users to view and edit their profile").
 			WithPriority(2).
 			WithStatus(models.StatusOpen).
 			WithIssueType(models.TypeTask).
 			Build(),
 		NewIssueBuilder().
-			WithTitle("Mobile app redesign").
-			WithDescription("Redesign mobile interface with modern UI patterns. Still relevant, needs clarity").
+			WithTitle("User profile page").
+			WithDescription("Allow users to view their profile information").
+			WithPriority(2).
+			WithStatus(models.StatusOpen).
+			WithIssueType(models.TypeTask).
+			Build(),
+		NewIssueBuilder().
+			WithTitle("Fix login timeout").
+			WithDescription("Login sometimes times out after 30 seconds").
 			WithPriority(1).
 			WithStatus(models.StatusOpen).
-			WithIssueType(models.TypeTask).
+			WithIssueType(models.TypeBug).
 			Build(),
 		NewIssueBuilder().
-			WithTitle("Legacy data export tool").
-			WithDescription("Tool for exporting data in old format. OBSOLETE - format no longer supported").
-			WithPriority(3).
+			WithTitle("Fix login timeout").
+			WithDescription("Users report login requests timing out").
+			WithPriority(1).
 			WithStatus(models.StatusOpen).
-			WithIssueType(models.TypeTask).
+			WithIssueType(models.TypeBug).
 			Build(),
 		NewIssueBuilder().
-			WithTitle("API v1 documentation").
-			WithDescription("Document old API version. DEPRECATED - migrating to v2").
-			WithPriority(3).
+			WithTitle("Mobile app redesign").
+			WithDescription("Redesign mobile interface with modern UI patterns").
+			WithPriority(2).
 			WithStatus(models.StatusOpen).
 			WithIssueType(models.TypeTask).
 			Build(),
 		NewIssueBuilder().
 			WithTitle("Customer feedback system").
-			WithDescription("Build system for collecting user feedback. HIGH VALUE - prioritize").
+			WithDescription("Build system for collecting user feedback").
 			WithPriority(2).
 			WithStatus(models.StatusOpen).
 			WithIssueType(models.TypeTask).
@@ -121,6 +127,23 @@ func (t *BacklogRefinementTask) Setup(ctx context.Context) error {
 
 func (t *BacklogRefinementTask) Validate(ctx context.Context) ValidationFeedback {
 	expect := check.NewExpector()
+
+	issues, err := FetchIssues(ctx, t.app, t.setupIssue)
+	if err != nil {
+		return expect.ValidationFeedback
+	}
+
+	var closedDuplicate *models.Issue
+	for _, issue := range issues {
+		if issue.Status == models.StatusClosed &&
+			strings.Contains(strings.ToLower(issue.CloseReason), "duplicate") {
+			closedDuplicate = issue
+			break
+		}
+	}
+
+	expect.Assert(closedDuplicate != nil,
+		"Expected one duplicate issue to be closed with 'Duplicate issue' as closing reason")
 
 	return expect.Complete()
 }

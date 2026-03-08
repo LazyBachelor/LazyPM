@@ -2,6 +2,7 @@ package handler
 
 import (
 	"context"
+	"html"
 	"net/http"
 	"strings"
 
@@ -244,6 +245,49 @@ func DeleteIssue(w http.ResponseWriter, r *http.Request) {
 		} else {
 			w.Header().Set("HX-Redirect", "/")
 		}
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
+}
+
+func CloseIssue(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	issueVal := r.Context().Value(issueKey)
+	issue, ok := issueVal.(*models.Issue)
+	if !ok || issue == nil {
+		http.Error(w, "Issue not found in context", http.StatusInternalServerError)
+		return
+	}
+
+	closeReason := r.FormValue("close_reason")
+
+	if closeReason == "" {
+		if HTMX(r).IsHxRequest() {
+			w.WriteHeader(http.StatusBadRequest)
+			HTMX(r).WriteString("<div class=\"alert alert-error\">Closing reason is required</div>")
+		} else {
+			http.Error(w, "Closing reason is required", http.StatusBadRequest)
+		}
+		return
+	}
+
+	if err := App(r).Issues.CloseIssue(r.Context(), issue.ID, closeReason, "web", ""); err != nil {
+		if HTMX(r).IsHxRequest() {
+			w.WriteHeader(http.StatusInternalServerError)
+			HTMX(r).WriteString("<div class=\"alert alert-error\">Failed to close issue: " + html.EscapeString(err.Error()) + "</div>")
+		} else {
+			http.Error(w, "Failed to close issue: "+err.Error(), http.StatusInternalServerError)
+		}
+		return
+	}
+
+	if HTMX(r).IsHxRequest() {
+		w.Header().Set("HX-Refresh", "true")
 		return
 	}
 
