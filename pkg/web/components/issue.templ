@@ -22,7 +22,7 @@ type IssueFormProps struct {
 }
 
 templ IssueForm(props IssueFormProps) {
-	<div class={ "w-full max-w-lg mx-auto ", props.Class } x-data={ `{ status: '` + props.Status + `' }` }>
+	<div class={ "w-full max-w-lg mx-auto ", props.Class } x-data="{ status: $el.dataset.status }" data-status={ props.Status }>
 		<form
 			class="form space-y-1"
 			if props.PatchAction != "" {
