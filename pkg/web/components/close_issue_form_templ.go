@@ -8,14 +8,13 @@ package components
 import "github.com/a-h/templ"
 import templruntime "github.com/a-h/templ/runtime"
 
-type HeaderProps struct {
-	Title        string
-	NavbarStart  templ.Component
-	NavbarCenter templ.Component
-	NavbarEnd    templ.Component
+import "github.com/LazyBachelor/LazyPM/pkg/web/components/base"
+
+type CloseIssueFormProps struct {
+	PostAction string
 }
 
-func Header(props HeaderProps) templ.Component {
+func CloseIssueForm(props CloseIssueFormProps) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
@@ -36,40 +35,40 @@ func Header(props HeaderProps) templ.Component {
 			templ_7745c5c3_Var1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<header class=\"navbar bg-primary text-primary-content px-4 min-h-10\"><div class=\"navbar-start\"><span class=\"font-semibold mr-5\"><a hx-get=\"/\" hx-target=\"main\" hx-swap=\"innerHTML\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div id=\"close-issue-error\" class=\"mb-4\"></div><form class=\"form space-y-4\" hx-post=\"")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var2 string
-		templ_7745c5c3_Var2, templ_7745c5c3_Err = templ.JoinStringErrs(props.Title)
+		templ_7745c5c3_Var2, templ_7745c5c3_Err = templ.JoinStringErrs(props.PostAction)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/web/components/header.templ`, Line: 19, Col: 18}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/web/components/close_issue_form.templ`, Line: 13, Col: 28}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var2))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "</a></span></div><div class=\"navbar-center\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "\" hx-target=\"#close-issue-error\" hx-swap=\"innerHTML\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		if props.NavbarCenter != nil {
-			templ_7745c5c3_Err = props.NavbarCenter.Render(ctx, templ_7745c5c3_Buffer)
-			if templ_7745c5c3_Err != nil {
-				return templ_7745c5c3_Err
-			}
-		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "</div><div class=\"navbar-end\">")
+		templ_7745c5c3_Err = base.Select(base.SelectProps{
+			Name:     "close_reason",
+			Label:    "Reason for closing the issue",
+			Required: true,
+			Options: []base.SelectOption{
+				{Label: "Done", Value: "Done"},
+				{Label: "Duplicate issue", Value: "Duplicate issue"},
+				{Label: "Won't fix", Value: "Won't fix"},
+				{Label: "Obsolete", Value: "Obsolete"},
+				{Label: "Other", Value: "Other"},
+			},
+			Size: "md",
+		}).Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		if props.NavbarEnd != nil {
-			templ_7745c5c3_Err = props.NavbarEnd.Render(ctx, templ_7745c5c3_Buffer)
-			if templ_7745c5c3_Err != nil {
-				return templ_7745c5c3_Err
-			}
-		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, "</div></header>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "<button class=\"btn btn-primary w-full\" type=\"submit\">Close issue</button></form>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

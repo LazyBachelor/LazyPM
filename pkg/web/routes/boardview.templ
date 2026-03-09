@@ -1,0 +1,147 @@
+package routes
+
+import (
+	"fmt"
+	"github.com/LazyBachelor/LazyPM/internal/models"
+	"github.com/LazyBachelor/LazyPM/pkg/web/components"
+)
+
+type BoardViewProps struct {
+	Issues     []*models.Issue
+	BaseURL    string
+	QueryParam string
+	EmptyText  string
+}
+
+templ BoardView(props BoardViewProps) {
+	@BaseLayout() {
+		@BoardViewContent(props)
+	}
+}
+
+templ BoardViewContent(props BoardViewProps) {
+	<div class="flex flex-col h-full">
+		<div class="flex flex-col border-b border-base-200">
+			<div class="flex p-2 border-b border-base-200 items-center gap-2">
+				@components.SearchForm(components.SearchFormProps{
+					RootURL:     props.BaseURL,
+					SearchQuery: props.QueryParam,
+					Target:      "#board-container",
+				})
+			</div>
+			<div class="flex p-2 justify-between items-center gap-2">
+				<div class="flex gap-2">
+					<div class="join">
+						<button
+							class="btn btn-sm join-item"
+							hx-get="/"
+							hx-target="main"
+							hx-swap="innerHTML"
+							hx-push-url="true"
+						>List</button>
+						<button class="btn btn-sm join-item btn-active btn-primary">Board</button>
+					</div>
+					<button
+						class="btn btn-primary btn-sm"
+						hx-get="/issues/create?from=board"
+						hx-target="#modal-container"
+						hx-swap="innerHTML"
+					>
+						New Issue
+					</button>
+				</div>
+			</div>
+		</div>
+		<div id="board-container" class="flex-1 overflow-x-auto p-4">
+			@BoardColumns(props.Issues)
+		</div>
+	</div>
+}
+
+templ BoardColumns(issues []*models.Issue) {
+	{{
+		openIssues := []*models.Issue{}
+		inProgressIssues := []*models.Issue{}
+		closedIssues := []*models.Issue{}
+
+		for _, issue := range issues {
+			switch issue.Status {
+			case "open":
+				openIssues = append(openIssues, issue)
+			case "in_progress":
+				inProgressIssues = append(inProgressIssues, issue)
+			case "closed":
+				closedIssues = append(closedIssues, issue)
+			}
+		}
+	}}
+	<div class="flex gap-4 h-full" id="board-columns">
+		@BoardColumn("Open", "open", openIssues, "badge-info")
+		@BoardColumn("In Progress", "in_progress", inProgressIssues, "badge-warning")
+		@BoardColumn("Closed", "closed", closedIssues, "badge-success")
+	</div>
+}
+
+templ BoardColumn(title string, status string, issues []*models.Issue, badgeClass string) {
+	<div class="flex-1 min-w-80 flex flex-col board-column" data-status={ status }>
+		<div class="flex items-center gap-2 mb-4">
+			<h2 class="text-lg font-semibold">{ title }</h2>
+			<span class={ "badge", badgeClass }>{ fmt.Sprintf("%d", len(issues)) }</span>
+		</div>
+		<div class="flex-1 space-y-2 bg-base-200 rounded-lg p-2 min-h-[120px] column-drop-zone" data-status={ status }>
+			if len(issues) == 0 {
+				<div class="text-center text-base-content/50 py-4 empty-drop-hint">Drop issues here</div>
+			}
+			for _, issue := range issues {
+				@BoardCard(issue)
+			}
+		</div>
+	</div>
+}
+
+templ BoardCard(issue *models.Issue) {
+	<div
+		class="card bg-base-100 shadow-sm hover:shadow-md transition-shadow cursor-grab active:cursor-grabbing board-card"
+		draggable="true"
+		data-issue-id={ issue.ID }
+	>
+		<div class="card-body p-4">
+			<div class="flex items-start justify-between gap-2">
+				<h3 class="card-title text-sm font-medium line-clamp-2 flex-1">{ issue.Title }</h3>
+				<div class="flex gap-1 flex-shrink-0">
+					<button
+						class="btn btn-ghost btn-xs"
+						hx-get={ "/issues/" + issue.ID + "?from=board" }
+						hx-target="main"
+						hx-swap="innerHTML"
+						hx-push-url="true"
+						title="View details"
+					>
+						<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+						</svg>
+					</button>
+					<button
+						class="btn btn-ghost btn-xs"
+						hx-get={ "/issues/" + issue.ID + "/edit?from=board" }
+						hx-target="#modal-container"
+						hx-swap="innerHTML"
+						title="Edit issue"
+					>
+						<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+						</svg>
+					</button>
+				</div>
+			</div>
+			<div class="flex items-center gap-2 mt-2">
+				<span class="badge badge-sm badge-ghost font-mono">{ issue.ID }</span>
+				@components.TypeBadge(issue.IssueType)
+				@components.PriorityBadge(issue.Priority)
+			</div>
+			if issue.Description != "" {
+				<p class="text-sm text-base-content/70 line-clamp-2 mt-2">{ issue.Description }</p>
+			}
+		</div>
+	</div>
+}

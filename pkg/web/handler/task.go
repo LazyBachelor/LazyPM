@@ -30,7 +30,11 @@ func HandleTaskStatus(w http.ResponseWriter, r *http.Request) {
 
 	hx := HTMX(r)
 	if hx.IsHxRequest() {
-		hx.WriteString(`<a hx-get="/status/modal" hx-target="#modal-container" hx-swap="innerHTML">` + taskFeedback.Message + `</a>`)
+		hx.WriteString(`
+		<div id="status" type="button" hx-get="/status" hx-target="#status" hx-swap="outerHTML">
+				<button class="btn btn-error btn-sm" hx-get="/status/modal" hx-target="#modal-container" hx-swap="innerHTML">` + taskFeedback.Message + `</button>
+		</div>`)
+
 		return
 	}
 
@@ -39,6 +43,7 @@ func HandleTaskStatus(w http.ResponseWriter, r *http.Request) {
 }
 
 func HandleTaskStatusModal(w http.ResponseWriter, r *http.Request) {
+	time.Sleep(100 * time.Millisecond)
 	err := components.Modal(components.ModalProps{
 		ID:      "task-status-modal",
 		Title:   "Task Status",
@@ -59,8 +64,8 @@ func feedbackList(feedback ValidationFeedback) templ.Component {
 			} else {
 				io.WriteString(w, `<p class="my-2 text-sm">`+"✅ "+check.Message+`</p>`)
 			}
-
 		}
+
 		return nil
 	})
 }

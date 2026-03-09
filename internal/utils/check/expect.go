@@ -43,11 +43,6 @@ func (e *Expector) CompleteWithMessage(message string) ValidationFeedback {
 	return e.ValidationFeedback
 }
 
-func (e *Expector) Fail(message string) ValidationFeedback {
-	e.Checks = append(e.Checks, NewCheck(message, false))
-	return e.ValidationFeedback
-}
-
 func (e *Expector) Errors() []error {
 	var errors []error
 	for _, check := range e.Checks {
@@ -56,6 +51,32 @@ func (e *Expector) Errors() []error {
 		}
 	}
 	return errors
+}
+
+func (e *Expector) Pass(message string) *Expector {
+	e.Checks = append(e.Checks, NewCheck(message, true))
+	return e
+}
+
+func (e *Expector) Fail(message string) *Expector {
+	e.Checks = append(e.Checks, NewCheck(message, false))
+	return e
+}
+
+func (e *Expector) NotEmptyAndEqual(val, expected string, message string) *Expector {
+	if val == "" {
+		return e.Fail(fmt.Sprintf("%s is empty", message))
+	} else if val != expected {
+		return e.Fail(fmt.Sprintf(`%s expected "%v", got "%v"`, message, expected, val))
+	}
+	return e.Pass(message + " is correct")
+}
+
+func (e *Expector) Equal(val, expected any, message string) *Expector {
+	if val != expected {
+		return e.Fail(fmt.Sprintf(`%s expected "%v", got "%v"`, message, expected, val))
+	}
+	return e.Pass(message + " is correct")
 }
 
 func (e *Expector) Assert(condition bool, message string) *Expector {

@@ -1,7 +1,7 @@
 package components
 
 templ Status() {
-	<div hx-get="/status" hx-trigger="load, click" hx-target="#status" hx-swap="innerHTML">
-		<div id="status"></div>
+	<div id="status" hx-get="/status" hx-trigger="click" hx-target="#status" hx-swap="outerHTML">
+		<button type="button" class="btn btn-outline btn-sm" hx-get="/status/modal" hx-target="#modal-container" hx-swap="innerHTML">Show Task Status</button>
 	</div>
 }
