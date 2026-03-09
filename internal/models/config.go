@@ -1,6 +1,7 @@
 package models
 
 type Config struct {
+	MongoURI              string
 	AutoInit              bool
 	RootCmd               string
 	WebAddress            string
@@ -11,12 +12,18 @@ type Config struct {
 }
 
 var BaseConfig = Config{
+	MongoURI:              "mongodb+srv://lazy.wf9kdi8.mongodb.net/",
 	AutoInit:              false,
 	RootCmd:               "pm",
 	IssuePrefix:           "pm",
 	WebAddress:            ":8080",
 	BeadsDBPath:           "./.pm/db.db",
 	StatisticsStoragePath: "./.pm/stats.json",
+}
+
+func (c Config) WithMongoURI(uri string) Config {
+	c.MongoURI = uri
+	return c
 }
 
 func (c Config) WithAutoInit(autoInit bool) Config {

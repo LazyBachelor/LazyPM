@@ -5,10 +5,13 @@ import (
 	"errors"
 	"fmt"
 	"math/rand"
+	"time"
 
 	"github.com/LazyBachelor/LazyPM/cmd/pm/tasks"
 	"github.com/LazyBachelor/LazyPM/internal/commands/survey"
+	"github.com/LazyBachelor/LazyPM/internal/storage"
 	"github.com/LazyBachelor/LazyPM/pkg/task"
+	"github.com/charmbracelet/huh"
 	"github.com/spf13/cobra"
 )
 
@@ -26,6 +29,54 @@ func runStartCmd(cmd *cobra.Command, args []string) error {
 
 	if app == nil {
 		return fmt.Errorf("application services are not available")
+	}
+
+	if len(args) == 0 {
+		var noSubmit bool
+		cmd.Println("No MongoDB password provided, survey responses will not be submitted.")
+		cmd.Println("you can manually submit later with `pm survey submit <mongo-password>`.")
+
+		huh.NewConfirm().Title("Are you sure you want to continue without submiting data?").
+			Value(&noSubmit).RunAccessible(cmd.OutOrStdout(), cmd.InOrStdin())
+
+		if !noSubmit {
+			cmd.Println("Exiting. Please run the command again with a MongoDB password to submit your data.")
+			return nil
+		}
+	} else {
+		mongoPass := args[0]
+		mongoStorage, err := storage.NewMongoStorage(app.Config.MongoURI, "participant", mongoPass)
+		if err != nil {
+			cmd.Println("Failed to connect to MongoDB, survey responses will not be submitted.")
+			cmd.Println("You can manually submit later with `pm survey submit <password>`.")
+			return nil
+		} else {
+			cmd.Println("Connected to MongoDB successfully.")
+
+			defer mongoStorage.Close()
+
+			ctx := cmd.Context()
+
+			go func() {
+				ticker := time.NewTicker(10 * time.Second)
+				defer ticker.Stop()
+
+				for {
+					select {
+					case <-ctx.Done():
+						return
+					case <-ticker.C:
+						if err := mongoStorage.SubmitSurveyResponsesCmd(ctx); err != nil {
+							cmd.Printf("Failed to submit survey responses: %v\n", err)
+						}
+					}
+				}
+			}()
+
+			if err := mongoStorage.SubmitSurveyResponsesCmd(ctx); err != nil {
+				cmd.Printf("Failed to submit survey responses: %v\n", err)
+			}
+		}
 	}
 
 	interfaces := initInterfaces()

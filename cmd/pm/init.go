@@ -169,6 +169,8 @@ func commandNeedsApp(cmd *cobra.Command) bool {
 
 func ensureAppInitialized(ctx context.Context) error {
 	if App != nil {
+		survey.SetApp(App)
+		issues.SetApp(App)
 		return nil
 	}
 

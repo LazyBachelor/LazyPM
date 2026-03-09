@@ -9,6 +9,7 @@ import (
 
 	"github.com/LazyBachelor/LazyPM/internal/models"
 	"github.com/LazyBachelor/LazyPM/internal/storage"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 type StatisticsService struct {
@@ -40,6 +41,16 @@ func (s *StatisticsService) GetStatistics() (models.Statistics, error) {
 		return models.Statistics{}, fmt.Errorf("statistics data not initialized")
 	}
 	return *s.storage.Data, nil
+}
+
+func (s *StatisticsService) GetParticipantID() primitive.ObjectID {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	if s.storage.Data == nil {
+		return primitive.NilObjectID
+	}
+	return s.storage.Data.ID
 }
 
 func (s *StatisticsService) RecordTaskRun(ctx context.Context, run models.TaskRunMetrics) error {
