@@ -180,6 +180,7 @@ func IssueForm(props IssueFormProps) templ.Component {
 			Options: []base.SelectOption{
 				{Label: "Open", Value: "open", Selected: props.Status == "open"},
 				{Label: "In Progress", Value: "in_progress", Selected: props.Status == "in_progress"},
+				{Label: "Ready to sprint", Value: "ready_to_sprint", Selected: props.Status == "ready_to_sprint"},
 				{Label: "Closed", Value: "closed", Selected: props.Status == "closed"},
 			},
 			Size:  "md",
@@ -398,7 +399,11 @@ func IssueRows(issues []*models.Issue) templ.Component {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var15 string
-			templ_7745c5c3_Var15, templ_7745c5c3_Err = templ.JoinStringErrs(string(issue.Status))
+			statusText := string(issue.Status)
+			if statusText == "ready_to_sprint" {
+				statusText = "Ready to sprint"
+			}
+			templ_7745c5c3_Var15, templ_7745c5c3_Err = templ.JoinStringErrs(statusText)
 			if templ_7745c5c3_Err != nil {
 				return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/web/components/issue.templ`, Line: 162, Col: 54}
 			}
