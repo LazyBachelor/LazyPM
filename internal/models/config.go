@@ -1,7 +1,9 @@
 package models
 
+import "os"
+
 type Config struct {
-	MongoURI              string
+	DB_URI                string
 	AutoInit              bool
 	RootCmd               string
 	WebAddress            string
@@ -12,7 +14,7 @@ type Config struct {
 }
 
 var BaseConfig = Config{
-	MongoURI:              "mongodb+srv://lazy.wf9kdi8.mongodb.net/",
+	DB_URI:                "",
 	AutoInit:              false,
 	RootCmd:               "pm",
 	IssuePrefix:           "pm",
@@ -21,8 +23,13 @@ var BaseConfig = Config{
 	StatisticsStoragePath: "./.pm/stats.json",
 }
 
-func (c Config) WithMongoURI(uri string) Config {
-	c.MongoURI = uri
+func (c Config) LoadFromEnv() Config {
+	c.DB_URI = os.Getenv("DB_URI")
+	return c
+}
+
+func (c Config) WithDB_URI(uri string) Config {
+	c.DB_URI = uri
 	return c
 }
 

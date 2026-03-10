@@ -17,7 +17,12 @@ var SubmitCmd = &cobra.Command{
 			return fmt.Errorf("application context not initialized")
 		}
 
-		db, err := storage.NewMongoStorageInteractive(cmd.Context(), app.Config.MongoURI)
+		if app.Config.DB_URI == "" {
+			cmd.Println("No database URI provided in environment, survey responses will not be submitted.")
+			return nil
+		}
+
+		db, err := storage.NewMongoStorageInteractive(cmd.Context(), app.Config.DB_URI)
 		if err != nil {
 			return fmt.Errorf("failed to connect to database: %w", err)
 		}
