@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/LazyBachelor/LazyPM/internal/models"
+	"github.com/charmbracelet/huh"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -23,7 +24,9 @@ func NewMongoStorage(uri, username, password string) (*MongoStorage, error) {
 		Password: password,
 	}
 
-	client, err := mongo.Connect(context.Background(), options.Client().ApplyURI(uri).SetAuth(credentials))
+	client, err := mongo.Connect(context.Background(),
+		options.Client().ApplyURI(uri).SetAuth(credentials))
+
 	if err != nil {
 		return nil, fmt.Errorf("failed to connect to MongoDB: %v", err)
 	}
@@ -33,6 +36,47 @@ func NewMongoStorage(uri, username, password string) (*MongoStorage, error) {
 	}
 
 	return &MongoStorage{client: client}, nil
+}
+
+func NewMongoStorageInteractive(uri string) (*MongoStorage, error) {
+	var username, password string
+	if os.Getenv("DB_USER") == "" {
+		if err := huh.NewInput().
+			Title("Enter the Database Username").
+			Value(&username).
+			WithTheme(huh.ThemeBase16()).Run(); err != nil {
+			return nil, fmt.Errorf("failed to read username: %w", err)
+		}
+	} else {
+		username = os.Getenv("DB_USER")
+	}
+
+	if username == "" {
+		return nil, fmt.Errorf("No username provided.")
+	}
+
+	if os.Getenv("DB_PASSWORD") == "" {
+		if err := huh.NewInput().
+			Title("Enter the Survey Password").
+			EchoMode(huh.EchoModePassword).
+			Value(&password).
+			WithTheme(huh.ThemeBase16()).Run(); err != nil {
+			return nil, fmt.Errorf("failed to read password: %w", err)
+		}
+	} else {
+		password = os.Getenv("DB_PASSWORD")
+	}
+
+	if password == "" {
+		return nil, fmt.Errorf("No password provided.")
+
+	}
+
+	mongoClient, err := NewMongoStorage(uri, username, password)
+	if err != nil {
+		return nil, fmt.Errorf("failed to connect to database: %w", err)
+	}
+	return mongoClient, nil
 }
 
 func (s *MongoStorage) Close() error {
