@@ -31,27 +31,36 @@ func runStartCmd(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("application services are not available")
 	}
 
-	if len(args) == 0 {
-		var noSubmit bool
-		cmd.Println("No MongoDB password provided, survey responses will not be submitted.")
-		cmd.Println("you can manually submit later with `pm survey submit <mongo-password>`.")
+	if !cmd.Flags().Changed("dev") {
+		var mongoStorage *storage.MongoStorage
+		var continueWithoutSubmitting bool
 
-		huh.NewConfirm().Title("Are you sure you want to continue without submiting data?").
-			Value(&noSubmit).RunAccessible(cmd.OutOrStdout(), cmd.InOrStdin())
+		for {
+			db, err := storage.NewMongoStorageInteractive(app.Config.MongoURI)
+			if err == nil {
+				mongoStorage = db
+				break
+			}
 
-		if !noSubmit {
-			cmd.Println("Exiting. Please run the command again with a MongoDB password to submit your data.")
-			return nil
+			cmd.Println("Failed to connect to database, survey responses will not be submitted.")
+
+			if err := huh.NewConfirm().
+				Title("Do you want to continue without submitting your responses?").
+				Description("You can fix your database connection and submit your responses later with the submit command.").
+				Value(&continueWithoutSubmitting).
+				WithTheme(huh.ThemeBase16()).
+				RunAccessible(cmd.OutOrStdout(), cmd.InOrStdin()); err != nil {
+				return fmt.Errorf("failed to read user input: %w", err)
+			}
+
+			if continueWithoutSubmitting {
+				break
+			}
 		}
-	} else {
-		mongoPass := args[0]
-		mongoStorage, err := storage.NewMongoStorage(app.Config.MongoURI, "participant", mongoPass)
-		if err != nil {
-			cmd.Println("Failed to connect to MongoDB, survey responses will not be submitted.")
-			cmd.Println("You can manually submit later with `pm survey submit <password>`.")
-			return nil
-		} else {
-			cmd.Println("Connected to MongoDB successfully.")
+
+		if mongoStorage != nil {
+			cmd.Println("Connected to Database Successfully. Starting survey...")
+			time.Sleep(2 * time.Second)
 
 			defer mongoStorage.Close()
 
@@ -76,6 +85,9 @@ func runStartCmd(cmd *cobra.Command, args []string) error {
 			if err := mongoStorage.SubmitSurveyResponsesCmd(ctx); err != nil {
 				cmd.Printf("Failed to submit survey responses: %v\n", err)
 			}
+		} else {
+			cmd.Println("Starting survey without database connection. Your responses will not be submitted...")
+			time.Sleep(2 * time.Second)
 		}
 	}
 
@@ -100,11 +112,11 @@ func runStartCmd(cmd *cobra.Command, args []string) error {
 			survey.Task: surveyTasks[survey.Task],
 		}
 	}
-
-	if err := newIntroModel().Run(); err != nil {
-		return returnIfUserQuit(err, "failed to run intro")
+	if !cmd.Flag("dev").Changed {
+		if err := newIntroModel().Run(); err != nil {
+			return returnIfUserQuit(err, "failed to run intro")
+		}
 	}
-
 	if err := taskLoop(cmd.Context(), app, surveyTasks, interfaces); err != nil {
 		return returnIfUserQuit(err, "task loop failed")
 	}
