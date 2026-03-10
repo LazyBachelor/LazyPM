@@ -37,12 +37,12 @@ func runStartCmd(cmd *cobra.Command, args []string) error {
 
 		for {
 
-			if app.Config.DB_URI == "" {
+			if app.Config.DbUri == "" {
 				cmd.Println("No database URI provided in environment, survey responses will not be submitted.")
 				break
 			}
 
-			db, err := storage.NewMongoStorageInteractive(cmd.Context(), app.Config.DB_URI)
+			db, err := storage.NewMongoStorageInteractive(cmd.Context(), app.Config.DbUri)
 			if err == nil {
 				mongoStorage = db
 				break

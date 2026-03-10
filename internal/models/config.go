@@ -3,7 +3,7 @@ package models
 import "os"
 
 type Config struct {
-	DB_URI                string
+	DbUri                 string
 	AutoInit              bool
 	RootCmd               string
 	WebAddress            string
@@ -14,7 +14,7 @@ type Config struct {
 }
 
 var BaseConfig = Config{
-	DB_URI:                "",
+	DbUri:                 "",
 	AutoInit:              false,
 	RootCmd:               "pm",
 	IssuePrefix:           "pm",
@@ -24,12 +24,12 @@ var BaseConfig = Config{
 }
 
 func (c Config) LoadFromEnv() Config {
-	c.DB_URI = os.Getenv("DB_URI")
+	c.DbUri = os.Getenv("DB_URI")
 	return c
 }
 
-func (c Config) WithDB_URI(uri string) Config {
-	c.DB_URI = uri
+func (c Config) WithDbUri(uri string) Config {
+	c.DbUri = uri
 	return c
 }
 
