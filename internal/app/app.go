@@ -23,13 +23,13 @@ func New(ctx context.Context, config Config, opts ...Option) (*App, func(), erro
 	}
 
 	if !config.AutoInit {
-		if err := b.initializer.Init(config.BeadsDBPath); err != nil {
+		if err := b.initializer.Init(config.AppDir + "/db.db"); err != nil {
 			return nil, nil, err
 		}
 	}
 
 	if b.issueService == nil {
-		sqliteStore, err := beads.NewSQLiteStorage(b.ctx, config.BeadsDBPath)
+		sqliteStore, err := beads.NewSQLiteStorage(b.ctx, config.AppDir+"/db.db")
 		if err != nil {
 			return nil, nil, err
 		}

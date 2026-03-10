@@ -38,7 +38,7 @@ func defaultBuilder(ctx context.Context, config Config) *AppBuilder {
 }
 
 func defaultLogger(config Config, lifecycle *Lifecycle) *slog.Logger {
-	statsDir := filepath.Dir(config.StatisticsStoragePath)
+	statsDir := filepath.Dir(config.AppDir + "/stats.json")
 	if statsDir == "" {
 		statsDir = "."
 	}

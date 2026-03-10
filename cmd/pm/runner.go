@@ -81,19 +81,19 @@ func runStartCmd(cmd *cobra.Command, args []string) error {
 					case <-ctx.Done():
 						return
 					case <-ticker.C:
-						if err := mongoStorage.SubmitSurveyResponsesCmd(ctx); err != nil {
+						if err := mongoStorage.SubmitSurveyResponsesCmd(ctx, app.Config.AppDir); err != nil {
 							cmd.Printf("Failed to submit survey responses: %v\n", err)
 						}
 					}
 				}
 			}()
 
-			if err := mongoStorage.SubmitSurveyResponsesCmd(ctx); err != nil {
+			if err := mongoStorage.SubmitSurveyResponsesCmd(ctx, app.Config.AppDir); err != nil {
 				cmd.Printf("Failed to submit survey responses: %v\n", err)
 			}
 
 			defer func() {
-				if err := mongoStorage.SubmitSurveyResponsesCmd(context.Background()); err != nil {
+				if err := mongoStorage.SubmitSurveyResponsesCmd(context.Background(), app.Config.AppDir); err != nil {
 					cmd.Printf("Failed to submit survey responses on shutdown: %v\n", err)
 				}
 			}()

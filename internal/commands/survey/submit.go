@@ -29,7 +29,7 @@ var SubmitCmd = &cobra.Command{
 
 		defer db.Close()
 
-		if err := db.SubmitSurveyResponsesCmd(cmd.Context()); err != nil {
+		if err := db.SubmitSurveyResponsesCmd(cmd.Context(), app.Config.AppDir); err != nil {
 			return fmt.Errorf("failed to submit survey responses: %w", err)
 		}
 

@@ -83,8 +83,8 @@ func (s *MongoStorage) Close() error {
 	return s.client.Disconnect(context.Background())
 }
 
-func (s *MongoStorage) SubmitSurveyResponsesCmd(ctx context.Context) error {
-	pmDir := "./.pm/"
+func (s *MongoStorage) SubmitSurveyResponsesCmd(ctx context.Context, dir string) error {
+	pmDir := dir
 	userStatscollection := s.client.Database("Responses").Collection("stats")
 	taskMetricsCollection := s.client.Database("Responses").Collection("metrics")
 
