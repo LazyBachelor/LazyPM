@@ -19,7 +19,7 @@ var BaseConfig = Config{
 	RootCmd:               "pm",
 	IssuePrefix:           "pm",
 	WebAddress:            ":8080",
-	AppDir:                "./.pm",
+	AppDir:                "./.pm/",
 	StatisticsStoragePath: "./.pm/stats.json",
 }
 
