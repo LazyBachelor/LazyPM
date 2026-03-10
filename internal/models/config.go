@@ -24,7 +24,9 @@ var BaseConfig = Config{
 }
 
 func (c Config) LoadFromEnv() Config {
-	c.DbUri = os.Getenv("DB_URI")
+	if dbURI, ok := os.LookupEnv("DB_URI"); ok {
+		c.DbUri = dbURI
+	}
 	return c
 }
 
