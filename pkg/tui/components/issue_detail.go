@@ -1,4 +1,4 @@
-package dashboard
+package components
 
 import (
 	"time"
@@ -23,6 +23,7 @@ func NewIssueDetail() IssueDetail {
 	}
 }
 
+
 func (i *IssueDetail) SetIssue(issue models.Issue) {
 	i.issue = issue
 	i.refreshContent()
@@ -33,6 +34,7 @@ func (i *IssueDetail) SetComments(comments []*models.Comment) {
 	i.comments = comments
 	i.refreshContent()
 }
+
 
 func (i *IssueDetail) SetSize(width, height int) {
 	i.viewport.Height = height
@@ -45,7 +47,6 @@ func (i *IssueDetail) SetFocused(focused bool) {
 }
 
 func (i *IssueDetail) refreshContent() {
-
 	titleRow := styles.RowStyle.Render(
 		styles.TitleStyle.Render(i.issue.Title),
 	)
@@ -63,7 +64,7 @@ func (i *IssueDetail) refreshContent() {
 	)
 
 	priorityRow := styles.RowStyle.Render(
-		styles.LabelStyle.Render("Priority:") + styles.ValueStyle.Render(priorityCodeName(i.issue.Priority)),
+		styles.LabelStyle.Render("Priority:") + styles.ValueStyle.Render(PriorityCodeName(i.issue.Priority)),
 	)
 
 	descLabel := styles.LabelStyle.Render("Description:")

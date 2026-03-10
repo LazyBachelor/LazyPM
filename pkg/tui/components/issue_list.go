@@ -1,4 +1,4 @@
-package dashboard
+package components
 
 import (
 	"context"
@@ -10,17 +10,22 @@ import (
 	"github.com/LazyBachelor/LazyPM/internal/models"
 	"github.com/LazyBachelor/LazyPM/pkg/tui/styles"
 	"github.com/charmbracelet/bubbles/list"
+	"github.com/charmbracelet/bubbles/textarea"
+	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/muesli/reflow/truncate"
 )
 
+
 type IssueList struct {
-	list   list.Model
-	app    *app.App
-	width  int
-	height int
+	list              list.Model
+	app               *app.App
+	width             int
+	height            int
+	highlightSelected bool
 }
+
 
 type ListIssue struct {
 	models.Issue
@@ -30,27 +35,27 @@ func (l ListIssue) Title() string       { return l.Issue.Title }
 func (l ListIssue) Description() string { return l.Issue.Description }
 func (l ListIssue) FilterValue() string { return l.Issue.ID + " " + l.Issue.Title }
 
-type TableColumn struct {
+type tableColumn struct {
 	width uint
 	label string
 	key   string
 }
 
-func getTableColumns(width int) []TableColumn {
+func getTableColumns(width int) []tableColumn {
 	switch {
 	case width < 45:
-		return []TableColumn{
+		return []tableColumn{
 			{width: 10, label: "ID", key: "id"},
 			{width: uint(width - 10), label: "TITLE", key: "title"},
 		}
 	case width < 60:
-		return []TableColumn{
+		return []tableColumn{
 			{width: 10, label: "ID", key: "id"},
 			{width: 20, label: "TITLE", key: "title"},
 			{width: 15, label: "STATUS", key: "status"},
 		}
 	default:
-		return []TableColumn{
+		return []tableColumn{
 			{width: 12, label: "ID", key: "id"},
 			{width: 20, label: "TITLE", key: "title"},
 			{width: 15, label: "STATUS", key: "status"},
@@ -60,7 +65,24 @@ func getTableColumns(width int) []TableColumn {
 	}
 }
 
-func renderHeaders(cols []TableColumn) string {
+// PriorityCodeName returns the human-readable name for a priority code.
+// Exported for use by IssueDetail.
+func PriorityCodeName(priority int) string {
+	if name, ok := priorityCodeNames[priority]; ok {
+		return name
+	}
+	return fmt.Sprintf("%d", priority)
+}
+
+var priorityCodeNames = map[int]string{
+	0: "irrelevant",
+	1: "low",
+	2: "normal",
+	3: "high",
+	4: "critical",
+}
+
+func renderHeaders(cols []tableColumn) string {
 	var parts []string
 	headerStyle := lipgloss.NewStyle().Foreground(styles.FaintText).Bold(true)
 
@@ -77,7 +99,52 @@ func renderHeaders(cols []TableColumn) string {
 	return lipgloss.JoinHorizontal(lipgloss.Left, parts...)
 }
 
+// IssueInputs bundles the common text inputs used for issue title, creation, and description.
+type IssueInputs struct {
+	Title       textinput.Model
+	CreateTitle textinput.Model
+	Description textarea.Model
+}
+
+// NewIssueInputs creates initialized inputs for issue title, new issue title, and description.
+func NewIssueInputs() IssueInputs {
+	ti := textinput.New()
+	ti.Placeholder = "Issue title ..."
+	ti.CharLimit = 256
+
+	createTi := textinput.New()
+	createTi.Placeholder = "New issue title ..."
+	createTi.CharLimit = 256
+
+	descTa := textarea.New()
+	descTa.Placeholder = "Issue description..."
+	descTa.SetWidth(56)
+	descTa.SetHeight(8)
+
+	return IssueInputs{
+		Title:       ti,
+		CreateTitle: createTi,
+		Description: descTa,
+	}
+}
+
+// ValidationFeedbackMsg is a shared message carrying validation results from the app.
+type ValidationFeedbackMsg struct {
+	Feedback models.ValidationFeedback
+}
+
+// ListenForValidation returns a command that waits for a validation feedback message
+// on the given channel and wraps it in a ValidationFeedbackMsg.
+func ListenForValidation(ch chan models.ValidationFeedback) tea.Cmd {
+	return func() tea.Msg {
+		feedback := <-ch
+		return ValidationFeedbackMsg{Feedback: feedback}
+	}
+}
+
+
 func NewIssueList(app *app.App, width, height int) IssueList {
+	// NewIssueList creates an IssueList populated from the app.
 	issues, err := app.Issues.SearchIssues(context.Background(), "", models.IssueFilter{})
 	if err != nil {
 		return IssueList{}
@@ -93,7 +160,7 @@ func NewIssueList(app *app.App, width, height int) IssueList {
 		items[i] = issue
 	}
 
-	l := list.New(items, NewIssueListDelegate(width), width, height)
+	l := list.New(items, newIssueListDelegate(width), width, height)
 	l.SetShowTitle(false)
 	l.SetShowHelp(false)
 	l.SetShowStatusBar(false)
@@ -104,20 +171,27 @@ func NewIssueList(app *app.App, width, height int) IssueList {
 	l.FilterInput.Prompt = "🔍 "
 
 	return IssueList{
-		list:   l,
-		app:    app,
-		width:  width,
-		height: height,
+		list:              l,
+		app:               app,
+		width:             width,
+		height:            height,
+		highlightSelected: true,
 	}
 }
 
+// SetHighlightSelected controls whether the selected row is visually highlighted.
+// Use false for lists that are not currently focused (e.g. non-focused Kanban columns).
+func (l *IssueList) SetHighlightSelected(show bool) {
+	l.highlightSelected = show
+}
+
 func NewIssueListFromIssues(app *app.App, issues []*models.Issue, width, height int) IssueList {
-	// for making an IssueList from a pre-existing list of issues.
+	// NewIssueListFromIssues creates an IssueList from a slice of issues.
 	listIssues := make([]list.Item, len(issues))
 	for i, issue := range issues {
 		listIssues[i] = ListIssue{Issue: *issue}
 	}
-	l := list.New(listIssues, NewIssueListDelegate(width), width, height)
+	l := list.New(listIssues, newIssueListDelegate(width), width, height)
 	l.SetShowTitle(false)
 	l.SetShowHelp(false)
 	l.SetShowStatusBar(false)
@@ -127,10 +201,11 @@ func NewIssueListFromIssues(app *app.App, issues []*models.Issue, width, height 
 	l.FilterInput.TextStyle = styles.FilterInputStyle
 	l.FilterInput.Prompt = "🔍 "
 	return IssueList{
-		list:   l,
-		app:    app,
-		width:  width,
-		height: height,
+		list:              l,
+		app:               app,
+		width:             width,
+		height:            height,
+		highlightSelected: true,
 	}
 }
 
@@ -158,8 +233,19 @@ func ClosedOnly(issues []*models.Issue) []*models.Issue {
 	return out
 }
 
+// StatusOnly returns issues that exactly match the given status, sorted by priority.
+func StatusOnly(issues []*models.Issue, status models.Status) []*models.Issue {
+	out := make([]*models.Issue, 0, len(issues))
+	for _, issue := range issues {
+		if issue.Status == status {
+			out = append(out, issue)
+		}
+	}
+	sortByPriorityDesc(out)
+	return out
+}
+
 func sortByPriorityDesc(issues []*models.Issue) {
-	// sorts issues by priority, highest first.
 	sort.Slice(issues, func(i, j int) bool {
 		return issues[i].Priority > issues[j].Priority
 	})
@@ -178,10 +264,11 @@ func (l *IssueList) SetSize(width, height int) {
 	l.height = height
 
 	l.list.SetSize(width, height)
-	l.list.SetDelegate(NewIssueListDelegate(width))
+	l.list.SetDelegate(newIssueListDelegate(width))
 }
 
 func (l IssueList) View() string {
+	// renders the list
 	return l.renderResponsive()
 }
 
@@ -218,11 +305,10 @@ func (l IssueList) renderFilteredItems() string {
 	}
 
 	start, end := l.list.Paginator.GetSliceBounds(len(visibleItems))
-
 	cursor := l.list.Index()
 
 	for i := start; i < end && i < len(visibleItems); i++ {
-		isSelected := i == cursor
+		isSelected := l.highlightSelected && i == cursor
 		if issue, ok := visibleItems[i].(ListIssue); ok {
 			cols := getTableColumns(l.width)
 			row := renderRow(issue, isSelected, cols)
@@ -233,6 +319,7 @@ func (l IssueList) renderFilteredItems() string {
 	return lipgloss.JoinVertical(lipgloss.Left, items...)
 }
 
+// selectedItem returns the currently selected issue.
 func (l IssueList) SelectedItem() ListIssue {
 	if item, ok := l.list.SelectedItem().(ListIssue); ok {
 		return item
@@ -266,19 +353,19 @@ func (l *IssueList) SelectIssueID(issueID string) {
 	}
 }
 
-type IssueListDelegate struct {
+type issueListDelegate struct {
 	width int
 }
 
-func NewIssueListDelegate(width int) IssueListDelegate {
-	return IssueListDelegate{width: width}
+func newIssueListDelegate(width int) issueListDelegate {
+	return issueListDelegate{width: width}
 }
 
-func (d IssueListDelegate) Height() int                               { return 1 }
-func (d IssueListDelegate) Spacing() int                              { return 0 }
-func (d IssueListDelegate) Update(msg tea.Msg, m *list.Model) tea.Cmd { return nil }
+func (d issueListDelegate) Height() int                               { return 1 }
+func (d issueListDelegate) Spacing() int                              { return 0 }
+func (d issueListDelegate) Update(msg tea.Msg, m *list.Model) tea.Cmd { return nil }
 
-func (d IssueListDelegate) Render(w io.Writer, m list.Model, index int, listItem list.Item) {
+func (d issueListDelegate) Render(w io.Writer, m list.Model, index int, listItem list.Item) {
 	issue, ok := listItem.(ListIssue)
 	if !ok {
 		return
@@ -286,12 +373,11 @@ func (d IssueListDelegate) Render(w io.Writer, m list.Model, index int, listItem
 
 	isSelected := index == m.Index()
 	cols := getTableColumns(d.width)
-
 	row := renderRow(issue, isSelected, cols)
 	io.WriteString(w, row)
 }
 
-func renderRow(issue ListIssue, isSelected bool, cols []TableColumn) string {
+func renderRow(issue ListIssue, isSelected bool, cols []tableColumn) string {
 	var parts []string
 
 	for _, col := range cols {
@@ -313,22 +399,7 @@ func renderRow(issue ListIssue, isSelected bool, cols []TableColumn) string {
 	return lipgloss.JoinHorizontal(lipgloss.Left, parts...)
 }
 
-var priorityCodeNames = map[int]string{
-	0: "irrelevant",
-	1: "low",
-	2: "normal",
-	3: "high",
-	4: "critical",
-}
-
-func priorityCodeName(priority int) string {
-	if name, ok := priorityCodeNames[priority]; ok {
-		return name
-	}
-	return fmt.Sprintf("%d", priority)
-}
-
-func getColumnValue(col TableColumn, issue ListIssue) string {
+func getColumnValue(col tableColumn, issue ListIssue) string {
 	switch col.key {
 	case "id":
 		return issue.ID
@@ -339,7 +410,7 @@ func getColumnValue(col TableColumn, issue ListIssue) string {
 	case "type":
 		return string(issue.Issue.IssueType)
 	case "priority":
-		return priorityCodeName(issue.Issue.Priority)
+		return PriorityCodeName(issue.Issue.Priority)
 	default:
 		return ""
 	}

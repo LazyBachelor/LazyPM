@@ -19,3 +19,6 @@ package.json
 
 # Added by goreleaser init:
 dist/
+
+# Dolt database files (added by bd init)
+.dolt/

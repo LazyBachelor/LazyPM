@@ -1,6 +1,7 @@
 package dashboard
 
 import (
+	"github.com/LazyBachelor/LazyPM/pkg/tui/components"
 	"github.com/LazyBachelor/LazyPM/pkg/tui/styles"
 	"github.com/charmbracelet/lipgloss"
 )
@@ -16,7 +17,7 @@ func (m *Model) View() string {
 	header := m.header.View(m.width)
 	headerHeight := m.header.Height()
 
-	footer := m.footer()
+	footer := components.RenderFooter(m.width, &m.helpBar, m.currentFeedback)
 	footerHeight := lipgloss.Height(footer)
 
 	// To avoid layer overflow or clipping, the label heights are calculated and subtracted from the available height before calculating the list heights to avoid layout overflow or clipping.
@@ -38,6 +39,10 @@ func (m *Model) View() string {
 	m.issueList.SetSize(listWidth, halfHeight)
 	m.closedIssueList.SetSize(listWidth, halfHeight)
 	m.issueDetail.SetSize(detailWidth, contentHeight)
+
+	// Only highlight the focused list; unfocused list should not show selection highlight.
+	m.issueList.SetHighlightSelected(m.focusedWindow == 0 && m.focusedPaneMain == 0)
+	m.closedIssueList.SetHighlightSelected(m.focusedWindow == 1 && m.focusedPaneClosed == 0)
 
 	listView := m.issueList.View()
 	closedListView := m.closedIssueList.View()
@@ -171,15 +176,4 @@ func (m *Model) View() string {
 
 	return mainView
 
-}
-
-func (m *Model) footer() string {
-	feedbackStatus := m.currentFeedback.Message
-
-	if feedbackStatus == "" {
-		return m.helpBar.View()
-	}
-
-	m.helpBar.SetWidth(m.width - lipgloss.Width(feedbackStatus))
-	return lipgloss.JoinHorizontal(lipgloss.Left, m.helpBar.View(), feedbackStatus)
 }
