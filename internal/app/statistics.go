@@ -74,8 +74,8 @@ func (s *StatisticsService) RecordTaskRun(ctx context.Context, run models.TaskRu
 	}
 
 	stats.EndTime = now
-	stats.Duration = stats.EndTime.Sub(stats.StartTime)
-	stats.InterfaceType = run.InterfaceType
+	stats.DurationMs = stats.EndTime.Sub(stats.StartTime).Milliseconds()
+	stats.LastInterfaceType = run.InterfaceType
 
 	stats.TaskRuns++
 	stats.LastTaskName = run.TaskName

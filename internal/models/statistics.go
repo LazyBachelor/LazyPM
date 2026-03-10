@@ -7,15 +7,15 @@ import (
 )
 
 type Statistics struct {
-	ID        primitive.ObjectID `bson:"_id" json:"id"`
-	StartTime time.Time          `bson:"start_time" json:"start_time"`
-	EndTime   time.Time          `bson:"end_time" json:"end_time"`
-	Duration  time.Duration      `bson:"duration" json:"duration"`
+	ID         primitive.ObjectID `bson:"_id" json:"id"`
+	StartTime  time.Time          `bson:"start_time" json:"start_time"`
+	EndTime    time.Time          `bson:"end_time" json:"end_time"`
+	DurationMs int64              `bson:"duration_ms" json:"duration_ms"`
 
-	InterfaceType  InterfaceType `bson:"interface_type" json:"interface_type"`
-	TaskRuns       int           `bson:"task_runs" json:"task_runs"`
-	TasksCompleted int           `bson:"tasks_completed" json:"tasks_completed"`
-	TasksFailed    int           `bson:"tasks_failed" json:"tasks_failed"`
+	LastInterfaceType InterfaceType `bson:"last_interface_type" json:"last_interface_type"`
+	TaskRuns          int           `bson:"task_runs" json:"task_runs"`
+	TasksCompleted    int           `bson:"tasks_completed" json:"tasks_completed"`
+	TasksFailed       int           `bson:"tasks_failed" json:"tasks_failed"`
 
 	TotalDurationMs   int64 `bson:"total_duration_ms" json:"total_duration_ms"`
 	AverageDurationMs int64 `bson:"average_duration_ms" json:"average_duration_ms"`
