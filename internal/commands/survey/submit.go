@@ -17,7 +17,7 @@ var SubmitCmd = &cobra.Command{
 			return fmt.Errorf("application context not initialized")
 		}
 
-		db, err := storage.NewMongoStorageInteractive(app.Config.MongoURI)
+		db, err := storage.NewMongoStorageInteractive(cmd.Context(), app.Config.MongoURI)
 		if err != nil {
 			return fmt.Errorf("failed to connect to database: %w", err)
 		}

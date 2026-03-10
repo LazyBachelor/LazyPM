@@ -18,27 +18,27 @@ type MongoStorage struct {
 	client *mongo.Client
 }
 
-func NewMongoStorage(uri, username, password string) (*MongoStorage, error) {
+func NewMongoStorage(ctx context.Context, uri, username, password string) (*MongoStorage, error) {
 	credentials := options.Credential{
 		Username: username,
 		Password: password,
 	}
 
-	client, err := mongo.Connect(context.Background(),
+	client, err := mongo.Connect(ctx,
 		options.Client().ApplyURI(uri).SetAuth(credentials))
 
 	if err != nil {
 		return nil, fmt.Errorf("failed to connect to MongoDB: %v", err)
 	}
 
-	if err := client.Ping(context.Background(), nil); err != nil {
+	if err := client.Ping(ctx, nil); err != nil {
 		return nil, fmt.Errorf("cannot reach MongoDB: %v", err)
 	}
 
 	return &MongoStorage{client: client}, nil
 }
 
-func NewMongoStorageInteractive(uri string) (*MongoStorage, error) {
+func NewMongoStorageInteractive(ctx context.Context, uri string) (*MongoStorage, error) {
 	var username, password string
 	if os.Getenv("DB_USER") == "" {
 		if err := huh.NewInput().
@@ -72,7 +72,7 @@ func NewMongoStorageInteractive(uri string) (*MongoStorage, error) {
 
 	}
 
-	mongoClient, err := NewMongoStorage(uri, username, password)
+	mongoClient, err := NewMongoStorage(ctx, uri, username, password)
 	if err != nil {
 		return nil, fmt.Errorf("failed to connect to database: %w", err)
 	}

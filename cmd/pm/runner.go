@@ -36,7 +36,7 @@ func runStartCmd(cmd *cobra.Command, args []string) error {
 		var continueWithoutSubmitting bool
 
 		for {
-			db, err := storage.NewMongoStorageInteractive(app.Config.MongoURI)
+			db, err := storage.NewMongoStorageInteractive(cmd.Context(), app.Config.MongoURI)
 			if err == nil {
 				mongoStorage = db
 				break
