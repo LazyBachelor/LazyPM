@@ -91,15 +91,15 @@ templ TypeBadge(issueType models.IssueType) {
 templ PriorityBadge(priority int) {
 	switch priority {
 		case 0:
-			<span class="badge badge-error badge-sm">Critical</span>
+			<span class="badge badge-ghost badge-sm">Irrelevant</span>
 		case 1:
-			<span class="badge badge-warning badge-sm">High</span>
-		case 2:
-			<span class="badge badge-info badge-sm">Medium</span>
-		case 3:
 			<span class="badge badge-ghost badge-sm">Low</span>
+		case 2:
+			<span class="badge badge-info badge-sm">Normal</span>
+		case 3:
+			<span class="badge badge-warning badge-sm">High</span>
 		case 4:
-			<span class="badge badge-outline badge-sm">Minimal</span>
+			<span class="badge badge-error badge-sm">Critical</span>
 		default:
 			<span class="badge badge-ghost badge-sm">{ fmt.Sprintf("P%d", priority) }</span>
 	}
