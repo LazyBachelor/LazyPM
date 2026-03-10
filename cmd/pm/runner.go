@@ -36,7 +36,13 @@ func runStartCmd(cmd *cobra.Command, args []string) error {
 		var continueWithoutSubmitting bool
 
 		for {
-			db, err := storage.NewMongoStorageInteractive(cmd.Context(), app.Config.MongoURI)
+
+			if app.Config.DB_URI == "" {
+				cmd.Println("No database URI provided in environment, survey responses will not be submitted.")
+				break
+			}
+
+			db, err := storage.NewMongoStorageInteractive(cmd.Context(), app.Config.DB_URI)
 			if err == nil {
 				mongoStorage = db
 				break
@@ -85,6 +91,13 @@ func runStartCmd(cmd *cobra.Command, args []string) error {
 			if err := mongoStorage.SubmitSurveyResponsesCmd(ctx); err != nil {
 				cmd.Printf("Failed to submit survey responses: %v\n", err)
 			}
+
+			defer func() {
+				if err := mongoStorage.SubmitSurveyResponsesCmd(context.Background()); err != nil {
+					cmd.Printf("Failed to submit survey responses on shutdown: %v\n", err)
+				}
+			}()
+
 		} else {
 			cmd.Println("Starting survey without database connection. Your responses will not be submitted...")
 			time.Sleep(2 * time.Second)
@@ -112,7 +125,7 @@ func runStartCmd(cmd *cobra.Command, args []string) error {
 			survey.Task: surveyTasks[survey.Task],
 		}
 	}
-	if !cmd.Flag("dev").Changed {
+	if !cmd.Flags().Changed("dev") {
 		if err := newIntroModel().Run(); err != nil {
 			return returnIfUserQuit(err, "failed to run intro")
 		}
