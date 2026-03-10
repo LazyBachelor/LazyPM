@@ -5,6 +5,7 @@ go 1.25.6
 require (
 	charm.land/lipgloss/v2 v2.0.0-beta.3.0.20251106193318-19329a3e8410
 	github.com/go-git/go-git/v6 v6.0.0-20260222090600-424e9964d3a3
+	github.com/joho/godotenv v1.5.1
 	github.com/muesli/reflow v0.3.0
 	github.com/steveyegge/beads v0.49.6
 	go.mongodb.org/mongo-driver v1.17.9
