@@ -9,6 +9,7 @@ import (
 	"github.com/LazyBachelor/LazyPM/internal/app"
 	"github.com/LazyBachelor/LazyPM/internal/commands/issues"
 	"github.com/LazyBachelor/LazyPM/internal/commands/survey"
+	"github.com/LazyBachelor/LazyPM/internal/models"
 	"github.com/LazyBachelor/LazyPM/pkg/repl"
 	"github.com/LazyBachelor/LazyPM/pkg/task"
 	"github.com/LazyBachelor/LazyPM/pkg/tui"
@@ -24,9 +25,7 @@ func init() {
 		log.Println("Error loading .env file")
 	}
 
-	if os.Getenv("DEV") == "True" {
-		survey.StartCmd.Flags().BoolVar(&survey.DevFlag, "dev", false, "Enable development mode, which skips database connection, submission, task intro and questionare")
-	}
+	models.BaseConfig = models.BaseConfig.LoadFromEnv()
 
 	task.RegisterInterface("tui", tui.New())
 	task.RegisterInterface("web", web.New())
