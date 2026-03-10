@@ -9,6 +9,7 @@ import (
 
 	"github.com/LazyBachelor/LazyPM/internal/models"
 	"github.com/LazyBachelor/LazyPM/internal/storage"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 type StatisticsService struct {
@@ -42,6 +43,16 @@ func (s *StatisticsService) GetStatistics() (models.Statistics, error) {
 	return *s.storage.Data, nil
 }
 
+func (s *StatisticsService) GetParticipantID() primitive.ObjectID {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	if s.storage.Data == nil {
+		return primitive.NilObjectID
+	}
+	return s.storage.Data.ID
+}
+
 func (s *StatisticsService) RecordTaskRun(ctx context.Context, run models.TaskRunMetrics) error {
 	_ = ctx
 
@@ -63,8 +74,8 @@ func (s *StatisticsService) RecordTaskRun(ctx context.Context, run models.TaskRu
 	}
 
 	stats.EndTime = now
-	stats.Duration = stats.EndTime.Sub(stats.StartTime)
-	stats.InterfaceType = run.InterfaceType
+	stats.DurationMs = stats.EndTime.Sub(stats.StartTime).Milliseconds()
+	stats.LastInterfaceType = run.InterfaceType
 
 	stats.TaskRuns++
 	stats.LastTaskName = run.TaskName
