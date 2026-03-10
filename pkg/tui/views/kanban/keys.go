@@ -14,10 +14,15 @@ type KanbanKeyMap struct {
 	MoveColumnRight   key.Binding
 	MoveIssueLeft     key.Binding
 	MoveIssueRight    key.Binding
+	SubmitValidation  key.Binding
 }
 
 var defaultKanbanKeyMap = KanbanKeyMap{
 	CommonKeyMap: components.DefaultCommonKeyMap(),
+	SubmitValidation: key.NewBinding(
+		key.WithKeys("S"),
+		key.WithHelp("S", "submit validation"),
+	),
 	SwitchToDashboard: key.NewBinding(
 		key.WithKeys("v"),
 		key.WithHelp("v", "dashboard 1"),
@@ -44,6 +49,13 @@ func (d *Model) handleKeyMsg(msg tea.KeyMsg) tea.Cmd {
 	var cmd tea.Cmd
 
 	switch {
+	case key.Matches(msg, d.keyMap.SubmitValidation):
+		if d.submitChan != nil {
+			select {
+			case d.submitChan <- struct{}{}:
+			default:
+			}
+		}
 	case key.Matches(msg, d.keyMap.Help):
 		d.helpBar.ToggleHelp()
 	case key.Matches(msg, d.keyMap.Quit):

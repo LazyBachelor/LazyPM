@@ -55,11 +55,12 @@ type Model struct {
 	typeIssueID      string
 	feedbackChan     chan models.ValidationFeedback
 	quitChan         chan bool
+	submitChan       chan<- struct{}
 	currentFeedback  models.ValidationFeedback
 	showComplete     bool
 }
 
-func NewDashboard(app *app.App, feedbackChan chan models.ValidationFeedback, quitChan chan bool) *Model {
+func NewDashboard(app *app.App, feedbackChan chan models.ValidationFeedback, quitChan chan bool, submitChan chan<- struct{}) *Model {
 	m := &Model{
 		header:       components.NewHeader("Kanban Board"),
 		keyMap:       defaultKanbanKeyMap,
@@ -70,6 +71,7 @@ func NewDashboard(app *app.App, feedbackChan chan models.ValidationFeedback, qui
 		focusOnDetail: false,
 		feedbackChan:  feedbackChan,
 		quitChan:      quitChan,
+		submitChan:    submitChan,
 	}
 
 	allIssues, _ := app.Issues.SearchIssues(context.Background(), "", models.IssueFilter{})

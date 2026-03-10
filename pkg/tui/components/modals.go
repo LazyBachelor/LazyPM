@@ -6,10 +6,25 @@ import (
 	"github.com/charmbracelet/lipgloss"
 )
 
+// modalBoxWidth returns a clamped width for modal content. Never returns a value < 1.
+func modalBoxWidth(maxWidth, width int) int {
+	if width < 5 {
+		return 1
+	}
+	w := min(maxWidth, width-4)
+	if w < 1 {
+		return 1
+	}
+	return w
+}
+
 // components contains reusable TUI modal renderers for issue actions.
 
 func RenderEditTitle(width, height int, inputView string) string {
-	editBoxWidth := min(60, width-4)
+	if width < 5 || height < 5 {
+		return ""
+	}
+	editBoxWidth := modalBoxWidth(60, width)
 	editContent := lipgloss.JoinVertical(lipgloss.Left,
 		styles.LabelStyle.Render("Edit title (Enter to save, Esc to cancel):"),
 		inputView,
@@ -22,7 +37,10 @@ func RenderEditTitle(width, height int, inputView string) string {
 }
 
 func RenderEditDescription(width, height int, inputView string) string {
-	editBoxWidth := min(60, width-4)
+	if width < 5 || height < 5 {
+		return ""
+	}
+	editBoxWidth := modalBoxWidth(60, width)
 	editContent := lipgloss.JoinVertical(lipgloss.Left,
 		styles.LabelStyle.Render("Edit description (Ctrl+S to save, Esc to cancel):"),
 		inputView,
@@ -35,7 +53,10 @@ func RenderEditDescription(width, height int, inputView string) string {
 }
 
 func RenderCreateIssue(width, height int, inputView string) string {
-	createBoxWidth := min(60, width-4)
+	if width < 5 || height < 5 {
+		return ""
+	}
+	createBoxWidth := modalBoxWidth(60, width)
 	createContent := lipgloss.JoinVertical(lipgloss.Left,
 		styles.LabelStyle.Render("New issue (Enter to create, Esc to cancel):"),
 		inputView,
@@ -48,11 +69,14 @@ func RenderCreateIssue(width, height int, inputView string) string {
 }
 
 func RenderConfirmDelete(width, height int, issueID string) string {
+	if width < 5 || height < 5 {
+		return ""
+	}
 	confirmContent := lipgloss.JoinVertical(lipgloss.Left,
 		styles.LabelStyle.Render("Delete issue "+issueID+"?"),
 		lipgloss.NewStyle().Foreground(styles.FaintText).Render("Press y to delete, n or Esc to cancel"),
 	)
-	confirmBoxWidth := min(50, width-4)
+	confirmBoxWidth := modalBoxWidth(50, width)
 	confirmBox := styles.ContainerStyle.
 		Width(confirmBoxWidth).
 		BorderForeground(styles.PrimaryBorder).
@@ -61,12 +85,15 @@ func RenderConfirmDelete(width, height int, issueID string) string {
 }
 
 func RenderChooseStatus(width, height int, issueID string) string {
+	if width < 5 || height < 5 {
+		return ""
+	}
 	statusContent := lipgloss.JoinVertical(lipgloss.Left,
 		styles.LabelStyle.Render("Change status for "+issueID+":"),
 		lipgloss.NewStyle().Foreground(styles.FaintText).Render("o = open   i = in_progress   c = closed"),
 		lipgloss.NewStyle().Foreground(styles.FaintText).Render("Esc = cancel"),
 	)
-	statusBoxWidth := min(50, width-4)
+	statusBoxWidth := modalBoxWidth(50, width)
 	statusBox := styles.ContainerStyle.
 		Width(statusBoxWidth).
 		BorderForeground(styles.PrimaryBorder).
@@ -75,12 +102,15 @@ func RenderChooseStatus(width, height int, issueID string) string {
 }
 
 func RenderChoosePriority(width, height int, issueID string) string {
+	if width < 5 || height < 5 {
+		return ""
+	}
 	priorityContent := lipgloss.JoinVertical(lipgloss.Left,
 		styles.LabelStyle.Render("Change priority for "+issueID+":"),
 		lipgloss.NewStyle().Foreground(styles.FaintText).Render("0 = irrelevant 1 = low  2 = normal  3 = high  4 = critical"),
 		lipgloss.NewStyle().Foreground(styles.FaintText).Render("Esc = cancel"),
 	)
-	priorityBoxWidth := min(60, width-4)
+	priorityBoxWidth := modalBoxWidth(60, width)
 	priorityBox := styles.ContainerStyle.
 		Width(priorityBoxWidth).
 		BorderForeground(styles.PrimaryBorder).
@@ -89,12 +119,15 @@ func RenderChoosePriority(width, height int, issueID string) string {
 }
 
 func RenderChooseType(width, height int, issueID string) string {
+	if width < 5 || height < 5 {
+		return ""
+	}
 	typeContent := lipgloss.JoinVertical(lipgloss.Left,
 		styles.LabelStyle.Render("Change type for "+issueID+":"),
 		lipgloss.NewStyle().Foreground(styles.FaintText).Render("b = bug   f = feature   t = task   e = epic   c = chore"),
 		lipgloss.NewStyle().Foreground(styles.FaintText).Render("Esc = cancel"),
 	)
-	typeBoxWidth := min(65, width-4)
+	typeBoxWidth := modalBoxWidth(65, width)
 	typeBox := styles.ContainerStyle.
 		Width(typeBoxWidth).
 		BorderForeground(styles.PrimaryBorder).

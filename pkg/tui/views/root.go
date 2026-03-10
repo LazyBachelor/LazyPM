@@ -14,6 +14,7 @@ type RootModel struct {
 	app          *app.App
 	feedbackChan chan models.ValidationFeedback
 	quitChan     chan bool
+	submitChan   chan<- struct{}
 	lastSize     tea.WindowSizeMsg
 	hasSize      bool
 }
@@ -25,6 +26,7 @@ func NewRootView(app *app.App, feedbackChan chan models.ValidationFeedback, quit
 		app:          app,
 		feedbackChan: feedbackChan,
 		quitChan:     quitChan,
+		submitChan:   submitChan,
 	}
 }
 
@@ -44,7 +46,7 @@ func (r *RootModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return r, cmd
 	case msgs.SwitchToDashboardMsg:
 		// switch back to dashboard 1 and apply the last known size.
-		r.currentView = dashboard.NewDashboard(r.app, r.feedbackChan, r.quitChan, r.app.SubmitChan)
+		r.currentView = dashboard.NewDashboard(r.app, r.feedbackChan, r.quitChan, r.submitChan)
 		var cmds []tea.Cmd
 		if r.hasSize {
 			// check if there is a size, and then update it
@@ -59,7 +61,7 @@ func (r *RootModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return r, tea.Batch(cmds...)
 	case msgs.SwitchToKanbanBoardMsg:
 		// switch to kanban board and apply the last known size.
-		r.currentView = kanban.NewDashboard(r.app, r.feedbackChan, r.quitChan)
+		r.currentView = kanban.NewDashboard(r.app, r.feedbackChan, r.quitChan, r.submitChan)
 		var cmds []tea.Cmd
 		if r.hasSize {
 			// check if there is a size, and then update it
