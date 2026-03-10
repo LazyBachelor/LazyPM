@@ -8,9 +8,8 @@ import (
 )
 
 var SubmitCmd = &cobra.Command{
-	Use:   "submit <mongo-password>",
+	Use:   "submit",
 	Short: "Submit your survey responses",
-	Args:  cobra.MaximumNArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		app := AppFromContext(cmd.Context())
 
@@ -18,19 +17,14 @@ var SubmitCmd = &cobra.Command{
 			return fmt.Errorf("application context not initialized")
 		}
 
-		if len(args) == 0 {
-			cmd.Println("No MongoDB password provided, survey responses will not be submitted.")
-			return nil
-		}
-
-		mongoPassword := args[0]
-		mongoClient, err := storage.NewMongoStorage(app.Config.MongoURI, "participant", mongoPassword)
+		db, err := storage.NewMongoStorageInteractive(app.Config.MongoURI)
 		if err != nil {
-			return fmt.Errorf("failed to connect to MongoDB: %w", err)
+			return fmt.Errorf("failed to connect to database: %w", err)
 		}
-		defer mongoClient.Close()
 
-		if err := mongoClient.SubmitSurveyResponsesCmd(cmd.Context()); err != nil {
+		defer db.Close()
+
+		if err := db.SubmitSurveyResponsesCmd(cmd.Context()); err != nil {
 			return fmt.Errorf("failed to submit survey responses: %w", err)
 		}
 

@@ -7,6 +7,7 @@ import (
 )
 
 var (
+	DevFlag       bool
 	InterfaceType string
 	Task          string
 )
