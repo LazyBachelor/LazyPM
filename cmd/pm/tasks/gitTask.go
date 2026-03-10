@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"os"
+	"strings"
 
 	"github.com/LazyBachelor/LazyPM/internal/models"
 	"github.com/LazyBachelor/LazyPM/internal/utils/check"
@@ -13,16 +14,21 @@ import (
 
 const gitTaskDescription = `You are tasked with performing a Git operation.
 
-This task will test your ability to use Git effectively within a project management workflow.
+This task will test your ability to use Git effectively within a project management workflow. Your goal is to modify a file in a Git repository and commit the change.
 
 Your task:
-1. Initialize or open a Git repository
-2. Review the current repository status
-3. Make appropriate changes to complete the task
-4. Commit your changes with a meaningful message
-5. Update the task status to reflect completion
+1. Set the Issue status to "In Progress" when you are ready to start.
+2. A folder called "task" is created in the project directory when you start this task. Open it.
+3. Inside the folder you will find README.md. Edit this file and add something to it (e.g. your name, a short note, or a new line). The file must be different from its original content.
+4. Commit your change:
+   - Open a terminal and change into the task folder.
+   - Run "git add ." to stage the changes.
+   - Run "git commit -m "updated codebase"" to commit.
+5. Set the Issue status to "Closed" when done.
 
-The repository has been initialized in ./task/.git/ for you to work with.`
+The repository is in the task folder (./task).`
+
+const gitTaskReadmeContent = "This is a Git task. Add your name or a short note below this line to complete it, then commit your change."
 
 type GitTask struct {
 	app        *App
@@ -30,6 +36,8 @@ type GitTask struct {
 	repo       *git.Repository
 	setupIssue *Issue
 }
+
+var gitTaskInProgress = false
 
 func NewGitTask(app *App) *GitTask {
 	return &GitTask{app: app, done: false}
@@ -63,9 +71,12 @@ func (t *GitTask) QuestionnaireKeys(interfaceType InterfaceType) []string {
 }
 
 func (t *GitTask) Setup(ctx context.Context) error {
+	gitTaskInProgress = false
 	if err := ClearIssues(t.app); err != nil {
 		return err
 	}
+
+	_ = os.RemoveAll("./task")
 
 	var err error
 	t.repo, err = t.initRepo()
@@ -73,8 +84,8 @@ func (t *GitTask) Setup(ctx context.Context) error {
 		return err
 	}
 
-	os.WriteFile("./task/README.md",
-		[]byte("This is a Git task. Please perform a Git operation here."), 0o644)
+	_ = os.WriteFile("./task/README.md", []byte(gitTaskReadmeContent), 0o644)
+	_ = os.WriteFile("./task/.gitattributes", []byte("* text=auto\n"), 0o644)
 
 	t.setupIssue = NewIssueBuilder().
 		WithTitle("Git Task Setup Issue").
@@ -92,14 +103,87 @@ func (t *GitTask) Setup(ctx context.Context) error {
 func (t *GitTask) Validate(ctx context.Context) ValidationFeedback {
 	expect := check.NewExpector()
 
+	issues, err := FetchIssues(ctx, t.app, t.setupIssue)
+	if err != nil {
+		return expect.ValidationFeedback
+	}
+
+	
+	_ = issues
+
+	issue := t.setupIssue
+
+	
+	if issue.Status == models.StatusInProgress || gitTaskInProgress {
+		gitTaskInProgress = true
+	} else {
+		expect.Fail("The issue should be marked as In Progress while working on the Git task.")
+		return expect.ValidationFeedback
+	}
+
+	// Ensure the repository is available.
+	if t.repo == nil {
+		t.repo, err = t.initRepo()
+		if err != nil {
+			expect.Fail("Failed to open the Git repository: " + err.Error())
+			return expect.ValidationFeedback
+		}
+	}
+
+	
+	headRef, err := t.repo.Head()
+	if err != nil {
+		expect.Fail("No commits found in the Git repository. Please commit your changes.")
+		return expect.ValidationFeedback
+	}
+
+	commit, err := t.repo.CommitObject(headRef.Hash())
+	if err != nil {
+		expect.Fail("Failed to read the latest commit: " + err.Error())
+		return expect.ValidationFeedback
+	}
+
+	expect.NotEmptyAndEqual(strings.TrimSpace(commit.Message), "updated codebase", "Git commit message")
+
+	
+	tree, err := commit.Tree()
+	if err != nil {
+		expect.Fail("Failed to read commit tree: " + err.Error())
+		return expect.ValidationFeedback
+	}
+
+	readmeFile, err := tree.File("README.md")
+	if err != nil {
+		expect.Fail("README.md should be part of the committed changes.")
+		return expect.ValidationFeedback
+	}
+
+	readmeContent, err := readmeFile.Contents()
+	if err != nil {
+		expect.Fail("Failed to read README.md from the commit: " + err.Error())
+		return expect.ValidationFeedback
+	}
+
+	expect.Assert(readmeContent != gitTaskReadmeContent,
+		"You should modify README.md content before committing (make appropriate changes to complete the task).")
+
+	if wt, err := t.repo.Worktree(); err == nil {
+		if status, err := wt.Status(); err == nil {
+			expect.Assert(status.IsClean(), "The working tree should be clean after committing (no unstaged changes).")
+		}
+	}
+
+	expect.Assert(gitTaskInProgress && issue.Status == models.StatusClosed,
+		"The issue should be marked as Closed after completing the Git task.")
+
 	return expect.Complete()
 }
 
 func (t *GitTask) initRepo() (*git.Repository, error) {
-	repo, err := git.PlainInit("./task/.git/", true)
+	repo, err := git.PlainInit("./task", false)
 	if err != nil {
 		if errors.Is(err, git.ErrTargetDirNotEmpty) {
-			repo, err = git.PlainOpen("./task/.git/")
+			repo, err = git.PlainOpen("./task")
 			if err != nil {
 				return nil, err
 			}
