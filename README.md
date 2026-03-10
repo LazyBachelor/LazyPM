@@ -54,19 +54,26 @@ choco install make
 
 ## Build Commands
 
+
 ```bash
-# Build all binaries
-make build              # Creates bin/pm, bin/tui, bin/web, bin/survey
+# Run web (without hot reload)
+make web
 
-# Run specific interfaces
-make cli                # Run CLI interface
-make tui                # Run TUI interface (interactive)
-make web                # Run Web server (localhost:8080)
-make start              # Run survey interface
-
-# Development with hot reload
+# Web with hot reload
 make dev                # Watch templ files and auto-reload web
 make tw                 # Watch Tailwind CSS changes
+
+# Run tui
+make tui
+
+# Run cli
+go run ./cmd/cli
+
+# Run a specific task with a specific interface (e.g. WEB UI and priority_management)
+go run ./cmd/pm survey start -i web -t priority_management
+
+# Build all binaries
+make build              # Creates bin/pm, bin/tui, bin/web, bin/survey
 
 # Docker (lazyos desktop environment)
 make os-build           # Build lazyos Docker image
