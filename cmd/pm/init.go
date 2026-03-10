@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"log"
 	"os"
 
 	"github.com/LazyBachelor/LazyPM/cmd/pm/tasks"
@@ -12,10 +13,21 @@ import (
 	"github.com/LazyBachelor/LazyPM/pkg/task"
 	"github.com/LazyBachelor/LazyPM/pkg/tui"
 	"github.com/LazyBachelor/LazyPM/pkg/web"
+	"github.com/joho/godotenv"
 	"github.com/spf13/cobra"
 )
 
 func init() {
+	err := godotenv.Load(".env")
+
+	if err != nil {
+		log.Fatal("Error loading .env file")
+	}
+
+	if os.Getenv("DEV") == "True" {
+		survey.StartCmd.Flags().BoolVar(&survey.DevFlag, "dev", false, "Enable development mode, which skips database connection, submission, task intro and questionare")
+	}
+
 	task.RegisterInterface("tui", tui.New())
 	task.RegisterInterface("web", web.New())
 	task.RegisterInterface("repl", repl.New())
