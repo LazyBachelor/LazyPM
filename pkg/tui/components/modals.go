@@ -220,7 +220,29 @@ func RenderFooter(width int, helpBar *HelpBar, feedback models.ValidationFeedbac
 	feedbackStatus := feedback.Message
 
 	// Ensure the feedback message does not exceed the total available width.
-	feedbackStatus = truncateToWidth(feedbackStatus, width)
+	if feedback.Message != "" {
+		feedbackStatus = truncateToWidth(feedbackStatus+" [Press Shift+S to re-submit]", width)
+
+		if helpBar.IsExpanded() && feedbackStatus != "" {
+			for _, check := range feedback.Checks {
+				var prefix string
+				if check.Valid {
+					prefix = "✅ "
+				} else {
+					prefix = "❌ "
+				}
+
+				// Ensure each check line does not exceed the available width.
+				remainingWidth := width - lipgloss.Width(prefix)
+				if remainingWidth < 0 {
+					remainingWidth = 0
+				}
+				truncatedMsg := truncateToWidth(check.Message, remainingWidth)
+
+				feedbackStatus += "\n" + prefix + truncatedMsg
+			}
+		}
+	}
 
 	if feedbackStatus == "" {
 		return helpBar.View()
@@ -234,4 +256,3 @@ func RenderFooter(width int, helpBar *HelpBar, feedback models.ValidationFeedbac
 	helpBar.SetWidth(helpWidth)
 	return lipgloss.JoinHorizontal(lipgloss.Left, helpBar.View(), feedbackStatus)
 }
-
