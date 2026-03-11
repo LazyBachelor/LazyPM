@@ -2,6 +2,7 @@ package tasks
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/LazyBachelor/LazyPM/internal/models"
 	"github.com/LazyBachelor/LazyPM/internal/utils/check"
@@ -10,16 +11,18 @@ import (
 
 const priorityManagementDescription = `You are tasked with managing issue priorities.
 
-A critical production issue has been reported. You need to rebalance the current sprint priorities:
+A critical production issue has been reported.
 
-1. Review all current issues and their priorities
-2. Identify the most urgent production issue
-3. Reprioritize existing work to accommodate the urgent fix
-4. Defer lower priority items if necessary
-5. Update the team on priority changes via comments
-6. Ensure the critical path is clear for the urgent fix
+The database is not working properly and users are not able to connect and access their data.
 
-The production database is experiencing intermittent connection failures affecting all users.`
+You need to rebalance the current sprint priorities:
+
+1. Assign the task Issue you are currently reading to yourself as "Me" and set status to "In Progress".
+2. A new issue has appeared in the list that needs urgent attention. Change the database related issue's priority to 4 (critical).
+3. Set the priority of the feature and chore issues in the list to 1 (low).
+4. Change this issue status to "Closed".
+
+`
 
 type PriorityManagementTask struct {
 	done       bool
@@ -74,30 +77,30 @@ func (t *PriorityManagementTask) Setup(ctx context.Context) error {
 		NewIssueBuilder().
 			WithTitle("UI theme updates").
 			WithDescription("Update color scheme per new brand guidelines. Currently in progress but can wait.").
-			WithPriority(1).
+			WithPriority(2).
 			WithStatus(models.StatusInProgress).
-			WithIssueType(models.TypeTask).
+			WithIssueType(models.TypeFeature).
 			Build(),
 		NewIssueBuilder().
 			WithTitle("Feature: Dark mode").
 			WithDescription("Add dark mode toggle to settings. Nice to have, can be deferred.").
 			WithPriority(2).
 			WithStatus(models.StatusOpen).
-			WithIssueType(models.TypeTask).
+			WithIssueType(models.TypeFeature).
 			Build(),
 		NewIssueBuilder().
 			WithTitle("API rate limiting").
 			WithDescription("Add rate limiting to public API endpoints. Security enhancement.").
 			WithPriority(2).
 			WithStatus(models.StatusInProgress).
-			WithIssueType(models.TypeTask).
+			WithIssueType(models.TypeFeature).
 			Build(),
 		NewIssueBuilder().
 			WithTitle("Documentation updates").
 			WithDescription("Update API documentation for v2 endpoints. Can be deferred.").
 			WithPriority(3).
 			WithStatus(models.StatusOpen).
-			WithIssueType(models.TypeTask).
+			WithIssueType(models.TypeChore).
 			Build(),
 	}
 
@@ -115,6 +118,46 @@ func (t *PriorityManagementTask) Setup(ctx context.Context) error {
 
 func (t *PriorityManagementTask) Validate(ctx context.Context) ValidationFeedback {
 	expect := check.NewExpector()
+
+	issues, err := FetchIssues(ctx, t.app, t.setupIssue)
+	if err != nil {
+		return expect.ValidationFeedback
+	}
+
+	taskIssue := t.setupIssue
+
+	if taskIssue.Assignee != "Me" {
+		expect.Assert(taskIssue.Assignee == "Me",
+			fmt.Sprintf("'%s' not assigned to you, but to '%s'", taskIssue.Title, taskIssue.Assignee))
+		return expect.ValidationFeedback
+	}
+
+	if taskIssue.Status == models.StatusOpen {
+		expect.Assert(taskIssue.Status == models.StatusInProgress,
+			fmt.Sprintf("'%s' status should be 'In Progress', but was '%s'", taskIssue.Title, taskIssue.Status))
+		return expect.ValidationFeedback
+	}
+
+	for ii := range issues {
+
+		if issues[ii].Title == "Database connection failures" {
+			if issues[ii].Priority != 4 {
+				expect.Assert(issues[ii].Priority == 4,
+					fmt.Sprintf("'%s' priority should be 4 (critical), but was '%d'", issues[ii].Title, issues[ii].Priority))
+				return expect.ValidationFeedback
+			}
+		} else {
+			if issues[ii].Priority != 1 {
+				expect.Assert(issues[ii].Priority == 1,
+					fmt.Sprintf("'%s' priority should be 1 (low), but was '%d'", issues[ii].Title, issues[ii].Priority))
+				return expect.ValidationFeedback
+			}
+		}
+	}
+	expect.Assert(taskIssue.Status == models.StatusClosed,
+		fmt.Sprintf("'%s' is not set to closed", taskIssue.Title))
+
+
 
 	return expect.Complete()
 }
