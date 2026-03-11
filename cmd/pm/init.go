@@ -8,14 +8,20 @@ import (
 	"github.com/LazyBachelor/LazyPM/internal/app"
 	"github.com/LazyBachelor/LazyPM/internal/commands/issues"
 	"github.com/LazyBachelor/LazyPM/internal/commands/survey"
+	"github.com/LazyBachelor/LazyPM/internal/models"
 	"github.com/LazyBachelor/LazyPM/pkg/repl"
 	"github.com/LazyBachelor/LazyPM/pkg/task"
 	"github.com/LazyBachelor/LazyPM/pkg/tui"
 	"github.com/LazyBachelor/LazyPM/pkg/web"
+	"github.com/joho/godotenv"
 	"github.com/spf13/cobra"
 )
 
 func init() {
+	godotenv.Load(".env")
+
+	models.BaseConfig = models.BaseConfig.LoadFromEnv()
+
 	task.RegisterInterface("tui", tui.New())
 	task.RegisterInterface("web", web.New())
 	task.RegisterInterface("repl", repl.New())
@@ -169,6 +175,8 @@ func commandNeedsApp(cmd *cobra.Command) bool {
 
 func ensureAppInitialized(ctx context.Context) error {
 	if App != nil {
+		survey.SetApp(App)
+		issues.SetApp(App)
 		return nil
 	}
 

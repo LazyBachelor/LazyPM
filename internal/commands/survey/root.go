@@ -26,11 +26,6 @@ Your responses will be kept confidential and used solely for research purposes.`
 var RootCmd = &cobra.Command{
 	Use:  "survey",
 	Long: long,
-	PersistentPreRun: func(cmd *cobra.Command, args []string) {
-		if app != nil {
-			cmd.SetContext(context.WithValue(cmd.Context(), appKey, app))
-		}
-	},
 }
 
 func SetApp(application *App) {

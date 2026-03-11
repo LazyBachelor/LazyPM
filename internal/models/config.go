@@ -1,22 +1,38 @@
 package models
 
+import "os"
+
 type Config struct {
+	DbUri                 string
 	AutoInit              bool
 	RootCmd               string
+	AppDir                string
 	WebAddress            string
-	BeadsDBPath           string
 	IssuePrefix           string
-	StatisticsStoragePath string
 	ActionLogger          func(string)
+	StatisticsStoragePath string
 }
 
 var BaseConfig = Config{
+	DbUri:                 "",
 	AutoInit:              false,
 	RootCmd:               "pm",
 	IssuePrefix:           "pm",
 	WebAddress:            ":8080",
-	BeadsDBPath:           "./.pm/db.db",
+	AppDir:                "./.pm/",
 	StatisticsStoragePath: "./.pm/stats.json",
+}
+
+func (c Config) LoadFromEnv() Config {
+	if dbURI, ok := os.LookupEnv("DB_URI"); ok {
+		c.DbUri = dbURI
+	}
+	return c
+}
+
+func (c Config) WithDbUri(uri string) Config {
+	c.DbUri = uri
+	return c
 }
 
 func (c Config) WithAutoInit(autoInit bool) Config {
@@ -31,11 +47,6 @@ func (c Config) WithRootCmd(rootCmd string) Config {
 
 func (c Config) WithWebAddress(webAddress string) Config {
 	c.WebAddress = webAddress
-	return c
-}
-
-func (c Config) WithBeadsDBPath(beadsDBPath string) Config {
-	c.BeadsDBPath = beadsDBPath
 	return c
 }
 

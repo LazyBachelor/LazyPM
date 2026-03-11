@@ -1,4 +1,4 @@
-package dashboard
+package components
 
 import (
 	"github.com/LazyBachelor/LazyPM/pkg/tui/styles"
@@ -6,17 +6,15 @@ import (
 )
 
 type Header struct {
-	title string
+	Title string
 }
 
 func NewHeader(title string) Header {
-	return Header{
-		title: title,
-	}
+	return Header{Title: title}
 }
 
 func (h Header) View(width int) string {
-	title := styles.HeaderTitleStyle.Render(h.title)
+	title := styles.HeaderTitleStyle.Render(h.Title)
 
 	return lipgloss.PlaceHorizontal(
 		width,

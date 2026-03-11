@@ -9,3 +9,4 @@ import (
 func NewDashboardView(app *app.App, feedbackChan chan models.ValidationFeedback, quitChan chan bool, submitChan chan<- struct{}) *dashboard.Model {
 	return dashboard.NewDashboard(app, feedbackChan, quitChan, submitChan)
 }
+

@@ -7,6 +7,7 @@ import (
 	"github.com/LazyBachelor/LazyPM/internal/models"
 	"github.com/LazyBachelor/LazyPM/internal/storage"
 	"github.com/steveyegge/beads"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 type App = models.App
@@ -22,13 +23,13 @@ func New(ctx context.Context, config Config, opts ...Option) (*App, func(), erro
 	}
 
 	if !config.AutoInit {
-		if err := b.initializer.Init(config.BeadsDBPath); err != nil {
+		if err := b.initializer.Init(config.AppDir + "db.db"); err != nil {
 			return nil, nil, err
 		}
 	}
 
 	if b.issueService == nil {
-		sqliteStore, err := beads.NewSQLiteStorage(b.ctx, config.BeadsDBPath)
+		sqliteStore, err := beads.NewSQLiteStorage(b.ctx, config.AppDir+"db.db")
 		if err != nil {
 			return nil, nil, err
 		}
@@ -42,7 +43,7 @@ func New(ctx context.Context, config Config, opts ...Option) (*App, func(), erro
 
 	if b.statsService == nil {
 		statStore := storage.NewJsonStorage(config.StatisticsStoragePath, &models.Statistics{
-			ID:        0,
+			ID:        primitive.NewObjectID(),
 			StartTime: time.Now(),
 		})
 
