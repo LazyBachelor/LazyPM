@@ -16,6 +16,7 @@ type CommonKeyMap struct {
 	ChangeStatus    key.Binding
 	ChangePriority  key.Binding
 	ChangeType      key.Binding
+	ChangeAssignee  key.Binding
 	AddIssue        key.Binding
 	DeleteIssue     key.Binding
 }
@@ -66,6 +67,10 @@ func DefaultCommonKeyMap() CommonKeyMap {
 		ChangeType: key.NewBinding(
 			key.WithKeys("t"),
 			key.WithHelp("t", "change type"),
+		),
+		ChangeAssignee: key.NewBinding(
+			key.WithKeys("A"),
+			key.WithHelp("A", "change assignee"),
 		),
 		AddIssue: key.NewBinding(
 			key.WithKeys("a"),

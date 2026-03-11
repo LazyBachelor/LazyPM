@@ -21,6 +21,7 @@ type DashboardKeyMap struct {
 	ChangeStatus        key.Binding
 	ChangePriority      key.Binding
 	ChangeType          key.Binding
+	ChangeAssignee      key.Binding
 	AddComment          key.Binding
 	AddIssue            key.Binding
 	DeleteIssue         key.Binding
@@ -55,6 +56,10 @@ var defaultDashboardKeyMap = DashboardKeyMap{
 	ChangeType: key.NewBinding(
 		key.WithKeys("t"),
 		key.WithHelp("t", "change type"),
+	),
+	ChangeAssignee: key.NewBinding(
+		key.WithKeys("A"),
+		key.WithHelp("A", "change assignee"),
 	),
 	AddComment: key.NewBinding(
 		key.WithKeys("c"),
@@ -127,12 +132,18 @@ func (d *Model) handleKeyMsg(msg tea.KeyMsg) tea.Cmd {
 			d.startChooseType(selected)
 			d.logAction("tui opened type picker")
 		}
+	case !d.IsInModal() && !d.addingComment && key.Matches(msg, d.keyMap.ChangeAssignee):
+		if selected := d.FocusedIssueList().SelectedItem(); selected.ID != "" {
+			d.startEditAssignee(selected)
+			cmd = d.assigneeInput.Focus()
+			d.logAction("tui started editing assignee")
+		}
 	case !d.IsInModal() && !d.addingComment && key.Matches(msg, d.keyMap.AddComment):
 		if selected := d.FocusedIssueList().SelectedItem(); selected.ID != "" {
 			d.startAddComment(selected)
 			cmd = d.commentInput.Focus()
 		}
-	case !d.editingTitle && !d.creatingIssue && !d.editingDescription && !d.choosingStatus && !d.choosingPriority && !d.confirmingDelete && !d.choosingType && !d.addingComment && key.Matches(msg, d.keyMap.AddIssue):
+	case !d.editingTitle && !d.creatingIssue && !d.editingDescription && !d.choosingStatus && !d.choosingPriority && !d.confirmingDelete && !d.choosingType && !d.editingAssignee && !d.addingComment && key.Matches(msg, d.keyMap.AddIssue):
 		d.startCreateIssue()
 		cmd = d.createTitleInput.Focus()
 		d.logAction("tui started creating issue")

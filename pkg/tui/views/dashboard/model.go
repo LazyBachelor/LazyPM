@@ -52,6 +52,9 @@ type Model struct {
 	priorityIssueID  string
 	choosingType     bool // true while choosing a type
 	typeIssueID      string
+	editingAssignee  bool // true while editing assignee
+	assigneeInput    textinput.Model
+	assigneeIssueID  string
 	addingComment    bool // true while adding a comment
 	commentInput     textarea.Model
 	commentIssueID   string
@@ -87,6 +90,7 @@ func NewDashboard(app *app.App, feedbackChan chan models.ValidationFeedback, qui
 	m.titleInput = inputs.Title
 	m.createTitleInput = inputs.CreateTitle
 	m.descriptionInput = inputs.Description
+	m.assigneeInput = inputs.Assignee
 
 	commentTa := textarea.New()
 	commentTa.Placeholder = "Write your comment..."
@@ -171,6 +175,13 @@ func (m *Model) startChooseType(selected ListIssue) {
 	m.typeIssueID = selected.ID
 }
 
+func (m *Model) startEditAssignee(selected ListIssue) {
+	m.editingAssignee = true
+	m.assigneeIssueID = selected.ID
+	m.assigneeInput.SetValue(selected.Assignee)
+	m.assigneeInput.CursorEnd()
+}
+
 func (m *Model) Init() tea.Cmd {
 	return components.ListenForValidation(m.feedbackChan)
 }
@@ -178,7 +189,7 @@ func (m *Model) Init() tea.Cmd {
 // IsInModal returns true when a modal (edit, create, delete confirm, choose status/priority/type) is active.
 func (m *Model) IsInModal() bool {
 	return m.editingTitle || m.creatingIssue || m.editingDescription ||
-		m.choosingStatus || m.choosingPriority || m.confirmingDelete || m.choosingType
+		m.choosingStatus || m.choosingPriority || m.confirmingDelete || m.choosingType || m.editingAssignee
 }
 
 func (m *Model) IsFocusedOnList() bool {

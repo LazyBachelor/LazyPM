@@ -97,6 +97,15 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 		return m, m.refreshIssueListsAndSelectIssue(msg.IssueID)
 
+	case issues.AssigneeUpdatedMsg:
+		m.editingAssignee = false
+		m.assigneeIssueID = ""
+		m.assigneeInput.Blur()
+		if msg.Err != nil {
+			return m, nil
+		}
+		return m, m.refreshIssueListsAndSelectIssue(msg.IssueID)
+
 	case issues.SelectIssueMsg:
 		m.todoList.SelectIssueID(msg.IssueID)
 		m.inProgList.SelectIssueID(msg.IssueID)
@@ -329,6 +338,22 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 			var cmd tea.Cmd
 			m.createTitleInput, cmd = m.createTitleInput.Update(msg)
+			return m, cmd
+		}
+
+		if m.editingAssignee {
+			if msg.String() == "enter" {
+				assignee := m.assigneeInput.Value()
+				return m, issues.UpdateIssueAssigneeCmd(m.app, m.assigneeIssueID, assignee)
+			}
+			if msg.String() == "esc" {
+				m.editingAssignee = false
+				m.assigneeIssueID = ""
+				m.assigneeInput.Blur()
+				return m, nil
+			}
+			var cmd tea.Cmd
+			m.assigneeInput, cmd = m.assigneeInput.Update(msg)
 			return m, cmd
 		}
 
