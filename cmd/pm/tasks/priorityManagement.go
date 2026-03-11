@@ -2,6 +2,7 @@ package tasks
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/LazyBachelor/LazyPM/internal/models"
 	"github.com/LazyBachelor/LazyPM/internal/utils/check"
@@ -74,30 +75,30 @@ func (t *PriorityManagementTask) Setup(ctx context.Context) error {
 		NewIssueBuilder().
 			WithTitle("UI theme updates").
 			WithDescription("Update color scheme per new brand guidelines. Currently in progress but can wait.").
-			WithPriority(1).
+			WithPriority(2).
 			WithStatus(models.StatusInProgress).
-			WithIssueType(models.TypeTask).
+			WithIssueType(models.TypeFeature).
 			Build(),
 		NewIssueBuilder().
 			WithTitle("Feature: Dark mode").
 			WithDescription("Add dark mode toggle to settings. Nice to have, can be deferred.").
 			WithPriority(2).
 			WithStatus(models.StatusOpen).
-			WithIssueType(models.TypeTask).
+			WithIssueType(models.TypeFeature).
 			Build(),
 		NewIssueBuilder().
 			WithTitle("API rate limiting").
 			WithDescription("Add rate limiting to public API endpoints. Security enhancement.").
 			WithPriority(2).
 			WithStatus(models.StatusInProgress).
-			WithIssueType(models.TypeTask).
+			WithIssueType(models.TypeFeature).
 			Build(),
 		NewIssueBuilder().
 			WithTitle("Documentation updates").
 			WithDescription("Update API documentation for v2 endpoints. Can be deferred.").
 			WithPriority(3).
 			WithStatus(models.StatusOpen).
-			WithIssueType(models.TypeTask).
+			WithIssueType(models.TypeChore).
 			Build(),
 	}
 
@@ -116,5 +117,36 @@ func (t *PriorityManagementTask) Setup(ctx context.Context) error {
 func (t *PriorityManagementTask) Validate(ctx context.Context) ValidationFeedback {
 	expect := check.NewExpector()
 
+	issues, err := FetchIssues(ctx, t.app, t.setupIssue)
+	if err != nil {
+		return expect.ValidationFeedback
+	}
+
+
+	expect.NotEmptyAndEqual(t.setupIssue.Assignee, "Me",
+		fmt.Sprintf("%s assignee", t.setupIssue.Title))
+
+	if t.setupIssue.Status != models.StatusClosed {
+		expect.Equal(t.setupIssue.Status, models.StatusInProgress,
+			fmt.Sprintf("%s status", t.setupIssue.Title))
+	}
+
+	if expect.Errors() != nil {
+		return expect.ValidationFeedback
+	}
+
+	for _, issue := range issues {
+		if issue.Title == "Database connection failures" {
+			expect.Assert(issue.Priority == 4,
+				fmt.Sprintf("'%s' priority should be 4 (critical)", issue.Title))
+		} else {
+			expect.Assert(issue.Priority == 1,
+				fmt.Sprintf("'%s' priority should be 1 (low)", issue.Title))
+		}
+	}
+
+	expect.Equal(t.setupIssue.Status, models.StatusClosed,
+		fmt.Sprintf("%s status", t.setupIssue.Title))
+	
 	return expect.Complete()
 }
