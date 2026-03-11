@@ -129,16 +129,18 @@ func (t *PriorityManagementTask) Validate(ctx context.Context) ValidationFeedbac
 	taskIssue := t.setupIssue
 
 	if taskIssue.Assignee != "Me" {
-		expect.Assert(taskIssue.Assignee == "Me",
-			fmt.Sprintf("'%s' not assigned to you, but to '%s'", taskIssue.Title, taskIssue.Assignee))
 		taskpart1++		
 	}
+	expect.Assert(taskIssue.Assignee == "Me",
+		fmt.Sprintf("'%s' should be assigned to you", taskIssue.Title))
 
 	if taskIssue.Status == models.StatusOpen {
-		expect.Assert(taskIssue.Status == models.StatusInProgress,
-			fmt.Sprintf("'%s' status should be 'In Progress', but was '%s'", taskIssue.Title, taskIssue.Status))
 		taskpart1++		
 	}
+	if taskIssue.Status != models.StatusClosed {
+		expect.Assert(taskIssue.Status == models.StatusInProgress,
+			fmt.Sprintf("'%s' status should be 'In Progress'", taskIssue.Title))
+		}
 
 	if taskpart1>0 {
 		return expect.ValidationFeedback
@@ -147,15 +149,15 @@ func (t *PriorityManagementTask) Validate(ctx context.Context) ValidationFeedbac
 	for ii := range issues {
 
 		if issues[ii].Title == "Database connection failures" {
+			expect.Assert(issues[ii].Priority == 4,
+				fmt.Sprintf("'%s' priority should be 4 (critical)", issues[ii].Title))
 			if issues[ii].Priority != 4 {
-				expect.Assert(issues[ii].Priority == 4,
-					fmt.Sprintf("'%s' priority should be 4 (critical), but was '%d'", issues[ii].Title, issues[ii].Priority))
 				taskpart2++
 			}
 		} else {
+			expect.Assert(issues[ii].Priority == 1,
+				fmt.Sprintf("'%s' priority should be 1 (low)", issues[ii].Title))
 			if issues[ii].Priority != 1 {
-				expect.Assert(issues[ii].Priority == 1,
-					fmt.Sprintf("'%s' priority should be 1 (low), but was '%d'", issues[ii].Title, issues[ii].Priority))
 				taskpart2++
 			}
 		}
@@ -166,7 +168,7 @@ func (t *PriorityManagementTask) Validate(ctx context.Context) ValidationFeedbac
 		return expect.ValidationFeedback
 	}
 	expect.Assert(taskIssue.Status == models.StatusClosed,
-		fmt.Sprintf("'%s' is not set to closed", taskIssue.Title))
+		fmt.Sprintf("'%s' should be set to closed", taskIssue.Title))
 
 
 
