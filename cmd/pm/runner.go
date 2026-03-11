@@ -137,7 +137,10 @@ func runStartCmd(cmd *cobra.Command, args []string) error {
 }
 
 func taskLoop(ctx context.Context, application *task.App, surveyTasks map[string]task.Tasker, interfaces map[string]task.Interface) error {
-	iNames := task.ListInterfaces()
+	var iNames []string
+	for name := range interfaces {
+		iNames = append(iNames, name)
+	}
 
 	if len(iNames) == 0 {
 		return fmt.Errorf("no interfaces are available")
