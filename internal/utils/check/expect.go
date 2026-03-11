@@ -30,8 +30,18 @@ func NewExpector() *Expector {
 	}
 }
 
+func (e *Expector) Valid() bool {
+	return len(e.Errors()) == 0
+}
+
 func (e *Expector) Complete() ValidationFeedback {
 	e.Success = len(e.Errors()) == 0
+	return e.ValidationFeedback
+}
+
+func (e *Expector) Fatal(message string) ValidationFeedback {
+	e.Success = false
+	e.Message = message
 	return e.ValidationFeedback
 }
 

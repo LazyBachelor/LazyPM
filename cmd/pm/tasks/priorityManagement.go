@@ -19,15 +19,14 @@ You need to rebalance the current sprint priorities:
 
 1. Assign the task Issue you are currently reading to yourself as "Me" and set status to "In Progress".
 2. A new issue has appeared in the list that needs urgent attention. Change the database related issue's priority to 4 (critical).
-3. Set the priority of the feature and chore issues in the list to 1 (low).
-4. Change this issue status to "Closed".
-
-`
+3. Set the priority of the feature and chore issues in the list to 1 (low).`
 
 type PriorityManagementTask struct {
-	done       bool
-	app        *App
-	setupIssue *Issue
+	done           bool
+	app            *App
+	setupIssue     *Issue
+	priorityIssues []*models.Issue
+	isInProgress   bool
 }
 
 func NewPriorityManagementTask(app *App) *PriorityManagementTask {
@@ -66,7 +65,7 @@ func (t *PriorityManagementTask) Setup(ctx context.Context) error {
 		return err
 	}
 
-	priorityIssues := []*models.Issue{
+	t.priorityIssues = []*models.Issue{
 		NewIssueBuilder().
 			WithTitle("Database connection failures").
 			WithDescription("PRODUCTION CRITICAL: Intermittent DB connection failures affecting all users. Needs immediate attention.").
@@ -104,7 +103,7 @@ func (t *PriorityManagementTask) Setup(ctx context.Context) error {
 			Build(),
 	}
 
-	if err := t.app.Issues.CreateIssues(ctx, priorityIssues, ""); err != nil {
+	if err := t.app.Issues.CreateIssues(ctx, t.priorityIssues, ""); err != nil {
 		return err
 	}
 
@@ -121,56 +120,26 @@ func (t *PriorityManagementTask) Validate(ctx context.Context) ValidationFeedbac
 
 	issues, err := FetchIssues(ctx, t.app, t.setupIssue)
 	if err != nil {
+		return expect.Fatal("Failed to fetch issues for validation")
+	}
+
+	expect.NotEmptyAndEqual(t.setupIssue.Assignee, "Me",
+		fmt.Sprintf("%s assignee", t.setupIssue.Title))
+
+	expect.Equal(t.setupIssue.Status, models.StatusInProgress,
+		fmt.Sprintf("%s status", t.setupIssue.Title))
+
+	if !expect.Valid() {
 		return expect.ValidationFeedback
 	}
 
-	taskpart1 := 0
-	taskpart2 := 0
-	taskIssue := t.setupIssue
-
-	if taskIssue.Assignee != "Me" {
-		taskpart1++		
-	}
-	expect.Assert(taskIssue.Assignee == "Me",
-		fmt.Sprintf("'%s' should be assigned to you", taskIssue.Title))
-
-	if taskIssue.Status == models.StatusOpen {
-		taskpart1++		
-	}
-	if taskIssue.Status != models.StatusClosed {
-		expect.Assert(taskIssue.Status == models.StatusInProgress,
-			fmt.Sprintf("'%s' status should be 'In Progress'", taskIssue.Title))
-		}
-
-	if taskpart1>0 {
-		return expect.ValidationFeedback
-	}
-
-	for ii := range issues {
-
-		if issues[ii].Title == "Database connection failures" {
-			expect.Assert(issues[ii].Priority == 4,
-				fmt.Sprintf("'%s' priority should be 4 (critical)", issues[ii].Title))
-			if issues[ii].Priority != 4 {
-				taskpart2++
-			}
+	for _, issue := range issues {
+		if issue.Title == t.priorityIssues[0].Title {
+			expect.Equal(issue.Priority, 4, fmt.Sprintf("Priority of issue %s", issue.Title))
 		} else {
-			expect.Assert(issues[ii].Priority == 1,
-				fmt.Sprintf("'%s' priority should be 1 (low)", issues[ii].Title))
-			if issues[ii].Priority != 1 {
-				taskpart2++
-			}
+			expect.Equal(issue.Priority, 1, fmt.Sprintf("Priority of issue %s", issue.Title))
 		}
 	}
-
-
-	if taskpart2>0 {
-		return expect.ValidationFeedback
-	}
-	expect.Assert(taskIssue.Status == models.StatusClosed,
-		fmt.Sprintf("'%s' should be set to closed", taskIssue.Title))
-
-
 
 	return expect.Complete()
 }
