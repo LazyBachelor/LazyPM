@@ -35,8 +35,8 @@ func (t *TeamCapacityTask) Config() Config {
 	return BaseConfig().WithStatisticsStoragePath("./.pm/capacity-task-stats.json")
 }
 
-func (t *TeamCapacityTask) Details() TaskDetails {
-	return BaseDetails().
+func (t *TeamCapacityTask) Details(interfaceType InterfaceType) TaskDetails {
+	return BaseDetails(interfaceType).
 		WithTitle("Team Capacity Management").
 		WithDescription(teamCapacityDescription).
 		WithTimeToComplete("12m").

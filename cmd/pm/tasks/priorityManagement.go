@@ -35,8 +35,8 @@ func (t *PriorityManagementTask) Config() Config {
 	return BaseConfig().WithStatisticsStoragePath("./.pm/priority-task-stats.json")
 }
 
-func (t *PriorityManagementTask) Details() TaskDetails {
-	return BaseDetails().
+func (t *PriorityManagementTask) Details(interfaceType InterfaceType) TaskDetails {
+	return BaseDetails(interfaceType).
 		WithTitle("Priority Management Task").
 		WithDescription(priorityManagementDescription).
 		WithTimeToComplete("8m").

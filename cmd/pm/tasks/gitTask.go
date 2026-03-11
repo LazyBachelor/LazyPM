@@ -47,8 +47,8 @@ func (t *GitTask) Config() Config {
 	return BaseConfig().WithStatisticsStoragePath("./.pm/git-task-stats.json")
 }
 
-func (t *GitTask) Details() TaskDetails {
-	return BaseDetails().WithTitle("Git Task").WithDescription(gitTaskDescription)
+func (t *GitTask) Details(interfaceType InterfaceType) TaskDetails {
+	return BaseDetails(interfaceType).WithTitle("Git Task").WithDescription(gitTaskDescription)
 }
 
 func (t *GitTask) Questions(interfaceType InterfaceType) Questions {

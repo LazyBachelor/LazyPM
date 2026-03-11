@@ -36,8 +36,8 @@ func (t *SprintPlanningTask) Config() Config {
 	return BaseConfig().WithStatisticsStoragePath("./.pm/sprint-planning-stats.json")
 }
 
-func (t *SprintPlanningTask) Details() TaskDetails {
-	return BaseDetails().
+func (t *SprintPlanningTask) Details(interfaceType InterfaceType) TaskDetails {
+	return BaseDetails(interfaceType).
 		WithTitle("Sprint Planning Task").
 		WithDescription(sprintPlanningDescription).
 		WithTimeToComplete("15m").

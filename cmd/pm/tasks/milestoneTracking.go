@@ -35,8 +35,8 @@ func (t *MilestoneTrackingTask) Config() Config {
 	return BaseConfig().WithStatisticsStoragePath("./.pm/milestone-task-stats.json")
 }
 
-func (t *MilestoneTrackingTask) Details() TaskDetails {
-	return BaseDetails().
+func (t *MilestoneTrackingTask) Details(interfaceType InterfaceType) TaskDetails {
+	return BaseDetails(interfaceType).
 		WithTitle("Milestone Tracking Task").
 		WithDescription(milestoneTrackingDescription).
 		WithTimeToComplete("10m").

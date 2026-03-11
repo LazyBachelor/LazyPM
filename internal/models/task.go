@@ -8,7 +8,7 @@ import (
 
 type Tasker interface {
 	Config() Config
-	Details() TaskDetails
+	Details(InterfaceType) TaskDetails
 	Setup(context.Context) error
 	Questions(InterfaceType) Questions
 	Validate(context.Context) ValidationFeedback
@@ -32,10 +32,12 @@ type ValidatedInterface interface {
 }
 
 type TaskDetails struct {
-	Title          string
-	Description    string
-	TimeToComplete string
-	Difficulty     string
+	Title                string
+	Description          string
+	TimeToComplete       string
+	Difficulty           string
+	InterfaceType        InterfaceType
+	InterfaceDescription string
 }
 
 func (td TaskDetails) WithTitle(title string) TaskDetails {
@@ -55,6 +57,16 @@ func (td TaskDetails) WithTimeToComplete(time string) TaskDetails {
 
 func (td TaskDetails) WithDifficulty(difficulty string) TaskDetails {
 	td.Difficulty = difficulty
+	return td
+}
+
+func (td TaskDetails) WithInterfaceType(interfaceType InterfaceType) TaskDetails {
+	td.InterfaceType = interfaceType
+	return td
+}
+
+func (td TaskDetails) WithInterfaceDescription(desc string) TaskDetails {
+	td.InterfaceDescription = desc
 	return td
 }
 

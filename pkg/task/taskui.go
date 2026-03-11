@@ -18,11 +18,13 @@ type TaskModel struct {
 	keys          TaskHelpKeys
 	width, height int
 	userQuit      bool
+	aboutVisible  bool
 }
 
 type TaskHelpKeys struct {
 	Quit  key.Binding
 	Start key.Binding
+	About key.Binding
 }
 
 var DefaultTaskKeys = TaskHelpKeys{
@@ -33,6 +35,10 @@ var DefaultTaskKeys = TaskHelpKeys{
 	Start: key.NewBinding(
 		key.WithKeys("enter"),
 		key.WithHelp("enter", "Start"),
+	),
+	About: key.NewBinding(
+		key.WithKeys("?"),
+		key.WithHelp("?", "Details about the interface"),
 	),
 }
 
@@ -58,8 +64,12 @@ func (m TaskModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, tea.Quit
 		case key.Matches(msg, m.keys.Start):
 			return m, tea.Quit
+		case key.Matches(msg, m.keys.About):
+			m.aboutVisible = !m.aboutVisible
+			return m, nil
 		}
 	}
+
 	return m, nil
 }
 
@@ -71,10 +81,9 @@ func (m TaskModel) View() string {
 
 	boxWidth := min(m.width-10, 120)
 
-	detailsText := fmt.Sprintf("Time to complete: %s | Difficulty: %s", m.TimeToComplete, m.Difficulty)
+	detailsText := fmt.Sprintf("Interface Type: %s | Time to complete: %s | Difficulty: %s", m.InterfaceType, m.TimeToComplete, m.Difficulty)
 
-	boxStyle := style.BorderStyle.
-		Margin(1, 0).Padding(2, 4).Width(boxWidth)
+	boxStyle := style.BorderStyle.Padding(2, 4).Width(boxWidth)
 
 	var b strings.Builder
 
@@ -88,10 +97,16 @@ func (m TaskModel) View() string {
 		style.TextStyle.Foreground(style.SecondaryColor).Render(detailsText),
 	)
 
-	b.WriteString(boxStyle.Render(content))
+	if m.aboutVisible {
+		b.WriteString(boxStyle.Render(m.InterfaceDescription))
+	} else {
+		b.WriteString(boxStyle.Render(content))
+
+	}
+
 	b.WriteString("\n")
 
-	helpText := "Press " + m.keys.Start.Help().Key + " to start • " + m.keys.Quit.Help().Key + " to quit"
+	helpText := "Press " + m.keys.Start.Help().Key + " to start • " + m.keys.Quit.Help().Key + " to quit • " + m.keys.About.Help().Key + " " + m.keys.About.Help().Desc
 	b.WriteString(style.HelpStyle.Render(helpText))
 
 	final := lipgloss.Place(m.width, m.height, lipgloss.Center, lipgloss.Center, b.String())

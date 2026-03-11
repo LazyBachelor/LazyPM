@@ -36,8 +36,8 @@ func (t *BacklogRefinementTask) Config() Config {
 	return BaseConfig().WithStatisticsStoragePath("./.pm/refinement-task-stats.json")
 }
 
-func (t *BacklogRefinementTask) Details() TaskDetails {
-	return BaseDetails().
+func (t *BacklogRefinementTask) Details(interfaceType InterfaceType) TaskDetails {
+	return BaseDetails(interfaceType).
 		WithTitle("Backlog Refinement Task").
 		WithDescription(backlogRefinementDescription).
 		WithTimeToComplete("12m").

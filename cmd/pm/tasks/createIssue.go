@@ -34,8 +34,8 @@ func (t *CreateIssueTask) Config() Config {
 	return BaseConfig().WithStatisticsStoragePath("./.pm/create-issue-stats.json")
 }
 
-func (t *CreateIssueTask) Details() TaskDetails {
-	return BaseDetails().WithTitle("Create Issue Task").WithDescription(description)
+func (t *CreateIssueTask) Details(interfaceType InterfaceType) TaskDetails {
+	return BaseDetails(interfaceType).WithTitle("Create Issue Task").WithDescription(description)
 }
 
 func (t *CreateIssueTask) Questions(interfaceType InterfaceType) Questions {

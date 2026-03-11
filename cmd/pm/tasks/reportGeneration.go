@@ -35,8 +35,8 @@ func (t *ReportGenerationTask) Config() Config {
 	return BaseConfig().WithStatisticsStoragePath("./.pm/report-task-stats.json")
 }
 
-func (t *ReportGenerationTask) Details() TaskDetails {
-	return BaseDetails().
+func (t *ReportGenerationTask) Details(interfaceType InterfaceType) TaskDetails {
+	return BaseDetails(interfaceType).
 		WithTitle("Status Report Generation").
 		WithDescription(reportGenerationDescription).
 		WithTimeToComplete("10m").

@@ -51,12 +51,37 @@ func InterfaceToType(it Interface) InterfaceType {
 	}
 }
 
-func BaseDetails() TaskDetails {
+func BaseDetails(interfaceType InterfaceType) TaskDetails {
+
+	var interfaceDesc string
+
+	switch interfaceType {
+	case InterfaceTypeREPL:
+		interfaceDesc = `How to use the REPL Interface
+- The REPL interface allows you to interact with the task using a command-line interface.
+- You can type commands to perform actions related to the task, such as creating issues, updating statuses, etc.
+- The interface will provide prompts and feedback based on your inputs.`
+	case InterfaceTypeTUI:
+		interfaceDesc = `How to use the TUI Interface
+- The TUI (Text User Interface) provides a more interactive experience in the terminal.
+- You can navigate through menus, select options, and view task details in a structured format.
+- Use keyboard shortcuts to perform actions and explore different sections of the interface.`
+	case InterfaceTypeWeb:
+		interfaceDesc = `How to use the Web Interface
+- The Web interface allows you to interact with the task through a web browser.
+- You can access the interface by navigating to the provided URL.
+- The interface will have buttons, forms, and other interactive elements to help you complete the task.`
+	default:
+		interfaceDesc = "Unknown Interface"
+	}
+
 	return TaskDetails{
-		Title:          "Base Task",
-		Description:    "This is a base task.",
-		TimeToComplete: "10m",
-		Difficulty:     "Easy",
+		Title:                "Base Task",
+		Description:          "This is a base task.",
+		TimeToComplete:       "10m",
+		Difficulty:           "Easy",
+		InterfaceType:        interfaceType,
+		InterfaceDescription: interfaceDesc,
 	}
 }
 
