@@ -47,6 +47,9 @@ type Model struct {
 	priorityIssueID  string
 	choosingType     bool // true while choosing a type
 	typeIssueID      string
+	editingAssignee  bool // true while editing assignee
+	assigneeInput    textinput.Model
+	assigneeIssueID  string
 	addingComment    bool // true while adding a comment
 	commentInput     textarea.Model
 	commentIssueID   string
@@ -87,6 +90,11 @@ func NewDashboard(app *app.App, feedbackChan chan models.ValidationFeedback, qui
 	createTi.Placeholder = "New issue title ..."
 	createTi.CharLimit = 256
 	m.createTitleInput = createTi
+
+	assigneeTi := textinput.New()
+	assigneeTi.Placeholder = "Assignee (e.g. Me, username)..."
+	assigneeTi.CharLimit = 128
+	m.assigneeInput = assigneeTi
 
 	descTa := textarea.New()
 	descTa.Placeholder = "Issue description..."
@@ -175,6 +183,13 @@ func (m *Model) startChoosePriority(selected ListIssue) {
 func (m *Model) startChooseType(selected ListIssue) {
 	m.choosingType = true
 	m.typeIssueID = selected.ID
+}
+
+func (m *Model) startEditAssignee(selected ListIssue) {
+	m.editingAssignee = true
+	m.assigneeIssueID = selected.ID
+	m.assigneeInput.SetValue(selected.Issue.Assignee)
+	m.assigneeInput.CursorEnd()
 }
 
 func (m *Model) Init() tea.Cmd {

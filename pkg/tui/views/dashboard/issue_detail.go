@@ -66,11 +66,19 @@ func (i *IssueDetail) refreshContent() {
 		styles.LabelStyle.Render("Priority:") + styles.ValueStyle.Render(priorityCodeName(i.issue.Priority)),
 	)
 
+	assignee := i.issue.Assignee
+	if assignee == "" {
+		assignee = "—"
+	}
+	assigneeRow := styles.RowStyle.Render(
+		styles.LabelStyle.Render("Assignee:") + styles.ValueStyle.Render(assignee),
+	)
+
 	descLabel := styles.LabelStyle.Render("Description:")
 	descContent := styles.ValueStyle.Render(i.issue.Description)
 
 	var parts []string
-	parts = append(parts, titleRow, idRow, typeRow, statusRow, priorityRow, descLabel, descContent)
+	parts = append(parts, titleRow, idRow, typeRow, statusRow, priorityRow, assigneeRow, descLabel, descContent)
 
 	// Comments section
 	commentsLabel := styles.LabelStyle.Render("Comments:")

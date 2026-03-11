@@ -21,7 +21,7 @@ var (
 )
 
 const (
-	ListViewRatio     = 70 // Percentage of total width allocated to the list view
+	ListViewRatio     = 55 // Percentage of total width allocated to the list view
 	LabelWidth        = 14
 	MarginBottomSmall = 1
 )
