@@ -11,7 +11,7 @@ import (
 // Variables for completion options and functions.
 var (
 	typeOptions   = []string{"bug", "feature", "task", "chore"}
-	statusOptions = []string{"open", "closed", "in_progress"}
+	statusOptions = []string{"open", "closed", "in_progress", "ready_to_sprint"}
 	priorityRange = []string{"0", "1", "2", "3", "4"}
 )
 

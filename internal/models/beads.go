@@ -3,7 +3,9 @@ package models
 import (
 	"fmt"
 	"os"
+	"strings"
 	"text/tabwriter"
+	"unicode"
 
 	"charm.land/lipgloss/v2"
 	"github.com/muesli/reflow/truncate"
@@ -33,11 +35,12 @@ type (
 
 // Status constants
 const (
-	StatusOpen       = beads.StatusOpen
-	StatusInProgress = beads.StatusInProgress
-	StatusBlocked    = beads.StatusBlocked
-	StatusDeferred   = beads.StatusDeferred
-	StatusClosed     = beads.StatusClosed
+	StatusOpen                 = beads.StatusOpen
+	StatusInProgress           = beads.StatusInProgress
+	StatusBlocked              = beads.StatusBlocked
+	StatusDeferred             = beads.StatusDeferred
+	StatusClosed               = beads.StatusClosed
+	StatusReadyToSprint Status = "ready_to_sprint"
 )
 
 // IssueType constants
@@ -113,20 +116,39 @@ func IssuesPtrToIssues(issuePtr []*Issue) []Issue {
 	return issues
 }
 
+func sanitizeCell(s string) string {
+	s = strings.Map(func(r rune) rune {
+		switch r {
+		case '\n', '\r', '\t':
+			return ' '
+		default:
+			return r
+		}
+	}, s)
+
+	return strings.Join(strings.FieldsFunc(s, unicode.IsSpace), " ")
+}
+
 func FormatIssueRow(issue Issue) string {
+	id := truncate.String(sanitizeCell(issue.ID), 10)
+	title := truncate.StringWithTail(sanitizeCell(issue.Title), 35, "...")
+	description := truncate.StringWithTail(sanitizeCell(issue.Description), 40, "...")
+	status := sanitizeCell(string(issue.Status))
+	issueType := sanitizeCell(string(issue.IssueType))
+
 	return fmt.Sprintf(
 		"%s\t%s\t%s\t%s\t%s\t%d",
-		truncate.String(issue.ID, 10),
-		truncate.StringWithTail(issue.Title, 25, "..."),
-		truncate.StringWithTail(issue.Description, 40, "..."),
-		issue.Status,
-		issue.IssueType,
+		id,
+		title,
+		description,
+		status,
+		issueType,
 		issue.Priority,
 	)
 }
 
 func PrintIssues(issues []Issue) {
-	w := tabwriter.NewWriter(os.Stdout, 8, 10, 5, ' ', 0)
+	w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', 0)
 
 	fmt.Fprintln(w, "ID\tTITLE\tDESCRIPTION\tSTATUS\tTYPE\tPRIORITY")
 
@@ -134,5 +156,5 @@ func PrintIssues(issues []Issue) {
 		fmt.Fprintln(w, FormatIssueRow(issue))
 	}
 
-	w.Flush()
+	_ = w.Flush()
 }
