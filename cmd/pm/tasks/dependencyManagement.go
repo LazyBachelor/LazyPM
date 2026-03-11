@@ -34,8 +34,8 @@ func (t *DependencyManagementTask) Config() Config {
 	return BaseConfig().WithStatisticsStoragePath("./.pm/dependency-task-stats.json")
 }
 
-func (t *DependencyManagementTask) Details() TaskDetails {
-	return BaseDetails().
+func (t *DependencyManagementTask) Details(interfaceType InterfaceType) TaskDetails {
+	return BaseDetails(interfaceType).
 		WithTitle("Dependency Management Task").
 		WithDescription(dependencyManagementDescription).
 		WithTimeToComplete("15m").

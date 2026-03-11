@@ -34,8 +34,8 @@ func (t *IssueTriageTask) Config() Config {
 	return BaseConfig().WithStatisticsStoragePath("./.pm/triage-task-stats.json")
 }
 
-func (t *IssueTriageTask) Details() TaskDetails {
-	return BaseDetails().
+func (t *IssueTriageTask) Details(interfaceType InterfaceType) TaskDetails {
+	return BaseDetails(interfaceType).
 		WithTitle("Issue Triage Task").
 		WithDescription(issueTriageDescription).
 		WithTimeToComplete("12m").

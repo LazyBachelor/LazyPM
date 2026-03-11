@@ -36,8 +36,8 @@ func (t *StakeholderUpdateTask) Config() Config {
 	return BaseConfig().WithStatisticsStoragePath("./.pm/stakeholder-task-stats.json")
 }
 
-func (t *StakeholderUpdateTask) Details() TaskDetails {
-	return BaseDetails().
+func (t *StakeholderUpdateTask) Details(interfaceType InterfaceType) TaskDetails {
+	return BaseDetails(interfaceType).
 		WithTitle("Stakeholder Update Task").
 		WithDescription(stakeholderUpdateDescription).
 		WithTimeToComplete("10m").
