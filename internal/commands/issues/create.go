@@ -6,7 +6,6 @@ import (
 
 	"github.com/LazyBachelor/LazyPM/internal/models"
 	"github.com/LazyBachelor/LazyPM/internal/utils/shellcomp"
-	"github.com/charmbracelet/huh"
 
 	"github.com/spf13/cobra"
 )
@@ -35,12 +34,14 @@ var CreateCmd = &cobra.Command{
 func runCreateCmd(cmd *cobra.Command, args []string) error {
 	createFlags.title = strings.Join(args, " ")
 
-	// Run interactive if flag is set
-	if createFlags.interactive {
-		if err := runCreateInteractive(); err != nil {
-			return err
+	/*
+		// Run interactive if flag is set
+		if createFlags.interactive {
+			if err := runCreateInteractive(); err != nil {
+				return err
+			}
 		}
-	}
+	*/
 
 	if createFlags.title == "" {
 		return fmt.Errorf("issue title cannot be empty")
@@ -52,11 +53,12 @@ func runCreateCmd(cmd *cobra.Command, args []string) error {
 		Status:      models.Status(createFlags.status),
 		IssueType:   models.IssueType(createFlags.issueType),
 		Priority:    createFlags.priority,
+		Assignee:    createFlags.assignee,
 	}
 
 	// Create the issue using the service layer.
 	app := AppFromContext(cmd.Context())
-	err := app.Issues.CreateIssue(cmd.Context(), issue, "test_actor")
+	err := app.Issues.CreateIssue(cmd.Context(), issue, "")
 	if err != nil {
 		return fmt.Errorf("error creating issue: %w", err)
 	}
@@ -67,6 +69,7 @@ func runCreateCmd(cmd *cobra.Command, args []string) error {
 	return nil
 }
 
+/* Does not align with cli best practices
 // runCreateInteractive runs the interactive mode for creating issues,
 // allowing users to input issue details through a form.
 func runCreateInteractive() error {
@@ -103,14 +106,16 @@ func runCreateInteractive() error {
 
 	return form.Run()
 }
+*/
 
 // init function to set up the create command and its flags.
 func init() {
-	CreateCmd.Flags().BoolVarP(&createFlags.interactive, "interactive", "i", false, "Create issue interactively")
+	//CreateCmd.Flags().BoolVarP(&createFlags.interactive, "interactive", "i", false, "Create issue interactively")
 	CreateCmd.Flags().StringVarP(&createFlags.description, "desc", "d", "", "Issue description")
 	CreateCmd.Flags().StringVarP(&createFlags.status, "status", "s", "open", "Issue status(open, closed, in_progress)")
 	CreateCmd.Flags().StringVarP(&createFlags.issueType, "type", "t", "task", "Issue type(bug, feature, task)")
 	CreateCmd.Flags().IntVarP(&createFlags.priority, "priority", "p", 0, "Issue priority(0-4)")
+	CreateCmd.Flags().StringVarP(&createFlags.assignee, "assignee", "a", "", "Issue assignee")
 
 	CreateCmd.RegisterFlagCompletionFunc("type", shellcomp.CompletionFunc(typeOptions))
 	CreateCmd.RegisterFlagCompletionFunc("status", shellcomp.CompletionFunc(statusOptions))
