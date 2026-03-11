@@ -97,28 +97,31 @@ func (w *Web) Run(ctx context.Context, config Config) error {
 	serverErr := make(chan error, 1)
 	uiQuitChan := make(chan struct{})
 
-	screen := tea.NewProgram(
-		tuiModel{
-			address:  address,
-			quitChan: uiQuitChan,
-		},
-		tea.WithAltScreen(),
-	)
+	var screen *tea.Program
+	var screenDone chan struct{}
 
-	screenDone := make(chan struct{})
+	if w.quitChan != nil {
+		screen = tea.NewProgram(
+			tuiModel{
+				address:  address,
+				quitChan: uiQuitChan,
+			},
+			tea.WithAltScreen(),
+		)
 
-	go func() {
-		defer close(screenDone)
+		screenDone = make(chan struct{})
 
-		if _, err := screen.Run(); err != nil {
-			fmt.Printf("failed to start terminal UI: %s\n", err)
-		}
-	}()
+		go func() {
+			defer close(screenDone)
+			screen.Run()
+		}()
+	}
 
 	sigChan := make(chan os.Signal, 1)
 	signal.Notify(sigChan, os.Interrupt, syscall.SIGTERM)
 	defer signal.Stop(sigChan)
 
+	fmt.Println("Starting server at", address+"...")
 	go func() {
 		if err := httpServer.ListenAndServe(); err != nil &&
 			!errors.Is(err, http.ErrServerClosed) {
@@ -138,29 +141,44 @@ func (w *Web) Run(ctx context.Context, config Config) error {
 		handler.SetSubmitChan(w.submitChan)
 	}
 
-	if err := browser.Open(address); err != nil {
-		fmt.Printf("failed to open browser: %s\n", err)
-	}
-
 	var shutdownMsg string
 
-	select {
-	case <-w.quitChan:
-		shutdownMsg = "Task completed! Ending task and server..."
-	case <-uiQuitChan:
-		shutdownMsg = "Quit key pressed. Ending task and server..."
-	case sig := <-sigChan:
-		shutdownMsg = fmt.Sprintf("Received signal %s. Ending task and server...", sig)
-	case <-ctx.Done():
-		shutdownMsg = "Context cancelled. Ending task and server..."
-	case err := <-serverErr:
-		screen.Quit()
-		<-screenDone
-		return err
+	if w.quitChan != nil {
+
+		if err := browser.Open(address); err != nil {
+			fmt.Printf("failed to open browser: %s\n", err)
+		}
+		select {
+		case <-w.quitChan:
+			shutdownMsg = "Task completed! Ending task and server..."
+		case <-uiQuitChan:
+			shutdownMsg = "Quit key pressed. Ending task and server..."
+		case sig := <-sigChan:
+			shutdownMsg = fmt.Sprintf("Received signal %s. Ending task and server...", sig)
+		case <-ctx.Done():
+			shutdownMsg = "Context cancelled. Ending task and server..."
+		case err := <-serverErr:
+			if screen != nil {
+				screen.Quit()
+				<-screenDone
+			}
+			return err
+		}
+	} else {
+		select {
+		case sig := <-sigChan:
+			shutdownMsg = fmt.Sprintf("Received signal %s. Closing server...", sig)
+		case <-ctx.Done():
+			shutdownMsg = "Context cancelled. Closing server..."
+		case err := <-serverErr:
+			return err
+		}
 	}
 
-	screen.Quit()
-	<-screenDone
+	if screen != nil {
+		screen.Quit()
+		<-screenDone
+	}
 
 	fmt.Println(shutdownMsg)
 
