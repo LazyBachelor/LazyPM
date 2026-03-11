@@ -12,6 +12,7 @@ import (
 // rootSuggestions is a list of prompt suggestions for root-level commands.
 var rootSuggestions = []prompt.Suggest{
 	{Text: "pm", Description: "Project Management System"},
+	{Text: "status", Description: "Show task status"},
 	{Text: "exit", Description: "Exit pm CLI"},
 	{Text: "help", Description: "Show help information"},
 	{Text: "title", Description: "Print the welcome title"},
@@ -38,7 +39,8 @@ var createFlags = []prompt.Suggest{
 	{Text: "--desc", Description: "Issue description"},
 	{Text: "--status", Description: "Issue status (open, closed, in_progress)"},
 	{Text: "--type", Description: "Issue type (bug, feature, task)"},
-	{Text: "--priority", Description: "Issue priority (0-5)"},
+	{Text: "--priority", Description: "Issue priority (0-4)"},
+	{Text: "--assignee", Description: "Issue assignee"},
 }
 
 // updateFlags is a list of prompt suggestions for the update command flags.
@@ -47,7 +49,8 @@ var updateFlags = []prompt.Suggest{
 	{Text: "--desc", Description: "New issue description"},
 	{Text: "--status", Description: "New issue status (open, closed, in_progress)"},
 	{Text: "--type", Description: "New issue type (bug, feature, task)"},
-	{Text: "--priority", Description: "New issue priority (0-5)"},
+	{Text: "--priority", Description: "New issue priority (0-4)"},
+	{Text: "--assignee", Description: "New issue assignee"},
 }
 
 // listFlags is a list of prompt suggestions for the list command flags.
@@ -56,8 +59,9 @@ var listFlags = []prompt.Suggest{
 	{Text: "--desc", Description: "Filter by description"},
 	{Text: "--status", Description: "Filter by status (open, closed, in_progress)"},
 	{Text: "--type", Description: "Filter by type (bug, feature, task)"},
-	{Text: "--priority", Description: "Filter by priority (0-5)"},
+	{Text: "--priority", Description: "Filter by priority (0-4)"},
 	{Text: "--limit", Description: "Limit number of results"},
+	{Text: "--assignee", Description: "Filter by assignee"},
 }
 
 var deleteFlags = []prompt.Suggest{
@@ -81,18 +85,19 @@ var statusValues = []prompt.Suggest{
 
 // typeValues is a list of prompt suggestions for issue types
 var typeValues = []prompt.Suggest{
+	{Text: "task", Description: "Task issue type"},
 	{Text: "bug", Description: "Bug issue type"},
 	{Text: "feature", Description: "Feature issue type"},
-	{Text: "task", Description: "Task issue type"},
+	{Text: "chore", Description: "Chore issue type"},
 }
 
 // priorityValues is a list of prompt suggestions for issue priority levels
 var priorityValues = []prompt.Suggest{
-	{Text: "0", Description: "Lowest priority"},
+	{Text: "0", Description: "Irrelevant"},
 	{Text: "1", Description: "Low priority"},
-	{Text: "2", Description: "Medium-low priority"},
-	{Text: "3", Description: "Medium priority"},
-	{Text: "4", Description: "High priority"},
+	{Text: "2", Description: "Normal priority"},
+	{Text: "3", Description: "High priority"},
+	{Text: "4", Description: "Critical priority"},
 }
 
 // isIDCommand maps command names to a boolean indicating whether they expect an issue ID as an argument.

@@ -27,4 +27,5 @@ var (
 	TitleStyle = lipgloss.NewStyle().Foreground(PrimaryColor).Bold(true)
 	TextStyle  = lipgloss.NewStyle().Foreground(TextColor)
 	HelpStyle  = lipgloss.NewStyle().Align(lipgloss.Center).Foreground(AccentColor)
+	ErrorStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("1")).Bold(true) // Red color for errors
 )

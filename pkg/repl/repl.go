@@ -22,8 +22,8 @@ type ValidationFeedback = models.ValidationFeedback
 
 const (
 	ReplHelp = `Type 'pm help' for available PM commands.
-Type 'pm status' to check task progress.
-You can also run shell commands directly. Type 'exit' or 'quit' to leave.`
+You can also run shell commands directly. Type 'exit' or 'quit' to leave.
+Type 'status' to check task progress.`
 
 	ReplTitle = "Welcome to Project Management CLI! " + ReplHelp
 )
@@ -144,8 +144,19 @@ func (r *REPL) Run(ctx context.Context, config app.Config) error {
 		// Add the input to the history for future navigation.
 		history = append(history, input)
 
-		output, _ := execute(input)                 // Ignore errors for now, gives better ux
-		fmt.Println(style.TextStyle.Render(output)) // Print the output of the command in a styled format.
+		output, err := execute(input)
+		if err != nil {
+			// Show command output (even on error) in normal text style
+			if output != "" {
+				fmt.Println(style.TextStyle.Render(output))
+			}
+			// Show error message in red if no output was captured
+			if output == "" {
+				fmt.Println(style.ErrorStyle.Render(err.Error()))
+			}
+		} else if output != "" {
+			fmt.Println(style.TextStyle.Render(output))
+		}
 	}
 
 	return nil
