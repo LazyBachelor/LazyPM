@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"log"
 	"os"
 
 	"github.com/LazyBachelor/LazyPM/cmd/pm/tasks"
@@ -19,11 +18,7 @@ import (
 )
 
 func init() {
-	err := godotenv.Load(".env")
-
-	if err != nil {
-		log.Println("Error loading .env file")
-	}
+	godotenv.Load(".env")
 
 	models.BaseConfig = models.BaseConfig.LoadFromEnv()
 
