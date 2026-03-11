@@ -90,7 +90,7 @@ func RenderChooseStatus(width, height int, issueID string) string {
 	}
 	statusContent := lipgloss.JoinVertical(lipgloss.Left,
 		styles.LabelStyle.Render("Change status for "+issueID+":"),
-		lipgloss.NewStyle().Foreground(styles.FaintText).Render("o = open   i = in_progress   c = closed"),
+		lipgloss.NewStyle().Foreground(styles.FaintText).Render("o = open   i = in_progress   c = closed	 ready_to_sprint = r"),
 		lipgloss.NewStyle().Foreground(styles.FaintText).Render("Esc = cancel"),
 	)
 	statusBoxWidth := modalBoxWidth(50, width)
@@ -234,4 +234,3 @@ func RenderFooter(width int, helpBar *HelpBar, feedback models.ValidationFeedbac
 	helpBar.SetWidth(helpWidth)
 	return lipgloss.JoinHorizontal(lipgloss.Left, helpBar.View(), feedbackStatus)
 }
-
