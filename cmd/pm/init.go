@@ -26,41 +26,23 @@ func init() {
 	task.RegisterInterface("web", web.New())
 	task.RegisterInterface("repl", repl.New())
 
+	task.RegisterTask("backlog_refinement", func(app *app.App) task.Tasker {
+		return tasks.NewBacklogRefinementTask(app)
+	})
 	task.RegisterTask("create_issue", func(app *app.App) task.Tasker {
 		return tasks.NewCreateIssueTask(app)
 	})
 	task.RegisterTask("coding_task", func(app *app.App) task.Tasker {
 		return tasks.NewCodingTask(app)
 	})
-	task.RegisterTask("git_task", func(app *app.App) task.Tasker {
-		return tasks.NewGitTask(app)
-	})
 	task.RegisterTask("sprint_planning", func(app *app.App) task.Tasker {
 		return tasks.NewSprintPlanningTask(app)
-	})
-	task.RegisterTask("issue_triage", func(app *app.App) task.Tasker {
-		return tasks.NewIssueTriageTask(app)
-	})
-	task.RegisterTask("milestone_tracking", func(app *app.App) task.Tasker {
-		return tasks.NewMilestoneTrackingTask(app)
-	})
-	task.RegisterTask("dependency_management", func(app *app.App) task.Tasker {
-		return tasks.NewDependencyManagementTask(app)
-	})
-	task.RegisterTask("team_capacity", func(app *app.App) task.Tasker {
-		return tasks.NewTeamCapacityTask(app)
-	})
-	task.RegisterTask("report_generation", func(app *app.App) task.Tasker {
-		return tasks.NewReportGenerationTask(app)
-	})
-	task.RegisterTask("stakeholder_update", func(app *app.App) task.Tasker {
-		return tasks.NewStakeholderUpdateTask(app)
 	})
 	task.RegisterTask("priority_management", func(app *app.App) task.Tasker {
 		return tasks.NewPriorityManagementTask(app)
 	})
-	task.RegisterTask("backlog_refinement", func(app *app.App) task.Tasker {
-		return tasks.NewBacklogRefinementTask(app)
+	task.RegisterTask("git_task", func(app *app.App) task.Tasker {
+		return tasks.NewGitTask(app)
 	})
 
 	cobra.EnableCommandSorting = false
