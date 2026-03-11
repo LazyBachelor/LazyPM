@@ -164,6 +164,10 @@ func taskLoop(ctx context.Context, application *task.App, surveyTasks map[string
 		iIdx := idx % len(iNames)
 		selected := interfaces[iNames[iIdx]]
 
+		if selected == nil {
+			return fmt.Errorf("interface %q is nil (available: %v)", iNames[iIdx], iNames)
+		}
+
 		runner := task.NewTaskRunner(application)
 
 		if err := runner.Run(ctx, t, selected, tasks.InterfaceToType(selected)); err != nil {
