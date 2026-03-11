@@ -22,20 +22,18 @@ var rootSuggestions = []prompt.Suggest{
 // commandSuggestions is a list of prompt suggestions for PM commands.
 var baseSuggestions = []prompt.Suggest{
 	{Text: "help", Description: "Show help information"},
-	{Text: "status", Description: "Show task status"},
-	{Text: "delete", Description: "Delete an issue by ID"},
-	{Text: "close", Description: "Close an issue by ID"},
 	{Text: "create", Description: "Create a new issue with title"},
-	{Text: "update", Description: "Update an existing issue by ID"},
 	{Text: "describe", Description: "Get issue details by ID"},
 	{Text: "list", Description: "List all issues"},
+	{Text: "close", Description: "Close an issue by ID"},
+	{Text: "update", Description: "Update an existing issue by ID"},
+	{Text: "delete", Description: "Delete an issue by ID"},
 	{Text: "comment", Description: "Add a comment on an issue by ID"},
 	{Text: "comments", Description: "List comments on an issue by ID"},
 }
 
 // createFlags is a list of prompt suggestions for the create command flags.
 var createFlags = []prompt.Suggest{
-	{Text: "--interactive", Description: "Create issue interactively"},
 	{Text: "--desc", Description: "Issue description"},
 	{Text: "--status", Description: "Issue status (open, closed, in_progress)"},
 	{Text: "--type", Description: "Issue type (bug, feature, task)"},
@@ -60,8 +58,8 @@ var listFlags = []prompt.Suggest{
 	{Text: "--status", Description: "Filter by status (open, closed, in_progress)"},
 	{Text: "--type", Description: "Filter by type (bug, feature, task)"},
 	{Text: "--priority", Description: "Filter by priority (0-4)"},
-	{Text: "--limit", Description: "Limit number of results"},
 	{Text: "--assignee", Description: "Filter by assignee"},
+	{Text: "--limit", Description: "Limit number of results"},
 }
 
 var deleteFlags = []prompt.Suggest{
