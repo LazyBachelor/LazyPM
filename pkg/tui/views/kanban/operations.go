@@ -244,6 +244,11 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.choosingStatus = false
 				m.statusIssueID = ""
 				return m, issues.UpdateIssueStatusCmd(m.app, issueID, string(models.StatusInProgress))
+			case "r":
+				issueID := m.statusIssueID
+				m.choosingStatus = false
+				m.statusIssueID = ""
+				return m, issues.UpdateIssueStatusCmd(m.app, issueID, string(models.StatusReadyToSprint))
 			case "c":
 				issueID := m.statusIssueID
 				m.choosingStatus = false

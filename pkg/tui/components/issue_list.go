@@ -213,7 +213,9 @@ func OpenAndInProgressOnly(issues []*models.Issue) []*models.Issue {
 	// used to display open & in-progress issues in the first window in the dashboard
 	out := make([]*models.Issue, 0, len(issues))
 	for _, issue := range issues {
-		if issue.Status == models.StatusOpen || issue.Status == models.StatusInProgress {
+		if issue.Status == models.StatusOpen ||
+			issue.Status == models.StatusInProgress ||
+			issue.Status == models.StatusReadyToSprint {
 			out = append(out, issue)
 		}
 	}
@@ -237,7 +239,8 @@ func ClosedOnly(issues []*models.Issue) []*models.Issue {
 func StatusOnly(issues []*models.Issue, status models.Status) []*models.Issue {
 	out := make([]*models.Issue, 0, len(issues))
 	for _, issue := range issues {
-		if issue.Status == status {
+		if issue.Status == status ||
+			(status == models.StatusOpen && issue.Status == models.StatusReadyToSprint) {
 			out = append(out, issue)
 		}
 	}
