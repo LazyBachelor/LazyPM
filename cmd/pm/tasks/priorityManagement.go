@@ -124,17 +124,23 @@ func (t *PriorityManagementTask) Validate(ctx context.Context) ValidationFeedbac
 		return expect.ValidationFeedback
 	}
 
+	taskpart1 := 0
+	taskpart2 := 0
 	taskIssue := t.setupIssue
 
 	if taskIssue.Assignee != "Me" {
 		expect.Assert(taskIssue.Assignee == "Me",
 			fmt.Sprintf("'%s' not assigned to you, but to '%s'", taskIssue.Title, taskIssue.Assignee))
-		return expect.ValidationFeedback
+		taskpart1++		
 	}
 
 	if taskIssue.Status == models.StatusOpen {
 		expect.Assert(taskIssue.Status == models.StatusInProgress,
 			fmt.Sprintf("'%s' status should be 'In Progress', but was '%s'", taskIssue.Title, taskIssue.Status))
+		taskpart1++		
+	}
+
+	if taskpart1>0 {
 		return expect.ValidationFeedback
 	}
 
@@ -144,15 +150,20 @@ func (t *PriorityManagementTask) Validate(ctx context.Context) ValidationFeedbac
 			if issues[ii].Priority != 4 {
 				expect.Assert(issues[ii].Priority == 4,
 					fmt.Sprintf("'%s' priority should be 4 (critical), but was '%d'", issues[ii].Title, issues[ii].Priority))
-				return expect.ValidationFeedback
+				taskpart2++
 			}
 		} else {
 			if issues[ii].Priority != 1 {
 				expect.Assert(issues[ii].Priority == 1,
 					fmt.Sprintf("'%s' priority should be 1 (low), but was '%d'", issues[ii].Title, issues[ii].Priority))
-				return expect.ValidationFeedback
+				taskpart2++
 			}
 		}
+	}
+
+
+	if taskpart2>0 {
+		return expect.ValidationFeedback
 	}
 	expect.Assert(taskIssue.Status == models.StatusClosed,
 		fmt.Sprintf("'%s' is not set to closed", taskIssue.Title))
