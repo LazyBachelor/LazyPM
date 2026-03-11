@@ -21,6 +21,8 @@ func NewBeadsIssueStorage(ctx context.Context, storage beads.Storage, prefix str
 		}
 	}
 
+	storage.SetConfig(ctx, "status.custom", "ready_to_sprint")
+
 	return &BeadsService{
 		Storage: storage,
 	}, nil
