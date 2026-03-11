@@ -60,7 +60,8 @@ func init() {
 	UpdateCmd.Flags().StringVarP(&updateFlags.description, "desc", "d", "", "New issue description")
 	UpdateCmd.Flags().StringVarP(&updateFlags.status, "status", "s", "", "New issue status(open, closed, in_progress)")
 	UpdateCmd.Flags().StringVarP(&updateFlags.issueType, "type", "t", "", "New issue type(bug, feature, task)")
-	UpdateCmd.Flags().IntVarP(&updateFlags.priority, "priority", "p", 0, "New issue priority(0-5)")
+	UpdateCmd.Flags().IntVarP(&updateFlags.priority, "priority", "p", 0, "New issue priority(0-4)")
+	UpdateCmd.Flags().StringVarP(&updateFlags.assignee, "assignee", "a", "", "New issue assignee")
 
 	UpdateCmd.RegisterFlagCompletionFunc("type", shellcomp.CompletionFunc(typeOptions))
 	UpdateCmd.RegisterFlagCompletionFunc("status", shellcomp.CompletionFunc(statusOptions))
@@ -91,6 +92,10 @@ func getUpdateValues(cmd *cobra.Command) (map[string]interface{}, error) {
 
 	if cmd.Flags().Changed("priority") {
 		updates["priority"] = updateFlags.priority
+	}
+
+	if cmd.Flags().Changed("assignee") {
+		updates["assignee"] = updateFlags.assignee
 	}
 
 	if len(updates) == 0 {

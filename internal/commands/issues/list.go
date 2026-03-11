@@ -54,6 +54,9 @@ func runGetIssuesCmd(cmd *cobra.Command, args []string) error {
 	if cmd.Flags().Changed("priority") {
 		filter.Priority = &listFlags.priority
 	}
+	if cmd.Flags().Changed("assignee") {
+		filter.Assignee = &listFlags.assignee
+	}
 
 	// Fetch issues based on the search query and filters.
 	app := AppFromContext(cmd.Context())
@@ -76,6 +79,7 @@ func init() {
 	ListCmd.Flags().StringVarP(&listFlags.status, "status", "s", "", "Filter issues by status (open, closed, in_progress)")
 	ListCmd.Flags().StringVarP(&listFlags.issueType, "type", "t", "", "Filter issues by type (bug, feature, task)")
 	ListCmd.Flags().IntVarP(&listFlags.priority, "priority", "p", 0, "Filter issues by priority (0-4)")
+	ListCmd.Flags().StringVarP(&listFlags.assignee, "assignee", "a", "", "Filter issues by assignee")
 
 	ListCmd.Flags().IntVarP(&listFlags.limit, "limit", "l", 25, "Limit the number of issues returned")
 
