@@ -47,16 +47,15 @@ func getTableColumns(width int) []TableColumn {
 		return []TableColumn{
 			{width: 10, label: "ID", key: "id"},
 			{width: 20, label: "TITLE", key: "title"},
-			{width: 13, label: "STATUS", key: "status"},
+			{width: 15, label: "STATUS", key: "status"},
 		}
 	default:
 		return []TableColumn{
-			{width: 10, label: "ID", key: "id"},
-			{width: 24, label: "TITLE", key: "title"},
-			{width: 14, label: "STATUS", key: "status"},
-			{width: 11, label: "TYPE", key: "type"},
-			{width: 13, label: "PRIORITY", key: "priority"},
-			{width: 13, label: "ASSIGNEE", key: "assignee"},
+			{width: 12, label: "ID", key: "id"},
+			{width: 20, label: "TITLE", key: "title"},
+			{width: 15, label: "STATUS", key: "status"},
+			{width: 10, label: "TYPE", key: "type"},
+			{width: 15, label: "PRIORITY", key: "priority"},
 		}
 	}
 }
@@ -341,8 +340,6 @@ func getColumnValue(col TableColumn, issue ListIssue) string {
 		return string(issue.Issue.IssueType)
 	case "priority":
 		return priorityCodeName(issue.Issue.Priority)
-	case "assignee":
-		return issue.Issue.Assignee
 	default:
 		return ""
 	}

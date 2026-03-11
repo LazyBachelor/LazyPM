@@ -49,11 +49,6 @@ type issueTypeUpdatedMsg struct {
 	Err     error
 }
 
-type issueAssigneeUpdatedMsg struct {
-	IssueID string
-	Err     error
-}
-
 type selectIssueMsg struct {
 	IssueID string
 }
@@ -118,14 +113,6 @@ func updateIssueTypeCmd(app *app.App, issueID string, issueType models.IssueType
 		updates := map[string]interface{}{"issue_type": string(issueType)}
 		err := app.Issues.UpdateIssue(context.Background(), issueID, updates, "tui")
 		return issueTypeUpdatedMsg{IssueID: issueID, Err: err}
-	}
-}
-
-func updateIssueAssigneeCmd(app *app.App, issueID, assignee string) tea.Cmd {
-	return func() tea.Msg {
-		updates := map[string]interface{}{"assignee": assignee}
-		err := app.Issues.UpdateIssue(context.Background(), issueID, updates, "tui")
-		return issueAssigneeUpdatedMsg{IssueID: issueID, Err: err}
 	}
 }
 
@@ -220,17 +207,6 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, nil
 		}
 		m.logAction("tui updated issue type")
-		return m, m.refreshIssueListsAndSelectIssue(msg.IssueID)
-
-	case issueAssigneeUpdatedMsg:
-		m.editingAssignee = false
-		m.assigneeIssueID = ""
-		m.assigneeInput.Blur()
-		if msg.Err != nil {
-			m.logAction("tui failed to update issue assignee")
-			return m, nil
-		}
-		m.logAction("tui updated issue assignee")
 		return m, m.refreshIssueListsAndSelectIssue(msg.IssueID)
 
 	case selectIssueMsg:
@@ -501,27 +477,6 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 			var cmd tea.Cmd
 			m.commentInput, cmd = m.commentInput.Update(msg)
-			return m, cmd
-		}
-
-		if m.editingAssignee {
-			if msg.String() == "enter" {
-				assignee := m.assigneeInput.Value()
-				issueID := m.assigneeIssueID
-				m.editingAssignee = false
-				m.assigneeIssueID = ""
-				m.assigneeInput.Blur()
-				return m, updateIssueAssigneeCmd(m.app, issueID, assignee)
-			}
-			if msg.String() == "esc" {
-				m.logAction("tui canceled assignee edit")
-				m.editingAssignee = false
-				m.assigneeIssueID = ""
-				m.assigneeInput.Blur()
-				return m, nil
-			}
-			var cmd tea.Cmd
-			m.assigneeInput, cmd = m.assigneeInput.Update(msg)
 			return m, cmd
 		}
 
