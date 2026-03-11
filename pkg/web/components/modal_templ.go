@@ -41,7 +41,7 @@ func Modal(props ModalProps) templ.Component {
 		ctx = templ.ClearChildren(ctx)
 		maxWidth := props.MaxWidth
 		if maxWidth == "" {
-			maxWidth = "max-w-xl"
+			maxWidth = "max-w-2xl"
 		}
 		var templ_7745c5c3_Var2 = []any{"fixed inset-0 z-50 items-center justify-center mx-auto", maxWidth}
 		templ_7745c5c3_Err = templ.RenderCSSItems(ctx, templ_7745c5c3_Buffer, templ_7745c5c3_Var2...)

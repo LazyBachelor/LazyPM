@@ -5,12 +5,14 @@ import (
 )
 
 var interfaceRegistry = make(map[string]Interface)
+var interfaceOrder []string
 
 func RegisterInterface(name string, iface Interface) {
 	if _, exists := interfaceRegistry[name]; exists {
 		panic(fmt.Sprintf("interface %q already registered", name))
 	}
 	interfaceRegistry[name] = iface
+	interfaceOrder = append(interfaceOrder, name)
 }
 
 func GetInterface(name string) (Interface, error) {
@@ -22,20 +24,20 @@ func GetInterface(name string) (Interface, error) {
 }
 
 func ListInterfaces() []string {
-	names := make([]string, 0, len(interfaceRegistry))
-	for name := range interfaceRegistry {
-		names = append(names, name)
-	}
+	names := make([]string, len(interfaceOrder))
+	copy(names, interfaceOrder)
 	return names
 }
 
 var taskRegistry = make(map[string]func(*App) Tasker)
+var taskOrder []string
 
 func RegisterTask(name string, constructor func(*App) Tasker) {
 	if _, exists := taskRegistry[name]; exists {
 		panic(fmt.Sprintf("task %q already registered", name))
 	}
 	taskRegistry[name] = constructor
+	taskOrder = append(taskOrder, name)
 }
 
 func GetTask(name string, app *App) (Tasker, error) {
@@ -47,9 +49,7 @@ func GetTask(name string, app *App) (Tasker, error) {
 }
 
 func ListTasks() []string {
-	names := make([]string, 0, len(taskRegistry))
-	for name := range taskRegistry {
-		names = append(names, name)
-	}
+	names := make([]string, len(taskOrder))
+	copy(names, taskOrder)
 	return names
 }

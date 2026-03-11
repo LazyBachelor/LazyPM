@@ -58,6 +58,11 @@ func HandleTaskStatusModal(w http.ResponseWriter, r *http.Request) {
 
 func feedbackList(feedback ValidationFeedback) templ.Component {
 	return templ.ComponentFunc(func(ctx context.Context, w io.Writer) error {
+		if feedback.Success {
+			io.WriteString(w, `<p class="my-2">`+feedback.Message+`</p>`)
+			io.WriteString(w, `<p class="my-2 text-xl">You can close the browser and return to the terminal window</p>`)
+		}
+
 		for _, check := range feedback.Checks {
 			if !check.Valid {
 				io.WriteString(w, `<p class="my-2 text-sm">`+"❌ "+check.Message+`</p>`)

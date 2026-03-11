@@ -146,7 +146,8 @@ func taskLoop(ctx context.Context, application *task.App, surveyTasks map[string
 		return fmt.Errorf("no interfaces are available")
 	}
 
-	if len(surveyTasks) == 0 {
+	taskNames := task.ListTasks()
+	if len(taskNames) == 0 {
 		return fmt.Errorf("no tasks are available")
 	}
 
@@ -155,9 +156,17 @@ func taskLoop(ctx context.Context, application *task.App, surveyTasks map[string
 	})
 
 	idx := 0
-	for _, t := range surveyTasks {
+	for _, taskName := range taskNames {
+		t, ok := surveyTasks[taskName]
+		if !ok {
+			continue
+		}
 		iIdx := idx % len(iNames)
 		selected := interfaces[iNames[iIdx]]
+
+		if selected == nil {
+			return fmt.Errorf("interface %q is nil (available: %v)", iNames[iIdx], iNames)
+		}
 
 		runner := task.NewTaskRunner(application)
 
