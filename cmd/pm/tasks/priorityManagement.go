@@ -126,8 +126,10 @@ func (t *PriorityManagementTask) Validate(ctx context.Context) ValidationFeedbac
 	expect.NotEmptyAndEqual(t.setupIssue.Assignee, "Me",
 		fmt.Sprintf("%s assignee", t.setupIssue.Title))
 
-	expect.Equal(t.setupIssue.Status, models.StatusInProgress,
-		fmt.Sprintf("%s status", t.setupIssue.Title))
+	if t.setupIssue.Status != models.StatusClosed {
+		expect.Equal(t.setupIssue.Status, models.StatusInProgress,
+			fmt.Sprintf("%s status", t.setupIssue.Title))
+	}
 
 	if !expect.Valid() {
 		return expect.ValidationFeedback
@@ -135,11 +137,16 @@ func (t *PriorityManagementTask) Validate(ctx context.Context) ValidationFeedbac
 
 	for _, issue := range issues {
 		if issue.Title == t.priorityIssues[0].Title {
-			expect.Equal(issue.Priority, 4, fmt.Sprintf("Priority of issue %s", issue.Title))
+			expect.Equal(issue.Priority, 4,
+				fmt.Sprintf("Priority of issue %s", issue.Title))
 		} else {
-			expect.Equal(issue.Priority, 1, fmt.Sprintf("Priority of issue %s", issue.Title))
+			expect.Equal(issue.Priority, 1,
+				fmt.Sprintf("Priority of issue %s", issue.Title))
 		}
 	}
+
+	expect.Equal(t.setupIssue.Status, models.StatusClosed,
+		fmt.Sprintf("%s status", t.setupIssue.Title))
 
 	return expect.Complete()
 }

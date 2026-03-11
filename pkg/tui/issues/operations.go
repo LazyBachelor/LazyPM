@@ -15,6 +15,7 @@ type (
 	StatusUpdatedMsg   struct{ IssueID string; Err error }
 	PriorityUpdatedMsg struct{ IssueID string; Err error }
 	TypeUpdatedMsg     struct{ IssueID string; Err error }
+	AssigneeUpdatedMsg struct{ IssueID string; Err error }
 	SelectIssueMsg     struct{ IssueID string }
 	CreatedMsg         struct{ Issue *models.Issue; Err error }
 	DeletedMsg         struct{ IssueID string; Err error; PreviousIndex int }
@@ -62,6 +63,15 @@ func UpdateIssueTypeCmd(app *app.App, issueID string, issueType models.IssueType
 		updates := map[string]interface{}{"issue_type": string(issueType)}
 		err := app.Issues.UpdateIssue(context.Background(), issueID, updates, "tui")
 		return TypeUpdatedMsg{IssueID: issueID, Err: err}
+	}
+}
+
+// UpdateIssueAssigneeCmd returns a command that updates an issue's assignee.
+func UpdateIssueAssigneeCmd(app *app.App, issueID, assignee string) tea.Cmd {
+	return func() tea.Msg {
+		updates := map[string]interface{}{"assignee": assignee}
+		err := app.Issues.UpdateIssue(context.Background(), issueID, updates, "tui")
+		return AssigneeUpdatedMsg{IssueID: issueID, Err: err}
 	}
 }
 

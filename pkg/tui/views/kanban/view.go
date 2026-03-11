@@ -93,6 +93,8 @@ func (m *Model) View() string {
 		m.priorityIssueID,
 		m.choosingType,
 		m.typeIssueID,
+		m.editingAssignee,
+		m.assigneeInput.View(),
 		mainView,
 	)
 

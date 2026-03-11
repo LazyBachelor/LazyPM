@@ -118,6 +118,22 @@ func RenderChoosePriority(width, height int, issueID string) string {
 	return lipgloss.Place(width, height, lipgloss.Center, lipgloss.Center, priorityBox)
 }
 
+func RenderEditAssignee(width, height int, inputView string) string {
+	if width < 5 || height < 5 {
+		return ""
+	}
+	editBoxWidth := modalBoxWidth(60, width)
+	editContent := lipgloss.JoinVertical(lipgloss.Left,
+		styles.LabelStyle.Render("Edit assignee (Enter to save, Esc to cancel):"),
+		inputView,
+	)
+	editBox := styles.ContainerStyle.
+		Width(editBoxWidth).
+		BorderForeground(styles.PrimaryBorder).
+		Render(editContent)
+	return lipgloss.Place(width, height, lipgloss.Center, lipgloss.Center, editBox)
+}
+
 func RenderChooseType(width, height int, issueID string) string {
 	if width < 5 || height < 5 {
 		return ""
@@ -148,6 +164,7 @@ func RenderModals(
 	choosingStatus bool, statusIssueID string,
 	choosingPriority bool, priorityIssueID string,
 	choosingType bool, typeIssueID string,
+	editingAssignee bool, assigneeInputView string,
 	mainView string,
 ) string {
 	if editingTitle {
@@ -176,6 +193,10 @@ func RenderModals(
 
 	if choosingType {
 		return RenderChooseType(width, height, typeIssueID)
+	}
+
+	if editingAssignee {
+		return RenderEditAssignee(width, height, assigneeInputView)
 	}
 
 	return mainView
