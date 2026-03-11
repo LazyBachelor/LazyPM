@@ -5,6 +5,7 @@ import (
 	"os"
 	"text/tabwriter"
 
+	"charm.land/lipgloss/v2"
 	"github.com/muesli/reflow/truncate"
 	"github.com/steveyegge/beads"
 )
@@ -80,15 +81,26 @@ const (
 )
 
 func IssueString(issue Issue) string {
-	return fmt.Sprintf(
-		"ID: %s\nTitle: %s\nDescription: %s\nStatus: %s\nType: %s\nPriority: %d",
-		issue.ID,
-		issue.Title,
-		issue.Description,
-		issue.Status,
-		issue.IssueType,
-		issue.Priority,
+	labelStyle := lipgloss.NewStyle().
+		Bold(true).Foreground(lipgloss.Color("5"))
+
+	titleStyle := lipgloss.NewStyle().
+		Bold(true).Foreground(lipgloss.Color("6"))
+
+	boxStyle := lipgloss.NewStyle().Padding(1)
+
+	line := func(label, value string) string {
+		return labelStyle.Render(label) + ": " + value + "\t"
+	}
+
+	content := lipgloss.JoinVertical(
+		lipgloss.Left,
+		line("Title", titleStyle.Render(issue.Title)+"\t"+line("Assignee", issue.Assignee)),
+		line("ID", issue.ID+"\t"+line("Type", string(issue.IssueType))+line("Status", string(issue.Status))+line("Priority", fmt.Sprintf("%d", issue.Priority))),
+		line("Description", "\n"+issue.Description),
 	)
+
+	return boxStyle.Render(content)
 }
 
 func IssuesPtrToIssues(issuePtr []*Issue) []Issue {
