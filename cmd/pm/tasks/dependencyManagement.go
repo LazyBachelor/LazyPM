@@ -2,6 +2,7 @@ package tasks
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/LazyBachelor/LazyPM/internal/models"
 	"github.com/LazyBachelor/LazyPM/internal/utils/check"
@@ -12,11 +13,11 @@ const dependencyManagementDescription = `You are tasked with managing issue depe
 
 Several issues in your project have dependencies on other issues. You need to:
 
-1. Review the dependency chain described in issue descriptions
-2. Identify issues that are blocked by others
-3. Prioritize work on foundational issues (those that unblock others)
-4. Update issue statuses to reflect dependency resolution
-5. Ensure no circular dependencies exist
+1. Find the 4 issues that mention dependencies in their detail description. For example: "Depends on Issue '123'". Set their status to "blocked".
+2. Find the 2 foundational issues that are mentioned by the other issues.
+3. Set priority of the 2 foundational issues to 3 (high).
+4. Set status of the 2 foundational issues to in-progress.
+5. Assign the 2 foundational issues to yourself as "Me".
 
 Resolving dependencies in the right order is critical for efficient team workflow.`
 
@@ -65,36 +66,43 @@ func (t *DependencyManagementTask) Setup(ctx context.Context) error {
 		NewIssueBuilder().
 			WithTitle("Setup database connection").
 			WithDescription("Configure database connection pool.").
-			WithPriority(1).
+			WithPriority(2).
 			WithStatus(models.StatusOpen).
 			WithIssueType(models.TypeTask).
 			Build(),
 		NewIssueBuilder().
-			WithTitle("Define API contract").
-			WithDescription("Create OpenAPI spec.").
-			WithPriority(1).
+			WithTitle("Implement Authentication System").
+			WithDescription("Add login/logout functionality. Depends on 'Setup database connection' issue.").
+			WithPriority(2).
 			WithStatus(models.StatusOpen).
 			WithIssueType(models.TypeTask).
 			Build(),
 		NewIssueBuilder().
-			WithTitle("Implement user repository").
-			WithDescription("Implement data access layer for user management.").
-			WithPriority(2).
-			WithStatus(models.StatusBlocked).
-			WithIssueType(models.TypeTask).
-			Build(),
-		NewIssueBuilder().
-			WithTitle("Create user endpoints").
-			WithDescription("REST API for users.").
-			WithPriority(2).
-			WithStatus(models.StatusBlocked).
-			WithIssueType(models.TypeTask).
-			Build(),
-		NewIssueBuilder().
-			WithTitle("Build user profile UI").
-			WithDescription("Frontend user profile page.").
+			WithTitle("Add user management operations").
+			WithDescription("Add operations for user management. Depends on 'Setup database connection' issue.").
 			WithPriority(3).
-			WithStatus(models.StatusBlocked).
+			WithStatus(models.StatusOpen).
+			WithIssueType(models.TypeTask).
+			Build(),
+		NewIssueBuilder().
+			WithTitle("Create home page for the website").
+			WithDescription("Create a page for the website.").
+			WithPriority(2).
+			WithStatus(models.StatusOpen).
+			WithIssueType(models.TypeTask).
+			Build(),
+		NewIssueBuilder().
+			WithTitle("Create user profile page").
+			WithDescription("Frontend user profile page. Depends on 'Create home page for the website' issue.").
+			WithPriority(3).
+			WithStatus(models.StatusOpen).
+			WithIssueType(models.TypeTask).
+			Build(),
+		NewIssueBuilder().
+			WithTitle("Create about page").
+			WithDescription("Frontend about page. Depends on 'Create home page for the website' issue.").
+			WithPriority(2).
+			WithStatus(models.StatusOpen).
 			WithIssueType(models.TypeTask).
 			Build(),
 	}
@@ -113,6 +121,48 @@ func (t *DependencyManagementTask) Setup(ctx context.Context) error {
 
 func (t *DependencyManagementTask) Validate(ctx context.Context) ValidationFeedback {
 	expect := check.NewExpector()
+
+	taskIssue := t.setupIssue
+	issues, err := FetchIssues(ctx, t.app, t.setupIssue)
+	if err != nil {
+		return expect.ValidationFeedback
+	}
+
+
+
+
+	for _, issue := range issues {
+		if issue.Title == "Implement Authentication System" || issue.Title == "Add user management operations" || issue.Title == "Create user profile page" || issue.Title == "Create about page" {
+			expect.Equal(issue.Status, models.StatusBlocked,
+				fmt.Sprintf("%s status", issue.Title))
+		}
+
+	}
+
+	if expect.Errors() != nil {
+		return expect.ValidationFeedback
+	}
+
+	for _, issue := range issues {
+		if issue.Title == "Setup database connection" || issue.Title == "Create home page for the website" {
+			expect.Equal(issue.Priority, 3,
+				fmt.Sprintf("Priority of '%s' should be 3 (high)", issue.Title))	
+			expect.Equal(issue.Assignee, "Me",
+				fmt.Sprintf("Assignee of '%s' should be 'Me'", issue.Title))
+		}
+	}
+
+	if expect.Errors() != nil {
+		return expect.ValidationFeedback
+	}
+
+	expect.Assert(taskIssue.Status == models.StatusClosed,
+		fmt.Sprintf("'%s' should be set to closed", taskIssue.Title))
+
+
+
+
+
 
 	return expect.Complete()
 }
