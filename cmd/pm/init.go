@@ -35,6 +35,9 @@ func init() {
 	task.RegisterTask("issue_triage", func(app *app.App) task.Tasker {
 		return tasks.NewIssueTriageTask(app)
 	})
+	task.RegisterTask("issue_review_cleanup", func(app *app.App) task.Tasker {
+		return tasks.NewIssueReviewCleanupTask(app)
+	})
 	task.RegisterTask("milestone_tracking", func(app *app.App) task.Tasker {
 		return tasks.NewMilestoneTrackingTask(app)
 	})
