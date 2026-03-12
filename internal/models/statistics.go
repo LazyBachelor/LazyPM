@@ -20,7 +20,10 @@ type Statistics struct {
 	TotalDurationMs   int64 `bson:"total_duration_ms" json:"total_duration_ms"`
 	AverageDurationMs int64 `bson:"average_duration_ms" json:"average_duration_ms"`
 
-	TotalUserActions        int `bson:"total_user_actions" json:"total_user_actions"`
+	TotalUserActions int `bson:"total_user_actions" json:"total_user_actions"`
+
+	IntroQuestionnaireAnswers map[string]any `bson:"intro_questionnaire_answers" json:"intro_questionnaire_answers"`
+
 	QuestionnairesCompleted int `bson:"questionnaires_completed" json:"questionnaires_completed"`
 	QuestionnairesAbandoned int `bson:"questionnaires_abandoned" json:"questionnaires_abandoned"`
 
