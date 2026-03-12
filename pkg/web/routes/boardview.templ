@@ -62,6 +62,7 @@ templ BoardColumns(issues []*models.Issue) {
 	{{
 		openIssues := []*models.Issue{}
 		inProgressIssues := []*models.Issue{}
+		blockedIssues := []*models.Issue{}
 		readyToSprintIssues := []*models.Issue{}
 		closedIssues := []*models.Issue{}
 
@@ -71,6 +72,8 @@ templ BoardColumns(issues []*models.Issue) {
 				openIssues = append(openIssues, issue)
 			case "in_progress":
 				inProgressIssues = append(inProgressIssues, issue)
+			case "blocked":
+				blockedIssues = append(blockedIssues, issue)
 			case "ready_to_sprint":
 				readyToSprintIssues = append(readyToSprintIssues, issue)
 			case "closed":
@@ -81,6 +84,7 @@ templ BoardColumns(issues []*models.Issue) {
 	<div class="flex gap-4 h-full" id="board-columns">
 		@BoardColumn("Open", "open", openIssues, "badge-info")
 		@BoardColumn("In Progress", "in_progress", inProgressIssues, "badge-warning")
+		@BoardColumn("Blocked", "blocked", blockedIssues, "badge-error")
 		@BoardColumn("Ready to sprint", "ready_to_sprint", readyToSprintIssues, "badge-primary")
 		@BoardColumn("Closed", "closed", closedIssues, "badge-success")
 	</div>

@@ -57,6 +57,7 @@ templ IssueForm(props IssueFormProps) {
 				Options: []base.SelectOption{
 					{Label: "Open", Value: "open", Selected: props.Status == "open"},
 					{Label: "In Progress", Value: "in_progress", Selected: props.Status == "in_progress"},
+					{Label: "Blocked", Value: "blocked", Selected: props.Status == "blocked"},
 					{Label: "Ready to sprint", Value: "ready_to_sprint", Selected: props.Status == "ready_to_sprint"},
 					{Label: "Closed", Value: "closed", Selected: props.Status == "closed"},
 				},

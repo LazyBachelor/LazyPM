@@ -140,6 +140,7 @@ func BoardColumns(issues []*models.Issue) templ.Component {
 		ctx = templ.ClearChildren(ctx)
 		openIssues := []*models.Issue{}
 		inProgressIssues := []*models.Issue{}
+		blockedIssues := []*models.Issue{}
 		readyToSprintIssues := []*models.Issue{}
 		closedIssues := []*models.Issue{}
 
@@ -149,6 +150,8 @@ func BoardColumns(issues []*models.Issue) templ.Component {
 				openIssues = append(openIssues, issue)
 			case "in_progress":
 				inProgressIssues = append(inProgressIssues, issue)
+			case "blocked":
+				blockedIssues = append(blockedIssues, issue)
 			case "ready_to_sprint":
 				readyToSprintIssues = append(readyToSprintIssues, issue)
 			case "closed":
@@ -164,6 +167,10 @@ func BoardColumns(issues []*models.Issue) templ.Component {
 			return templ_7745c5c3_Err
 		}
 		templ_7745c5c3_Err = BoardColumn("In Progress", "in_progress", inProgressIssues, "badge-warning").Render(ctx, templ_7745c5c3_Buffer)
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = BoardColumn("Blocked", "blocked", blockedIssues, "badge-error").Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -211,7 +218,7 @@ func BoardColumn(title string, status string, issues []*models.Issue, badgeClass
 		var templ_7745c5c3_Var6 string
 		templ_7745c5c3_Var6, templ_7745c5c3_Err = templ.JoinStringErrs(status)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/web/routes/boardview.templ`, Line: 90, Col: 77}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/web/routes/boardview.templ`, Line: 94, Col: 77}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var6))
 		if templ_7745c5c3_Err != nil {
@@ -224,7 +231,7 @@ func BoardColumn(title string, status string, issues []*models.Issue, badgeClass
 		var templ_7745c5c3_Var7 string
 		templ_7745c5c3_Var7, templ_7745c5c3_Err = templ.JoinStringErrs(title)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/web/routes/boardview.templ`, Line: 92, Col: 44}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/web/routes/boardview.templ`, Line: 96, Col: 44}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var7))
 		if templ_7745c5c3_Err != nil {
@@ -259,7 +266,7 @@ func BoardColumn(title string, status string, issues []*models.Issue, badgeClass
 		var templ_7745c5c3_Var10 string
 		templ_7745c5c3_Var10, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%d", len(issues)))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/web/routes/boardview.templ`, Line: 93, Col: 71}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/web/routes/boardview.templ`, Line: 97, Col: 71}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var10))
 		if templ_7745c5c3_Err != nil {
@@ -272,7 +279,7 @@ func BoardColumn(title string, status string, issues []*models.Issue, badgeClass
 		var templ_7745c5c3_Var11 string
 		templ_7745c5c3_Var11, templ_7745c5c3_Err = templ.JoinStringErrs(status)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/web/routes/boardview.templ`, Line: 95, Col: 110}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/web/routes/boardview.templ`, Line: 99, Col: 110}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var11))
 		if templ_7745c5c3_Err != nil {
@@ -330,7 +337,7 @@ func BoardCard(issue *models.Issue) templ.Component {
 		var templ_7745c5c3_Var13 string
 		templ_7745c5c3_Var13, templ_7745c5c3_Err = templ.JoinStringErrs(issue.ID)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/web/routes/boardview.templ`, Line: 110, Col: 26}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/web/routes/boardview.templ`, Line: 114, Col: 26}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var13))
 		if templ_7745c5c3_Err != nil {
@@ -343,7 +350,7 @@ func BoardCard(issue *models.Issue) templ.Component {
 		var templ_7745c5c3_Var14 string
 		templ_7745c5c3_Var14, templ_7745c5c3_Err = templ.JoinStringErrs(issue.Title)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/web/routes/boardview.templ`, Line: 114, Col: 80}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/web/routes/boardview.templ`, Line: 118, Col: 80}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var14))
 		if templ_7745c5c3_Err != nil {
@@ -356,7 +363,7 @@ func BoardCard(issue *models.Issue) templ.Component {
 		var templ_7745c5c3_Var15 string
 		templ_7745c5c3_Var15, templ_7745c5c3_Err = templ.JoinStringErrs("/issues/" + issue.ID + "?from=board")
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/web/routes/boardview.templ`, Line: 118, Col: 52}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/web/routes/boardview.templ`, Line: 122, Col: 52}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var15))
 		if templ_7745c5c3_Err != nil {
@@ -369,7 +376,7 @@ func BoardCard(issue *models.Issue) templ.Component {
 		var templ_7745c5c3_Var16 string
 		templ_7745c5c3_Var16, templ_7745c5c3_Err = templ.JoinStringErrs("/issues/" + issue.ID + "/edit?from=board")
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/web/routes/boardview.templ`, Line: 130, Col: 57}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/web/routes/boardview.templ`, Line: 134, Col: 57}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var16))
 		if templ_7745c5c3_Err != nil {
@@ -382,7 +389,7 @@ func BoardCard(issue *models.Issue) templ.Component {
 		var templ_7745c5c3_Var17 string
 		templ_7745c5c3_Var17, templ_7745c5c3_Err = templ.JoinStringErrs(issue.ID)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/web/routes/boardview.templ`, Line: 142, Col: 65}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/web/routes/boardview.templ`, Line: 146, Col: 65}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var17))
 		if templ_7745c5c3_Err != nil {
@@ -412,7 +419,7 @@ func BoardCard(issue *models.Issue) templ.Component {
 			var templ_7745c5c3_Var18 string
 			templ_7745c5c3_Var18, templ_7745c5c3_Err = templ.JoinStringErrs(issue.Description)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/web/routes/boardview.templ`, Line: 147, Col: 81}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/web/routes/boardview.templ`, Line: 151, Col: 81}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var18))
 			if templ_7745c5c3_Err != nil {

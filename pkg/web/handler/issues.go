@@ -17,7 +17,7 @@ const commentsKey = "comments"
 type IssueForm struct {
 	Title       string           `form:"title" validate:"required,max=255"`
 	Description string           `form:"description" validate:"max=2000"`
-	Status      models.Status    `form:"status" validate:"required,oneof=open in_progress ready_to_sprint closed"`
+	Status      models.Status    `form:"status" validate:"required,oneof=open in_progress blocked ready_to_sprint closed"`
 	IssueType   models.IssueType `form:"issue_type" validate:"required,oneof=task bug feature chore"`
 	Priority    int              `form:"priority" validate:"gte=0,lte=4"`
 }
@@ -25,7 +25,7 @@ type IssueForm struct {
 type UpdateIssueForm struct {
 	Title       *string           `form:"title" validate:"omitempty,max=255"`
 	Description *string           `form:"description" validate:"omitempty,max=2000"`
-	Status      *models.Status    `form:"status" validate:"omitempty,oneof=open in_progress ready_to_sprint closed"`
+	Status      *models.Status    `form:"status" validate:"omitempty,oneof=open in_progress blocked ready_to_sprint closed"`
 	CloseReason *string           `form:"close_reason" validate:"omitempty,max=2000"`
 	IssueType   *models.IssueType `form:"issue_type" validate:"omitempty,oneof=task bug feature chore"`
 	Priority    *int              `form:"priority" validate:"omitempty,gte=0,lte=4"`
