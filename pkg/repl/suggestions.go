@@ -79,6 +79,7 @@ var statusValues = []prompt.Suggest{
 	{Text: "open", Description: "Open status"},
 	{Text: "closed", Description: "Closed status"},
 	{Text: "in_progress", Description: "In progress status"},
+	{Text: "blocked", Description: "Blocked status"},
 	{Text: "ready_to_sprint", Description: "Ready to sprint status"},
 }
 

@@ -25,6 +25,7 @@ type DependencyManagementTask struct {
 	done       bool
 	app        *App
 	setupIssue *Issue
+	depIssues  []*Issue
 }
 
 func NewDependencyManagementTask(app *App) *DependencyManagementTask {
@@ -62,10 +63,17 @@ func (t *DependencyManagementTask) Setup(ctx context.Context) error {
 		return err
 	}
 
-	depIssues := []*Issue{
+	t.depIssues = []*Issue{
 		NewIssueBuilder().
 			WithTitle("Setup database connection").
 			WithDescription("Configure database connection pool.").
+			WithPriority(2).
+			WithStatus(models.StatusOpen).
+			WithIssueType(models.TypeTask).
+			Build(),
+		NewIssueBuilder().
+			WithTitle("Create home page for the website").
+			WithDescription("Create a page for the website.").
 			WithPriority(2).
 			WithStatus(models.StatusOpen).
 			WithIssueType(models.TypeTask).
@@ -85,13 +93,6 @@ func (t *DependencyManagementTask) Setup(ctx context.Context) error {
 			WithIssueType(models.TypeTask).
 			Build(),
 		NewIssueBuilder().
-			WithTitle("Create home page for the website").
-			WithDescription("Create a page for the website.").
-			WithPriority(2).
-			WithStatus(models.StatusOpen).
-			WithIssueType(models.TypeTask).
-			Build(),
-		NewIssueBuilder().
 			WithTitle("Create user profile page").
 			WithDescription("Frontend user profile page. Depends on 'Create home page for the website' issue.").
 			WithPriority(3).
@@ -107,7 +108,7 @@ func (t *DependencyManagementTask) Setup(ctx context.Context) error {
 			Build(),
 	}
 
-	if err := t.app.Issues.CreateIssues(ctx, depIssues, ""); err != nil {
+	if err := t.app.Issues.CreateIssues(ctx, t.depIssues, ""); err != nil {
 		return err
 	}
 
@@ -125,46 +126,36 @@ func (t *DependencyManagementTask) Validate(ctx context.Context) ValidationFeedb
 	taskIssue := t.setupIssue
 	issues, err := FetchIssues(ctx, t.app, t.setupIssue)
 	if err != nil {
-		return expect.ValidationFeedback
+		return expect.Fatal("Could not fetch issues")
 	}
 
-
-
-
 	for _, issue := range issues {
-		if issue.Title == "Implement Authentication System" || issue.Title == "Add user management operations" || issue.Title == "Create user profile page" || issue.Title == "Create about page" {
-			expect.Equal(issue.Status, models.StatusBlocked,
-				fmt.Sprintf("%s status", issue.Title))
+		for _, depIssue := range t.depIssues[2:] {
+			if issue.Title == depIssue.Title {
+				expect.Equal(issue.Status, models.StatusBlocked,
+					fmt.Sprintf("%s status", issue.Title))
+			}
+		}
+
+		for _, foundationalIssue := range t.depIssues[:2] {
+			if issue.Title == foundationalIssue.Title {
+				expect.Equal(issue.Priority, 3,
+					fmt.Sprintf("%s priority", issue.Title))
+				expect.Equal(issue.Assignee, "Me",
+					fmt.Sprintf("%s assignee", issue.Title))
+				expect.Equal(issue.Status, models.StatusInProgress,
+					fmt.Sprintf("%s status", issue.Title))
+			}
 		}
 
 	}
 
-	if expect.Errors() != nil {
+	if !expect.Valid() {
 		return expect.ValidationFeedback
 	}
 
-	for _, issue := range issues {
-		if issue.Title == "Setup database connection" || issue.Title == "Create home page for the website" {
-			expect.Equal(issue.Priority, 3,
-				fmt.Sprintf("Priority of '%s' should be 3 (high)", issue.Title))	
-			expect.Equal(issue.Assignee, "Me",
-				fmt.Sprintf("Assignee of '%s' should be 'Me'", issue.Title))
-			expect.Equal(issue.Status, models.StatusInProgress,
-				fmt.Sprintf("Status of '%s' should be In Progress", issue.Title))
-		}
-	}
-
-	if expect.Errors() != nil {
-		return expect.ValidationFeedback
-	}
-
-	expect.Assert(taskIssue.Status == models.StatusClosed,
-		fmt.Sprintf("'%s' should be set to closed", taskIssue.Title))
-
-
-
-
-
+	expect.Equal(taskIssue.Status, models.StatusClosed,
+		fmt.Sprintf("%s", taskIssue.Title))
 
 	return expect.Complete()
 }
