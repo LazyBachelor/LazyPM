@@ -38,34 +38,35 @@ type keyMap struct {
 	Quit     key.Binding
 }
 
-var keys = keyMap{
-	Start: key.NewBinding(
-		key.WithKeys("enter"),
-		key.WithHelp("enter", "start survey"),
-	),
-	Continue: key.NewBinding(
-		key.WithKeys(" ", "j", "l", "down", "right"),
-		key.WithHelp("space", "continue"),
-	),
-	Back: key.NewBinding(
-		key.WithKeys("b", "k", "h", "backspace", "up", "left"),
-		key.WithHelp("b", "back"),
-	),
-	Quit: key.NewBinding(
-		key.WithKeys("esc", "ctrl+c", "q"),
-		key.WithHelp("esc", "quit"),
-	),
-}
-
 type introModel struct {
 	stage         int
 	width, height int
 	userQuit      bool
+	keys          keyMap
 }
 
 func newIntroModel() introModel {
+	var keys = keyMap{
+		Start: key.NewBinding(
+			key.WithKeys("enter"),
+			key.WithHelp("enter", "start survey"),
+		),
+		Continue: key.NewBinding(
+			key.WithKeys(" ", "j", "l", "down", "right"),
+			key.WithHelp("space", "continue"),
+		),
+		Back: key.NewBinding(
+			key.WithKeys("b", "k", "h", "backspace", "up", "left"),
+			key.WithHelp("b", "back"),
+		),
+		Quit: key.NewBinding(
+			key.WithKeys("esc", "ctrl+c", "q"),
+			key.WithHelp("esc", "quit"),
+		),
+	}
 	return introModel{
 		stage: 1,
+		keys:  keys,
 	}
 }
 
@@ -90,18 +91,18 @@ func (m introModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.SetSize(msg.Width, msg.Height)
 	case tea.KeyMsg:
 		switch {
-		case key.Matches(msg, keys.Start) && m.stage == stages:
+		case key.Matches(msg, m.keys.Start) && m.stage == stages:
 			return m, tea.Quit
-		case key.Matches(msg, keys.Continue):
+		case key.Matches(msg, m.keys.Continue):
 			if m.stage < stages {
 				m.stage++
 			}
-		case key.Matches(msg, keys.Back):
+		case key.Matches(msg, m.keys.Back):
 			if m.stage > 1 {
 				m.stage--
 			}
 			return m, nil
-		case key.Matches(msg, keys.Quit):
+		case key.Matches(msg, m.keys.Quit):
 			m.userQuit = true
 			return m, tea.Quit
 		}
@@ -139,11 +140,11 @@ func (m introModel) View() string {
 	b.WriteString(boxStyle.Render(style.TextStyle.Render(content)))
 	b.WriteString("\n")
 
-	helpText := "Press " + keys.Continue.Help().Key + " to continue • " +
-		keys.Back.Help().Key + " to go back • " + keys.Quit.Help().Key + " to quit"
+	helpText := "Press " + m.keys.Continue.Help().Key + " to continue • " +
+		m.keys.Back.Help().Key + " to go back • " + m.keys.Quit.Help().Key + " to quit"
 
 	if m.stage == stages {
-		helpText += "\nPress " + keys.Start.Help().Key + " to start the survey"
+		helpText += "\nPress " + m.keys.Start.Help().Key + " to start the survey"
 	}
 
 	b.WriteString(style.HelpStyle.Render(helpText))
