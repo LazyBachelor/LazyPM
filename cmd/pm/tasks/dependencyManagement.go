@@ -149,6 +149,8 @@ func (t *DependencyManagementTask) Validate(ctx context.Context) ValidationFeedb
 				fmt.Sprintf("Priority of '%s' should be 3 (high)", issue.Title))	
 			expect.Equal(issue.Assignee, "Me",
 				fmt.Sprintf("Assignee of '%s' should be 'Me'", issue.Title))
+			expect.Equal(issue.Status, models.StatusInProgress,
+				fmt.Sprintf("Status of '%s' should be In Progress", issue.Title))
 		}
 	}
 
