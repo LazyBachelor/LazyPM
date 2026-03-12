@@ -230,6 +230,7 @@ func OpenAndInProgressOnly(issues []*models.Issue) []*models.Issue {
 	for _, issue := range issues {
 		if issue.Status == models.StatusOpen ||
 			issue.Status == models.StatusInProgress ||
+			issue.Status == models.StatusBlocked ||
 			issue.Status == models.StatusReadyToSprint {
 			out = append(out, issue)
 		}

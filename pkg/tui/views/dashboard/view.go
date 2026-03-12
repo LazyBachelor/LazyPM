@@ -149,7 +149,7 @@ func (m *Model) View() string {
 	if m.choosingStatus {
 		statusContent := lipgloss.JoinVertical(lipgloss.Left,
 			styles.LabelStyle.Render("Change status for "+m.statusIssueID+":"),
-			lipgloss.NewStyle().Foreground(styles.FaintText).Render("o = open   i = in_progress   c = closed	ready_to_sprint = r"),
+			lipgloss.NewStyle().Foreground(styles.FaintText).Render("o = open   i = in_progress   b = blocked   r = ready_to_sprint   c = closed"),
 			lipgloss.NewStyle().Foreground(styles.FaintText).Render("Esc = cancel"),
 		)
 		statusBoxWidth := min(50, m.width-4)
