@@ -129,16 +129,16 @@ func runStartCmd(cmd *cobra.Command, args []string) error {
 		if err := newIntroModel().Run(); err != nil {
 			return returnIfUserQuit(err, "failed to run intro")
 		}
-	}
 
-	introAnswers, err := newIntroQuestionnaire().Run()
-	if err != nil {
-		return returnIfUserQuit(err, "failed to run intro questionnaire")
-	}
+		introAnswers, err := newIntroQuestionnaire().Run()
+		if err != nil {
+			return returnIfUserQuit(err, "failed to run intro questionnaire")
+		}
 
-	if app != nil && app.Stats != nil && introAnswers != nil {
-		if err := app.Stats.RecordIntroQuestionnaireAnswers(introAnswers); err != nil {
-			cmd.Printf("Failed to record intro questionnaire answers: %v\n", err)
+		if app != nil && app.Stats != nil && introAnswers != nil {
+			if err := app.Stats.RecordIntroQuestionnaireAnswers(introAnswers); err != nil {
+				cmd.Printf("Failed to record intro questionnaire answers: %v\n", err)
+			}
 		}
 	}
 
