@@ -361,17 +361,77 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.statusIssueID = ""
 				return m, issues.UpdateIssueStatusCmd(m.app, issueID, string(models.StatusReadyToSprint))
 			case "c":
-				m.logAction("tui selected issue status closed")
+				m.logAction("tui selected issue status closing")
 				issueID := m.statusIssueID
 				m.choosingStatus = false
 				m.statusIssueID = ""
-				return m, issues.UpdateIssueStatusCmd(m.app, issueID, string(models.StatusClosed))
+				m.choosingCloseReason = true
+				m.closeReasonIssueID = issueID
+				return m, nil
 			case "esc":
 				m.logAction("tui canceled status picker")
 				m.choosingStatus = false
 				m.statusIssueID = ""
 				return m, nil
 			}
+		}
+
+		if m.choosingCloseReason {
+			var reason string
+			switch msg.String() {
+			case "d":
+				m.logAction("tui selected close reason done")
+				reason = "Done"
+			case "u":
+				m.logAction("tui selected close reason duplicate issue")
+				reason = "Duplicate issue"
+			case "w":
+				m.logAction("tui selected close reason won't fix")
+				reason = "Won't fix"
+			case "o":
+				m.logAction("tui selected close reason obsolete")
+				reason = "Obsolete"
+			case "h":
+				m.logAction("tui selected close reason other")
+				m.choosingCloseReason = false
+				m.closingOtherReason = true
+				m.closeReasonInput.SetValue("")
+				return m, nil
+			case "esc":
+				m.logAction("tui canceled close reason picker")
+				m.choosingCloseReason = false
+				m.closeReasonIssueID = ""
+				return m, nil
+			}
+
+			if reason != "" {
+				issueID := m.closeReasonIssueID
+				m.choosingCloseReason = false
+				m.closeReasonIssueID = ""
+				return m, issues.CloseIssueCmd(m.app, issueID, reason)
+			}
+		}
+
+		if m.closingOtherReason {
+			switch msg.String() {
+			case "enter":
+				reason := m.closeReasonInput.Value()
+				if reason != "" {
+					m.logAction("tui submitted custom close reason")
+					issueID := m.closeReasonIssueID
+					m.closingOtherReason = false
+					m.closeReasonIssueID = ""
+					return m, issues.CloseIssueCmd(m.app, issueID, reason)
+				}
+			case "esc":
+				m.logAction("tui canceled custom close reason")
+				m.closingOtherReason = false
+				m.closeReasonIssueID = ""
+				return m, nil
+			}
+			var cmd tea.Cmd
+			m.closeReasonInput, cmd = m.closeReasonInput.Update(msg)
+			return m, cmd
 		}
 
 		if m.choosingPriority {

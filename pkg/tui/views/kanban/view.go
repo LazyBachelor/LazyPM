@@ -76,6 +76,35 @@ func (m *Model) View() string {
 		mainView = lipgloss.JoinVertical(lipgloss.Left, header, content, spacer, footer)
 	}
 
+	if m.choosingCloseReason {
+		reasonContent := lipgloss.JoinVertical(lipgloss.Left,
+			styles.LabelStyle.Render("Choose closing reason for "+m.closeReasonIssueID+":"),
+			lipgloss.NewStyle().Foreground(styles.FaintText).Render("d = Done   u = Duplicate issue   w = Won't fix   o = Obsolete   h = Other"),
+			lipgloss.NewStyle().Foreground(styles.FaintText).Render("Esc = cancel"),
+		)
+		reasonBoxWidth := min(70, m.width-4)
+		reasonBox := styles.ContainerStyle.
+			Width(reasonBoxWidth).
+			BorderForeground(styles.PrimaryBorder).
+			Render(reasonContent)
+		return lipgloss.Place(m.width, m.height, lipgloss.Center, lipgloss.Center, reasonBox)
+	}
+
+	if m.closingOtherReason {
+		editBoxWidth := min(60, m.width-4)
+		m.closeReasonInput.SetWidth(editBoxWidth - 2)
+		m.closeReasonInput.SetHeight(4)
+		editContent := lipgloss.JoinVertical(lipgloss.Left,
+			styles.LabelStyle.Render("Enter closing reason for "+m.closeReasonIssueID+" (Enter to save, Esc to cancel):"),
+			m.closeReasonInput.View(),
+		)
+		editBox := styles.ContainerStyle.
+			Width(editBoxWidth).
+			BorderForeground(styles.PrimaryBorder).
+			Render(editContent)
+		return lipgloss.Place(m.width, m.height, lipgloss.Center, lipgloss.Center, editBox)
+	}
+
 	return components.RenderModals(
 		m.width,
 		m.height,

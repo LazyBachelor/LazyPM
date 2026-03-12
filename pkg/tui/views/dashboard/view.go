@@ -149,7 +149,7 @@ func (m *Model) View() string {
 	if m.choosingStatus {
 		statusContent := lipgloss.JoinVertical(lipgloss.Left,
 			styles.LabelStyle.Render("Change status for "+m.statusIssueID+":"),
-			lipgloss.NewStyle().Foreground(styles.FaintText).Render("o = open   i = in_progress   c = closed	ready_to_sprint = r"),
+			lipgloss.NewStyle().Foreground(styles.FaintText).Render("o = open   i = in_progress   r = ready_to_sprint   c = closing (choose reason)"),
 			lipgloss.NewStyle().Foreground(styles.FaintText).Render("Esc = cancel"),
 		)
 		statusBoxWidth := min(50, m.width-4)
@@ -172,6 +172,35 @@ func (m *Model) View() string {
 			BorderForeground(styles.PrimaryBorder).
 			Render(priorityContent)
 		return lipgloss.Place(m.width, m.height, lipgloss.Center, lipgloss.Center, priorityBox)
+	}
+
+	if m.choosingCloseReason {
+		reasonContent := lipgloss.JoinVertical(lipgloss.Left,
+			styles.LabelStyle.Render("Choose closing reason for "+m.closeReasonIssueID+":"),
+			lipgloss.NewStyle().Foreground(styles.FaintText).Render("d = Done   u = Duplicate issue   w = Won't fix   o = Obsolete   h = Other"),
+			lipgloss.NewStyle().Foreground(styles.FaintText).Render("Esc = cancel"),
+		)
+		reasonBoxWidth := min(70, m.width-4)
+		reasonBox := styles.ContainerStyle.
+			Width(reasonBoxWidth).
+			BorderForeground(styles.PrimaryBorder).
+			Render(reasonContent)
+		return lipgloss.Place(m.width, m.height, lipgloss.Center, lipgloss.Center, reasonBox)
+	}
+
+	if m.closingOtherReason {
+		editBoxWidth := min(60, m.width-4)
+		m.closeReasonInput.SetWidth(editBoxWidth - 2)
+		m.closeReasonInput.SetHeight(4)
+		editContent := lipgloss.JoinVertical(lipgloss.Left,
+			styles.LabelStyle.Render("Enter closing reason for "+m.closeReasonIssueID+" (Enter to save, Esc to cancel):"),
+			m.closeReasonInput.View(),
+		)
+		editBox := styles.ContainerStyle.
+			Width(editBoxWidth).
+			BorderForeground(styles.PrimaryBorder).
+			Render(editContent)
+		return lipgloss.Place(m.width, m.height, lipgloss.Center, lipgloss.Center, editBox)
 	}
 
 	if m.choosingType {

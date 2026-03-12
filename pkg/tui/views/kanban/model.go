@@ -56,11 +56,15 @@ type Model struct {
 	editingAssignee  bool // true while editing assignee
 	assigneeInput    textinput.Model
 	assigneeIssueID  string
-	feedbackChan     chan models.ValidationFeedback
-	quitChan         chan bool
-	submitChan       chan<- struct{}
-	currentFeedback  models.ValidationFeedback
-	showComplete     bool
+	choosingCloseReason bool // true while choosing a close reason
+	closeReasonIssueID  string
+	closingOtherReason  bool // true while entering a custom close reason
+	closeReasonInput    textarea.Model
+	feedbackChan        chan models.ValidationFeedback
+	quitChan            chan bool
+	submitChan          chan<- struct{}
+	currentFeedback     models.ValidationFeedback
+	showComplete        bool
 }
 
 func NewDashboard(app *app.App, feedbackChan chan models.ValidationFeedback, quitChan chan bool, submitChan chan<- struct{}) *Model {
@@ -93,6 +97,12 @@ func NewDashboard(app *app.App, feedbackChan chan models.ValidationFeedback, qui
 	m.createTitleInput = inputs.CreateTitle
 	m.descriptionInput = inputs.Description
 	m.assigneeInput = inputs.Assignee
+
+	closeReasonTa := textarea.New()
+	closeReasonTa.Placeholder = "Enter closing reason..."
+	closeReasonTa.SetWidth(56)
+	closeReasonTa.SetHeight(4)
+	m.closeReasonInput = closeReasonTa
 
 	if selected := m.todoList.SelectedItem(); selected.ID != "" {
 		m.issueDetail.SetIssue(selected.Issue)
@@ -160,7 +170,9 @@ func (m *Model) Init() tea.Cmd {
 // IsInModal returns true when a modal (edit, create, delete confirm, choose status/priority/type) is active.
 func (m *Model) IsInModal() bool {
 	return m.editingTitle || m.creatingIssue || m.editingDescription ||
-		m.choosingStatus || m.choosingPriority || m.confirmingDelete || m.choosingType || m.editingAssignee
+		m.choosingStatus || m.choosingPriority || m.confirmingDelete ||
+		m.choosingType || m.editingAssignee ||
+		m.choosingCloseReason || m.closingOtherReason
 }
 
 func (m *Model) IsFocusedOnList() bool {

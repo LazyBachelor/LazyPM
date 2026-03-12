@@ -96,3 +96,10 @@ func DeleteIssueCmd(app *app.App, issueID string, currentIndex int) tea.Cmd {
 		return DeletedMsg{IssueID: issueID, Err: err, PreviousIndex: currentIndex}
 	}
 }
+
+func CloseIssueCmd(app *app.App, issueID, reason string) tea.Cmd {
+	return func() tea.Msg {
+		err := app.Issues.CloseIssue(context.Background(), issueID, reason, "tui", "")
+		return StatusUpdatedMsg{IssueID: issueID, Err: err}
+	}
+}
