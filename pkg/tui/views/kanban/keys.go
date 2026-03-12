@@ -70,7 +70,7 @@ func (d *Model) handleKeyMsg(msg tea.KeyMsg) tea.Cmd {
 			d.updateDetailFromSelection()
 		}
 	case !d.IsInModal() && key.Matches(msg, d.keyMap.MoveColumnRight):
-		if d.focusedColumn < 2 {
+		if d.focusedColumn < 3 {
 			d.focusedColumn++
 			d.updateDetailFromSelection()
 		}
