@@ -16,11 +16,19 @@ func (iq *IntroQuestionnaire) Run() (map[string]any, error) {
 	model := task.NewQuestionnaireModel(iq.Questions(), iq.Keys())
 	app := tea.NewProgram(model, tea.WithAltScreen())
 
-	if _, err := app.Run(); err != nil {
+	m, err := app.Run()
+	if err != nil {
 		return nil, err
 	}
 
-	return model.GetAnswers(), nil
+	if q, ok := m.(*task.QuestionnaireModel); ok {
+		if q.GetUserQuit() {
+			return nil, task.ErrUserQuit
+		}
+		return q.GetAnswers(), nil
+	}
+
+	return nil, nil
 }
 
 func (iq *IntroQuestionnaire) Questions() task.Questions {
