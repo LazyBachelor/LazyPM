@@ -2,7 +2,6 @@ package tasks
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/LazyBachelor/LazyPM/internal/models"
 	"github.com/LazyBachelor/LazyPM/internal/utils/check"
@@ -103,47 +102,32 @@ func (t *IssueReviewCleanupTask) Validate(ctx context.Context) ValidationFeedbac
 
 	issues, err := FetchIssues(ctx, t.app, t.setupIssue)
 	if err != nil {
-		return expect.Fail("Could not fetch issues: " + err.Error()).Complete()
+		return expect.Fatal("Could not fetch issues")
 	}
 
-	// Step 1 cannot be verified (opening/viewing leaves no trace) — not shown in results
-
-	// Step 2: Add comment to 2 issues
-	var issueIDs []string
+	// Count the amount of comments on each issue
+	commentCount := map[string]int{}
 	for _, issue := range issues {
-		issueIDs = append(issueIDs, issue.ID)
+		comments, _ := t.app.Issues.GetIssueComments(ctx, issue.ID)
+		commentCount[issue.ID] = len(comments)
 	}
-	issuesWithComments := 0
-	if len(issueIDs) > 0 {
-		counts, err := t.app.Issues.GetCommentCounts(ctx, issueIDs)
-		if err != nil {
-			expect.Fail("Step 2: Could not verify comments: " + err.Error())
-		} else {
-			for _, count := range counts {
-				if count >= 1 {
-					issuesWithComments++
-				}
-			}
-			if issuesWithComments >= 2 {
-				expect.Pass(fmt.Sprintf("Step 2: Added comments to at least 2 issues (%d issues have comments)", issuesWithComments))
-			} else {
-				expect.Fail(fmt.Sprintf("Step 2: Add comments to at least 2 issues (found %d with comments)", issuesWithComments))
-			}
+
+	// Add a count if there are comment on a issue
+	commentsInIssues := 0
+	for _, count := range commentCount {
+		if count > 0 {
+			commentsInIssues++
 		}
-	} else {
-		expect.Fail("Step 2: Add comments to at least 2 issues (no issues to check)")
 	}
 
-	// Step 3: Delete the cleanup task issue — we verify it's gone (Step 4 is same outcome; we can't verify they "looked")
-	setupStillExists, _ := t.app.Issues.GetIssue(ctx, t.setupIssue.ID)
-	deletedCleanupIssue := setupStillExists == nil
+	expect.Equal(commentsInIssues, 2, "Comments on issues")
 
-	if len(issues) == 5 && deletedCleanupIssue {
-		expect.Pass("Step 3: Deleted the cleanup task issue — it no longer appears in the list")
-	} else if len(issues) < 5 {
-		expect.Fail(fmt.Sprintf("Step 3: Delete only the cleanup task issue — you deleted a project issue (expected 5, got %d)", len(issues)))
-	} else if !deletedCleanupIssue {
-		expect.Fail("Step 3: Delete the cleanup task issue (\"Issue Review and Cleanup Task\") from the list")
+	// Fetching the setup issue as as FetchIssues only updates the setup issue if it exists,
+	// we can check if it was deleted by seeing if it can be fetched again
+	if t.setupIssue, err = t.app.Issues.GetIssue(ctx, t.setupIssue.ID); t.setupIssue != nil {
+		expect.Fail("Setup issue still exists")
+	} else {
+		expect.Pass("Setup issue deleted")
 	}
 
 	return expect.Complete()

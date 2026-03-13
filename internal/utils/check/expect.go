@@ -90,9 +90,10 @@ func (e *Expector) Equal(val, expected any, message string) *Expector {
 }
 
 func (e *Expector) Assert(condition bool, message string) *Expector {
-	check := NewCheck(message, condition)
-	e.Checks = append(e.Checks, check)
-	return e
+	if !condition {
+		return e.Fail(message)
+	}
+	return e.Pass(message + " is correct")
 }
 
 func (e *Expector) Nil(value any, message string) *Expector {
