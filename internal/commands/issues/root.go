@@ -28,6 +28,7 @@ type Flags struct {
 	status      string
 	issueType   string
 	priority    int
+	assignee    string
 }
 
 // RootCmd is the base command for the CLI application.

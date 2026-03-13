@@ -2,6 +2,7 @@
 package repl
 
 import (
+	"bufio"
 	"context"
 	"fmt"
 	"os"
@@ -12,7 +13,6 @@ import (
 	"github.com/LazyBachelor/LazyPM/internal/models"
 	"github.com/LazyBachelor/LazyPM/internal/style"
 	"github.com/LazyBachelor/LazyPM/pkg/task"
-	"github.com/LazyBachelor/LazyPM/pkg/tui/styles"
 	"github.com/c-bata/go-prompt"
 	"golang.org/x/term"
 )
@@ -22,8 +22,8 @@ type ValidationFeedback = models.ValidationFeedback
 
 const (
 	ReplHelp = `Type 'pm help' for available PM commands.
-Type 'pm status' to check task progress.
-You can also run shell commands directly. Type 'exit' or 'quit' to leave.`
+You can also run shell commands directly. Type 'exit' or 'quit' to leave.
+Type 'status' to check task progress.`
 
 	ReplTitle = "Welcome to Project Management CLI! " + ReplHelp
 )
@@ -36,6 +36,7 @@ type REPL struct {
 
 	currentFeedback ValidationFeedback
 	exitRequested   bool
+	taskCompleted   bool
 }
 
 func New() *REPL {
@@ -44,6 +45,11 @@ func New() *REPL {
 
 // Run starts the interactive Read-Eval-Print Loop for the PM CLI.
 func (r *REPL) Run(ctx context.Context, config app.Config) error {
+	// Reset state for new task run
+	r.taskCompleted = false
+	r.exitRequested = false
+	r.currentFeedback = ValidationFeedback{}
+
 	// Set terminal to raw mode to capture input properly in the REPL.
 	// This allows us to handle input character by character and provide a better user experience.
 	// We also ensure that the terminal state is restored when the REPL exits, even if an error occurs.
@@ -82,7 +88,18 @@ func (r *REPL) Run(ctx context.Context, config app.Config) error {
 	var history []string
 
 	// Start the REPL loop, which continues until the user types "exit" or "quit" or task completes.
+	reader := bufio.NewReader(os.Stdin)
 	for !r.exitRequested {
+		// Check if task completed - wait for Enter before exiting
+		if r.taskCompleted {
+			fmt.Println(style.TitleStyle.Render("Task completed successfully!"))
+			fmt.Print("Press Enter to exit...")
+			// Restore terminal to normal mode for input
+			term.Restore(int(os.Stdin.Fd()), oldState)
+			reader.ReadString('\n')
+			break
+		}
+
 		// Check if we should exit before prompting (non-blocking check)
 		if r.exitRequested {
 			break
@@ -97,6 +114,16 @@ func (r *REPL) Run(ctx context.Context, config app.Config) error {
 
 		// Check again after prompt returns (in case validation completed while waiting)
 		if r.exitRequested {
+			break
+		}
+
+		// Check if task completed while waiting at prompt
+		if r.taskCompleted {
+			fmt.Println(style.TitleStyle.Render("Task completed successfully!"))
+			fmt.Print("Press Enter to exit...")
+			// Restore terminal to normal mode for input
+			term.Restore(int(os.Stdin.Fd()), oldState)
+			reader.ReadString('\n')
 			break
 		}
 
@@ -117,8 +144,19 @@ func (r *REPL) Run(ctx context.Context, config app.Config) error {
 		// Add the input to the history for future navigation.
 		history = append(history, input)
 
-		output, _ := execute(input)                 // Ignore errors for now, gives better ux
-		fmt.Println(style.TextStyle.Render(output)) // Print the output of the command in a styled format.
+		output, err := execute(input)
+		if err != nil {
+			// Show command output (even on error) in normal text style
+			if output != "" {
+				fmt.Println(style.TextStyle.Render(output))
+			}
+			// Show error message in red if no output was captured
+			if output == "" {
+				fmt.Println(style.ErrorStyle.Render(err.Error()))
+			}
+		} else if output != "" {
+			fmt.Println(style.TextStyle.Render(output))
+		}
 	}
 
 	return nil
@@ -138,9 +176,7 @@ func (r *REPL) watchValidation() {
 				}
 			}
 			if feedback.Success {
-				fmt.Printf("\n%s\n", styles.TitleStyle.Render("Task completed successfully!"))
-				fmt.Println("Press Enter to exit...")
-				r.exitRequested = true
+				r.taskCompleted = true
 				return
 			}
 		case <-r.quitChan:

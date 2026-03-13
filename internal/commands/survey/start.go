@@ -7,6 +7,7 @@ import (
 )
 
 var (
+	DevFlag       bool
 	InterfaceType string
 	Task          string
 )
@@ -22,4 +23,5 @@ func init() {
 	StartCmd.Flags().StringVarP(&InterfaceType, "interface", "i", "", "Specify interface.")
 	StartCmd.RegisterFlagCompletionFunc("task", shellcomp.CompletionFunc(task.ListTasks()))
 	StartCmd.RegisterFlagCompletionFunc("interface", shellcomp.CompletionFunc(task.ListInterfaces()))
+	StartCmd.Flags().BoolVar(&DevFlag, "dev", false, "Enable development mode, which skips database connection, submission and intro")
 }

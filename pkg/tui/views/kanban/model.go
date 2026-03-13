@@ -22,6 +22,7 @@ type Model struct {
 	header      Header
 	todoList    IssueList
 	inProgList  IssueList
+	blockedList IssueList
 	doneList    IssueList
 	issueDetail IssueDetail
 	helpBar     components.HelpBar
@@ -30,7 +31,7 @@ type Model struct {
 	width       int
 	height      int
 
-	focusedColumn int  // 0 = To Do, 1 = In Progress, 2 = Done
+	focusedColumn int  // 0 = To Do, 1 = In Progress, 2 = Blocked, 3 = Done
 	focusOnDetail bool // true when detail pane is focused
 
 	editingTitle   bool // true while we are editing a title
@@ -53,6 +54,9 @@ type Model struct {
 	priorityIssueID  string
 	choosingType     bool // true while choosing a type
 	typeIssueID      string
+	editingAssignee  bool // true while editing assignee
+	assigneeInput    textinput.Model
+	assigneeIssueID  string
 	feedbackChan     chan models.ValidationFeedback
 	quitChan         chan bool
 	submitChan       chan<- struct{}
@@ -77,10 +81,12 @@ func NewDashboard(app *app.App, feedbackChan chan models.ValidationFeedback, qui
 	allIssues, _ := app.Issues.SearchIssues(context.Background(), "", models.IssueFilter{})
 	todoIssues := components.StatusOnly(allIssues, models.StatusOpen)
 	inProgIssues := components.StatusOnly(allIssues, models.StatusInProgress)
+	blockedIssues := components.StatusOnly(allIssues, models.StatusBlocked)
 	doneIssues := components.StatusOnly(allIssues, models.StatusClosed)
 
 	m.todoList = components.NewIssueListFromIssues(app, todoIssues, 0, 0)
 	m.inProgList = components.NewIssueListFromIssues(app, inProgIssues, 0, 0)
+	m.blockedList = components.NewIssueListFromIssues(app, blockedIssues, 0, 0)
 	m.doneList = components.NewIssueListFromIssues(app, doneIssues, 0, 0)
 	m.issueDetail = components.NewIssueDetail()
 	m.helpBar = components.NewHelpBar(components.ViewKanban)
@@ -89,10 +95,13 @@ func NewDashboard(app *app.App, feedbackChan chan models.ValidationFeedback, qui
 	m.titleInput = inputs.Title
 	m.createTitleInput = inputs.CreateTitle
 	m.descriptionInput = inputs.Description
+	m.assigneeInput = inputs.Assignee
 
 	if selected := m.todoList.SelectedItem(); selected.ID != "" {
 		m.issueDetail.SetIssue(selected.Issue)
 	} else if selected := m.inProgList.SelectedItem(); selected.ID != "" {
+		m.issueDetail.SetIssue(selected.Issue)
+	} else if selected := m.blockedList.SelectedItem(); selected.ID != "" {
 		m.issueDetail.SetIssue(selected.Issue)
 	} else if selected := m.doneList.SelectedItem(); selected.ID != "" {
 		m.issueDetail.SetIssue(selected.Issue)
@@ -142,6 +151,13 @@ func (m *Model) startChooseType(selected ListIssue) {
 	m.typeIssueID = selected.ID
 }
 
+func (m *Model) startEditAssignee(selected ListIssue) {
+	m.editingAssignee = true
+	m.assigneeIssueID = selected.ID
+	m.assigneeInput.SetValue(selected.Assignee)
+	m.assigneeInput.CursorEnd()
+}
+
 func (m *Model) Init() tea.Cmd {
 	return components.ListenForValidation(m.feedbackChan)
 }
@@ -149,7 +165,7 @@ func (m *Model) Init() tea.Cmd {
 // IsInModal returns true when a modal (edit, create, delete confirm, choose status/priority/type) is active.
 func (m *Model) IsInModal() bool {
 	return m.editingTitle || m.creatingIssue || m.editingDescription ||
-		m.choosingStatus || m.choosingPriority || m.confirmingDelete || m.choosingType
+		m.choosingStatus || m.choosingPriority || m.confirmingDelete || m.choosingType || m.editingAssignee
 }
 
 func (m *Model) IsFocusedOnList() bool {
@@ -185,6 +201,8 @@ func (m *Model) FocusedIssueList() *IssueList {
 	case 1:
 		return &m.inProgList
 	case 2:
+		return &m.blockedList
+	case 3:
 		return &m.doneList
 	default:
 		return &m.todoList
@@ -208,6 +226,8 @@ func statusForColumn(col int) models.Status {
 	case 1:
 		return models.StatusInProgress
 	case 2:
+		return models.StatusBlocked
+	case 3:
 		return models.StatusClosed
 	default:
 		return models.StatusOpen
@@ -224,7 +244,7 @@ func (m *Model) moveIssue(delta int) tea.Cmd {
 	}
 
 	newCol := m.focusedColumn + delta
-	if newCol < 0 || newCol > 2 {
+	if newCol < 0 || newCol > 3 {
 		return nil
 	}
 

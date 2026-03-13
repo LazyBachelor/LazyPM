@@ -61,6 +61,20 @@ func (m *Model) View() string {
 
 	mainView := lipgloss.JoinVertical(lipgloss.Left, header, content, footer)
 
+	if m.editingAssignee {
+		editBoxWidth := min(60, m.width-4)
+		m.assigneeInput.Width = editBoxWidth - 2
+		editContent := lipgloss.JoinVertical(lipgloss.Left,
+			styles.LabelStyle.Render("Edit assignee (Enter to save, Esc to cancel):"),
+			m.assigneeInput.View(),
+		)
+		editBox := styles.ContainerStyle.
+			Width(editBoxWidth).
+			BorderForeground(styles.PrimaryBorder).
+			Render(editContent)
+		return lipgloss.Place(m.width, m.height, lipgloss.Center, lipgloss.Center, editBox)
+	}
+
 	if m.editingTitle {
 		editBoxWidth := min(60, m.width-4)
 		m.titleInput.Width = editBoxWidth - 2
@@ -135,7 +149,7 @@ func (m *Model) View() string {
 	if m.choosingStatus {
 		statusContent := lipgloss.JoinVertical(lipgloss.Left,
 			styles.LabelStyle.Render("Change status for "+m.statusIssueID+":"),
-			lipgloss.NewStyle().Foreground(styles.FaintText).Render("o = open   i = in_progress   c = closed"),
+			lipgloss.NewStyle().Foreground(styles.FaintText).Render("o = open   i = in_progress   b = blocked   r = ready_to_sprint   c = closed"),
 			lipgloss.NewStyle().Foreground(styles.FaintText).Render("Esc = cancel"),
 		)
 		statusBoxWidth := min(50, m.width-4)

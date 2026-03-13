@@ -21,7 +21,7 @@ var (
 )
 
 const (
-	ListViewRatio     = 70 // Percentage of total width allocated to the list view
+	ListViewRatio     = 52 // Percentage of total width allocated to the list view
 	LabelWidth        = 14
 	MarginBottomSmall = 1
 )
@@ -66,6 +66,8 @@ func StatusStyle(status string) lipgloss.Style {
 		return style.Foreground(FaintText)
 	case "in_progress":
 		return style.Foreground(Warning)
+	case "blocked":
+		return style.Foreground(Error)
 	default:
 		return style.Foreground(SecondaryText)
 	}

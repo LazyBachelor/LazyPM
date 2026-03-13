@@ -84,8 +84,8 @@ func (t *CodingTask) Config() Config {
 	return BaseConfig().WithStatisticsStoragePath("./.pm/coding-task-stats.json")
 }
 
-func (t *CodingTask) Details() TaskDetails {
-	return BaseDetails().WithTitle("Coding Task").WithDescription(codingDescription)
+func (t *CodingTask) Details(interfaceType InterfaceType) TaskDetails {
+	return BaseDetails(interfaceType).WithTitle("Coding Task").WithDescription(codingDescription)
 }
 
 func (t *CodingTask) Questions(interfaceType InterfaceType) (questions Questions) {

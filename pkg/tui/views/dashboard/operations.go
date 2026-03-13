@@ -211,6 +211,17 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.logAction("tui updated issue type")
 		return m, m.refreshIssueListsAndSelectIssue(msg.IssueID)
 
+	case issues.AssigneeUpdatedMsg:
+		m.editingAssignee = false
+		m.assigneeIssueID = ""
+		m.assigneeInput.Blur()
+		if msg.Err != nil {
+			m.logAction("tui failed to update issue assignee")
+			return m, nil
+		}
+		m.logAction("tui updated issue assignee")
+		return m, m.refreshIssueListsAndSelectIssue(msg.IssueID)
+
 	case issues.SelectIssueMsg:
 		m.issueList.SelectIssueID(msg.IssueID)
 		m.closedIssueList.SelectIssueID(msg.IssueID)
@@ -343,6 +354,18 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.choosingStatus = false
 				m.statusIssueID = ""
 				return m, issues.UpdateIssueStatusCmd(m.app, issueID, string(models.StatusInProgress))
+			case "b":
+				m.logAction("tui selected issue status blocked")
+				issueID := m.statusIssueID
+				m.choosingStatus = false
+				m.statusIssueID = ""
+				return m, issues.UpdateIssueStatusCmd(m.app, issueID, string(models.StatusBlocked))
+			case "r":
+				m.logAction("tui selected issue status ready_to_sprint")
+				issueID := m.statusIssueID
+				m.choosingStatus = false
+				m.statusIssueID = ""
+				return m, issues.UpdateIssueStatusCmd(m.app, issueID, string(models.StatusReadyToSprint))
 			case "c":
 				m.logAction("tui selected issue status closed")
 				issueID := m.statusIssueID
@@ -435,6 +458,24 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 			var cmd tea.Cmd
 			m.createTitleInput, cmd = m.createTitleInput.Update(msg)
+			return m, cmd
+		}
+
+		if m.editingAssignee {
+			if msg.String() == "enter" {
+				assignee := m.assigneeInput.Value()
+				m.logAction("tui submitted assignee edit")
+				return m, issues.UpdateIssueAssigneeCmd(m.app, m.assigneeIssueID, assignee)
+			}
+			if msg.String() == "esc" {
+				m.logAction("tui canceled assignee edit")
+				m.editingAssignee = false
+				m.assigneeIssueID = ""
+				m.assigneeInput.Blur()
+				return m, nil
+			}
+			var cmd tea.Cmd
+			m.assigneeInput, cmd = m.assigneeInput.Update(msg)
 			return m, cmd
 		}
 

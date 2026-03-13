@@ -70,7 +70,7 @@ func (d *Model) handleKeyMsg(msg tea.KeyMsg) tea.Cmd {
 			d.updateDetailFromSelection()
 		}
 	case !d.IsInModal() && key.Matches(msg, d.keyMap.MoveColumnRight):
-		if d.focusedColumn < 2 {
+		if d.focusedColumn < 3 {
 			d.focusedColumn++
 			d.updateDetailFromSelection()
 		}
@@ -86,7 +86,7 @@ func (d *Model) handleKeyMsg(msg tea.KeyMsg) tea.Cmd {
 		d.issueDetail.ScrollUp(1)
 	case d.IsFocusedOnDetail() && key.Matches(msg, d.keyMap.ScrollDown):
 		d.issueDetail.ScrollDown(1)
-	case !d.editingTitle && !d.creatingIssue && !d.editingDescription && !d.choosingStatus && !d.choosingPriority && !d.confirmingDelete && !d.choosingType && key.Matches(msg, d.keyMap.EditTitle):
+	case !d.editingTitle && !d.creatingIssue && !d.editingDescription && !d.choosingStatus && !d.choosingPriority && !d.confirmingDelete && !d.choosingType && !d.editingAssignee && key.Matches(msg, d.keyMap.EditTitle):
 		if selected := d.FocusedIssueList().SelectedItem(); selected.ID != "" {
 			d.startEditTitle(selected)
 			cmd = d.titleInput.Focus()
@@ -107,6 +107,11 @@ func (d *Model) handleKeyMsg(msg tea.KeyMsg) tea.Cmd {
 	case !d.editingTitle && !d.creatingIssue && !d.editingDescription && !d.choosingStatus && !d.choosingPriority && !d.confirmingDelete && !d.choosingType && key.Matches(msg, d.keyMap.ChangeType):
 		if selected := d.FocusedIssueList().SelectedItem(); selected.ID != "" {
 			d.startChooseType(selected)
+		}
+	case !d.IsInModal() && key.Matches(msg, d.keyMap.ChangeAssignee):
+		if selected := d.FocusedIssueList().SelectedItem(); selected.ID != "" {
+			d.startEditAssignee(selected)
+			cmd = d.assigneeInput.Focus()
 		}
 	case !d.IsInModal() && key.Matches(msg, d.keyMap.AddIssue):
 		d.startCreateIssue()

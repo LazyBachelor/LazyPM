@@ -31,8 +31,8 @@ func (t *IssueReviewCleanupTask) Config() Config {
 	return BaseConfig().WithStatisticsStoragePath("./.pm/issue-review-cleanup-stats.json")
 }
 
-func (t *IssueReviewCleanupTask) Details() TaskDetails {
-	return BaseDetails().
+func (t *IssueReviewCleanupTask) Details(interfaceType InterfaceType) TaskDetails {
+	return BaseDetails(interfaceType).
 		WithTitle("Issue Review and Cleanup Task").
 		WithDescription(issueReviewCleanupDescription).
 		WithTimeToComplete("8m").

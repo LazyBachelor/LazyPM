@@ -90,7 +90,7 @@ func RenderChooseStatus(width, height int, issueID string) string {
 	}
 	statusContent := lipgloss.JoinVertical(lipgloss.Left,
 		styles.LabelStyle.Render("Change status for "+issueID+":"),
-		lipgloss.NewStyle().Foreground(styles.FaintText).Render("o = open   i = in_progress   c = closed"),
+		lipgloss.NewStyle().Foreground(styles.FaintText).Render("o = open   i = in_progress   b = blocked   r = ready_to_sprint   c = closed"),
 		lipgloss.NewStyle().Foreground(styles.FaintText).Render("Esc = cancel"),
 	)
 	statusBoxWidth := modalBoxWidth(50, width)
@@ -116,6 +116,22 @@ func RenderChoosePriority(width, height int, issueID string) string {
 		BorderForeground(styles.PrimaryBorder).
 		Render(priorityContent)
 	return lipgloss.Place(width, height, lipgloss.Center, lipgloss.Center, priorityBox)
+}
+
+func RenderEditAssignee(width, height int, inputView string) string {
+	if width < 5 || height < 5 {
+		return ""
+	}
+	editBoxWidth := modalBoxWidth(60, width)
+	editContent := lipgloss.JoinVertical(lipgloss.Left,
+		styles.LabelStyle.Render("Edit assignee (Enter to save, Esc to cancel):"),
+		inputView,
+	)
+	editBox := styles.ContainerStyle.
+		Width(editBoxWidth).
+		BorderForeground(styles.PrimaryBorder).
+		Render(editContent)
+	return lipgloss.Place(width, height, lipgloss.Center, lipgloss.Center, editBox)
 }
 
 func RenderChooseType(width, height int, issueID string) string {
@@ -148,6 +164,7 @@ func RenderModals(
 	choosingStatus bool, statusIssueID string,
 	choosingPriority bool, priorityIssueID string,
 	choosingType bool, typeIssueID string,
+	editingAssignee bool, assigneeInputView string,
 	mainView string,
 ) string {
 	if editingTitle {
@@ -176,6 +193,10 @@ func RenderModals(
 
 	if choosingType {
 		return RenderChooseType(width, height, typeIssueID)
+	}
+
+	if editingAssignee {
+		return RenderEditAssignee(width, height, assigneeInputView)
 	}
 
 	return mainView
@@ -220,7 +241,29 @@ func RenderFooter(width int, helpBar *HelpBar, feedback models.ValidationFeedbac
 	feedbackStatus := feedback.Message
 
 	// Ensure the feedback message does not exceed the total available width.
-	feedbackStatus = truncateToWidth(feedbackStatus, width)
+	if feedback.Message != "" {
+		feedbackStatus = truncateToWidth(feedbackStatus+" [Press Shift+S to re-submit]", width)
+
+		if helpBar.IsExpanded() && feedbackStatus != "" {
+			for _, check := range feedback.Checks {
+				var prefix string
+				if check.Valid {
+					prefix = "✅ "
+				} else {
+					prefix = "❌ "
+				}
+
+				// Ensure each check line does not exceed the available width.
+				remainingWidth := width - lipgloss.Width(prefix)
+				if remainingWidth < 0 {
+					remainingWidth = 0
+				}
+				truncatedMsg := truncateToWidth(check.Message, remainingWidth)
+
+				feedbackStatus += "\n" + prefix + truncatedMsg
+			}
+		}
+	}
 
 	if feedbackStatus == "" {
 		return helpBar.View()
@@ -234,4 +277,3 @@ func RenderFooter(width int, helpBar *HelpBar, feedback models.ValidationFeedbac
 	helpBar.SetWidth(helpWidth)
 	return lipgloss.JoinHorizontal(lipgloss.Left, helpBar.View(), feedbackStatus)
 }
-

@@ -42,7 +42,7 @@ func NewTaskRunner(app *App) *TaskRunner {
 func (r *TaskRunner) Run(ctx context.Context, t Tasker, i Interface, iType InterfaceType) (runErr error) {
 
 	config := t.Config()
-	details := t.Details()
+	details := t.Details(iType)
 
 	lifecycle := NewRunLifecycle(r.app, config, details, iType, r.logger)
 
@@ -110,6 +110,9 @@ func (r *TaskRunner) Run(ctx context.Context, t Tasker, i Interface, iType Inter
 		close(stopChan)
 		close(quitChan)
 		collector.setCompleted(true)
+		if err := <-interfaceErr; err != nil {
+			return fmt.Errorf("task interface failed during shutdown: %w", err)
+		}
 
 	case err := <-interfaceErr:
 		close(stopChan)

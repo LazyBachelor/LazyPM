@@ -3,6 +3,8 @@ package models
 import (
 	"context"
 	"log/slog"
+
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 type App struct {
@@ -57,5 +59,7 @@ type StatsService interface {
 	Load(ctx context.Context) error
 	Save(ctx context.Context) error
 	GetStatistics() (Statistics, error)
+	GetParticipantID() primitive.ObjectID
 	RecordTaskRun(ctx context.Context, run TaskRunMetrics) error
+	RecordIntroQuestionnaireAnswers(answers map[string]any) error
 }

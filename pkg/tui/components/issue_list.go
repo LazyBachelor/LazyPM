@@ -54,13 +54,22 @@ func getTableColumns(width int) []tableColumn {
 			{width: 20, label: "TITLE", key: "title"},
 			{width: 15, label: "STATUS", key: "status"},
 		}
-	default:
+	case width < 75:
 		return []tableColumn{
 			{width: 12, label: "ID", key: "id"},
 			{width: 20, label: "TITLE", key: "title"},
 			{width: 15, label: "STATUS", key: "status"},
 			{width: 10, label: "TYPE", key: "type"},
 			{width: 15, label: "PRIORITY", key: "priority"},
+		}
+	default:
+		return []tableColumn{
+			{width: 12, label: "ID", key: "id"},
+			{width: 20, label: "TITLE", key: "title"},
+			{width: 15, label: "STATUS", key: "status"},
+			{width: 11, label: "TYPE", key: "type"},
+			{width: 14, label: "PRIORITY", key: "priority"},
+			{width: 12, label: "ASSIGNEE", key: "assignee"},
 		}
 	}
 }
@@ -99,11 +108,12 @@ func renderHeaders(cols []tableColumn) string {
 	return lipgloss.JoinHorizontal(lipgloss.Left, parts...)
 }
 
-// IssueInputs bundles the common text inputs used for issue title, creation, and description.
+// IssueInputs bundles the common text inputs used for issue title, creation, description, and assignee.
 type IssueInputs struct {
 	Title       textinput.Model
 	CreateTitle textinput.Model
 	Description textarea.Model
+	Assignee    textinput.Model
 }
 
 // NewIssueInputs creates initialized inputs for issue title, new issue title, and description.
@@ -121,10 +131,15 @@ func NewIssueInputs() IssueInputs {
 	descTa.SetWidth(56)
 	descTa.SetHeight(8)
 
+	assigneeTi := textinput.New()
+	assigneeTi.Placeholder = "Assignee name..."
+	assigneeTi.CharLimit = 64
+
 	return IssueInputs{
 		Title:       ti,
 		CreateTitle: createTi,
 		Description: descTa,
+		Assignee:    assigneeTi,
 	}
 }
 
@@ -213,7 +228,10 @@ func OpenAndInProgressOnly(issues []*models.Issue) []*models.Issue {
 	// used to display open & in-progress issues in the first window in the dashboard
 	out := make([]*models.Issue, 0, len(issues))
 	for _, issue := range issues {
-		if issue.Status == models.StatusOpen || issue.Status == models.StatusInProgress {
+		if issue.Status == models.StatusOpen ||
+			issue.Status == models.StatusInProgress ||
+			issue.Status == models.StatusBlocked ||
+			issue.Status == models.StatusReadyToSprint {
 			out = append(out, issue)
 		}
 	}
@@ -237,7 +255,8 @@ func ClosedOnly(issues []*models.Issue) []*models.Issue {
 func StatusOnly(issues []*models.Issue, status models.Status) []*models.Issue {
 	out := make([]*models.Issue, 0, len(issues))
 	for _, issue := range issues {
-		if issue.Status == status {
+		if issue.Status == status ||
+			(status == models.StatusOpen && issue.Status == models.StatusReadyToSprint) {
 			out = append(out, issue)
 		}
 	}
@@ -411,6 +430,8 @@ func getColumnValue(col tableColumn, issue ListIssue) string {
 		return string(issue.Issue.IssueType)
 	case "priority":
 		return PriorityCodeName(issue.Issue.Priority)
+	case "assignee":
+		return issue.Assignee
 	default:
 		return ""
 	}
