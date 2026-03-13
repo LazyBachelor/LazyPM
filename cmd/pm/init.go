@@ -41,6 +41,9 @@ func init() {
 	task.RegisterTask("priority_management", func(app *app.App) task.Tasker {
 		return tasks.NewPriorityManagementTask(app)
 	})
+	task.RegisterTask("issue_review_cleanup", func(app *app.App) task.Tasker {
+		return tasks.NewIssueReviewCleanupTask(app)
+	})
 	task.RegisterTask("git_task", func(app *app.App) task.Tasker {
 		return tasks.NewGitTask(app)
 	})
