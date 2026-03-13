@@ -22,6 +22,10 @@ func init() {
 
 	models.BaseConfig = models.BaseConfig.LoadFromEnv()
 
+	if DB_URI != "" {
+		models.BaseConfig = models.BaseConfig.WithDbUri(DB_URI)
+	}
+
 	task.RegisterInterface("tui", tui.New())
 	task.RegisterInterface("web", web.New())
 	task.RegisterInterface("repl", repl.New())

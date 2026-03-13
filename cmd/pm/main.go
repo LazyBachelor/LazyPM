@@ -11,6 +11,7 @@ import (
 var App *app.App
 var appCleanup func()
 var RootCmd = issues.RootCmd
+var DB_URI string
 
 func main() {
 	ctx := context.Background()
