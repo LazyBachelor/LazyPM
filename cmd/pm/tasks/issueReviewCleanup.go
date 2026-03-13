@@ -130,5 +130,7 @@ func (t *IssueReviewCleanupTask) Validate(ctx context.Context) ValidationFeedbac
 		expect.Pass("Setup issue deleted")
 	}
 
+	expect.Equal(len(issues), 5, "Number of remaining issues")
+
 	return expect.Complete()
 }
