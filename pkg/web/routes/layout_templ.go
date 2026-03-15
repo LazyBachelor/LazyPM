@@ -23,6 +23,7 @@ var baseLayout = components.LayoutProps{
 			{Src: "/assets/js/htmx.min.js", Defer: true},
 			{Src: "/assets/js/alpine.min.js", Defer: true},
 			{Src: "/assets/js/board-drag-drop.js", Defer: true},
+			{Src: "/assets/js/issue-list-dblclick.js", Defer: true},
 		},
 	},
 	Routes: []components.NavRoutes{
