@@ -9,9 +9,9 @@ cat <<EOF > /config/Desktop/LazyPM.desktop
 [Desktop Entry]
 Version=1.0
 Type=Application
-Name=PM Survey
-Comment=Launch the Prompt Manageragment Survey
-Exec=/usr/local/bin/pm survey start
+Name=Project Management Survey
+Comment=Launch the Project Management Survey
+Exec=/usr/local/bin/pm start
 Icon=utilities-terminal
 Terminal=true
 Categories=Utility;

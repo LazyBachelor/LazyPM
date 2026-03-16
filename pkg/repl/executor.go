@@ -22,7 +22,7 @@ func execute(input string) (string, error) {
 	}
 
 	if input == "status" {
-		return executePMCommand("survey status")
+		return executePMCommand("status")
 	}
 
 	if after, ok := strings.CutPrefix(input, "pm"); ok {
