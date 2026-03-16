@@ -46,23 +46,27 @@ type Model struct {
 	deleteConfirmID    string
 	deleteConfirmIndex int
 
-	choosingStatus   bool // true while choosing a status
-	statusIssueID    string
-	choosingPriority bool // true while choosing a priority
-	priorityIssueID  string
-	choosingType     bool // true while choosing a type
-	typeIssueID      string
-	editingAssignee  bool // true while editing assignee
-	assigneeInput    textinput.Model
-	assigneeIssueID  string
-	addingComment    bool // true while adding a comment
-	commentInput     textarea.Model
-	commentIssueID   string
-	feedbackChan     chan models.ValidationFeedback
-	quitChan         chan bool
-	currentFeedback  models.ValidationFeedback
-	showComplete     bool
-	submitChan       chan<- struct{}
+	choosingStatus      bool 
+	statusIssueID       string
+	choosingPriority    bool 
+	priorityIssueID     string
+	choosingType        bool 
+	typeIssueID         string
+	editingAssignee     bool 
+	assigneeInput       textinput.Model
+	assigneeIssueID     string
+	addingComment       bool 
+	commentInput        textarea.Model
+	commentIssueID      string
+	choosingCloseReason bool 
+	closeReasonIssueID  string
+	closingOtherReason  bool 
+	closeReasonInput    textarea.Model
+	feedbackChan        chan models.ValidationFeedback
+	quitChan            chan bool
+	currentFeedback     models.ValidationFeedback
+	showComplete        bool
+	submitChan          chan<- struct{}
 }
 
 func NewDashboard(app *app.App, feedbackChan chan models.ValidationFeedback, quitChan chan bool, submitChan chan<- struct{}) *Model {
@@ -91,6 +95,12 @@ func NewDashboard(app *app.App, feedbackChan chan models.ValidationFeedback, qui
 	m.createTitleInput = inputs.CreateTitle
 	m.descriptionInput = inputs.Description
 	m.assigneeInput = inputs.Assignee
+
+	closeReasonTa := textarea.New()
+	closeReasonTa.Placeholder = "Enter closing reason..."
+	closeReasonTa.SetWidth(56)
+	closeReasonTa.SetHeight(4)
+	m.closeReasonInput = closeReasonTa
 
 	commentTa := textarea.New()
 	commentTa.Placeholder = "Write your comment..."
@@ -189,7 +199,9 @@ func (m *Model) Init() tea.Cmd {
 // IsInModal returns true when a modal (edit, create, delete confirm, choose status/priority/type) is active.
 func (m *Model) IsInModal() bool {
 	return m.editingTitle || m.creatingIssue || m.editingDescription ||
-		m.choosingStatus || m.choosingPriority || m.confirmingDelete || m.choosingType || m.editingAssignee
+		m.choosingStatus || m.choosingPriority || m.confirmingDelete ||
+		m.choosingType || m.editingAssignee ||
+		m.choosingCloseReason || m.closingOtherReason
 }
 
 func (m *Model) IsFocusedOnList() bool {

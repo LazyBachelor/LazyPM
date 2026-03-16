@@ -300,12 +300,67 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				issueID := m.statusIssueID
 				m.choosingStatus = false
 				m.statusIssueID = ""
-				return m, issues.UpdateIssueStatusCmd(m.app, issueID, string(models.StatusClosed))
+				m.choosingCloseReason = true
+				m.closeReasonIssueID = issueID
+				return m, nil
 			case "esc":
 				m.choosingStatus = false
 				m.statusIssueID = ""
 				return m, nil
 			}
+		}
+
+		if m.choosingCloseReason {
+			var reason string
+			switch msg.String() {
+			case "d":
+				reason = "Done"
+			case "u":
+				reason = "Duplicate issue"
+			case "w":
+				reason = "Won't fix"
+			case "o":
+				reason = "Obsolete"
+			case "h":
+				m.choosingCloseReason = false
+				m.closingOtherReason = true
+				m.closeReasonInput.SetValue("")
+				m.closeReasonInput.Focus()
+				return m, nil
+			case "esc":
+				m.choosingCloseReason = false
+				m.closeReasonIssueID = ""
+				return m, nil
+			}
+
+			if reason != "" {
+				issueID := m.closeReasonIssueID
+				m.choosingCloseReason = false
+				m.closeReasonIssueID = ""
+				return m, issues.CloseIssueCmd(m.app, issueID, reason)
+			}
+		}
+
+		if m.closingOtherReason {
+			switch msg.String() {
+			case "enter", "ctrl+s":
+				reason := m.closeReasonInput.Value()
+				if reason != "" {
+					issueID := m.closeReasonIssueID
+					m.closingOtherReason = false
+					m.closeReasonIssueID = ""
+					m.closeReasonInput.Blur()
+					return m, issues.CloseIssueCmd(m.app, issueID, reason)
+				}
+			case "esc":
+				m.closingOtherReason = false
+				m.closeReasonIssueID = ""
+				m.closeReasonInput.Blur()
+				return m, nil
+			}
+			var cmd tea.Cmd
+			m.closeReasonInput, cmd = m.closeReasonInput.Update(msg)
+			return m, cmd
 		}
 
 		if m.choosingPriority {
