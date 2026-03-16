@@ -166,7 +166,7 @@ func (t *CodingTask) Validate(ctx context.Context) ValidationFeedback {
 	expect.NotEmptyAndEqual(issue.Title, "Upgrade MongoDB Driver Dependency", "Issue title")
 
 	expect.NotEmptyAndEqual(issue.Description,
-		"Upgrade the MongoDB Driver dependency to the latest version.", "Issue description")
+		"We need to upgrade the MongoDB Driver dependency to the latest version.", "Issue description")
 
 	expect.NotEmptyAndEqual(issue.Assignee, "Me", "Issue Assignee")
 
