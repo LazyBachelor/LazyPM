@@ -135,20 +135,13 @@ templ DashboardIssueRows(issues []*models.Issue, selectedID string) {
 		}}
 		<tr
 			hx-get="/"
-			class={ "hover cursor-pointer min-h-full w-full", active }
+			hx-trigger="click delay:400ms cancel:dblclick"
+			class={ "hover cursor-pointer min-h-full w-full select-none", active }
 			hx-target="main"
 			hx-vals={ `{"selected-issue": "` + issue.ID + `"}` }
 			hx-swap="innerHTML"
 			data-issue-id={ issue.ID }
 		>
-			<button
-				type="button"
-				class="hidden"
-				hx-get={ "/issues/" + issue.ID + "/edit" }
-				hx-target="#modal-container"
-				hx-swap="innerHTML"
-				hx-trigger="dblclick from:closest tr"
-			></button>
 			<td class="min-w-20 truncate">{ issue.ID }</td>
 			<td class="truncate max-w-60">{ issue.Title }</td>
 			<td>
