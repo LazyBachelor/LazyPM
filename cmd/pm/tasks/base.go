@@ -94,25 +94,44 @@ func ClearIssues(app *App) error {
 }
 
 func BaseQuestions(interfaceType InterfaceType) Questions {
-	var taskRating int
 	return Questions{
 		huh.NewGroup(
-			huh.NewConfirm().
-				Key("task_completed").
-				Title("Did you complete the task?"),
-		),
+			huh.NewConfirm().Key("task_completed").
+				Title("Where you able to complete the task?").
+				Description("")),
 		huh.NewGroup(
-			huh.NewSelect[int]().Value(&taskRating).
-				Key("task_difficulty").
+			huh.NewSelect[int]().Key("interface_difficulty").
+				Title("How difficult was it to use the interface?").
+				Description("By interface we mean the method of interaction with the task.").
 				Options(
 					huh.NewOption("Very easy", 1),
 					huh.NewOption("Easy", 2),
 					huh.NewOption("Moderate", 3),
 					huh.NewOption("Hard", 4),
-				).
-				Title("How difficult was the task?"),
+				),
+		),
+		huh.NewGroup(
+			huh.NewSelect[int]().Key("task_difficulty").
+				Title("How difficult did you find the task?").
+				Description("Only rate the difficulty of the task itself. Not the usability of the interface").
+				Options(
+					huh.NewOption("Very easy", 1),
+					huh.NewOption("Easy", 2),
+					huh.NewOption("Moderate", 3),
+					huh.NewOption("Hard", 4),
+				),
 		),
 	}
+}
+
+type Keys []string
+
+func BaseKeys() Keys {
+	return []string{"task_completed", "interface_difficulty", "task_difficulty"}
+}
+
+func (k Keys) With(keys ...string) Keys {
+	return append(k, keys...)
 }
 
 func Question(fields ...huh.Field) *huh.Group {

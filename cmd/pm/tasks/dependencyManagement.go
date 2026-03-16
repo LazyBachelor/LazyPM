@@ -40,22 +40,29 @@ func (t *DependencyManagementTask) Details(interfaceType InterfaceType) TaskDeta
 	return BaseDetails(interfaceType).
 		WithTitle("Dependency Management Task").
 		WithDescription(dependencyManagementDescription).
-		WithTimeToComplete("15m").
-		WithDifficulty("Hard")
+		WithTimeToComplete("3m").
+		WithDifficulty("Medium")
 }
 
 func (t *DependencyManagementTask) Questions(interfaceType InterfaceType) Questions {
 	return BaseQuestions(interfaceType).With(
 		huh.NewGroup(
-			huh.NewSelect[int]().
-				Title("How many foundational issues did you identify?").
+			huh.NewSelect[int]().Key("discovery_difficulty").
+				Title("How difficult was it discovering the dependencies?").
+				Description("We are interested in how difficult it was to discover the issues that needed to be addressed.").
 				Options(
-					huh.NewOption("1", 1),
-					huh.NewOption("2", 2),
-					huh.NewOption("3+", 3),
+					huh.NewOption("Very Easy", 1),
+					huh.NewOption("Easy", 2),
+					huh.NewOption("Moderate", 3),
+					huh.NewOption("Difficult", 4),
+					huh.NewOption("Very Difficult", 5),
 				),
 		),
 	)
+}
+
+func (t *DependencyManagementTask) QuestionnaireKeys(_ InterfaceType) []string {
+	return BaseKeys().With("discovery_difficulty")
 }
 
 func (t *DependencyManagementTask) Setup(ctx context.Context) error {

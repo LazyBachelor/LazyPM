@@ -40,7 +40,7 @@ func (t *SprintPlanningTask) Details(interfaceType InterfaceType) TaskDetails {
 	return BaseDetails(interfaceType).
 		WithTitle("Sprint Planning Task").
 		WithDescription(sprintPlanningDescription).
-		WithTimeToComplete("15m").
+		WithTimeToComplete("3m").
 		WithDifficulty("Medium")
 }
 
@@ -49,18 +49,21 @@ func (t *SprintPlanningTask) Questions(interfaceType InterfaceType) Questions {
 		huh.NewGroup(
 			huh.NewSelect[int]().
 				Key("sprint-planning-selected-issues").
-				Title("How many issues did you select for the sprint?").
+				Title("How difficult was it selecting issues for the sprint?").
+				Description("We are interested in how intuitive and time-consuming the selection process was.").
 				Options(
-					huh.NewOption("2-3 issues", 1),
-					huh.NewOption("4-5 issues", 2),
-					huh.NewOption("6+ issues", 3),
+					huh.NewOption("Very Easy", 1),
+					huh.NewOption("Easy", 2),
+					huh.NewOption("Moderate", 3),
+					huh.NewOption("Difficult", 4),
+					huh.NewOption("Very Difficult", 5),
 				),
 		),
 	)
 }
 
 func (t *SprintPlanningTask) QuestionnaireKeys(_ InterfaceType) []string {
-	return []string{"task_completed", "task_difficulty", "sprint-planning-selected-issues"}
+	return BaseKeys().With("sprint-planning-selected-issues")
 }
 
 func (t *SprintPlanningTask) Setup(ctx context.Context) error {

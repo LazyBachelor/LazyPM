@@ -11,6 +11,7 @@ type Tasker interface {
 	Details(InterfaceType) TaskDetails
 	Setup(context.Context) error
 	Questions(InterfaceType) Questions
+	QuestionnaireKeys(InterfaceType) []string
 	Validate(context.Context) ValidationFeedback
 }
 

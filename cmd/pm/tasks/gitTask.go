@@ -48,26 +48,40 @@ func (t *GitTask) Config() Config {
 }
 
 func (t *GitTask) Details(interfaceType InterfaceType) TaskDetails {
-	return BaseDetails(interfaceType).WithTitle("Git Task").WithDescription(gitTaskDescription)
+	return BaseDetails(interfaceType).
+		WithTitle("Git Task").
+		WithDescription(gitTaskDescription).
+		WithDifficulty("Hard").WithTimeToComplete("5m")
 }
 
 func (t *GitTask) Questions(interfaceType InterfaceType) Questions {
-	return BaseQuestions(interfaceType).With(
+	return BaseQuestions(interfaceType).
+		With(
+			huh.NewGroup(
+				huh.NewSelect[string]().Key("git_interface_used").
+					Title("What Git Interface did you use for the task?").
+					Description("If ").
+					Options(
+						huh.Option[string]{Value: "cli", Key: "Command Line Interface"},
+						huh.Option[string]{Value: "tui", Key: "Terminal User Interface"},
+						huh.Option[string]{Value: "gui", Key: "Graphical User Interface"},
+					),
+			),
+		).With(
 		huh.NewGroup(
-			huh.NewSelect[string]().Title("What Git Interface did you use?").
-				Key("git_interface_used").
+			huh.NewSelect[string]().Key("git_interface_normaly").
+				Title("What Git Interface do you normally use?").
+				Description("If ").
 				Options(
 					huh.Option[string]{Value: "cli", Key: "Command Line Interface"},
 					huh.Option[string]{Value: "tui", Key: "Terminal User Interface"},
 					huh.Option[string]{Value: "gui", Key: "Graphical User Interface"},
 				),
-		),
-	)
+		))
 }
 
-func (t *GitTask) QuestionnaireKeys(interfaceType InterfaceType) []string {
-	_ = interfaceType
-	return []string{"task_completed", "task_difficulty", "git_interface_used"}
+func (t *GitTask) QuestionnaireKeys(_ InterfaceType) []string {
+	return BaseKeys().With("git_interface_used", "git_interface_normaly")
 }
 
 func (t *GitTask) Setup(ctx context.Context) error {
@@ -108,12 +122,10 @@ func (t *GitTask) Validate(ctx context.Context) ValidationFeedback {
 		return expect.ValidationFeedback
 	}
 
-	
 	_ = issues
 
 	issue := t.setupIssue
 
-	
 	if issue.Status == models.StatusInProgress || gitTaskInProgress {
 		gitTaskInProgress = true
 	} else {
@@ -130,7 +142,6 @@ func (t *GitTask) Validate(ctx context.Context) ValidationFeedback {
 		}
 	}
 
-	
 	headRef, err := t.repo.Head()
 	if err != nil {
 		expect.Fail("No commits found in the Git repository. Please commit your changes.")
@@ -145,7 +156,6 @@ func (t *GitTask) Validate(ctx context.Context) ValidationFeedback {
 
 	expect.NotEmptyAndEqual(strings.TrimSpace(commit.Message), "updated codebase", "Git commit message")
 
-	
 	tree, err := commit.Tree()
 	if err != nil {
 		expect.Fail("Failed to read commit tree: " + err.Error())
