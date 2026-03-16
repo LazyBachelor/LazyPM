@@ -50,10 +50,10 @@ func (t *BacklogRefinementTask) Questions(interfaceType InterfaceType) Questions
 			huh.NewSelect[int]().
 				Key("duplicate-issues-closed").
 				Title("How many issues did you close during refinement?").
-				Description("There was only one issue required for the task, if you closed more why?").
+				Description("There was only one issue required for the task; if you closed more, why?").
 				Options(
 					huh.NewOption("1", 1),
-					huh.NewOption("1+ I saw there where more to be closed", 2),
+					huh.NewOption("1+ I saw there were more to be closed", 2),
 					huh.NewOption("1+ I closed more by mistake", 3),
 					huh.NewOption("0 I didn't close any", 4),
 				),
