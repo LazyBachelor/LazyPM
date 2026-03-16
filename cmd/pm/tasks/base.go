@@ -78,10 +78,10 @@ func BaseDetails(interfaceType InterfaceType) TaskDetails {
 	}
 
 	return TaskDetails{
-		Title:                "Base Task",
-		Description:          "This is a base task.",
-		TimeToComplete:       "10m",
-		Difficulty:           "Easy",
+		Title:                "title not set",
+		Description:          "description not set",
+		TimeToComplete:       "not set",
+		Difficulty:           "not set",
 		InterfaceType:        interfaceType,
 		InterfaceDescription: interfaceDesc,
 	}

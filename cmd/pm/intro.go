@@ -16,7 +16,9 @@ const (
 	IntroTitle       = "Project Management Interface Survey"
 	IntroductionText = `This survey evaluates how people use different project management interfaces to complete common tasks.
 You will complete a short set of task-based exercises and answer a few follow-up questions about the experience.
-Your feedback helps us compare interface design and usability.`
+Your feedback helps us compare interface design and usability.
+
+The survey takes around 15-20 minutes to complete.`
 
 	Disclaimer = `Data Collection Notice
 

@@ -26,6 +26,11 @@ func execute(input string) (string, error) {
 	}
 
 	if after, ok := strings.CutPrefix(input, "pm"); ok {
+
+		if strings.Contains(strings.Split(after, " ")[1], "start") {
+			return "Nice try👻", nil
+		}
+
 		return executePMCommand(after)
 	}
 	return executeShellCommand(input)
