@@ -22,7 +22,7 @@ func (m *Model) View() string {
 
 	contentHeight := m.height - headerHeight - footerHeight
 	totalContentWidth := m.width - 1
-	colWidth := totalContentWidth / 3
+	colWidth := totalContentWidth / 4
 	if colWidth < 20 {
 		colWidth = 20
 	}
@@ -35,18 +35,21 @@ func (m *Model) View() string {
 
 	m.todoList.SetSize(colWidth, boardHeight-1)
 	m.inProgList.SetSize(colWidth, boardHeight-1)
+	m.blockedList.SetSize(colWidth, boardHeight-1)
 	m.doneList.SetSize(colWidth, boardHeight-1)
 
 	// Only highlight the selected row in the focused column.
 	m.todoList.SetHighlightSelected(!m.focusOnDetail && m.focusedColumn == 0)
 	m.inProgList.SetHighlightSelected(!m.focusOnDetail && m.focusedColumn == 1)
-	m.doneList.SetHighlightSelected(!m.focusOnDetail && m.focusedColumn == 2)
+	m.blockedList.SetHighlightSelected(!m.focusOnDetail && m.focusedColumn == 2)
+	m.doneList.SetHighlightSelected(!m.focusOnDetail && m.focusedColumn == 3)
 
 	// Detail view takes full width below the board.
 	m.issueDetail.SetSize(totalContentWidth, contentHeight-boardHeight)
 
 	todoLabel := styles.LabelStyle.Render("To Do")
 	inProgLabel := styles.LabelStyle.Render("In Progress")
+	blockedLabel := styles.LabelStyle.Render("Blocked")
 	doneLabel := styles.LabelStyle.Render("Done")
 
 	highlight := lipgloss.NewStyle().Foreground(styles.Primary).Bold(true)
@@ -56,14 +59,17 @@ func (m *Model) View() string {
 	case 1:
 		inProgLabel = highlight.Render("In Progress ▶")
 	case 2:
+		blockedLabel = highlight.Render("Blocked ▶")
+	case 3:
 		doneLabel = highlight.Render("Done ▶")
 	}
 
 	todoCol := lipgloss.JoinVertical(lipgloss.Left, todoLabel, m.todoList.View())
 	inProgCol := lipgloss.JoinVertical(lipgloss.Left, inProgLabel, m.inProgList.View())
+	blockedCol := lipgloss.JoinVertical(lipgloss.Left, blockedLabel, m.blockedList.View())
 	doneCol := lipgloss.JoinVertical(lipgloss.Left, doneLabel, m.doneList.View())
 
-	board := lipgloss.JoinHorizontal(lipgloss.Left, todoCol, inProgCol, doneCol)
+	board := lipgloss.JoinHorizontal(lipgloss.Left, todoCol, inProgCol, blockedCol, doneCol)
 	content := lipgloss.JoinVertical(lipgloss.Left, board, m.issueDetail.View())
 
 	// Add spacer to lock footer to bottom of screen when content is shorter than available space

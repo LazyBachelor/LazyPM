@@ -66,6 +66,8 @@ func StatusStyle(status string) lipgloss.Style {
 		return style.Foreground(FaintText)
 	case "in_progress":
 		return style.Foreground(Warning)
+	case "blocked":
+		return style.Foreground(Error)
 	default:
 		return style.Foreground(SecondaryText)
 	}

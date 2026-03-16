@@ -22,6 +22,10 @@ var SubmitCmd = &cobra.Command{
 			return nil
 		}
 
+		if !cmd.Flags().Changed("dev") {
+			fmt.Println("DBUri", app.Config.DbUri)
+		}
+
 		db, err := storage.NewMongoStorageInteractive(cmd.Context(), app.Config.DbUri)
 		if err != nil {
 			return fmt.Errorf("failed to connect to database: %w", err)
@@ -36,4 +40,8 @@ var SubmitCmd = &cobra.Command{
 		cmd.Println("Successfully submitted survey responses and metrics to the database")
 		return nil
 	},
+}
+
+func init() {
+	SubmitCmd.Flags().Bool("dev", false, "Show DB connection details for development purposes")
 }

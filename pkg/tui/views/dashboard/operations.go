@@ -354,6 +354,12 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.choosingStatus = false
 				m.statusIssueID = ""
 				return m, issues.UpdateIssueStatusCmd(m.app, issueID, string(models.StatusInProgress))
+			case "b":
+				m.logAction("tui selected issue status blocked")
+				issueID := m.statusIssueID
+				m.choosingStatus = false
+				m.statusIssueID = ""
+				return m, issues.UpdateIssueStatusCmd(m.app, issueID, string(models.StatusBlocked))
 			case "r":
 				m.logAction("tui selected issue status ready_to_sprint")
 				issueID := m.statusIssueID

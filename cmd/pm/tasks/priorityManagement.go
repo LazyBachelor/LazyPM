@@ -19,7 +19,9 @@ You need to rebalance the current sprint priorities:
 
 1. Assign the task Issue you are currently reading to yourself as "Me" and set status to "In Progress".
 2. A new issue has appeared in the list that needs urgent attention. Change the database related issue's priority to 4 (critical).
-3. Set the priority of the feature and chore issues in the list to 1 (low).`
+3. Set the priority of the feature and chore issues in the list to 1 (low).
+4. Change this issue status to "Closed".
+`
 
 type PriorityManagementTask struct {
 	done           bool

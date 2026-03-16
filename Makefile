@@ -1,5 +1,13 @@
 SHELL := /bin/bash
 
+ifneq (,$(wildcard .env))
+	include .env
+	export
+endif
+
+LDFLAGS := \
+	-X 'main.DB_URI=$(DB_URI)'
+
 tidy:
 	go mod tidy
 
@@ -16,7 +24,7 @@ clean:
 	@rm -f ./build/pm_bash.sh
 
 build: tidy
-	@go build -o ./bin/pm ./cmd/pm
+	@go build -ldflags "$(LDFLAGS)" -o ./bin/pm ./cmd/pm
 	@go build -o ./bin/tui ./cmd/tui
 	@go build -o ./bin/web ./cmd/web
 	@echo "Build completed successfully. Binaries are located in the ./bin directory."
@@ -36,7 +44,7 @@ docker-run:
 docker-push:
 	@docker push telikz/lazypm:latest
 
-os-build: build completions
+os-build: completions build
 	@cp ./bin/pm ./build/pm
 	@cp ./bin/pm_bash.sh ./build/pm_bash.sh
 	@docker build -t telikz/lazyos ./build

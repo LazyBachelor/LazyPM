@@ -21,10 +21,12 @@ func (m *Model) refreshIssueListsAndSelectIssue(issueID string) tea.Cmd {
 
 	todoIssues := components.StatusOnly(allIssues, models.StatusOpen)
 	inProgIssues := components.StatusOnly(allIssues, models.StatusInProgress)
+	blockedIssues := components.StatusOnly(allIssues, models.StatusBlocked)
 	doneIssues := components.StatusOnly(allIssues, models.StatusClosed)
 
 	todoCmd := m.todoList.SetIssues(todoIssues)
 	inProgCmd := m.inProgList.SetIssues(inProgIssues)
+	blockedCmd := m.blockedList.SetIssues(blockedIssues)
 	doneCmd := m.doneList.SetIssues(doneIssues)
 
 	var targetStatus models.Status
@@ -41,16 +43,19 @@ func (m *Model) refreshIssueListsAndSelectIssue(issueID string) tea.Cmd {
 		m.focusedColumn = 0
 	case models.StatusInProgress:
 		m.focusedColumn = 1
-	case models.StatusClosed:
+	case models.StatusBlocked:
 		m.focusedColumn = 2
+	case models.StatusClosed:
+		m.focusedColumn = 3
 	}
 
 	// Select the moved issue in its new column immediately so the highlight follows it.
 	m.todoList.SelectIssueID(issueID)
 	m.inProgList.SelectIssueID(issueID)
+	m.blockedList.SelectIssueID(issueID)
 	m.doneList.SelectIssueID(issueID)
 
-	return tea.Sequence(todoCmd, inProgCmd, doneCmd)
+	return tea.Sequence(todoCmd, inProgCmd, blockedCmd, doneCmd)
 }
 
 func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
@@ -109,6 +114,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case issues.SelectIssueMsg:
 		m.todoList.SelectIssueID(msg.IssueID)
 		m.inProgList.SelectIssueID(msg.IssueID)
+		m.blockedList.SelectIssueID(msg.IssueID)
 		m.doneList.SelectIssueID(msg.IssueID)
 		return m, nil
 
@@ -126,10 +132,12 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		todoIssues := components.StatusOnly(allIssues, models.StatusOpen)
 		inProgIssues := components.StatusOnly(allIssues, models.StatusInProgress)
+		blockedIssues := components.StatusOnly(allIssues, models.StatusBlocked)
 		doneIssues := components.StatusOnly(allIssues, models.StatusClosed)
 
 		todoCmd := m.todoList.SetIssues(todoIssues)
 		inProgCmd := m.inProgList.SetIssues(inProgIssues)
+		blockedCmd := m.blockedList.SetIssues(blockedIssues)
 		doneCmd := m.doneList.SetIssues(doneIssues)
 
 		// Determine the created issue from the refreshed list to ensure all fields (like ID) are populated.
@@ -145,7 +153,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 
 		m.issueDetail.SetIssue(*selectedIssue)
-		return m, tea.Sequence(todoCmd, inProgCmd, doneCmd, func() tea.Msg { return issues.SelectIssueMsg{IssueID: selectedIssue.ID} })
+		return m, tea.Sequence(todoCmd, inProgCmd, blockedCmd, doneCmd, func() tea.Msg { return issues.SelectIssueMsg{IssueID: selectedIssue.ID} })
 	case issues.DeletedMsg:
 		m.confirmingDelete = false
 		m.deleteConfirmID = ""
@@ -159,16 +167,18 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		todoIssues := components.StatusOnly(allIssues, models.StatusOpen)
 		inProgIssues := components.StatusOnly(allIssues, models.StatusInProgress)
+		blockedIssues := components.StatusOnly(allIssues, models.StatusBlocked)
 		doneIssues := components.StatusOnly(allIssues, models.StatusClosed)
 
 		todoCmd := m.todoList.SetIssues(todoIssues)
 		inProgCmd := m.inProgList.SetIssues(inProgIssues)
+		blockedCmd := m.blockedList.SetIssues(blockedIssues)
 		doneCmd := m.doneList.SetIssues(doneIssues)
 
 		// If there are no issues at all, clear the detail view and return.
-		if len(todoIssues) == 0 && len(inProgIssues) == 0 && len(doneIssues) == 0 {
+		if len(todoIssues) == 0 && len(inProgIssues) == 0 && len(blockedIssues) == 0 && len(doneIssues) == 0 {
 			m.issueDetail.SetIssue(models.Issue{})
-			return m, tea.Sequence(todoCmd, inProgCmd, doneCmd)
+			return m, tea.Sequence(todoCmd, inProgCmd, blockedCmd, doneCmd)
 		}
 
 		// Determine which column to use for the next selection based on the current focus.
@@ -180,9 +190,12 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				if len(inProgIssues) > 0 {
 					targetIssues = inProgIssues
 					m.focusedColumn = 1
+				} else if len(blockedIssues) > 0 {
+					targetIssues = blockedIssues
+					m.focusedColumn = 2
 				} else if len(doneIssues) > 0 {
 					targetIssues = doneIssues
-					m.focusedColumn = 2
+					m.focusedColumn = 3
 				}
 			}
 		case 1:
@@ -191,15 +204,35 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				if len(todoIssues) > 0 {
 					targetIssues = todoIssues
 					m.focusedColumn = 0
+				} else if len(blockedIssues) > 0 {
+					targetIssues = blockedIssues
+					m.focusedColumn = 2
 				} else if len(doneIssues) > 0 {
 					targetIssues = doneIssues
-					m.focusedColumn = 2
+					m.focusedColumn = 3
 				}
 			}
 		case 2:
-			targetIssues = doneIssues
+			targetIssues = blockedIssues
 			if len(targetIssues) == 0 {
 				if len(inProgIssues) > 0 {
+					targetIssues = inProgIssues
+					m.focusedColumn = 1
+				} else if len(todoIssues) > 0 {
+					targetIssues = todoIssues
+					m.focusedColumn = 0
+				} else if len(doneIssues) > 0 {
+					targetIssues = doneIssues
+					m.focusedColumn = 3
+				}
+			}
+		case 3:
+			targetIssues = doneIssues
+			if len(targetIssues) == 0 {
+				if len(blockedIssues) > 0 {
+					targetIssues = blockedIssues
+					m.focusedColumn = 2
+				} else if len(inProgIssues) > 0 {
 					targetIssues = inProgIssues
 					m.focusedColumn = 1
 				} else if len(todoIssues) > 0 {
@@ -212,7 +245,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		// Safety: if targetIssues is still empty here, just clear detail and return.
 		if len(targetIssues) == 0 {
 			m.issueDetail.SetIssue(models.Issue{})
-			return m, tea.Sequence(todoCmd, inProgCmd, doneCmd)
+			return m, tea.Sequence(todoCmd, inProgCmd, blockedCmd, doneCmd)
 		}
 
 		newIndex := msg.PreviousIndex
@@ -221,7 +254,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 		selectedIssue := targetIssues[newIndex]
 		m.issueDetail.SetIssue(*selectedIssue)
-		return m, tea.Sequence(todoCmd, inProgCmd, doneCmd, func() tea.Msg {
+		return m, tea.Sequence(todoCmd, inProgCmd, blockedCmd, doneCmd, func() tea.Msg {
 			return issues.SelectIssueMsg{IssueID: selectedIssue.ID}
 		})
 
@@ -253,6 +286,11 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.choosingStatus = false
 				m.statusIssueID = ""
 				return m, issues.UpdateIssueStatusCmd(m.app, issueID, string(models.StatusInProgress))
+			case "b":
+				issueID := m.statusIssueID
+				m.choosingStatus = false
+				m.statusIssueID = ""
+				return m, issues.UpdateIssueStatusCmd(m.app, issueID, string(models.StatusBlocked))
 			case "r":
 				issueID := m.statusIssueID
 				m.choosingStatus = false

@@ -1,6 +1,14 @@
 FROM lscr.io/linuxserver/webtop:latest
 
-RUN apk add --no-cache exo gcompat libc6-compat bash bash-completion alacritty
+RUN apk add --no-cache \
+	ca-certificates \
+	exo \
+	gcompat \
+	libc6-compat \
+	bash \
+	bash-completion \
+	alacritty && \
+	update-ca-certificates
 
 COPY pm /usr/local/bin/pm
 COPY pm_bash.sh /etc/bash_completion.d/pm

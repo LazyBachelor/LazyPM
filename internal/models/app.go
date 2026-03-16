@@ -61,4 +61,5 @@ type StatsService interface {
 	GetStatistics() (Statistics, error)
 	GetParticipantID() primitive.ObjectID
 	RecordTaskRun(ctx context.Context, run TaskRunMetrics) error
+	RecordIntroQuestionnaireAnswers(answers map[string]any) error
 }

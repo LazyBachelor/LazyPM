@@ -22,6 +22,10 @@ func init() {
 
 	models.BaseConfig = models.BaseConfig.LoadFromEnv()
 
+	if DB_URI != "" {
+		models.BaseConfig = models.BaseConfig.WithDbUri(DB_URI)
+	}
+
 	task.RegisterInterface("tui", tui.New())
 	task.RegisterInterface("web", web.New())
 	task.RegisterInterface("repl", repl.New())
@@ -40,6 +44,9 @@ func init() {
 	})
 	task.RegisterTask("priority_management", func(app *app.App) task.Tasker {
 		return tasks.NewPriorityManagementTask(app)
+	})
+	task.RegisterTask("issue_review_cleanup", func(app *app.App) task.Tasker {
+		return tasks.NewIssueReviewCleanupTask(app)
 	})
 	task.RegisterTask("git_task", func(app *app.App) task.Tasker {
 		return tasks.NewGitTask(app)

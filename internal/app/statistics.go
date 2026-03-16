@@ -131,3 +131,29 @@ func (s *StatisticsService) RecordTaskRun(ctx context.Context, run models.TaskRu
 
 	return nil
 }
+
+func (s *StatisticsService) RecordIntroQuestionnaireAnswers(answers map[string]any) error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	if s.storage.Data == nil {
+		return fmt.Errorf("statistics data not initialized")
+	}
+
+	s.storage.Data.IntroQuestionnaireAnswers = answers
+
+	if err := s.storage.Save(); err != nil {
+		if s.logger != nil {
+			s.logger.Error("failed to save intro questionnaire answers", "error", err)
+		}
+		return err
+	}
+
+	if s.logger != nil {
+		s.logger.Info("intro questionnaire answers saved",
+			"answers_count", len(answers),
+		)
+	}
+
+	return nil
+}
