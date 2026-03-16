@@ -99,8 +99,7 @@ func BaseQuestions(interfaceType InterfaceType) Questions {
 	return Questions{
 		huh.NewGroup(
 			huh.NewConfirm().Key("task_completed").
-				Title("Where you able to complete the task?").
-				Description("")),
+				Title("Were you able to complete the task?")),
 		huh.NewGroup(
 			huh.NewSelect[int]().Key("interface_difficulty").
 				Title("How difficult was it to use the interface?").
