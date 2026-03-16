@@ -45,6 +45,9 @@ func init() {
 	task.RegisterTask("priority_management", func(app *app.App) task.Tasker {
 		return tasks.NewPriorityManagementTask(app)
 	})
+	task.RegisterTask("dependency_management", func(app *app.App) task.Tasker {
+		return tasks.NewDependencyManagementTask(app)
+	})
 	task.RegisterTask("issue_review_cleanup", func(app *app.App) task.Tasker {
 		return tasks.NewIssueReviewCleanupTask(app)
 	})
@@ -83,18 +86,20 @@ func init() {
 	RootCmd.AddCommand(issues.CommentCmd)
 	RootCmd.AddCommand(issues.CommentsCmd)
 
-	var SurveyRootCmd = survey.RootCmd
-	SurveyRootCmd.GroupID = "survey"
 	RootCmd.AddGroup(&cobra.Group{ID: "survey", Title: "Survey Commands"})
+	survey.StartCmd.GroupID = "survey"
+	survey.StatusCmd.GroupID = "survey"
+	survey.SubmitCmd.GroupID = "survey"
+	survey.ListTasksCmd.GroupID = "survey"
+	survey.ListInterfacesCmd.GroupID = "survey"
 
 	survey.StartCmd.RunE = runStartCmd
-	SurveyRootCmd.AddCommand(survey.StartCmd)
-	SurveyRootCmd.AddCommand(survey.StatusCmd)
-	SurveyRootCmd.AddCommand(survey.SubmitCmd)
-	SurveyRootCmd.AddCommand(survey.ListTasksCmd)
-	SurveyRootCmd.AddCommand(survey.ListInterfacesCmd)
+	RootCmd.AddCommand(survey.StartCmd)
+	RootCmd.AddCommand(survey.StatusCmd)
+	RootCmd.AddCommand(survey.SubmitCmd)
 
-	RootCmd.AddCommand(SurveyRootCmd)
+	RootCmd.AddCommand(survey.ListTasksCmd)
+	RootCmd.AddCommand(survey.ListInterfacesCmd)
 
 	RootCmd.AddGroup(&cobra.Group{ID: "other", Title: "Additional Commands"})
 	RootCmd.SetHelpCommandGroupID("other")

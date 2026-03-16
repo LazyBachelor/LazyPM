@@ -6,6 +6,7 @@ import (
 
 	"github.com/LazyBachelor/LazyPM/internal/models"
 	"github.com/LazyBachelor/LazyPM/internal/utils/check"
+	"github.com/charmbracelet/huh"
 )
 
 const description = `You are tasked with creating a new issue in the project management system.
@@ -35,15 +36,32 @@ func (t *CreateIssueTask) Config() Config {
 }
 
 func (t *CreateIssueTask) Details(interfaceType InterfaceType) TaskDetails {
-	return BaseDetails(interfaceType).WithTitle("Create Issue Task").WithDescription(description)
+	return BaseDetails(interfaceType).
+		WithTitle("Create Issue Task").
+		WithDescription(description).
+		WithDifficulty("Medium").
+		WithTimeToComplete("3m")
 }
 
 func (t *CreateIssueTask) Questions(interfaceType InterfaceType) Questions {
-	return BaseQuestions(interfaceType)
+	return BaseQuestions(interfaceType).With(
+		huh.NewGroup(
+			huh.NewSelect[int]().Key("context_difficulty").
+				Title("How difficult was it remembering what needed to be done for the task?").
+				Description("We are interested in how difficult it was keeping track of the task requirements. And if one interface helps you keep context").
+				Options(
+					huh.NewOption("Very Easy", 1),
+					huh.NewOption("Easy", 2),
+					huh.NewOption("Moderate", 3),
+					huh.NewOption("Difficult", 4),
+					huh.NewOption("Very Difficult", 5),
+				),
+		),
+	)
 }
 
 func (t *CreateIssueTask) QuestionnaireKeys(_ InterfaceType) []string {
-	return []string{"task_completed", "task_difficulty"}
+	return BaseKeys().With("context_difficulty")
 }
 
 func (t *CreateIssueTask) Setup(ctx context.Context) error {

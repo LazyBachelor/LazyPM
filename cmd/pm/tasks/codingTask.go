@@ -7,6 +7,7 @@ import (
 
 	"github.com/LazyBachelor/LazyPM/internal/models"
 	"github.com/LazyBachelor/LazyPM/internal/utils/check"
+	"github.com/charmbracelet/huh"
 )
 
 const codingDescription = `You are tasked with doing a chore in the codebase.
@@ -22,11 +23,15 @@ Your task:
 	- Description: "We need to upgrade the MongoDB Driver dependency to the latest version."
 	- Status: "In Progress"
 	- Issue Type: "Chore"
-2. A file will appear in the current directory named "code.txt".
+2. Assign the issue to yourself as "Me".
+3. A file will appear in the current directory named "code.txt".
    Open it and follow the instructions inside. And save the file after you are done.
-3. When you are done, mark this and the issue you made as "Closed".`
+4. When you are done, mark this and the issue you made as "Closed".`
 
 var textFileDescription = `
+
+# Instructions for the coding task
+
 Please upgrade the MongoDB Driver dependency in the go.mod file to the latest version.
 It should be v1.17.9. After you are done, save the file and mark the task as completed.
 ############################################################`
@@ -85,16 +90,33 @@ func (t *CodingTask) Config() Config {
 }
 
 func (t *CodingTask) Details(interfaceType InterfaceType) TaskDetails {
-	return BaseDetails(interfaceType).WithTitle("Coding Task").WithDescription(codingDescription)
+	return BaseDetails(interfaceType).
+		WithTitle("Coding Task").
+		WithDescription(codingDescription).
+		WithDifficulty("Hard").WithTimeToComplete("5m")
 }
 
 func (t *CodingTask) Questions(interfaceType InterfaceType) (questions Questions) {
-	return BaseQuestions(interfaceType)
+	return BaseQuestions(interfaceType).
+		With(
+			huh.NewGroup(
+				huh.NewSelect[int]().
+					Key("coding_interface_friction").
+					Title("How much friction did you feel switching between editing code and using the interface?").
+					Description("By friction we mean the difficulty or inconvenience of switching between these two activities.").
+					Options(
+						huh.NewOption("Very low", 1),
+						huh.NewOption("Low", 2),
+						huh.NewOption("Moderate", 3),
+						huh.NewOption("High", 4),
+						huh.NewOption("Very high", 5),
+					),
+			),
+		)
 }
 
 func (t *CodingTask) QuestionnaireKeys(interfaceType InterfaceType) []string {
-	keys := []string{"task_completed", "task_difficulty"}
-	return keys
+	return BaseKeys().With("coding_interface_friction")
 }
 
 func (t *CodingTask) Setup(ctx context.Context) error {

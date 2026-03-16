@@ -43,23 +43,29 @@ func (t *PriorityManagementTask) Details(interfaceType InterfaceType) TaskDetail
 	return BaseDetails(interfaceType).
 		WithTitle("Priority Management Task").
 		WithDescription(priorityManagementDescription).
-		WithTimeToComplete("8m").
-		WithDifficulty("Easy")
+		WithTimeToComplete("4m").
+		WithDifficulty("Medium")
 }
 
 func (t *PriorityManagementTask) Questions(interfaceType InterfaceType) Questions {
-	return BaseQuestions(interfaceType).
-		With(
-			huh.NewGroup(
-				huh.NewSelect[int]().
-					Title("How many issues did you reprioritize or comment on?").
-					Options(
-						huh.NewOption("1-2", 1),
-						huh.NewOption("3-4", 2),
-						huh.NewOption("5+", 3),
-					),
-			),
-		)
+	return BaseQuestions(interfaceType).With(
+		huh.NewGroup(
+			huh.NewSelect[int]().Key("management_difficulty").
+				Title("How did it feel managing multiple issues?").
+				Description("Managing multiple issues would require careful prioritization and coordination.").
+				Options(
+					huh.NewOption("Very Easy", 1),
+					huh.NewOption("Easy", 2),
+					huh.NewOption("Moderate", 3),
+					huh.NewOption("Difficult", 4),
+					huh.NewOption("Very Difficult", 5),
+				),
+		),
+	)
+}
+
+func (t *PriorityManagementTask) QuestionnaireKeys(_ InterfaceType) []string {
+	return BaseKeys().With("management_difficulty")
 }
 
 func (t *PriorityManagementTask) Setup(ctx context.Context) error {

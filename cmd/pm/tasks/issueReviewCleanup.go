@@ -34,12 +34,16 @@ func (t *IssueReviewCleanupTask) Details(interfaceType InterfaceType) TaskDetail
 	return BaseDetails(interfaceType).
 		WithTitle("Issue Review and Cleanup Task").
 		WithDescription(issueReviewCleanupDescription).
-		WithTimeToComplete("8m").
-		WithDifficulty("Easy")
+		WithTimeToComplete("3m").
+		WithDifficulty("Medium")
 }
 
 func (t *IssueReviewCleanupTask) Questions(interfaceType InterfaceType) Questions {
 	return BaseQuestions(interfaceType)
+}
+
+func (t *IssueReviewCleanupTask) QuestionnaireKeys(_ InterfaceType) []string {
+	return BaseKeys()
 }
 
 func (t *IssueReviewCleanupTask) Setup(ctx context.Context) error {
