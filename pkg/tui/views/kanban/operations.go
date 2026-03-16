@@ -287,6 +287,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.choosingCloseReason = false
 				m.closingOtherReason = true
 				m.closeReasonInput.SetValue("")
+				m.closeReasonInput.Focus()
 				return m, nil
 			case "esc":
 				m.choosingCloseReason = false
@@ -304,17 +305,19 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		if m.closingOtherReason {
 			switch msg.String() {
-			case "enter":
+			case "enter", "ctrl+s":
 				reason := m.closeReasonInput.Value()
 				if reason != "" {
 					issueID := m.closeReasonIssueID
 					m.closingOtherReason = false
 					m.closeReasonIssueID = ""
+					m.closeReasonInput.Blur()
 					return m, issues.CloseIssueCmd(m.app, issueID, reason)
 				}
 			case "esc":
 				m.closingOtherReason = false
 				m.closeReasonIssueID = ""
+				m.closeReasonInput.Blur()
 				return m, nil
 			}
 			var cmd tea.Cmd

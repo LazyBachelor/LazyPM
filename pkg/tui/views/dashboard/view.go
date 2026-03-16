@@ -193,7 +193,7 @@ func (m *Model) View() string {
 		m.closeReasonInput.SetWidth(editBoxWidth - 2)
 		m.closeReasonInput.SetHeight(4)
 		editContent := lipgloss.JoinVertical(lipgloss.Left,
-			styles.LabelStyle.Render("Enter closing reason for "+m.closeReasonIssueID+" (Enter to save, Esc to cancel):"),
+			styles.LabelStyle.Render("Enter closing reason for "+m.closeReasonIssueID+" (Enter or Ctrl+S to save, Esc to cancel):"),
 			m.closeReasonInput.View(),
 		)
 		editBox := styles.ContainerStyle.
