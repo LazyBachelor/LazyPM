@@ -49,7 +49,7 @@ func (iq *IntroQuestionnaire) Questions() task.Questions {
 		huh.NewGroup(
 			huh.NewSelect[string]().
 				Title("Are you a student, employed, or both?").
-				Description("This helps us understand your current situation.").
+				Description("This helps us understand your current working experience.").
 				Options(
 					huh.NewOption("Student", "student"),
 					huh.NewOption("Employed", "employed"),
@@ -75,7 +75,7 @@ func (iq *IntroQuestionnaire) Questions() task.Questions {
 		huh.NewGroup(
 			huh.NewSelect[string]().
 				Title("How would you describe your experience with the command line?").
-				Description("This helps us tailor the questions to your experience level.").
+				Description("This helps us understand your familiarity with the command line.").
 				Options(
 					huh.NewOption("No experience", "none"),
 					huh.NewOption("Some experience", "some"),

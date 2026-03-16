@@ -13,22 +13,18 @@ import (
 const stages = 2
 
 const (
-	IntroTitle = "✦ Project Management Interface Survey ✦"
+	IntroTitle       = "Project Management Interface Survey"
+	IntroductionText = `This survey evaluates how people use different project management interfaces to complete common tasks.
+You will complete a short set of task-based exercises and answer a few follow-up questions about the experience.
+Your feedback helps us compare interface design and usability.`
 
-	IntroductionText = `Welcome! This survey gathers feedback on task management interfaces.
+	Disclaimer = `Data Collection Notice
 
-Your responses will help us improve our services. All data is anonymized
-and used solely for research purposes.
-
-By participating, you consent to data collection as described below.`
-
-	Disclaimer = `📋 Data Collection Notice
-
-• All responses are completely anonymized
-• Data is used for research purposes only
-• No personally identifiable information is collected
-• You may exit at any time by pressing Esc
-• We get no data unless you complete the survey and submit.`
+• Responses are anonymized before analysis
+• We collect task results, questionnaire answers, and interaction events during the survey
+• We do not intentionally collect personally identifying information
+• You may exit at any time by pressing Esc between tasks or closing the terminal.
+• Data is collected continuously during the survey, so exiting early will still contribute valuable insights.`
 )
 
 type keyMap struct {
@@ -127,7 +123,7 @@ func (m introModel) View() string {
 		return ""
 	}
 
-	boxWidth := min(m.width-10, 80)
+	boxWidth := min(m.width-10, 120)
 
 	boxStyle := style.BorderStyle.
 		Margin(1, 0).Padding(2, 4).Width(boxWidth)
