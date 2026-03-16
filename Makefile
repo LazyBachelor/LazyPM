@@ -63,7 +63,7 @@ os-push:
 	@docker push telikz/lazyos
 
 start:
-	@go run ./cmd/pm survey start
+	@go run ./cmd/pm start
 
 cli: tidy
 	go run ./cmd/pm

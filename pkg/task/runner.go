@@ -84,6 +84,7 @@ func (r *TaskRunner) Run(ctx context.Context, t Tasker, i Interface, iType Inter
 		collector.recordValidation(feedback)
 
 		if feedback.Success {
+			collector.setCompleted(true)
 			feedback.Message = "Task completed successfully!"
 		} else if feedback.Message == "" {
 			feedback.Message = "Task not completed!"
