@@ -11,10 +11,8 @@ const issueReviewCleanupDescription = `You are responsible for reviewing and mai
 
 Using the system, complete the following steps:
 
-1. Open three different issues and read their titles and descriptions
-2. Add a comment to two issues
-3. Delete this cleanup task issue ("Issue Review and Cleanup Task") from the issue list — do not delete the other project issues
-4. Confirm that the cleanup task issue no longer appears in the list`
+1. Add a comment to two issues
+2. Delete this cleanup task issue ("Issue Review and Cleanup Task") from the issue list — do not delete the other project issues`
 
 type IssueReviewCleanupTask struct {
 	done       bool
