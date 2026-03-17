@@ -12,12 +12,27 @@ templ AssigneeForm(props AssigneeFormProps) {
 		hx-patch={ props.PatchAction }
 		hx-swap="innerHTML"
 	>
-		@base.Input(base.InputProps{
-			Name:        "assignee",
-			Type:        "text",
-			Placeholder: "Enter assingee",
-			Value:       props.Assignee,
-		})
-		<button class="btn btn-primary mt-2" type="submit">Set Assignee</button>
+		<div class="form-control">
+			<label class="label cursor-pointer justify-start gap-2">
+				<input
+					type="checkbox"
+					name="assign_me"
+					value="me"
+					class="checkbox checkbox-primary"
+					if props.Assignee == "Me" {
+						checked
+					}
+				/>
+				<span class="label-text">Assign this issue to me</span>
+			</label>
+			if props.Assignee != "" {
+				<p class="text-xs mt-1 opacity-70">
+					Current assignee: { props.Assignee }
+				</p>
+			}
+		</div>
+		<button class="btn btn-primary mt-4" type="submit">
+			Update Assignee
+		</button>
 	</form>
 }
