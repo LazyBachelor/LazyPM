@@ -2,6 +2,7 @@ package handler
 
 import (
 	"net/http"
+	"sort"
 	"strings"
 
 	"github.com/LazyBachelor/LazyPM/internal/models"
@@ -19,6 +20,11 @@ func DashboardHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Failed to retrieve issues", http.StatusInternalServerError)
 		return
 	}
+
+	// Sort issues by highest priority first (4 -> 0)
+	sort.Slice(issues, func(i, j int) bool {
+		return issues[i].Priority > issues[j].Priority
+	})
 
 	// Check if board view is requested
 	isBoardView := r.URL.Query().Get("board") == "true"
