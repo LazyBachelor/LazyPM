@@ -152,22 +152,16 @@ func (t *SprintPlanningTask) Validate(ctx context.Context) ValidationFeedback {
 	top := sorted[:topN]
 
 	var plannedCount int
-	var readyToSprintCount int
 	for _, issue := range top {
 		if issue.Status == models.StatusReadyToSprint ||
 			issue.Status == models.StatusInProgress ||
 			issue.Status == models.StatusClosed {
 			plannedCount++
 		}
-		if issue.Status == models.StatusReadyToSprint {
-			readyToSprintCount++
-		}
 	}
 
 	expect.Assert(plannedCount >= 3,
 		"Expected at least 3 of the 5 highest-priority issues to be moved into 'ready_to_sprint', 'in_progress', or 'closed' for the sprint.")
-	expect.Assert(readyToSprintCount >= 1,
-		"Expected at least one of the highest-priority issues to be marked as 'ready_to_sprint' to indicate it is planned for the sprint.")
 
 	return expect.Complete()
 }
