@@ -57,7 +57,7 @@ func (m TaskModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
 		m.SetSize(msg.Width, msg.Height)
-	case tea.KeyMsg:
+	case tea.KeyPressMsg:
 		switch {
 		case key.Matches(msg, m.keys.Quit):
 			m.userQuit = true
@@ -73,10 +73,13 @@ func (m TaskModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return m, nil
 }
 
-func (m TaskModel) View() string {
+func (m TaskModel) View() tea.View {
 	if m.width < 55 || m.height < 16 {
-		return lipgloss.Place(m.width, m.height, lipgloss.Center, lipgloss.Center,
+		content := lipgloss.Place(m.width, m.height, lipgloss.Center, lipgloss.Center,
 			style.TextStyle.Render("Terminal too small."))
+		v := tea.NewView(content)
+		v.AltScreen = true
+		return v
 	}
 
 	boxWidth := min(m.width-10, 120)
@@ -111,7 +114,9 @@ func (m TaskModel) View() string {
 
 	final := lipgloss.Place(m.width, m.height, lipgloss.Center, lipgloss.Center, b.String())
 
-	return final
+	v := tea.NewView(final)
+	v.AltScreen = true
+	return v
 }
 
 func (m *TaskModel) SetSize(width, height int) {

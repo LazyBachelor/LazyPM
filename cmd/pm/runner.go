@@ -11,6 +11,7 @@ import (
 	"github.com/LazyBachelor/LazyPM/cmd/pm/tasks"
 	"github.com/LazyBachelor/LazyPM/internal/commands/survey"
 	"github.com/LazyBachelor/LazyPM/internal/storage"
+	"github.com/LazyBachelor/LazyPM/internal/style"
 	"github.com/LazyBachelor/LazyPM/pkg/task"
 	"github.com/spf13/cobra"
 )
@@ -54,7 +55,7 @@ func runStartCmd(cmd *cobra.Command, args []string) error {
 				Title("Do you want to continue without submitting your responses?").
 				Description("You can fix your database connection and submit your responses later with the submit command.").
 				Value(&continueWithoutSubmitting).
-				WithTheme(huh.ThemeBase16(true)).
+				WithTheme(style.Base16Theme{}).
 				RunAccessible(cmd.OutOrStdout(), cmd.InOrStdin()); err != nil {
 				return fmt.Errorf("failed to read user input: %w", err)
 			}

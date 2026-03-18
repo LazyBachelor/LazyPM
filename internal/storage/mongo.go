@@ -9,6 +9,7 @@ import (
 
 	"charm.land/huh/v2"
 	"github.com/LazyBachelor/LazyPM/internal/models"
+	"github.com/LazyBachelor/LazyPM/internal/style"
 	"go.mongodb.org/mongo-driver/v2/bson"
 	"go.mongodb.org/mongo-driver/v2/mongo"
 	"go.mongodb.org/mongo-driver/v2/mongo/options"
@@ -24,7 +25,7 @@ func NewMongoStorage(ctx context.Context, uri, username, password string) (*Mong
 		Password: password,
 	}
 
-	client, err := mongo.Connect(ctx,
+	client, err := mongo.Connect(
 		options.Client().ApplyURI(uri).SetAuth(credentials))
 
 	if err != nil {
@@ -44,7 +45,7 @@ func NewMongoStorageInteractive(ctx context.Context, uri string) (*MongoStorage,
 		if err := huh.NewInput().
 			Title("Enter the Database Username").
 			Value(&username).
-			WithTheme(huh.ThemeBase16()).Run(); err != nil {
+			WithTheme(style.Base16Theme{}).Run(); err != nil {
 			return nil, fmt.Errorf("failed to read username: %w", err)
 		}
 	} else {
@@ -60,7 +61,7 @@ func NewMongoStorageInteractive(ctx context.Context, uri string) (*MongoStorage,
 			Title("Enter the Survey Password").
 			EchoMode(huh.EchoModePassword).
 			Value(&password).
-			WithTheme(huh.ThemeBase16()).Run(); err != nil {
+			WithTheme(style.Base16Theme{}).Run(); err != nil {
 			return nil, fmt.Errorf("failed to read password: %w", err)
 		}
 	} else {
@@ -110,7 +111,7 @@ func (s *MongoStorage) SubmitSurveyResponsesCmd(ctx context.Context, dir string)
 	_, err = userStatscollection.UpdateOne(ctx,
 		bson.M{"_id": stats.ID},
 		bson.M{"$set": stats},
-		options.Update().SetUpsert(true))
+		options.UpdateOne().SetUpsert(true))
 
 	if err != nil {
 		return fmt.Errorf("Failed to insert stats into database: %v", err)
@@ -140,7 +141,7 @@ func (s *MongoStorage) SubmitSurveyResponsesCmd(ctx context.Context, dir string)
 		}
 
 		_, err = taskMetricsCollection.UpdateOne(ctx, bson.M{"_id": metrics.ID}, bson.M{"$set": metrics},
-			options.Update().SetUpsert(true))
+			options.UpdateOne().SetUpsert(true))
 
 		if err != nil {
 			fmt.Printf("failed to insert metrics from %s: %v", file, err)

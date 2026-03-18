@@ -81,6 +81,6 @@ func (r *RootModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return r, cmd
 }
 
-func (r *RootModel) View() string {
+func (r *RootModel) View() tea.View {
 	return r.currentView.View()
 }

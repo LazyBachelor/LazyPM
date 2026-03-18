@@ -79,7 +79,7 @@ var defaultDashboardKeyMap = DashboardKeyMap{
 	),
 }
 
-func (d *Model) handleKeyMsg(msg tea.KeyMsg) tea.Cmd {
+func (d *Model) handleKeyPressMsg(msg tea.KeyPressMsg) tea.Cmd {
 	var cmd tea.Cmd
 
 	switch {

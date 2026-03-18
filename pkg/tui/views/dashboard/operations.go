@@ -322,7 +322,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return issues.SelectIssueMsg{IssueID: selectedIssue.ID}
 		})
 
-	case tea.KeyMsg:
+	case tea.KeyPressMsg:
 		if m.confirmingDelete {
 			switch msg.String() {
 			case "y", "Y":
@@ -619,7 +619,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, nil
 		}
 
-		cmd := m.handleKeyMsg(msg)
+		cmd := m.handleKeyPressMsg(msg)
 		if cmd != nil {
 			return m, cmd
 		}

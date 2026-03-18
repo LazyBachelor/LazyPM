@@ -20,7 +20,9 @@ type QuestionnaireModel struct {
 
 func NewQuestionnaireModel(questions Questions, keys []string) *QuestionnaireModel {
 	form := huh.NewForm(questions...).
-		WithTheme(style.HuhCenterTheme()).WithLayout(huh.LayoutGrid(1, 1))
+		WithTheme(style.HuhCenterTheme()).
+		WithLayout(huh.LayoutGrid(1, 1)).
+		WithWidth(80)
 
 	return &QuestionnaireModel{
 		Questions: questions,
@@ -37,7 +39,9 @@ func (q *QuestionnaireModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
 		q.SetSize(msg.Width, msg.Height)
-	case tea.KeyMsg:
+		// Update form width to match window
+		q.form.WithWidth(msg.Width)
+	case tea.KeyPressMsg:
 		switch msg.String() {
 		case "q", "ctrl+c":
 			q.userQuit = true
@@ -57,14 +61,18 @@ func (q *QuestionnaireModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return q, cmd
 }
 
-func (q *QuestionnaireModel) View() string {
+func (q *QuestionnaireModel) View() tea.View {
 	form := lipgloss.NewStyle().
 		Width(q.width).Align(lipgloss.Center).
 		Render(q.form.View())
 
-	return lipgloss.Place(
+	content := lipgloss.Place(
 		q.width, q.height, lipgloss.Center, lipgloss.Center, form,
 	)
+
+	v := tea.NewView(content)
+	v.AltScreen = true
+	return v
 }
 
 func (q *QuestionnaireModel) SetSize(width, height int) {

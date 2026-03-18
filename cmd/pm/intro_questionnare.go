@@ -14,7 +14,7 @@ func newIntroQuestionnaire() *IntroQuestionnaire {
 
 func (iq *IntroQuestionnaire) Run() (map[string]any, error) {
 	model := task.NewQuestionnaireModel(iq.Questions(), iq.Keys())
-	app := tea.NewProgram(model, tea.WithAltScreen())
+	app := tea.NewProgram(model)
 
 	m, err := app.Run()
 	if err != nil {

@@ -7,6 +7,7 @@ import (
 
 	"charm.land/huh/v2"
 	"github.com/LazyBachelor/LazyPM/internal/models"
+	"github.com/LazyBachelor/LazyPM/internal/style"
 	"github.com/spf13/cobra"
 )
 
@@ -62,7 +63,7 @@ func runDeleteCmd(cmd *cobra.Command, args []string) error {
 	if !cmd.Flags().Changed("yes") {
 		huh.NewConfirm().Value(&confirmDelete).
 			Title("You want to delete this issue?").
-			Inline(true).WithTheme(huh.ThemeBase()).Run()
+			Inline(true).WithTheme(style.BaseTheme{}).Run()
 	}
 
 	// If user did not confirm, cancel deletion.
@@ -102,7 +103,7 @@ func runDeleteInteractive(ctx context.Context) error {
 		huh.NewGroup(
 			huh.NewMultiSelect[string]().
 				Options(options...).Value(&deleteIDs).
-				Title("Select issues to delete"))).WithTheme(huh.ThemeBase())
+				Title("Select issues to delete"))).WithTheme(style.BaseTheme{})
 
 	if err := form.Run(); err != nil {
 		return fmt.Errorf("error running interactive form: %w", err)

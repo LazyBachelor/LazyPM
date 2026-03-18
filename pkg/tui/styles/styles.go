@@ -1,23 +1,26 @@
 package styles
 
-import "charm.land/lipgloss/v2"
+import (
+	"charm.land/lipgloss/v2"
+	"charm.land/lipgloss/v2/compat"
+)
 
 var (
-	Primary   = lipgloss.AdaptiveColor{Light: "#5A56E0", Dark: "#7571F9"}
-	Secondary = lipgloss.AdaptiveColor{Light: "#02BA84", Dark: "#02BF87"}
+	Primary   = compat.AdaptiveColor{Light: lipgloss.Color("#5A56E0"), Dark: lipgloss.Color("#7571F9")}
+	Secondary = compat.AdaptiveColor{Light: lipgloss.Color("#02BA84"), Dark: lipgloss.Color("#02BF87")}
 
-	Success = lipgloss.AdaptiveColor{Light: "#02BA84", Dark: "#02BF87"}
-	Warning = lipgloss.AdaptiveColor{Light: "#F59E0B", Dark: "#F59E0B"}
-	Error   = lipgloss.AdaptiveColor{Light: "#FE5F86", Dark: "#FE5F86"}
+	Success = compat.AdaptiveColor{Light: lipgloss.Color("#02BA84"), Dark: lipgloss.Color("#02BF87")}
+	Warning = compat.AdaptiveColor{Light: lipgloss.Color("#F59E0B"), Dark: lipgloss.Color("#F59E0B")}
+	Error   = compat.AdaptiveColor{Light: lipgloss.Color("#FE5F86"), Dark: lipgloss.Color("#FE5F86")}
 
-	PrimaryText   = lipgloss.AdaptiveColor{Light: "#1A1A1A", Dark: "#E0E0E0"}
-	SecondaryText = lipgloss.AdaptiveColor{Light: "#666666", Dark: "#999999"}
-	FaintText     = lipgloss.AdaptiveColor{Light: "#999999", Dark: "#666666"}
+	PrimaryText   = compat.AdaptiveColor{Light: lipgloss.Color("#1A1A1A"), Dark: lipgloss.Color("#E0E0E0")}
+	SecondaryText = compat.AdaptiveColor{Light: lipgloss.Color("#666666"), Dark: lipgloss.Color("#999999")}
+	FaintText     = compat.AdaptiveColor{Light: lipgloss.Color("#999999"), Dark: lipgloss.Color("#666666")}
 
-	PrimaryBorder   = lipgloss.AdaptiveColor{Light: "#5A56E0", Dark: "#7571F9"}
-	SecondaryBorder = lipgloss.AdaptiveColor{Light: "#CCCCCC", Dark: "#444444"}
+	PrimaryBorder   = compat.AdaptiveColor{Light: lipgloss.Color("#5A56E0"), Dark: lipgloss.Color("#7571F9")}
+	SecondaryBorder = compat.AdaptiveColor{Light: lipgloss.Color("#CCCCCC"), Dark: lipgloss.Color("#444444")}
 
-	SelectedBackground = lipgloss.AdaptiveColor{Light: "#E8E8E8", Dark: "#333333"}
+	SelectedBackground = compat.AdaptiveColor{Light: lipgloss.Color("#E8E8E8"), Dark: lipgloss.Color("#333333")}
 )
 
 const (

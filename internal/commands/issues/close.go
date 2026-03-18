@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"charm.land/huh/v2"
+	"github.com/LazyBachelor/LazyPM/internal/style"
 	"github.com/spf13/cobra"
 )
 
@@ -47,13 +48,13 @@ func runCloseCmd(cmd *cobra.Command, args []string) error {
 			huh.NewOption("Won't fix", "Won't fix"),
 			huh.NewOption("Obsolete", "Obsolete"),
 			huh.NewOption("Other", "Other"),
-		).WithTheme(huh.ThemeBase()).Run(); err != nil {
+		).WithTheme(style.BaseTheme{}).Run(); err != nil {
 		return fmt.Errorf("error getting close reason: %w", err)
 	}
 
 	if closeReason == "Other" {
 		if err = huh.NewInput().Value(&closeReason).
-			Title("Enter closing reason:").WithTheme(huh.ThemeBase()).Run(); err != nil {
+			Title("Enter closing reason:").WithTheme(style.BaseTheme{}).Run(); err != nil {
 			return fmt.Errorf("error getting close reason: %w", err)
 		}
 		if closeReason == "" {

@@ -1,15 +1,16 @@
 package kanban
 
 import (
+	"charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
 	"github.com/LazyBachelor/LazyPM/pkg/tui/components"
 	"github.com/LazyBachelor/LazyPM/pkg/tui/styles"
 )
 
-func (m *Model) View() string {
+func (m *Model) View() tea.View {
 	if m.width == 0 || m.height == 0 {
 		// if there is no space just print a loading message
-		return "Loading..."
+		return tea.NewView("Loading...")
 	}
 
 	m.helpBar.SetWidth(m.width)
@@ -93,7 +94,7 @@ func (m *Model) View() string {
 			Width(reasonBoxWidth).
 			BorderForeground(styles.PrimaryBorder).
 			Render(reasonContent)
-		return lipgloss.Place(m.width, m.height, lipgloss.Center, lipgloss.Center, reasonBox)
+		return tea.NewView(lipgloss.Place(m.width, m.height, lipgloss.Center, lipgloss.Center, reasonBox))
 	}
 
 	if m.closingOtherReason {
@@ -108,10 +109,10 @@ func (m *Model) View() string {
 			Width(editBoxWidth).
 			BorderForeground(styles.PrimaryBorder).
 			Render(editContent)
-		return lipgloss.Place(m.width, m.height, lipgloss.Center, lipgloss.Center, editBox)
+		return tea.NewView(lipgloss.Place(m.width, m.height, lipgloss.Center, lipgloss.Center, editBox))
 	}
 
-	return components.RenderModals(
+	return tea.NewView(components.RenderModals(
 		m.width,
 		m.height,
 		m.editingTitle,
@@ -131,7 +132,7 @@ func (m *Model) View() string {
 		m.editingAssignee,
 		m.assigneeInput.View(),
 		mainView,
-	)
+	))
 
 }
 

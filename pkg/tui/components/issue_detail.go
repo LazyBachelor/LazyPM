@@ -17,7 +17,7 @@ type IssueDetail struct {
 }
 
 func NewIssueDetail() IssueDetail {
-	vp := viewport.New(0, 0)
+	vp := viewport.New(viewport.WithWidth(0), viewport.WithHeight(0))
 	return IssueDetail{
 		viewport: vp,
 	}
@@ -35,8 +35,7 @@ func (i *IssueDetail) SetComments(comments []*models.Comment) {
 }
 
 func (i *IssueDetail) SetSize(width, height int) {
-	i.viewport.Height = height
-	i.viewport.Width = width
+	i.viewport = viewport.New(viewport.WithWidth(width), viewport.WithHeight(height))
 	i.refreshContent()
 }
 
@@ -102,19 +101,21 @@ func formatCommentTime(t time.Time) string {
 
 func (i IssueDetail) View() string {
 	content := i.viewport.View()
+	vpWidth := i.viewport.Width()
+	vpHeight := i.viewport.Height()
 
 	if i.focused {
 		return styles.DetailsContainerStyle.
 			BorderForeground(styles.PrimaryBorder).
-			Width(i.viewport.Width).
-			Height(i.viewport.Height).
-			MaxHeight(i.viewport.Height).
+			Width(vpWidth).
+			Height(vpHeight).
+			MaxHeight(vpHeight).
 			Render(content)
 	}
 	return styles.DetailsContainerStyle.
-		Width(i.viewport.Width).
-		Height(i.viewport.Height).
-		MaxHeight(i.viewport.Height).
+		Width(vpWidth).
+		Height(vpHeight).
+		MaxHeight(vpHeight).
 		Render(content)
 }
 

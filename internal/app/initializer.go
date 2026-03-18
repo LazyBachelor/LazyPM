@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"charm.land/huh/v2"
+	"github.com/LazyBachelor/LazyPM/internal/style"
 )
 
 type Initializer interface {
@@ -30,7 +31,7 @@ func (i InteractiveInitializer) Init(path string) error {
 				Title("PM is not initialized in this directory!").
 				Description("Do you want to initialize it here?").
 				Value(&initialize),
-		)).WithTheme(huh.ThemeBase16()).WithAccessible(true).Run()
+		)).WithTheme(style.Base16Theme{}).WithAccessible(true).Run()
 
 	if err != nil {
 		return err
