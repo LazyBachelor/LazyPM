@@ -12,13 +12,13 @@ import (
 	"syscall"
 	"time"
 
+	"charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
 	"github.com/LazyBachelor/LazyPM/internal/app"
 	"github.com/LazyBachelor/LazyPM/internal/models"
 	"github.com/LazyBachelor/LazyPM/internal/utils/browser"
 	"github.com/LazyBachelor/LazyPM/pkg/web/handler"
 	"github.com/LazyBachelor/LazyPM/pkg/web/server"
-	tea "github.com/charmbracelet/bubbletea"
 )
 
 type Config = models.Config

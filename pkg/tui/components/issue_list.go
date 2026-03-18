@@ -6,17 +6,16 @@ import (
 	"io"
 	"sort"
 
+	"charm.land/bubbles/v2/list"
+	"charm.land/bubbles/v2/textarea"
+	"charm.land/bubbles/v2/textinput"
+	"charm.land/bubbletea/v2"
+	"charm.land/lipgloss/v2"
 	"github.com/LazyBachelor/LazyPM/internal/app"
 	"github.com/LazyBachelor/LazyPM/internal/models"
 	"github.com/LazyBachelor/LazyPM/pkg/tui/styles"
-	"github.com/charmbracelet/bubbles/list"
-	"github.com/charmbracelet/bubbles/textarea"
-	"github.com/charmbracelet/bubbles/textinput"
-	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/lipgloss"
 	"github.com/muesli/reflow/truncate"
 )
-
 
 type IssueList struct {
 	list              list.Model
@@ -25,7 +24,6 @@ type IssueList struct {
 	height            int
 	highlightSelected bool
 }
-
 
 type ListIssue struct {
 	models.Issue
@@ -156,7 +154,6 @@ func ListenForValidation(ch chan models.ValidationFeedback) tea.Cmd {
 		return ValidationFeedbackMsg{Feedback: feedback}
 	}
 }
-
 
 func NewIssueList(app *app.App, width, height int) IssueList {
 	// NewIssueList creates an IssueList populated from the app.

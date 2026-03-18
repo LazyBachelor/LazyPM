@@ -1,9 +1,9 @@
 package dashboard
 
 import (
+	"charm.land/lipgloss/v2"
 	"github.com/LazyBachelor/LazyPM/pkg/tui/components"
 	"github.com/LazyBachelor/LazyPM/pkg/tui/styles"
-	"github.com/charmbracelet/lipgloss"
 )
 
 func (m *Model) View() string {

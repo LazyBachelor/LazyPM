@@ -1,10 +1,10 @@
 package kanban
 
 import (
+	"charm.land/bubbles/v2/key"
+	"charm.land/bubbletea/v2"
 	"github.com/LazyBachelor/LazyPM/pkg/tui/components"
 	"github.com/LazyBachelor/LazyPM/pkg/tui/msgs"
-	"github.com/charmbracelet/bubbles/key"
-	tea "github.com/charmbracelet/bubbletea"
 )
 
 type KanbanKeyMap struct {

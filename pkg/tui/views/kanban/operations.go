@@ -3,11 +3,11 @@ package kanban
 import (
 	"context"
 
+	"charm.land/bubbles/v2/list"
+	"charm.land/bubbletea/v2"
 	"github.com/LazyBachelor/LazyPM/internal/models"
 	"github.com/LazyBachelor/LazyPM/pkg/tui/components"
 	"github.com/LazyBachelor/LazyPM/pkg/tui/issues"
-	"github.com/charmbracelet/bubbles/list"
-	tea "github.com/charmbracelet/bubbletea"
 )
 
 func (m *Model) refreshIssueListsAndSelectIssue(issueID string) tea.Cmd {

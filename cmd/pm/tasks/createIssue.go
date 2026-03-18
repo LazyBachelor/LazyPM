@@ -4,9 +4,9 @@ import (
 	"context"
 	"fmt"
 
+	"charm.land/huh/v2"
 	"github.com/LazyBachelor/LazyPM/internal/models"
 	"github.com/LazyBachelor/LazyPM/internal/utils/check"
-	"github.com/charmbracelet/huh"
 )
 
 const description = `You are tasked with creating a new issue in the project management system.

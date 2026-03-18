@@ -1,14 +1,15 @@
 package kanban
+
 import (
 	"context"
 
+	"charm.land/bubbles/v2/textarea"
+	"charm.land/bubbles/v2/textinput"
+	"charm.land/bubbletea/v2"
 	"github.com/LazyBachelor/LazyPM/internal/app"
 	"github.com/LazyBachelor/LazyPM/internal/models"
 	"github.com/LazyBachelor/LazyPM/pkg/tui/components"
 	"github.com/LazyBachelor/LazyPM/pkg/tui/issues"
-	"github.com/charmbracelet/bubbles/textarea"
-	"github.com/charmbracelet/bubbles/textinput"
-	tea "github.com/charmbracelet/bubbletea"
 )
 
 type (
@@ -48,15 +49,15 @@ type Model struct {
 	deleteConfirmID    string
 	deleteConfirmIndex int
 
-	choosingStatus   bool // true while choosing a status
-	statusIssueID    string
-	choosingPriority bool // true while choosing a priority
-	priorityIssueID  string
-	choosingType     bool // true while choosing a type
-	typeIssueID      string
-	editingAssignee  bool // true while editing assignee
-	assigneeInput    textinput.Model
-	assigneeIssueID  string
+	choosingStatus      bool // true while choosing a status
+	statusIssueID       string
+	choosingPriority    bool // true while choosing a priority
+	priorityIssueID     string
+	choosingType        bool // true while choosing a type
+	typeIssueID         string
+	editingAssignee     bool // true while editing assignee
+	assigneeInput       textinput.Model
+	assigneeIssueID     string
 	choosingCloseReason bool // true while choosing a close reason
 	closeReasonIssueID  string
 	closingOtherReason  bool // true while entering a custom close reason
@@ -70,11 +71,11 @@ type Model struct {
 
 func NewDashboard(app *app.App, feedbackChan chan models.ValidationFeedback, quitChan chan bool, submitChan chan<- struct{}) *Model {
 	m := &Model{
-		header:       components.NewHeader("Kanban Board"),
-		keyMap:       defaultKanbanKeyMap,
-		app:          app,
-		width:        80,
-		height:       24,
+		header:        components.NewHeader("Kanban Board"),
+		keyMap:        defaultKanbanKeyMap,
+		app:           app,
+		width:         80,
+		height:        24,
 		focusedColumn: 0,
 		focusOnDetail: false,
 		feedbackChan:  feedbackChan,
@@ -261,5 +262,5 @@ func (m *Model) moveIssue(delta int) tea.Cmd {
 	}
 
 	newStatus := statusForColumn(newCol)
-		return issues.UpdateIssueStatusCmd(m.app, selected.ID, string(newStatus))
+	return issues.UpdateIssueStatusCmd(m.app, selected.ID, string(newStatus))
 }

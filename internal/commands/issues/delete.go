@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"strings"
 
+	"charm.land/huh/v2"
 	"github.com/LazyBachelor/LazyPM/internal/models"
-	"github.com/charmbracelet/huh"
 	"github.com/spf13/cobra"
 )
 

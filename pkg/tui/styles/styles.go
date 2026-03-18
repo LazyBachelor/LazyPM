@@ -1,6 +1,6 @@
 package styles
 
-import "github.com/charmbracelet/lipgloss"
+import "charm.land/lipgloss/v2"
 
 var (
 	Primary   = lipgloss.AdaptiveColor{Light: "#5A56E0", Dark: "#7571F9"}

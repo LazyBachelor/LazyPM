@@ -3,12 +3,12 @@ package dashboard
 import (
 	"context"
 
+	"charm.land/bubbles/v2/textarea"
+	"charm.land/bubbles/v2/textinput"
+	"charm.land/bubbletea/v2"
 	"github.com/LazyBachelor/LazyPM/internal/app"
 	"github.com/LazyBachelor/LazyPM/internal/models"
 	"github.com/LazyBachelor/LazyPM/pkg/tui/components"
-	"github.com/charmbracelet/bubbles/textarea"
-	"github.com/charmbracelet/bubbles/textinput"
-	tea "github.com/charmbracelet/bubbletea"
 )
 
 // Use shared types from components for consistency.
@@ -46,21 +46,21 @@ type Model struct {
 	deleteConfirmID    string
 	deleteConfirmIndex int
 
-	choosingStatus      bool 
+	choosingStatus      bool
 	statusIssueID       string
-	choosingPriority    bool 
+	choosingPriority    bool
 	priorityIssueID     string
-	choosingType        bool 
+	choosingType        bool
 	typeIssueID         string
-	editingAssignee     bool 
+	editingAssignee     bool
 	assigneeInput       textinput.Model
 	assigneeIssueID     string
-	addingComment       bool 
+	addingComment       bool
 	commentInput        textarea.Model
 	commentIssueID      string
-	choosingCloseReason bool 
+	choosingCloseReason bool
 	closeReasonIssueID  string
-	closingOtherReason  bool 
+	closingOtherReason  bool
 	closeReasonInput    textarea.Model
 	feedbackChan        chan models.ValidationFeedback
 	quitChan            chan bool

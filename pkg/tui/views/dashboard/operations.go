@@ -5,12 +5,12 @@ import (
 	"os"
 	"os/user"
 
+	"charm.land/bubbles/v2/list"
+	"charm.land/bubbletea/v2"
 	"github.com/LazyBachelor/LazyPM/internal/app"
 	"github.com/LazyBachelor/LazyPM/internal/models"
 	"github.com/LazyBachelor/LazyPM/pkg/tui/components"
 	"github.com/LazyBachelor/LazyPM/pkg/tui/issues"
-	"github.com/charmbracelet/bubbles/list"
-	tea "github.com/charmbracelet/bubbletea"
 )
 
 func defaultCommentAuthor() string {

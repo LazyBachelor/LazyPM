@@ -3,22 +3,47 @@ package issues
 import (
 	"context"
 
+	"charm.land/bubbletea/v2"
 	"github.com/LazyBachelor/LazyPM/internal/app"
 	"github.com/LazyBachelor/LazyPM/internal/models"
-	tea "github.com/charmbracelet/bubbletea"
 )
 
 // Msg types used by both dashboard and kanban TUI views.
 type (
-	TitleUpdatedMsg    struct{ IssueID string; Err error }
-	DescriptionUpdatedMsg struct{ IssueID string; Err error }
-	StatusUpdatedMsg   struct{ IssueID string; Err error }
-	PriorityUpdatedMsg struct{ IssueID string; Err error }
-	TypeUpdatedMsg     struct{ IssueID string; Err error }
-	AssigneeUpdatedMsg struct{ IssueID string; Err error }
-	SelectIssueMsg     struct{ IssueID string }
-	CreatedMsg         struct{ Issue *models.Issue; Err error }
-	DeletedMsg         struct{ IssueID string; Err error; PreviousIndex int }
+	TitleUpdatedMsg struct {
+		IssueID string
+		Err     error
+	}
+	DescriptionUpdatedMsg struct {
+		IssueID string
+		Err     error
+	}
+	StatusUpdatedMsg struct {
+		IssueID string
+		Err     error
+	}
+	PriorityUpdatedMsg struct {
+		IssueID string
+		Err     error
+	}
+	TypeUpdatedMsg struct {
+		IssueID string
+		Err     error
+	}
+	AssigneeUpdatedMsg struct {
+		IssueID string
+		Err     error
+	}
+	SelectIssueMsg struct{ IssueID string }
+	CreatedMsg     struct {
+		Issue *models.Issue
+		Err   error
+	}
+	DeletedMsg struct {
+		IssueID       string
+		Err           error
+		PreviousIndex int
+	}
 )
 
 // UpdateIssueTitleCmd returns a command that updates an issue's title.

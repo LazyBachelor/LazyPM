@@ -3,10 +3,10 @@ package tui
 import (
 	"context"
 
+	"charm.land/bubbletea/v2"
 	"github.com/LazyBachelor/LazyPM/internal/app"
 	"github.com/LazyBachelor/LazyPM/internal/models"
 	"github.com/LazyBachelor/LazyPM/pkg/tui/views"
-	tea "github.com/charmbracelet/bubbletea"
 )
 
 type Config = models.Config

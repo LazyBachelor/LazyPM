@@ -3,10 +3,10 @@ package components
 import (
 	"time"
 
+	"charm.land/bubbles/v2/viewport"
+	"charm.land/lipgloss/v2"
 	"github.com/LazyBachelor/LazyPM/internal/models"
 	"github.com/LazyBachelor/LazyPM/pkg/tui/styles"
-	"github.com/charmbracelet/bubbles/viewport"
-	"github.com/charmbracelet/lipgloss"
 )
 
 type IssueDetail struct {
@@ -23,7 +23,6 @@ func NewIssueDetail() IssueDetail {
 	}
 }
 
-
 func (i *IssueDetail) SetIssue(issue models.Issue) {
 	i.issue = issue
 	i.refreshContent()
@@ -34,7 +33,6 @@ func (i *IssueDetail) SetComments(comments []*models.Comment) {
 	i.comments = comments
 	i.refreshContent()
 }
-
 
 func (i *IssueDetail) SetSize(width, height int) {
 	i.viewport.Height = height

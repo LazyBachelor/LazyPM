@@ -1,9 +1,9 @@
 package components
 
 import (
+	"charm.land/lipgloss/v2"
 	"github.com/LazyBachelor/LazyPM/internal/models"
 	"github.com/LazyBachelor/LazyPM/pkg/tui/styles"
-	"github.com/charmbracelet/lipgloss"
 )
 
 // modalBoxWidth returns a clamped width for modal content. Never returns a value < 1.

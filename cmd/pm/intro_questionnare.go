@@ -1,9 +1,9 @@
 package main
 
 import (
+	"charm.land/bubbletea/v2"
+	"charm.land/huh/v2"
 	"github.com/LazyBachelor/LazyPM/pkg/task"
-	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/huh"
 )
 
 type IntroQuestionnaire struct{}

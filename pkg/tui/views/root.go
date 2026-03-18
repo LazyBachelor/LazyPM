@@ -1,12 +1,12 @@
 package views
 
 import (
+	"charm.land/bubbletea/v2"
 	"github.com/LazyBachelor/LazyPM/internal/app"
 	"github.com/LazyBachelor/LazyPM/internal/models"
 	"github.com/LazyBachelor/LazyPM/pkg/tui/msgs"
 	"github.com/LazyBachelor/LazyPM/pkg/tui/views/dashboard"
 	"github.com/LazyBachelor/LazyPM/pkg/tui/views/kanban"
-	tea "github.com/charmbracelet/bubbletea"
 )
 
 type RootModel struct {

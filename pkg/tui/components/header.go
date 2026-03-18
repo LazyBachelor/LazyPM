@@ -1,8 +1,8 @@
 package components
 
 import (
+	"charm.land/lipgloss/v2"
 	"github.com/LazyBachelor/LazyPM/pkg/tui/styles"
-	"github.com/charmbracelet/lipgloss"
 )
 
 type Header struct {

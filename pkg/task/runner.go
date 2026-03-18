@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"log/slog"
 
+	"charm.land/bubbletea/v2"
 	"github.com/LazyBachelor/LazyPM/internal/models"
-	tea "github.com/charmbracelet/bubbletea"
 )
 
 type App = models.App

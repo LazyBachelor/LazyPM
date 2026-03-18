@@ -3,9 +3,9 @@ package main
 import (
 	"context"
 
+	"charm.land/fang/v2"
 	"github.com/LazyBachelor/LazyPM/internal/app"
-	issues "github.com/LazyBachelor/LazyPM/internal/commands/issues"
-	"github.com/charmbracelet/fang"
+	"github.com/LazyBachelor/LazyPM/internal/commands/issues"
 )
 
 var App *app.App
