@@ -12,13 +12,13 @@ import (
 	"syscall"
 	"time"
 
+	"charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
 	"github.com/LazyBachelor/LazyPM/internal/app"
 	"github.com/LazyBachelor/LazyPM/internal/models"
 	"github.com/LazyBachelor/LazyPM/internal/utils/browser"
 	"github.com/LazyBachelor/LazyPM/pkg/web/handler"
 	"github.com/LazyBachelor/LazyPM/pkg/web/server"
-	tea "github.com/charmbracelet/bubbletea"
 )
 
 type Config = models.Config
@@ -54,7 +54,7 @@ func (m tuiModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.width = msg.Width
 		m.height = msg.Height
 		return m, nil
-	case tea.KeyMsg:
+	case tea.KeyPressMsg:
 		switch msg.String() {
 		case "q", "esc", "ctrl+c":
 			select {
@@ -69,11 +69,14 @@ func (m tuiModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return m, nil
 }
 
-func (m tuiModel) View() string {
-	return lipgloss.Place(m.width, m.height, lipgloss.Center, lipgloss.Center, fmt.Sprintf(
+func (m tuiModel) View() tea.View {
+	content := lipgloss.Place(m.width, m.height, lipgloss.Center, lipgloss.Center, fmt.Sprintf(
 		"Web server running at %s\n\nPress q, esc, or Ctrl+C to stop the task and server.\n",
 		m.address,
 	))
+	v := tea.NewView(content)
+	v.AltScreen = true
+	return v
 }
 
 func (w *Web) Run(ctx context.Context, config Config) error {
@@ -106,7 +109,6 @@ func (w *Web) Run(ctx context.Context, config Config) error {
 				address:  address,
 				quitChan: uiQuitChan,
 			},
-			tea.WithAltScreen(),
 		)
 
 		screenDone = make(chan struct{})

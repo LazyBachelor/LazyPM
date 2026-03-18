@@ -44,12 +44,10 @@ func runGetIssuesCmd(cmd *cobra.Command, args []string) error {
 	// Only set filter fields if the corresponding flags
 	// were explicitly provided by the user.
 	if cmd.Flags().Changed("status") {
-		s := models.Status(listFlags.status)
-		filter.Status = &s
+		filter.Status = new(models.Status(listFlags.status))
 	}
 	if cmd.Flags().Changed("type") {
-		t := models.IssueType(listFlags.issueType)
-		filter.IssueType = &t
+		filter.IssueType = new(models.IssueType(listFlags.issueType))
 	}
 	if cmd.Flags().Changed("priority") {
 		filter.Priority = &listFlags.priority

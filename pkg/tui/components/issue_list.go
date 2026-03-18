@@ -6,17 +6,16 @@ import (
 	"io"
 	"sort"
 
+	"charm.land/bubbles/v2/list"
+	"charm.land/bubbles/v2/textarea"
+	"charm.land/bubbles/v2/textinput"
+	"charm.land/bubbletea/v2"
+	"charm.land/lipgloss/v2"
 	"github.com/LazyBachelor/LazyPM/internal/app"
 	"github.com/LazyBachelor/LazyPM/internal/models"
 	"github.com/LazyBachelor/LazyPM/pkg/tui/styles"
-	"github.com/charmbracelet/bubbles/list"
-	"github.com/charmbracelet/bubbles/textarea"
-	"github.com/charmbracelet/bubbles/textinput"
-	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/lipgloss"
 	"github.com/muesli/reflow/truncate"
 )
-
 
 type IssueList struct {
 	list              list.Model
@@ -25,7 +24,6 @@ type IssueList struct {
 	height            int
 	highlightSelected bool
 }
-
 
 type ListIssue struct {
 	models.Issue
@@ -157,7 +155,6 @@ func ListenForValidation(ch chan models.ValidationFeedback) tea.Cmd {
 	}
 }
 
-
 func NewIssueList(app *app.App, width, height int) IssueList {
 	// NewIssueList creates an IssueList populated from the app.
 	issues, err := app.Issues.SearchIssues(context.Background(), "", models.IssueFilter{})
@@ -180,10 +177,6 @@ func NewIssueList(app *app.App, width, height int) IssueList {
 	l.SetShowHelp(false)
 	l.SetShowStatusBar(false)
 	l.SetFilteringEnabled(true)
-	l.FilterInput.PromptStyle = styles.FilterPromptStyle
-	l.FilterInput.Cursor.Style = styles.FilterStyle
-	l.FilterInput.TextStyle = styles.FilterInputStyle
-	l.FilterInput.Prompt = "🔍 "
 
 	return IssueList{
 		list:              l,
@@ -211,10 +204,6 @@ func NewIssueListFromIssues(app *app.App, issues []*models.Issue, width, height 
 	l.SetShowHelp(false)
 	l.SetShowStatusBar(false)
 	l.SetFilteringEnabled(true)
-	l.FilterInput.PromptStyle = styles.FilterPromptStyle
-	l.FilterInput.Cursor.Style = styles.FilterStyle
-	l.FilterInput.TextStyle = styles.FilterInputStyle
-	l.FilterInput.Prompt = "🔍 "
 	return IssueList{
 		list:              l,
 		app:               app,

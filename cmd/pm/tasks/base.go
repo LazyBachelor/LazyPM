@@ -3,13 +3,13 @@ package tasks
 import (
 	"context"
 
+	"charm.land/huh/v2"
 	"github.com/LazyBachelor/LazyPM/internal/app"
 	"github.com/LazyBachelor/LazyPM/internal/models"
 	"github.com/LazyBachelor/LazyPM/pkg/repl"
 	"github.com/LazyBachelor/LazyPM/pkg/task"
 	"github.com/LazyBachelor/LazyPM/pkg/tui"
 	"github.com/LazyBachelor/LazyPM/pkg/web"
-	"github.com/charmbracelet/huh"
 )
 
 type App = app.App

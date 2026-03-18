@@ -5,12 +5,12 @@ import (
 	"os"
 	"os/user"
 
+	"charm.land/bubbles/v2/list"
+	"charm.land/bubbletea/v2"
 	"github.com/LazyBachelor/LazyPM/internal/app"
 	"github.com/LazyBachelor/LazyPM/internal/models"
 	"github.com/LazyBachelor/LazyPM/pkg/tui/components"
 	"github.com/LazyBachelor/LazyPM/pkg/tui/issues"
-	"github.com/charmbracelet/bubbles/list"
-	tea "github.com/charmbracelet/bubbletea"
 )
 
 func defaultCommentAuthor() string {
@@ -322,7 +322,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return issues.SelectIssueMsg{IssueID: selectedIssue.ID}
 		})
 
-	case tea.KeyMsg:
+	case tea.KeyPressMsg:
 		if m.confirmingDelete {
 			switch msg.String() {
 			case "y", "Y":
@@ -619,7 +619,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, nil
 		}
 
-		cmd := m.handleKeyMsg(msg)
+		cmd := m.handleKeyPressMsg(msg)
 		if cmd != nil {
 			return m, cmd
 		}

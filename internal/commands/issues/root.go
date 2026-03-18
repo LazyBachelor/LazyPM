@@ -4,8 +4,8 @@ import (
 	"bytes"
 	"context"
 
+	"charm.land/fang/v2"
 	"github.com/LazyBachelor/LazyPM/internal/models"
-	"github.com/charmbracelet/fang"
 
 	"github.com/spf13/cobra"
 )

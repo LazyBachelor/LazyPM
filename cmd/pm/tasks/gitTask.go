@@ -6,9 +6,9 @@ import (
 	"os"
 	"strings"
 
+	"charm.land/huh/v2"
 	"github.com/LazyBachelor/LazyPM/internal/models"
 	"github.com/LazyBachelor/LazyPM/internal/utils/check"
-	"github.com/charmbracelet/huh"
 	"github.com/go-git/go-git/v6"
 )
 

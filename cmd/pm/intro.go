@@ -3,11 +3,11 @@ package main
 import (
 	"strings"
 
+	"charm.land/bubbles/v2/key"
+	"charm.land/bubbletea/v2"
+	"charm.land/lipgloss/v2"
 	"github.com/LazyBachelor/LazyPM/internal/models"
 	"github.com/LazyBachelor/LazyPM/internal/style"
-	"github.com/charmbracelet/bubbles/key"
-	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/lipgloss"
 )
 
 const stages = 2
@@ -50,7 +50,7 @@ func newIntroModel() introModel {
 			key.WithHelp("enter", "start survey"),
 		),
 		Continue: key.NewBinding(
-			key.WithKeys(" ", "j", "l", "down", "right"),
+			key.WithKeys("space", "j", "l", "down", "right"),
 			key.WithHelp("space", "continue"),
 		),
 		Back: key.NewBinding(
@@ -69,11 +69,11 @@ func newIntroModel() introModel {
 }
 
 func (m introModel) Run() error {
-	model, err := tea.NewProgram(m, tea.WithAltScreen()).Run()
+	model, err := tea.NewProgram(m).Run()
 	if err != nil {
 		return err
 	}
-	if m, ok := model.(introModel); ok && m.userQuit {
+	if im, ok := model.(introModel); ok && im.userQuit {
 		return models.ErrUserQuit
 	}
 	return nil
@@ -87,7 +87,7 @@ func (m introModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
 		m.SetSize(msg.Width, msg.Height)
-	case tea.KeyMsg:
+	case tea.KeyPressMsg:
 		switch {
 		case key.Matches(msg, m.keys.Start) && m.stage == stages:
 			return m, tea.Quit
@@ -109,10 +109,13 @@ func (m introModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return m, nil
 }
 
-func (m introModel) View() string {
+func (m introModel) View() tea.View {
 	if m.width < 55 || m.height < 16 {
-		return lipgloss.Place(m.width, m.height, lipgloss.Center, lipgloss.Center,
+		content := lipgloss.Place(m.width, m.height, lipgloss.Center, lipgloss.Center,
 			style.TextStyle.Render("Terminal too small."))
+		v := tea.NewView(content)
+		v.AltScreen = true
+		return v
 	}
 
 	var content string
@@ -122,7 +125,7 @@ func (m introModel) View() string {
 	case 2:
 		content = Disclaimer
 	default:
-		return ""
+		return tea.NewView("")
 	}
 
 	boxWidth := min(m.width-10, 120)
@@ -149,7 +152,9 @@ func (m introModel) View() string {
 
 	final := lipgloss.Place(m.width, m.height, lipgloss.Center, lipgloss.Center, b.String())
 
-	return final
+	v := tea.NewView(final)
+	v.AltScreen = true
+	return v
 }
 
 func (m *introModel) SetSize(width, height int) {

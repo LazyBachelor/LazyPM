@@ -1,6 +1,6 @@
 package components
 
-import "github.com/charmbracelet/bubbles/key"
+import "charm.land/bubbles/v2/key"
 
 // CommonKeyMap holds the key bindings shared between the issues dashboard
 // and the kanban board.
@@ -82,4 +82,3 @@ func DefaultCommonKeyMap() CommonKeyMap {
 		),
 	}
 }
-

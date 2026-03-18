@@ -1,10 +1,10 @@
 package dashboard
 
 import (
+	"charm.land/bubbles/v2/key"
+	"charm.land/bubbletea/v2"
 	"github.com/LazyBachelor/LazyPM/pkg/tui/components"
 	"github.com/LazyBachelor/LazyPM/pkg/tui/msgs"
-	"github.com/charmbracelet/bubbles/key"
-	tea "github.com/charmbracelet/bubbletea"
 )
 
 type DashboardKeyMap struct {
@@ -79,7 +79,7 @@ var defaultDashboardKeyMap = DashboardKeyMap{
 	),
 }
 
-func (d *Model) handleKeyMsg(msg tea.KeyMsg) tea.Cmd {
+func (d *Model) handleKeyPressMsg(msg tea.KeyPressMsg) tea.Cmd {
 	var cmd tea.Cmd
 
 	switch {

@@ -104,6 +104,8 @@ func init() {
 	RootCmd.AddGroup(&cobra.Group{ID: "other", Title: "Additional Commands"})
 	RootCmd.SetHelpCommandGroupID("other")
 	RootCmd.AddCommand(replCmd)
+	RootCmd.AddCommand(tuiCmd)
+	RootCmd.AddCommand(webCmd)
 
 }
 
@@ -114,6 +116,26 @@ var replCmd = &cobra.Command{
 	Long:    `Start the interactive Read-Eval-Print Loop (REPL) for managing your projects and issues in an interactive terminal environment.`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		return repl.New().Run(cmd.Context(), App.Config)
+	},
+}
+
+var tuiCmd = &cobra.Command{
+	Use:     "tui",
+	GroupID: "other",
+	Short:   "Start the interactive TUI interface",
+	Long:    `Start the interactive Terminal User Interface (TUI) for managing your projects and issues in an interactive terminal environment.`,
+	RunE: func(cmd *cobra.Command, args []string) error {
+		return tui.New().Run(cmd.Context(), App.Config)
+	},
+}
+
+var webCmd = &cobra.Command{
+	Use:     "web",
+	GroupID: "other",
+	Short:   "Start the interactive web interface",
+	Long:    `Start the interactive web interface for managing your projects and issues in a web browser.`,
+	RunE: func(cmd *cobra.Command, args []string) error {
+		return web.New().Run(cmd.Context(), App.Config)
 	},
 }
 

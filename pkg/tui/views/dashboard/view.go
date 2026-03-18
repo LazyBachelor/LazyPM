@@ -1,15 +1,16 @@
 package dashboard
 
 import (
+	"charm.land/bubbletea/v2"
+	"charm.land/lipgloss/v2"
 	"github.com/LazyBachelor/LazyPM/pkg/tui/components"
 	"github.com/LazyBachelor/LazyPM/pkg/tui/styles"
-	"github.com/charmbracelet/lipgloss"
 )
 
-func (m *Model) View() string {
+func (m *Model) View() tea.View {
 	if m.width == 0 || m.height == 0 {
 		// if there is no space just print a loading message
-		return "Loading..."
+		return tea.NewView("Loading...")
 	}
 
 	m.helpBar.SetWidth(m.width)
@@ -63,7 +64,7 @@ func (m *Model) View() string {
 
 	if m.editingAssignee {
 		editBoxWidth := min(60, m.width-4)
-		m.assigneeInput.Width = editBoxWidth - 2
+		m.assigneeInput.SetWidth(editBoxWidth - 2)
 		editContent := lipgloss.JoinVertical(lipgloss.Left,
 			styles.LabelStyle.Render("Edit assignee (Enter to save, Esc to cancel):"),
 			m.assigneeInput.View(),
@@ -72,12 +73,12 @@ func (m *Model) View() string {
 			Width(editBoxWidth).
 			BorderForeground(styles.PrimaryBorder).
 			Render(editContent)
-		return lipgloss.Place(m.width, m.height, lipgloss.Center, lipgloss.Center, editBox)
+		return tea.NewView(lipgloss.Place(m.width, m.height, lipgloss.Center, lipgloss.Center, editBox))
 	}
 
 	if m.editingTitle {
 		editBoxWidth := min(60, m.width-4)
-		m.titleInput.Width = editBoxWidth - 2
+		m.titleInput.SetWidth(editBoxWidth - 2)
 		editContent := lipgloss.JoinVertical(lipgloss.Left,
 			styles.LabelStyle.Render("Edit title (Enter to save, Esc to cancel):"),
 			m.titleInput.View(),
@@ -86,7 +87,7 @@ func (m *Model) View() string {
 			Width(editBoxWidth).
 			BorderForeground(styles.PrimaryBorder).
 			Render(editContent)
-		return lipgloss.Place(m.width, m.height, lipgloss.Center, lipgloss.Center, editBox)
+		return tea.NewView(lipgloss.Place(m.width, m.height, lipgloss.Center, lipgloss.Center, editBox))
 	}
 
 	if m.addingComment {
@@ -101,7 +102,7 @@ func (m *Model) View() string {
 			Width(editBoxWidth).
 			BorderForeground(styles.PrimaryBorder).
 			Render(editContent)
-		return lipgloss.Place(m.width, m.height, lipgloss.Center, lipgloss.Center, editBox)
+		return tea.NewView(lipgloss.Place(m.width, m.height, lipgloss.Center, lipgloss.Center, editBox))
 	}
 
 	if m.editingDescription {
@@ -116,12 +117,12 @@ func (m *Model) View() string {
 			Width(editBoxWidth).
 			BorderForeground(styles.PrimaryBorder).
 			Render(editContent)
-		return lipgloss.Place(m.width, m.height, lipgloss.Center, lipgloss.Center, editBox)
+		return tea.NewView(lipgloss.Place(m.width, m.height, lipgloss.Center, lipgloss.Center, editBox))
 	}
 
 	if m.creatingIssue {
 		createBoxWidth := min(60, m.width-4)
-		m.createTitleInput.Width = createBoxWidth - 2
+		m.createTitleInput.SetWidth(createBoxWidth - 2)
 		createContent := lipgloss.JoinVertical(lipgloss.Left,
 			styles.LabelStyle.Render("New issue (Enter to create, Esc to cancel):"),
 			m.createTitleInput.View(),
@@ -130,7 +131,7 @@ func (m *Model) View() string {
 			Width(createBoxWidth).
 			BorderForeground(styles.PrimaryBorder).
 			Render(createContent)
-		return lipgloss.Place(m.width, m.height, lipgloss.Center, lipgloss.Center, createBox)
+		return tea.NewView(lipgloss.Place(m.width, m.height, lipgloss.Center, lipgloss.Center, createBox))
 	}
 
 	if m.confirmingDelete {
@@ -143,7 +144,7 @@ func (m *Model) View() string {
 			Width(confirmBoxWidth).
 			BorderForeground(styles.PrimaryBorder).
 			Render(confirmContent)
-		return lipgloss.Place(m.width, m.height, lipgloss.Center, lipgloss.Center, confirmBox)
+		return tea.NewView(lipgloss.Place(m.width, m.height, lipgloss.Center, lipgloss.Center, confirmBox))
 	}
 
 	if m.choosingStatus {
@@ -157,7 +158,7 @@ func (m *Model) View() string {
 			Width(statusBoxWidth).
 			BorderForeground(styles.PrimaryBorder).
 			Render(statusContent)
-		return lipgloss.Place(m.width, m.height, lipgloss.Center, lipgloss.Center, statusBox)
+		return tea.NewView(lipgloss.Place(m.width, m.height, lipgloss.Center, lipgloss.Center, statusBox))
 	}
 
 	if m.choosingPriority {
@@ -171,7 +172,7 @@ func (m *Model) View() string {
 			Width(priorityBoxWidth).
 			BorderForeground(styles.PrimaryBorder).
 			Render(priorityContent)
-		return lipgloss.Place(m.width, m.height, lipgloss.Center, lipgloss.Center, priorityBox)
+		return tea.NewView(lipgloss.Place(m.width, m.height, lipgloss.Center, lipgloss.Center, priorityBox))
 	}
 
 	if m.choosingCloseReason {
@@ -185,7 +186,7 @@ func (m *Model) View() string {
 			Width(reasonBoxWidth).
 			BorderForeground(styles.PrimaryBorder).
 			Render(reasonContent)
-		return lipgloss.Place(m.width, m.height, lipgloss.Center, lipgloss.Center, reasonBox)
+		return tea.NewView(lipgloss.Place(m.width, m.height, lipgloss.Center, lipgloss.Center, reasonBox))
 	}
 
 	if m.closingOtherReason {
@@ -200,7 +201,7 @@ func (m *Model) View() string {
 			Width(editBoxWidth).
 			BorderForeground(styles.PrimaryBorder).
 			Render(editContent)
-		return lipgloss.Place(m.width, m.height, lipgloss.Center, lipgloss.Center, editBox)
+		return tea.NewView(lipgloss.Place(m.width, m.height, lipgloss.Center, lipgloss.Center, editBox))
 	}
 
 	if m.choosingType {
@@ -214,9 +215,9 @@ func (m *Model) View() string {
 			Width(typeBoxWidth).
 			BorderForeground(styles.PrimaryBorder).
 			Render(typeContent)
-		return lipgloss.Place(m.width, m.height, lipgloss.Center, lipgloss.Center, typeBox)
+		return tea.NewView(lipgloss.Place(m.width, m.height, lipgloss.Center, lipgloss.Center, typeBox))
 	}
 
-	return mainView
+	return tea.NewView(mainView)
 
 }

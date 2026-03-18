@@ -3,9 +3,9 @@ package tasks
 import (
 	"context"
 
+	"charm.land/huh/v2"
 	"github.com/LazyBachelor/LazyPM/internal/models"
 	"github.com/LazyBachelor/LazyPM/internal/utils/check"
-	"github.com/charmbracelet/huh"
 )
 
 const sprintPlanningDescription = `You are tasked with sprint planning.

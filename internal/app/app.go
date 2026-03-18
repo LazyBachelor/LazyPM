@@ -7,7 +7,7 @@ import (
 	"github.com/LazyBachelor/LazyPM/internal/models"
 	"github.com/LazyBachelor/LazyPM/internal/storage"
 	"github.com/steveyegge/beads"
-	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/v2/bson"
 )
 
 type App = models.App
@@ -43,7 +43,7 @@ func New(ctx context.Context, config Config, opts ...Option) (*App, func(), erro
 
 	if b.statsService == nil {
 		statStore := storage.NewJsonStorage(config.StatisticsStoragePath, &models.Statistics{
-			ID:        primitive.NewObjectID(),
+			ID:        bson.NewObjectID(),
 			StartTime: time.Now(),
 		})
 

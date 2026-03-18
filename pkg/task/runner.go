@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"log/slog"
 
+	"charm.land/bubbletea/v2"
 	"github.com/LazyBachelor/LazyPM/internal/models"
-	tea "github.com/charmbracelet/bubbletea"
 )
 
 type App = models.App
@@ -157,7 +157,7 @@ func (r *RunLifecycle) Finish(ctx context.Context, runErr error) error {
 }
 
 func runIntro(details models.TaskDetails) error {
-	model, err := tea.NewProgram(NewTaskModel(details), tea.WithAltScreen()).Run()
+	model, err := tea.NewProgram(NewTaskModel(details)).Run()
 	if err != nil {
 		return err
 	}
@@ -179,7 +179,7 @@ func runQuestionnaire(t Tasker, iType InterfaceType, collector *taskRunCollector
 		keys = provider.QuestionnaireKeys(iType)
 	}
 
-	model, err := tea.NewProgram(NewQuestionnaireModel(questions, keys), tea.WithAltScreen()).Run()
+	model, err := tea.NewProgram(NewQuestionnaireModel(questions, keys)).Run()
 	if err != nil {
 		return err
 	}

@@ -4,9 +4,9 @@ import (
 	"context"
 	"strings"
 
+	"charm.land/huh/v2"
 	"github.com/LazyBachelor/LazyPM/internal/models"
 	"github.com/LazyBachelor/LazyPM/internal/utils/check"
-	"github.com/charmbracelet/huh"
 )
 
 const backlogRefinementDescription = `You are tasked with backlog refinement.
