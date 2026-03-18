@@ -47,6 +47,11 @@ func (s *Server) RegisterRoutes(assets embed.FS) http.Handler {
 			r.Get("/", handler.GetIssue)
 			r.Patch("/", handler.UpdateIssue)
 			r.Get("/edit", handler.EditIssueFormModal)
+			// Dependency management endpoints
+			r.Get("/dependencies", handler.ListDependencies)
+			r.Get("/dependencies/options", handler.DependencyOptions)
+			r.Post("/dependencies", handler.AddDependencyHandler)
+			r.Delete("/dependencies", handler.RemoveDependencyHandler)
 			r.Get("/close", handler.CloseIssueFormModal)
 			r.Post("/close", handler.CloseIssue)
 			r.Get("/delete", handler.DeleteIssueConfirmModal)
