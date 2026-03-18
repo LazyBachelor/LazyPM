@@ -82,5 +82,7 @@ func (r *RootModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (r *RootModel) View() tea.View {
-	return r.currentView.View()
+	v := r.currentView.View()
+	v.AltScreen = true
+	return v
 }
