@@ -98,4 +98,7 @@ EOF
 chmod +x /config/Desktop/LazyPM.desktop
 chown -R abc:abc /config/Desktop /config/.config
 
+git config --global user.name "LazyPM"
+git config --global user.email "lazy@pm.com"
+
 echo "**** Desktop setup complete ****"
