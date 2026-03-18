@@ -7,7 +7,6 @@ require (
 	github.com/joho/godotenv v1.5.1
 	github.com/muesli/reflow v0.3.0
 	github.com/steveyegge/beads v0.49.6
-	go.mongodb.org/mongo-driver v1.17.9
 	go.mongodb.org/mongo-driver/v2 v2.5.0
 )
 

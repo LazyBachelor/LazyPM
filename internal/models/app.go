@@ -4,7 +4,7 @@ import (
 	"context"
 	"log/slog"
 
-	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/v2/bson"
 )
 
 type App struct {
@@ -59,7 +59,7 @@ type StatsService interface {
 	Load(ctx context.Context) error
 	Save(ctx context.Context) error
 	GetStatistics() (Statistics, error)
-	GetParticipantID() primitive.ObjectID
+	GetParticipantID() bson.ObjectID
 	RecordTaskRun(ctx context.Context, run TaskRunMetrics) error
 	RecordIntroQuestionnaireAnswers(answers map[string]any) error
 }

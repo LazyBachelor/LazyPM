@@ -3,14 +3,14 @@ package models
 import (
 	"time"
 
-	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/v2/bson"
 )
 
 type Statistics struct {
-	ID         primitive.ObjectID `bson:"_id" json:"id"`
-	StartTime  time.Time          `bson:"start_time" json:"start_time"`
-	EndTime    time.Time          `bson:"end_time" json:"end_time"`
-	DurationMs int64              `bson:"duration_ms" json:"duration_ms"`
+	ID         bson.ObjectID `bson:"_id" json:"id"`
+	StartTime  time.Time     `bson:"start_time" json:"start_time"`
+	EndTime    time.Time     `bson:"end_time" json:"end_time"`
+	DurationMs int64         `bson:"duration_ms" json:"duration_ms"`
 
 	LastInterfaceType InterfaceType `bson:"last_interface_type" json:"last_interface_type"`
 	TaskRuns          int           `bson:"task_runs" json:"task_runs"`
@@ -38,12 +38,12 @@ type Statistics struct {
 }
 
 type TaskMetricsFile struct {
-	ID            primitive.ObjectID `bson:"_id" json:"id"`
-	ParticipantID primitive.ObjectID `bson:"participant_id" json:"participant_id"`
-	TaskName      string             `bson:"task_name" json:"task_name"`
-	UpdatedAt     time.Time          `bson:"updated_at" json:"updated_at"`
-	Summary       TaskStatsSummary   `bson:"summary" json:"summary"`
-	Runs          []TaskRunMetrics   `bson:"runs" json:"runs"`
+	ID            bson.ObjectID    `bson:"_id" json:"id"`
+	ParticipantID bson.ObjectID    `bson:"participant_id" json:"participant_id"`
+	TaskName      string           `bson:"task_name" json:"task_name"`
+	UpdatedAt     time.Time        `bson:"updated_at" json:"updated_at"`
+	Summary       TaskStatsSummary `bson:"summary" json:"summary"`
+	Runs          []TaskRunMetrics `bson:"runs" json:"runs"`
 }
 
 type TaskStatsSummary struct {

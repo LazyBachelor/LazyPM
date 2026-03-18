@@ -62,7 +62,7 @@ func CreateIssue(w http.ResponseWriter, r *http.Request) {
 		from := r.URL.Query().Get("from")
 		referer := r.Header.Get("Referer")
 		boardView := from == "board" || strings.Contains(referer, "board=true")
-		
+
 		if boardView {
 			w.Header().Set("HX-Redirect", "/?board=true")
 		} else {
@@ -181,7 +181,7 @@ func UpdateIssue(w http.ResponseWriter, r *http.Request) {
 		from := r.URL.Query().Get("from")
 		referer := r.Header.Get("Referer")
 		boardView := from == "board" || strings.Contains(referer, "board=true")
-		
+
 		if boardView {
 			w.Header().Set("HX-Redirect", "/?board=true")
 		} else {
@@ -213,7 +213,7 @@ func UpdateAssignee(w http.ResponseWriter, r *http.Request) {
 		// Check if we're in board view
 		referer := r.Header.Get("Referer")
 		boardView := strings.Contains(referer, "board=true")
-		
+
 		if boardView {
 			w.Header().Set("HX-Redirect", "/?board=true&selected-issue="+issue.ID)
 		} else {
@@ -239,7 +239,7 @@ func DeleteIssue(w http.ResponseWriter, r *http.Request) {
 		from := r.URL.Query().Get("from")
 		referer := r.Header.Get("Referer")
 		boardView := from == "board" || strings.Contains(referer, "board=true")
-		
+
 		if boardView {
 			w.Header().Set("HX-Redirect", "/?board=true")
 		} else {
