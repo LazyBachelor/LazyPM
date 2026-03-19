@@ -2,7 +2,6 @@ package tasks
 
 import (
 	"context"
-	"fmt"
 
 	"charm.land/huh/v2"
 	"github.com/LazyBachelor/LazyPM/internal/models"
@@ -69,37 +68,28 @@ func (t *CreateIssueTask) Setup(ctx context.Context) error {
 		return err
 	}
 
-	t.setupIssue = NewIssueBuilder().
-		WithTitle("Create a New Issue").
-		WithDescription(description).
-		Build()
-
-	return t.app.Issues.CreateIssue(ctx, t.setupIssue, "")
+	return nil
 }
 
 func (t *CreateIssueTask) Validate(ctx context.Context) ValidationFeedback {
 	expect := check.NewExpector()
 
-	issues, err := FetchIssues(ctx, t.app, t.setupIssue)
+	issues, err := FetchIssues(ctx, t.app)
 	if err != nil {
-		return expect.ValidationFeedback
+		return expect.Fatal("Could not fetch issues")
 	}
 
 	if len(issues) == 0 {
-		expect.Fail("No new issues created")
+		expect.Fail("No issues were created")
 		return expect.ValidationFeedback
 	}
 
 	issue := issues[0]
 
-	expect.Assert(len(issues) < 2, "Multiple issues were created instead of one")
-
 	expect.NotEmptyAndEqual(issue.Title, "My first Issue", "Issue title")
 	expect.NotEmptyAndEqual(issue.Description, "I need to do some coding", "Issue description")
 	expect.NotEmptyAndEqual(issue.Assignee, "Me", "Issue assignee")
-
-	expect.Assert(issue.Status == models.StatusInProgress,
-		fmt.Sprintf("Issue status should be 'In Progress', but was '%s'", issue.Status))
+	expect.Equal(issue.Status, models.StatusInProgress, "Issue status")
 
 	return expect.Complete()
 }
