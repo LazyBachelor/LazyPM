@@ -6,6 +6,7 @@ require (
 	github.com/go-git/go-git/v6 v6.0.0-20260317113930-fb0d09929504
 	github.com/joho/godotenv v1.5.1
 	github.com/muesli/reflow v0.3.0
+	github.com/spf13/pflag v1.0.10
 	github.com/steveyegge/beads v0.49.6
 	go.mongodb.org/mongo-driver/v2 v2.5.0
 )
@@ -97,7 +98,6 @@ require (
 	github.com/sergi/go-diff v1.4.0 // indirect
 	github.com/spf13/afero v1.15.0 // indirect
 	github.com/spf13/cast v1.10.0 // indirect
-	github.com/spf13/pflag v1.0.10 // indirect
 	github.com/spf13/viper v1.21.0 // indirect
 	github.com/subosito/gotenv v1.6.0 // indirect
 	github.com/tetratelabs/wazero v1.11.0 // indirect
