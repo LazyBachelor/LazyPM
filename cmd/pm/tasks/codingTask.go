@@ -137,6 +137,9 @@ func (t *CodingTask) Validate(ctx context.Context) ValidationFeedback {
 	if err != nil {
 		return expect.Fatal("Could not fetch issues")
 	}
+	if issue == nil {
+		return expect.Fatal("Issue was deleted or could not be found")
+	}
 
 	expect.Equal(issue.Assignee, "Me", "Issue Assignee")
 
