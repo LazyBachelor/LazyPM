@@ -98,6 +98,8 @@ func (m TaskModel) View() tea.View {
 		style.TextStyle.Render(m.Description),
 		"\n",
 		style.TextStyle.Foreground(style.SecondaryColor).Render(detailsText),
+		style.ErrorStyle.Render(m.interfaceHelpText()),
+		style.ErrorStyle.Render(m.getQuitHelpText()),
 	)
 
 	if m.aboutVisible {
@@ -117,6 +119,32 @@ func (m TaskModel) View() tea.View {
 	v := tea.NewView(final)
 	v.AltScreen = true
 	return v
+}
+
+func (m TaskModel) getQuitHelpText() string {
+	switch m.InterfaceType {
+	case models.InterfaceTypeWeb:
+		return "Press esc/q in the terminal to skip the task"
+	case models.InterfaceTypeTUI:
+		return "Press 'q' to skip task during the survey"
+	case models.InterfaceTypeCLI, models.InterfaceTypeREPL:
+		return "Write 'exit' to skip task during the survey"
+	default:
+		return m.keys.Quit.Help().Key + " to quit"
+	}
+}
+
+func (m TaskModel) interfaceHelpText() string {
+	switch m.InterfaceType {
+	case models.InterfaceTypeWeb:
+		return "Press the button in the upper right corner to view task progress and completion criteria"
+	case models.InterfaceTypeTUI:
+		return "Press Shift+S to view task progress and completion criteria"
+	case models.InterfaceTypeCLI, models.InterfaceTypeREPL:
+		return "Write 'status' to view task progress and completion criteria"
+	default:
+		return m.keys.Quit.Help().Key + " to quit"
+	}
 }
 
 func (m *TaskModel) SetSize(width, height int) {
