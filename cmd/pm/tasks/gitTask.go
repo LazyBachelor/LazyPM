@@ -123,6 +123,10 @@ func (t *GitTask) Validate(ctx context.Context) ValidationFeedback {
 	if err != nil {
 		return expect.Fatal("Could not fetch issue")
 	}
+	if issue == nil {
+		expect.Fail("Issue could not be found. It may have been deleted; please recreate it and try again.")
+		return expect.ValidationFeedback
+	}
 
 	expect.Equal(issue.Assignee, "Me", "Issue Assignee")
 
