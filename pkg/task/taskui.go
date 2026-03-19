@@ -109,7 +109,7 @@ func (m TaskModel) View() tea.View {
 
 	b.WriteString("\n")
 
-	helpText := "Press " + m.keys.Start.Help().Key + " to start • " + m.keys.Quit.Help().Key + " to quit • " + m.keys.About.Help().Key + " " + m.keys.About.Help().Desc
+	helpText := "Press " + m.keys.Start.Help().Key + " to start • " + m.getQuitHelpText() + " • " + m.keys.About.Help().Key + " " + m.keys.About.Help().Desc
 	b.WriteString(style.HelpStyle.Render(helpText))
 
 	final := lipgloss.Place(m.width, m.height, lipgloss.Center, lipgloss.Center, b.String())
@@ -117,6 +117,19 @@ func (m TaskModel) View() tea.View {
 	v := tea.NewView(final)
 	v.AltScreen = true
 	return v
+}
+
+func (m TaskModel) getQuitHelpText() string {
+	switch m.InterfaceType {
+	case models.InterfaceTypeWeb:
+		return "Press esc/q in the terminal to skip the task"
+	case models.InterfaceTypeTUI:
+		return "Press 'q' to skip task during the survey"
+	case models.InterfaceTypeCLI, models.InterfaceTypeREPL:
+		return "Write 'exit' to skip task during the survey"
+	default:
+		return m.keys.Quit.Help().Key + " to quit"
+	}
 }
 
 func (m *TaskModel) SetSize(width, height int) {

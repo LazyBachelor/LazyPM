@@ -35,7 +35,9 @@ type Flags struct {
 var RootCmd = &cobra.Command{
 	Use:   "pm",
 	Short: "Project Management User Interface Comparison CLI",
-	Long:  `Project Management User Interface Comparison CLI is a tool designed to evaluate and compare different project management interfaces through a series of tasks and surveys.`,
+	Long:  `Project Management User Interface Comparison CLI is a tool designed to evaluate and compare different project management interfaces through a series of tasks and surveys.
+
+Write 'exit' to skip this task.`,
 	PersistentPreRun: func(cmd *cobra.Command, args []string) {
 		// Inject app into context for all commands
 		if app != nil {
