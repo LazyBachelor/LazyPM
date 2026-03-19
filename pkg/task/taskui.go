@@ -98,6 +98,8 @@ func (m TaskModel) View() tea.View {
 		style.TextStyle.Render(m.Description),
 		"\n",
 		style.TextStyle.Foreground(style.SecondaryColor).Render(detailsText),
+		style.ErrorStyle.Render(m.interfaceHelpText()),
+		style.ErrorStyle.Render(m.getQuitHelpText()),
 	)
 
 	if m.aboutVisible {
@@ -109,7 +111,7 @@ func (m TaskModel) View() tea.View {
 
 	b.WriteString("\n")
 
-	helpText := "Press " + m.keys.Start.Help().Key + " to start • " + m.getQuitHelpText() + " • " + m.keys.About.Help().Key + " " + m.keys.About.Help().Desc
+	helpText := "Press " + m.keys.Start.Help().Key + " to start • " + m.keys.Quit.Help().Key + " to quit • " + m.keys.About.Help().Key + " " + m.keys.About.Help().Desc
 	b.WriteString(style.HelpStyle.Render(helpText))
 
 	final := lipgloss.Place(m.width, m.height, lipgloss.Center, lipgloss.Center, b.String())
@@ -127,6 +129,19 @@ func (m TaskModel) getQuitHelpText() string {
 		return "Press 'q' to skip task during the survey"
 	case models.InterfaceTypeCLI, models.InterfaceTypeREPL:
 		return "Write 'exit' to skip task during the survey"
+	default:
+		return m.keys.Quit.Help().Key + " to quit"
+	}
+}
+
+func (m TaskModel) interfaceHelpText() string {
+	switch m.InterfaceType {
+	case models.InterfaceTypeWeb:
+		return "Press the button in the upper right corner to view task progress and completion criteria"
+	case models.InterfaceTypeTUI:
+		return "Press Shift+S to view task progress and completion criteria"
+	case models.InterfaceTypeCLI, models.InterfaceTypeREPL:
+		return "Write 'status' to view task progress and completion criteria"
 	default:
 		return m.keys.Quit.Help().Key + " to quit"
 	}
