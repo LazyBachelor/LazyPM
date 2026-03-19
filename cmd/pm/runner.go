@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"math/rand"
+	"os"
 	"time"
 
 	"charm.land/huh/v2"
@@ -182,6 +183,10 @@ func taskLoop(ctx context.Context, application *task.App, surveyTasks map[string
 		}
 
 		runner := task.NewTaskRunner(application)
+
+		if err := os.WriteFile("Task Details.txt", []byte(t.Details(tasks.InterfaceToType(selected)).Description), 0644); err != nil {
+			return fmt.Errorf("failed to write task details: %w", err)
+		}
 
 		if err := runner.Run(ctx, t, selected, tasks.InterfaceToType(selected)); err != nil {
 			return err

@@ -6,6 +6,7 @@ import (
 	"github.com/LazyBachelor/LazyPM/internal/models"
 	"github.com/LazyBachelor/LazyPM/internal/utils/shellcomp"
 	"github.com/spf13/cobra"
+	"github.com/spf13/pflag"
 )
 
 var updateFlags Flags
@@ -51,6 +52,13 @@ func runUpdateCmd(cmd *cobra.Command, args []string) error {
 	}
 
 	cmd.Printf("Updated issue to:\n%s", models.IssueString(*updatedIssue))
+
+	updateFlags = Flags{}
+
+	cmd.Flags().VisitAll(func(f *pflag.Flag) {
+		f.Changed = false
+		_ = f.Value.Set(f.DefValue)
+	})
 
 	return nil
 }

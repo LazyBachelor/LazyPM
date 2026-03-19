@@ -23,9 +23,8 @@ The product backlog has become cluttered with old and unclear issues. You need t
 Focus on making the backlog a reliable source of upcoming work.`
 
 type BacklogRefinementTask struct {
-	done       bool
-	app        *App
-	setupIssue *Issue
+	done bool
+	app  *App
 }
 
 func NewBacklogRefinementTask(app *App) *BacklogRefinementTask {
@@ -115,24 +114,15 @@ func (t *BacklogRefinementTask) Setup(ctx context.Context) error {
 			Build(),
 	}
 
-	if err := t.app.Issues.CreateIssues(ctx, refinementIssues, ""); err != nil {
-		return err
-	}
-
-	t.setupIssue = NewIssueBuilder().
-		WithTitle("Backlog Refinement Session").
-		WithDescription(backlogRefinementDescription).
-		Build()
-
-	return t.app.Issues.CreateIssue(ctx, t.setupIssue, "")
+	return t.app.Issues.CreateIssues(ctx, refinementIssues, "")
 }
 
 func (t *BacklogRefinementTask) Validate(ctx context.Context) ValidationFeedback {
 	expect := check.NewExpector()
 
-	issues, err := FetchIssues(ctx, t.app, t.setupIssue)
+	issues, err := FetchIssues(ctx, t.app)
 	if err != nil {
-		return expect.ValidationFeedback
+		return expect.Fatal("Could not fetch issues")
 	}
 
 	var closedDuplicate *models.Issue

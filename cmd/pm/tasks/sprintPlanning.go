@@ -23,9 +23,8 @@ Your task:
 The goal is to create a realistic sprint plan that delivers value while respecting team capacity.`
 
 type SprintPlanningTask struct {
-	done       bool
-	app        *App
-	setupIssue *Issue
+	done bool
+	app  *App
 }
 
 func NewSprintPlanningTask(app *App) *SprintPlanningTask {
@@ -109,35 +108,21 @@ func (t *SprintPlanningTask) Setup(ctx context.Context) error {
 			Build(),
 	}
 
-	if err := t.app.Issues.CreateIssues(ctx, backlogIssues, ""); err != nil {
-		return err
-	}
-
-	t.setupIssue = NewIssueBuilder().
-		WithTitle("Sprint Planning - Week 1").
-		WithDescription(sprintPlanningDescription).
-		Build()
-
-	return t.app.Issues.CreateIssue(ctx, t.setupIssue, "")
+	return t.app.Issues.CreateIssues(ctx, backlogIssues, "")
 }
 
 func (t *SprintPlanningTask) Validate(ctx context.Context) ValidationFeedback {
 	expect := check.NewExpector()
 
-	issues, err := FetchIssues(ctx, t.app, t.setupIssue)
+	issues, err := FetchIssues(ctx, t.app)
 	if err != nil {
-		return expect.ValidationFeedback
-	}
-
-	if len(issues) == 0 {
-		expect.Fail("No backlog issues found to plan a sprint with.")
 		return expect.ValidationFeedback
 	}
 
 	// Sort by priority ascending (0 is highest priority).
 	sorted := make([]*models.Issue, len(issues))
 	copy(sorted, issues)
-	for i := 0; i < len(sorted); i++ {
+	for i := range sorted {
 		for j := i + 1; j < len(sorted); j++ {
 			if sorted[j].Priority < sorted[i].Priority {
 				sorted[i], sorted[j] = sorted[j], sorted[i]
@@ -145,10 +130,7 @@ func (t *SprintPlanningTask) Validate(ctx context.Context) ValidationFeedback {
 		}
 	}
 
-	topN := 5
-	if len(sorted) < topN {
-		topN = len(sorted)
-	}
+	topN := min(len(sorted), 5)
 	top := sorted[:topN]
 
 	var plannedCount int

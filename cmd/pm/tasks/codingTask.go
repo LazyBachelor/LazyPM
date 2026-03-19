@@ -6,7 +6,6 @@ import (
 	"strings"
 
 	"charm.land/huh/v2"
-	"github.com/LazyBachelor/LazyPM/internal/models"
 	"github.com/LazyBachelor/LazyPM/internal/utils/check"
 )
 
@@ -18,15 +17,10 @@ The MongoDB Driver dependency in the file is outdated and needs to be updated to
 This is a common task for developers, and it requires attention to detail and the ability to follow instructions carefully.
 
 Your task:
-1. Create a New Issue and give it these details:
-	- Title: "Upgrade MongoDB Driver Dependency"
-	- Description: "We need to upgrade the MongoDB Driver dependency to the latest version."
-	- Status: "In Progress"
-	- Issue Type: "Chore"
-2. Assign the issue to yourself as "Me".
-3. A file will appear in the current directory named "code.txt".
+1. Assign the given issue to yourself as 'Me'.
+2. A file will appear in the current directory named "code.txt".
    Open it and follow the instructions inside. And save the file after you are done.
-4. When you are done, mark this and the issue you made as "Closed".`
+3. When you are done, mark this task as "Closed".`
 
 var textFileDescription = `
 
@@ -76,9 +70,9 @@ tool (
 var textFileContent = codingDescription + textFileDescription + "\n" + code
 
 type CodingTask struct {
-	done       bool
-	setupIssue *Issue
-	app        *App
+	done  bool
+	app   *App
+	issue *Issue
 }
 
 func NewCodingTask(app *App) *CodingTask {
@@ -124,60 +118,30 @@ func (t *CodingTask) Setup(ctx context.Context) error {
 		return err
 	}
 
-	t.setupIssue = NewIssueBuilder().
-		WithTitle("Coding Task - Upgrade MongoDB Driver").
-		WithDescription(codingDescription).
-		WithStatus(models.StatusOpen).
-		WithIssueType(models.TypeTask).
-		Build()
-
-	if err := t.app.Issues.CreateIssue(ctx, t.setupIssue, "LazyPM"); err != nil {
-		return err
-	}
-
 	if err := os.WriteFile("./code.txt", []byte(textFileContent), 0644); err != nil {
 		return err
 	}
 
-	return nil
-}
+	t.issue = NewIssueBuilder().
+		WithTitle("Upgrade MongoDB Driver").
+		WithDescription(codingDescription).
+		Build()
 
-var codingTaskInProgress = false
+	return t.app.Issues.CreateIssue(ctx, t.issue, "")
+}
 
 func (t *CodingTask) Validate(ctx context.Context) ValidationFeedback {
 	expect := check.NewExpector()
 
-	issues, err := FetchIssues(ctx, t.app, t.setupIssue)
+	issue, err := t.app.Issues.GetIssue(ctx, t.issue.ID)
 	if err != nil {
-		return expect.ValidationFeedback
+		return expect.Fatal("Could not fetch issues")
+	}
+	if issue == nil {
+		return expect.Fatal("Issue was deleted or could not be found")
 	}
 
-	if len(issues) == 0 {
-		expect.Fail("No new issues created")
-		return expect.ValidationFeedback
-	} else {
-		expect.Pass("An issue was created")
-	}
-
-	issue := issues[0]
-
-	expect.Assert(len(issues) < 2, "Multiple issues were created instead of one")
-
-	expect.NotEmptyAndEqual(issue.Title, "Upgrade MongoDB Driver Dependency", "Issue title")
-
-	expect.NotEmptyAndEqual(issue.Description,
-		"We need to upgrade the MongoDB Driver dependency to the latest version.", "Issue description")
-
-	expect.NotEmptyAndEqual(issue.Assignee, "Me", "Issue Assignee")
-
-	expect.Equal(issue.IssueType, models.TypeChore, "Issue type")
-
-	if issue.Status == models.StatusInProgress || codingTaskInProgress {
-		codingTaskInProgress = true
-	} else {
-		expect.Fail("The issue should be marked as In Progress while working on the task.")
-		return expect.ValidationFeedback
-	}
+	expect.Equal(issue.Assignee, "Me", "Issue Assignee")
 
 	if _, err := os.Stat("./code.txt"); os.IsNotExist(err) {
 		expect.Fail("The code.txt file should exist on the desktop.")
@@ -196,11 +160,7 @@ func (t *CodingTask) Validate(ctx context.Context) ValidationFeedback {
 		return expect.ValidationFeedback
 	}
 
-	expect.Assert(strings.Contains(code, "go.mongodb.org/mongo-driver v1.17.9"),
-		"The MongoDB Driver dependency should be updated to version v1.17.9 in the file.")
-
-	expect.Assert(codingTaskInProgress && issue.Status == models.StatusClosed,
-		"The issue should be marked as Closed after completing the task.")
+	expect.Contains(code, "go.mongodb.org/mongo-driver v1.17.9", "MongoDB Driver version")
 
 	return expect.Complete()
 }
