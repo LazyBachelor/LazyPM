@@ -17,10 +17,10 @@ The MongoDB Driver dependency in the file is outdated and needs to be updated to
 This is a common task for developers, and it requires attention to detail and the ability to follow instructions carefully.
 
 Your task:
-1. Assingn the given issue to yourself as 'Me'.
+1. Assign the given issue to yourself as 'Me'.
 2. A file will appear in the current directory named "code.txt".
    Open it and follow the instructions inside. And save the file after you are done.
-3. When you are done, mark this and the issue you made as "Closed".`
+3. When you are done, mark this task as "Closed".`
 
 var textFileDescription = `
 
