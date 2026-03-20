@@ -9,7 +9,7 @@ import (
 	"charm.land/bubbles/v2/list"
 	"charm.land/bubbles/v2/textarea"
 	"charm.land/bubbles/v2/textinput"
-	"charm.land/bubbletea/v2"
+	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
 	"github.com/LazyBachelor/LazyPM/internal/app"
 	"github.com/LazyBachelor/LazyPM/internal/models"
@@ -41,29 +41,54 @@ type tableColumn struct {
 
 func getTableColumns(width int) []tableColumn {
 	switch {
+	case width < 20:
+		return []tableColumn{
+			{width: 10, label: "ID", key: "id"},
+		}
+	case width < 30:
+		return []tableColumn{
+			{width: 10, label: "ID", key: "id"},
+			{width: 10, label: "TITLE", key: "title"},
+		}
 	case width < 45:
 		return []tableColumn{
 			{width: 10, label: "ID", key: "id"},
-			{width: uint(width - 10), label: "TITLE", key: "title"},
+			{width: 20, label: "TITLE", key: "title"},
 		}
 	case width < 60:
 		return []tableColumn{
 			{width: 10, label: "ID", key: "id"},
-			{width: 20, label: "TITLE", key: "title"},
+			{width: 22, label: "TITLE", key: "title"},
 			{width: 15, label: "STATUS", key: "status"},
 		}
 	case width < 75:
 		return []tableColumn{
+			{width: 10, label: "ID", key: "id"},
+			{width: 25, label: "TITLE", key: "title"},
+			{width: 15, label: "STATUS", key: "status"},
+			{width: 10, label: "TYPE", key: "type"},
+		}
+	case width < 95:
+		return []tableColumn{
 			{width: 12, label: "ID", key: "id"},
-			{width: 20, label: "TITLE", key: "title"},
+			{width: 25, label: "TITLE", key: "title"},
 			{width: 15, label: "STATUS", key: "status"},
 			{width: 10, label: "TYPE", key: "type"},
 			{width: 15, label: "PRIORITY", key: "priority"},
 		}
+	case width < 120:
+		return []tableColumn{
+			{width: 12, label: "ID", key: "id"},
+			{width: 30, label: "TITLE", key: "title"},
+			{width: 15, label: "STATUS", key: "status"},
+			{width: 11, label: "TYPE", key: "type"},
+			{width: 14, label: "PRIORITY", key: "priority"},
+			{width: 12, label: "ASSIGNEE", key: "assignee"},
+		}
 	default:
 		return []tableColumn{
 			{width: 12, label: "ID", key: "id"},
-			{width: 20, label: "TITLE", key: "title"},
+			{width: 40, label: "TITLE", key: "title"},
 			{width: 15, label: "STATUS", key: "status"},
 			{width: 11, label: "TYPE", key: "type"},
 			{width: 14, label: "PRIORITY", key: "priority"},
@@ -213,31 +238,9 @@ func NewIssueListFromIssues(app *app.App, issues []*models.Issue, width, height 
 	}
 }
 
-func OpenAndInProgressOnly(issues []*models.Issue) []*models.Issue {
-	// used to display open & in-progress issues in the first window in the dashboard
-	out := make([]*models.Issue, 0, len(issues))
-	for _, issue := range issues {
-		if issue.Status == models.StatusOpen ||
-			issue.Status == models.StatusInProgress ||
-			issue.Status == models.StatusBlocked ||
-			issue.Status == models.StatusReadyToSprint {
-			out = append(out, issue)
-		}
-	}
-	sortByPriorityDesc(out)
-	return out
-}
-
-func ClosedOnly(issues []*models.Issue) []*models.Issue {
-	// used to display issues in the second window in the dashboard
-	out := make([]*models.Issue, 0, len(issues))
-	for _, issue := range issues {
-		if issue.Status == models.StatusClosed {
-			out = append(out, issue)
-		}
-	}
-	sortByPriorityDesc(out)
-	return out
+func SortedIssues(issues []*models.Issue) []*models.Issue {
+	sortByClosedThenPriorityDesc(issues)
+	return issues
 }
 
 // StatusOnly returns issues that exactly match the given status, sorted by priority.
@@ -249,13 +252,24 @@ func StatusOnly(issues []*models.Issue, status models.Status) []*models.Issue {
 			out = append(out, issue)
 		}
 	}
-	sortByPriorityDesc(out)
+	sortByClosedThenPriorityDesc(out)
 	return out
 }
 
-func sortByPriorityDesc(issues []*models.Issue) {
-	sort.Slice(issues, func(i, j int) bool {
-		return issues[i].Priority > issues[j].Priority
+func sortByClosedThenPriorityDesc(issues []*models.Issue) {
+	sort.SliceStable(issues, func(i, j int) bool {
+		iClosed := issues[i].Status == models.StatusClosed
+		jClosed := issues[j].Status == models.StatusClosed
+
+		if iClosed != jClosed {
+			return !iClosed
+		}
+
+		if issues[i].Priority != issues[j].Priority {
+			return issues[i].Priority > issues[j].Priority
+		}
+
+		return issues[i].ID < issues[j].ID
 	})
 }
 
@@ -353,7 +367,7 @@ func (l *IssueList) SetIssues(issues []*models.Issue) tea.Cmd {
 
 func (l *IssueList) SelectIssueID(issueID string) {
 	items := l.list.Items()
-	for i := 0; i < len(items); i++ {
+	for i := range items {
 		if item, ok := items[i].(ListIssue); ok && item.ID == issueID {
 			l.list.Select(i)
 			return
@@ -398,6 +412,9 @@ func renderRow(issue ListIssue, isSelected bool, cols []tableColumn) string {
 		style := lipgloss.NewStyle().Width(int(colWidth))
 		if isSelected {
 			style = style.Background(styles.SelectedBackground).Bold(true)
+		}
+		if issue.Status == models.StatusClosed {
+			style = style.Strikethrough(true).Foreground(styles.FaintText)
 		}
 
 		truncated := truncate.StringWithTail(value, colWidth, "...")
