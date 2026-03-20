@@ -147,6 +147,10 @@ func runStartCmd(cmd *cobra.Command, args []string) error {
 	if err := taskLoop(cmd.Context(), app, surveyTasks, interfaces); err != nil {
 		return returnIfUserQuit(err, "task loop failed")
 	}
+
+	//clear the terminal after the survey is done
+	fmt.Println("\033[H\033[2J")
+	cmd.Println(style.TitleStyle.Render("Thank you for completing the survey! You are now finished and can safely close the terminal."))
 	return nil
 }
 
@@ -188,6 +192,7 @@ func taskLoop(ctx context.Context, application *task.App, surveyTasks map[string
 			return fmt.Errorf("failed to write task details: %w", err)
 		}
 
+		fmt.Println("\033[H\033[2J")
 		if err := runner.Run(ctx, t, selected, tasks.InterfaceToType(selected)); err != nil {
 			return err
 		}
