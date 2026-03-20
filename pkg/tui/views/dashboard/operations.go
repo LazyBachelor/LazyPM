@@ -2,30 +2,16 @@ package dashboard
 
 import (
 	"context"
-	"os"
-	"os/user"
 	"strconv"
 
 	"charm.land/bubbles/v2/list"
 	tea "charm.land/bubbletea/v2"
 	"github.com/LazyBachelor/LazyPM/internal/models"
+	"github.com/LazyBachelor/LazyPM/internal/utils/user"
 	"github.com/LazyBachelor/LazyPM/pkg/tui/components"
 	"github.com/LazyBachelor/LazyPM/pkg/tui/modal"
 	"github.com/LazyBachelor/LazyPM/pkg/tui/msgs"
 )
-
-func defaultCommentAuthor() string {
-	if u, err := user.Current(); err == nil && u.Username != "" {
-		return u.Username
-	}
-	if s := os.Getenv("USER"); s != "" {
-		return s
-	}
-	if s := os.Getenv("USERNAME"); s != "" {
-		return s
-	}
-	return "user"
-}
 
 func (m *Model) refreshIssueListsAndSelectIssue(issueID string) tea.Cmd {
 	allIssues, err := m.app.Issues.SearchIssues(context.Background(), "", models.IssueFilter{})
@@ -153,7 +139,7 @@ func (m *Model) handleModalCompleted(msg modal.ModalCompletedMsg) tea.Cmd {
 		}
 	case modal.ModalAddComment:
 		if r, ok := msg.Value.(modal.TextAreaResult); ok && r.Value != "" {
-			cmd := msgs.AddIssueCommentCmd(m.app, m.currentIssueID, defaultCommentAuthor(), r.Value)
+			cmd := msgs.AddIssueCommentCmd(m.app, m.currentIssueID, user.GetOsUsername(), r.Value)
 			return func() tea.Msg { return cmd() }
 		}
 	case modal.ModalCloseReason:
