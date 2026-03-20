@@ -35,7 +35,6 @@ func (m *Model) View() tea.View {
 	m.issueDetail.SetSize(detailWidth, contentHeight)
 
 	m.issueList.SetHighlightSelected(m.focusManager.IsFocused(modal.FocusList))
-	m.closedIssueList.SetHighlightSelected(m.focusManager.IsFocused(modal.FocusDetail))
 
 	listView := m.issueList.View()
 	detailView := m.issueDetail.View()
