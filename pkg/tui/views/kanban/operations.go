@@ -202,7 +202,10 @@ func (m *Model) handleModalCompleted(msg modal.ModalCompletedMsg) tea.Cmd {
 		}
 	case modal.ModalSelectPriority:
 		if r, ok := msg.Value.(modal.SelectResult); ok {
-			priority, _ := strconv.Atoi(r.SelectedValue)
+			priority, err := strconv.Atoi(r.SelectedValue)
+			if err != nil {
+				return nil
+			}
 			cmd := msgs.UpdateIssuePriorityCmd(m.app, m.currentIssueID, priority)
 			return func() tea.Msg { return cmd() }
 		}
