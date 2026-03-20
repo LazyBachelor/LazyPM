@@ -16,8 +16,15 @@ func TruncateToWidth(text string, maxWidth int) string {
 
 	const ellipsis = "…"
 	ellipsisWidth := lipgloss.Width(ellipsis)
+
 	if ellipsisWidth > maxWidth {
-		// Not enough space even for an ellipsis; return empty.
+		runes := []rune(text)
+		if len(runes) > 0 {
+			firstChar := string(runes[0])
+			if lipgloss.Width(firstChar) <= maxWidth {
+				return firstChar
+			}
+		}
 		return ""
 	}
 
