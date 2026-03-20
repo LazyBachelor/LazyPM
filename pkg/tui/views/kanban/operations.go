@@ -11,7 +11,7 @@ import (
 )
 
 // update handler for issueTitleUpdatedMsg, issueDescriptionUpdatedMsg, and issueStatusUpdatedMsg to avoid using nearly identical code for refreshing the issue lists and updating the detail view
-// Fetch all msgs, update both lists, set the detail view for the given issue, and return a command to select that issue. Returns nil if fetch fails.
+// Fetch all issues, update both lists, set the detail view for the given issue, and return a command to select that issue. Returns nil if fetch fails.
 func (m *Model) refreshIssueListsAndSelectIssue(issueID string) tea.Cmd {
 	allIssues, err := m.app.Issues.SearchIssues(context.Background(), "", models.IssueFilter{})
 	if err != nil {
