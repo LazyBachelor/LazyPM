@@ -27,7 +27,7 @@ func DefaultCommonKeyMap() CommonKeyMap {
 			key.WithHelp("?", "help"),
 		),
 		Quit: key.NewBinding(
-			key.WithKeys("q", "ctrl+c"),
+			key.WithKeys("q"),
 			key.WithHelp("q", "quit"),
 		),
 		ScrollUp: key.NewBinding(

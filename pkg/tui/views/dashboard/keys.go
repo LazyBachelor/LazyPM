@@ -10,11 +10,6 @@ import (
 type KeyMap struct {
 	components.CommonKeyMap
 	SwitchToKanbanBoard key.Binding
-	Quit                key.Binding
-	SelectIssue         key.Binding
-	BackToList          key.Binding
-	ScrollUp            key.Binding
-	ScrollDown          key.Binding
 	EditTitle           key.Binding
 	EditDescription     key.Binding
 	ChangeStatus        key.Binding
@@ -78,8 +73,8 @@ func (m *Model) handleKeyPressMsg(msg tea.KeyPressMsg) tea.Cmd {
 		m.logAction("tui toggled help")
 
 	case m.notInModalMsgWithKey(msg, m.keyMap.Quit):
-		m.logAction("tui quit requested")
-		return tea.Quit
+		m.logAction("tui opened exit confirmation")
+		return m.startConfirmExit()
 
 	case m.notInModalMsgWithKey(msg, m.keyMap.SwitchToKanbanBoard):
 		return func() tea.Msg { return msgs.SwitchToKanbanBoardMsg{} }

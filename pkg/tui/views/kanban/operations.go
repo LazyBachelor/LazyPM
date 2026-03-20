@@ -62,6 +62,10 @@ func (m *Model) refreshAndSubmit(issueID string) tea.Cmd {
 
 // Modal action handlers
 
+func (m *Model) startConfirmExit() tea.Cmd {
+	return m.modalManager.ShowModal(modal.ModalConfirmExit)
+}
+
 func (m *Model) startEditTitle(selected ListIssue) tea.Cmd {
 	m.currentIssueID = selected.ID
 	titleModal := m.modalManager.GetTextInputModal(modal.ModalEditTitle)
@@ -141,6 +145,11 @@ func (m *Model) startAddComment(selected ListIssue) tea.Cmd {
 // handleModalCompleted handles all modal completion messages
 func (m *Model) handleModalCompleted(msg modal.ModalCompletedMsg) tea.Cmd {
 	switch msg.ModalID {
+	case modal.ModalConfirmExit:
+		if r, ok := msg.Value.(modal.ConfirmResult); ok && r.Confirmed {
+			m.logAction("tui confirmed exit")
+			return tea.Quit
+		}
 	case modal.ModalEditTitle:
 		if r, ok := msg.Value.(modal.TextInputResult); ok {
 			cmd := msgs.UpdateIssueTitleCmd(m.app, m.currentIssueID, r.Value)
@@ -218,6 +227,8 @@ func (m *Model) handleModalCompleted(msg modal.ModalCompletedMsg) tea.Cmd {
 // handleModalCancelled handles all modal cancellation messages
 func (m *Model) handleModalCancelled(msg modal.ModalCancelledMsg) {
 	switch msg.ModalID {
+	case modal.ModalConfirmExit:
+		m.logAction("tui canceled exit")
 	case modal.ModalEditTitle:
 		m.currentIssueID = ""
 	case modal.ModalCreateIssue:
@@ -458,6 +469,10 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		})
 
 	case tea.KeyPressMsg:
+		if msg.String() == "ctrl+c" {
+			return m, tea.Quit
+		}
+
 		fl := m.FocusedIssueList()
 		if fl.FilterState() == list.Filtering {
 			cmd, _ := fl.Update(msg)
@@ -469,7 +484,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 
 		cmd := m.handleKeyPressMsg(msg)
-		if cmd != nil {
+		if cmd != nil || m.IsInModal() {
 			return m, cmd
 		}
 

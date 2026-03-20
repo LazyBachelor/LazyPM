@@ -50,6 +50,7 @@ type ModalCancelledMsg struct {
 
 // Modal IDs used across the application
 const (
+	ModalConfirmExit       = "confirm-exit"
 	ModalEditTitle         = "edit-title"
 	ModalCreateIssue       = "create-issue"
 	ModalEditAssignee      = "edit-assignee"
