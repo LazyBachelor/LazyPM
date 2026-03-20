@@ -163,6 +163,15 @@ func (m *Manager) RenderWithMainView(mainView string) string {
 // RegisterCommonModals registers the standard set of modals used across views.
 // This helper reduces duplication between dashboard and kanban views.
 func RegisterCommonModals(m *Manager) {
+
+	// Exit Confirm Modal
+	m.RegisterModal(NewConfirmModal(ConfirmConfig{
+		ID:      ModalConfirmExit,
+		Message: "Close the task and interface?",
+		YesKeys: []string{"y", "Y"},
+		NoKeys:  []string{"n", "N", "esc"},
+	}))
+
 	// Edit Title Modal
 	m.RegisterModal(NewTextInputModal(TextInputConfig{
 		ID:           ModalEditTitle,

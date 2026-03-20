@@ -93,22 +93,22 @@ func (c *ConfirmModal) Update(msg tea.Msg) (tea.Cmd, bool) {
 
 		// Check yes keys
 		if slices.Contains(c.yesKeys, s) {
-				c.Deactivate()
-				return func() tea.Msg {
-					return ModalCompletedMsg{
-						ModalID: c.ID(),
-						Value:   ConfirmResult{Confirmed: true},
-					}
-				}, true
-			}
+			c.Deactivate()
+			return func() tea.Msg {
+				return ModalCompletedMsg{
+					ModalID: c.ID(),
+					Value:   ConfirmResult{Confirmed: true},
+				}
+			}, true
+		}
 
 		// Check no/cancel keys
 		if slices.Contains(c.noKeys, s) {
-				c.Deactivate()
-				return func() tea.Msg {
-					return ModalCancelledMsg{ModalID: c.ID()}
-				}, true
-			}
+			c.Deactivate()
+			return func() tea.Msg {
+				return ModalCancelledMsg{ModalID: c.ID()}
+			}, true
+		}
 	}
 
 	return nil, true

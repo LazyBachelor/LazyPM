@@ -54,7 +54,8 @@ func (m *Model) handleKeyPressMsg(msg tea.KeyPressMsg) tea.Cmd {
 		m.helpBar.ToggleHelp()
 
 	case m.notInModalMsgWithKey(msg, m.keyMap.Quit):
-		return tea.Quit
+		m.logAction("tui opened exit confirmation")
+		return m.startConfirmExit()
 
 	case m.notInModalMsgWithKey(msg, m.keyMap.SwitchToDashboard):
 		return func() tea.Msg { return msgs.SwitchToDashboardMsg{} }
