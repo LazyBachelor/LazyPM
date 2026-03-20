@@ -183,7 +183,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		blockedCmd := m.blockedList.SetIssues(blockedIssues)
 		doneCmd := m.doneList.SetIssues(doneIssues)
 
-		// If there are no msgs at all, clear the detail view and return.
+		// If there are no issues at all, clear the detail view and return.
 		if len(todoIssues) == 0 && len(inProgIssues) == 0 && len(blockedIssues) == 0 && len(doneIssues) == 0 {
 			m.issueDetail.SetIssue(models.Issue{})
 			m.submitValidation()
