@@ -85,53 +85,34 @@ func (h HelpBar) fullHelp() string {
 		return ""
 	}
 
-	keyStyle := lipgloss.NewStyle().
-		Width(fullHelpKeyWidth).
-		Align(lipgloss.Right)
+	keyStyle := lipgloss.NewStyle().Width(fullHelpKeyWidth).Align(lipgloss.Right)
+	descStyle := lipgloss.NewStyle().Width(fullHelpDescWidth)
+	cellStyle := lipgloss.NewStyle().Width(fullHelpKeyWidth + 1 + fullHelpDescWidth)
 
-	descStyle := lipgloss.NewStyle().
-		Width(fullHelpDescWidth)
-
-	cellStyle := lipgloss.NewStyle().
-		Width(fullHelpKeyWidth + 1 + fullHelpDescWidth)
-
-	renderHelpItem := func(item HelpItem) string {
+	renderItem := func(item HelpItem) string {
 		return cellStyle.Render(
-			lipgloss.JoinHorizontal(
-				lipgloss.Left,
-				keyStyle.Render(styles.HighlightKey(item.Key)),
-				" ",
-				descStyle.Render(item.Desc),
-			),
+			keyStyle.Render(styles.HighlightKey(item.Key)) + " " + descStyle.Render(item.Desc),
 		)
 	}
 
-	innerWidth := max(h.width - 2, 1)
-
+	innerWidth := max(h.width-2, 1)
 	cellWidth := fullHelpKeyWidth + 1 + fullHelpDescWidth
-	cols := fitHelpColumns(
-		innerWidth,
-		cellWidth,
-		fullHelpColGap,
-		maxFullHelpCols,
-	)
-
+	cols := fitHelpColumns(innerWidth, cellWidth, fullHelpColGap, maxFullHelpCols)
+	rows := (len(h.config.FullItems) + cols - 1) / cols
 	gap := strings.Repeat(" ", fullHelpColGap)
-	rows := make([]string, 0, (len(h.config.FullItems)+cols-1)/cols)
 
-	for i := 0; i < len(h.config.FullItems); i += cols {
-		end := min(i + cols, len(h.config.FullItems))
-
-		cells := make([]string, 0, cols)
-		for _, item := range h.config.FullItems[i:end] {
-			cells = append(cells, renderHelpItem(item))
+	var result []string
+	for r := range rows {
+		var cells []string
+		for c := range cols {
+			if idx := r + c*rows; idx < len(h.config.FullItems) {
+				cells = append(cells, renderItem(h.config.FullItems[idx]))
+			}
 		}
-
-		rows = append(rows, joinHorizontalWithGap(cells, gap))
+		result = append(result, joinHorizontalWithGap(cells, gap))
 	}
 
-	content := lipgloss.JoinVertical(lipgloss.Left, rows...)
-
+	content := lipgloss.JoinVertical(lipgloss.Left, result...)
 	return lipgloss.NewStyle().
 		Border(lipgloss.Border{Top: "─"}, true, false, false, false).
 		BorderForeground(styles.SecondaryBorder).
