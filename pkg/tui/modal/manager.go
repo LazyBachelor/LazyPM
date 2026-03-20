@@ -148,14 +148,8 @@ func (m *Manager) RenderWithMainView(mainView string) string {
 	modalHeight := lipgloss.Height(modalContent)
 
 	// Center the modal
-	x := (m.width - modalWidth) / 2
-	if x < 0 {
-		x = 0
-	}
-	y := (m.height - modalHeight) / 2
-	if y < 0 {
-		y = 0
-	}
+	x := max((m.width-modalWidth)/2, 0)
+	y := max((m.height-modalHeight)/2, 0)
 
 	// Create layers: main view as base, modal on top with Z-index
 	mainLayer := lipgloss.NewLayer(mainView).X(0).Y(0).Z(0)
@@ -164,4 +158,99 @@ func (m *Manager) RenderWithMainView(mainView string) string {
 	// Create compositor with layers and render
 	compositor := lipgloss.NewCompositor(mainLayer, modalLayer)
 	return compositor.Render()
+}
+
+// RegisterCommonModals registers the standard set of modals used across views.
+// This helper reduces duplication between dashboard and kanban views.
+func RegisterCommonModals(m *Manager) {
+	// Edit Title Modal
+	m.RegisterModal(NewTextInputModal(TextInputConfig{
+		ID:           ModalEditTitle,
+		Label:        "Edit title (Enter to save, Esc to cancel):",
+		Placeholder:  "Issue title...",
+		SaveKeys:     []string{"enter"},
+		CharLimit:    256,
+		InitialValue: "",
+	}))
+
+	// Create Issue Modal
+	m.RegisterModal(NewTextInputModal(TextInputConfig{
+		ID:          ModalCreateIssue,
+		Label:       "New issue (Enter to create, Esc to cancel):",
+		Placeholder: "New issue title...",
+		SaveKeys:    []string{"enter"},
+		CharLimit:   256,
+	}))
+
+	// Edit Assignee Modal
+	m.RegisterModal(NewTextInputModal(TextInputConfig{
+		ID:          ModalEditAssignee,
+		Label:       "Edit assignee (Enter to save, Esc to cancel):",
+		Placeholder: "Assignee name...",
+		SaveKeys:    []string{"enter"},
+		CharLimit:   64,
+	}))
+
+	// Edit Description Modal
+	m.RegisterModal(NewTextAreaModal(TextAreaConfig{
+		ID:          ModalEditDescription,
+		Label:       "Edit description (Ctrl+S to save, Esc to cancel):",
+		Placeholder: "Issue description...",
+		SaveKeys:    []string{"ctrl+s"},
+		InputHeight: 10,
+	}))
+
+	// Add Comment Modal
+	m.RegisterModal(NewTextAreaModal(TextAreaConfig{
+		ID:          ModalAddComment,
+		Label:       "Add comment (Ctrl+S to save, Esc to cancel):",
+		Placeholder: "Write your comment...",
+		SaveKeys:    []string{"ctrl+s"},
+		InputHeight: 8,
+	}))
+
+	// Close Reason TextArea Modal
+	m.RegisterModal(NewTextAreaModal(TextAreaConfig{
+		ID:          ModalCloseReason,
+		Label:       "Enter closing reason (Ctrl+S to save, Esc to cancel):",
+		Placeholder: "Enter closing reason...",
+		SaveKeys:    []string{"ctrl+s"},
+		InputHeight: 4,
+	}))
+
+	// Delete Confirm Modal
+	m.RegisterModal(NewConfirmModal(ConfirmConfig{
+		ID:      ModalConfirmDelete,
+		Message: "Delete issue?",
+		YesKeys: []string{"y", "Y"},
+		NoKeys:  []string{"n", "N", "esc"},
+	}))
+
+	// Status Select Modal
+	m.RegisterModal(NewSelectModal(SelectConfig{
+		ID:      ModalSelectStatus,
+		Label:   "Change status:",
+		Options: StatusOptions(),
+	}))
+
+	// Close Reason Select Modal
+	m.RegisterModal(NewSelectModal(SelectConfig{
+		ID:      ModalSelectCloseReason,
+		Label:   "Choose closing reason:",
+		Options: CloseReasonOptions(),
+	}))
+
+	// Priority Select Modal
+	m.RegisterModal(NewSelectModal(SelectConfig{
+		ID:      ModalSelectPriority,
+		Label:   "Change priority:",
+		Options: PriorityOptions(),
+	}))
+
+	// Type Select Modal
+	m.RegisterModal(NewSelectModal(SelectConfig{
+		ID:      ModalSelectType,
+		Label:   "Change type:",
+		Options: TypeOptions(),
+	}))
 }

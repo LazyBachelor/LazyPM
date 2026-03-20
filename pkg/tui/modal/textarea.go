@@ -1,10 +1,12 @@
 package modal
 
 import (
+	"slices"
+
 	"charm.land/bubbles/v2/textarea"
 	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
-	"github.com/LazyBachelor/LazyPM/pkg/tui/styles"
+	"github.com/LazyBachelor/LazyPM/internal/style"
 )
 
 // TextAreaResult is returned when a text area modal completes
@@ -112,8 +114,7 @@ func (t *TextAreaModal) Update(msg tea.Msg) (tea.Cmd, bool) {
 		s := msg.String()
 
 		// Check save keys
-		for _, key := range t.saveKeys {
-			if s == key {
+		if slices.Contains(t.saveKeys, s) {
 				value := t.input.Value()
 				t.Deactivate()
 				return func() tea.Msg {
@@ -123,7 +124,6 @@ func (t *TextAreaModal) Update(msg tea.Msg) (tea.Cmd, bool) {
 					}
 				}, true
 			}
-		}
 
 		// Cancel on escape
 		if s == "esc" {
@@ -149,20 +149,17 @@ func (t *TextAreaModal) View() string {
 		return ""
 	}
 
-	boxWidth := min(60, t.width-4)
-	if boxWidth < 1 {
-		boxWidth = 1
-	}
+	boxWidth := max(min(60, t.width-4), 1)
 
 	t.input.SetWidth(boxWidth - 2)
 	t.input.SetHeight(t.inputHeight)
 
 	content := lipgloss.JoinVertical(lipgloss.Left,
-		styles.LabelStyle.Render(t.label),
+		style.LabelStyle.Render(t.label),
 		t.input.View(),
 	)
 
-	return styles.ModalContainerStyle.
+	return style.ModalContainerStyle.
 		Width(boxWidth).
 		Render(content)
 }

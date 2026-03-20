@@ -1,10 +1,12 @@
 package modal
 
 import (
+	"slices"
+
 	"charm.land/bubbles/v2/textinput"
 	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
-	"github.com/LazyBachelor/LazyPM/pkg/tui/styles"
+	"github.com/LazyBachelor/LazyPM/internal/style"
 )
 
 // TextInputResult is returned when a text input modal completes
@@ -113,8 +115,7 @@ func (t *TextInputModal) Update(msg tea.Msg) (tea.Cmd, bool) {
 		s := msg.String()
 
 		// Check save keys
-		for _, key := range t.saveKeys {
-			if s == key {
+		if slices.Contains(t.saveKeys, s) {
 				value := t.input.Value()
 				t.Deactivate()
 				return func() tea.Msg {
@@ -124,7 +125,6 @@ func (t *TextInputModal) Update(msg tea.Msg) (tea.Cmd, bool) {
 					}
 				}, true
 			}
-		}
 
 		// Cancel on escape
 		if s == "esc" {
@@ -152,11 +152,11 @@ func (t *TextInputModal) View() string {
 	t.input.SetWidth(boxWidth - 2)
 
 	content := lipgloss.JoinVertical(lipgloss.Left,
-		styles.LabelStyle.Render(t.label),
+		style.LabelStyle.Render(t.label),
 		t.input.View(),
 	)
 
-	return styles.ModalContainerStyle.
+	return style.ModalContainerStyle.
 		Width(boxWidth).
 		Render(content)
 }

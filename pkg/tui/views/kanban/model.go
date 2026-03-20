@@ -3,8 +3,6 @@ package kanban
 import (
 	"context"
 
-	"charm.land/bubbles/v2/textarea"
-	"charm.land/bubbles/v2/textinput"
 	tea "charm.land/bubbletea/v2"
 	"github.com/LazyBachelor/LazyPM/internal/app"
 	"github.com/LazyBachelor/LazyPM/internal/models"
@@ -37,13 +35,6 @@ type Model struct {
 	modalManager *modal.Manager
 	focusManager *modal.FocusManager
 
-	// Inputs
-	titleInput       textinput.Model
-	descriptionInput textarea.Model
-	createTitleInput textinput.Model
-	assigneeInput    textinput.Model
-	closeReasonInput textarea.Model
-
 	// Current issue being operated on
 	currentIssueID string
 	deleteIndex    int
@@ -69,19 +60,6 @@ func NewDashboard(app *app.App, feedbackChan chan models.ValidationFeedback, qui
 		focusManager: modal.NewFocusManager(),
 		deleteIndex:  -1,
 	}
-
-	// Setup inputs
-	inputs := components.NewIssueInputs()
-	m.titleInput = inputs.Title
-	m.createTitleInput = inputs.CreateTitle
-	m.descriptionInput = inputs.Description
-	m.assigneeInput = inputs.Assignee
-
-	closeReasonTa := textarea.New()
-	closeReasonTa.Placeholder = "Enter closing reason..."
-	closeReasonTa.SetWidth(56)
-	closeReasonTa.SetHeight(4)
-	m.closeReasonInput = closeReasonTa
 
 	// Setup lists
 	m.issueDetail = components.NewIssueDetail()
@@ -109,94 +87,22 @@ func NewDashboard(app *app.App, feedbackChan chan models.ValidationFeedback, qui
 	m.registerModals()
 
 	if selected := m.todoList.SelectedItem(); selected.ID != "" {
-		m.issueDetail.SetIssue(selected.Issue)
+		m.setDetailIssueWithComments(selected.Issue)
 	}
 
 	return m
 }
 
+func (m *Model) Init() tea.Cmd {
+	if m.submitChan != nil {
+		m.submitChan <- struct{}{}
+		m.logAction("tui submitted validation")
+	}
+	return components.ListenForValidation(m.feedbackChan)
+}
+
 func (m *Model) registerModals() {
-	// Edit Title Modal
-	m.modalManager.RegisterModal(modal.NewTextInputModal(modal.TextInputConfig{
-		ID:           modal.ModalEditTitle,
-		Label:        "Edit title (Enter to save, Esc to cancel):",
-		Placeholder:  "Issue title...",
-		SaveKeys:     []string{"enter"},
-		CharLimit:    256,
-		InitialValue: "",
-	}))
-
-	// Create Issue Modal
-	m.modalManager.RegisterModal(modal.NewTextInputModal(modal.TextInputConfig{
-		ID:          modal.ModalCreateIssue,
-		Label:       "New issue (Enter to create, Esc to cancel):",
-		Placeholder: "New issue title...",
-		SaveKeys:    []string{"enter"},
-		CharLimit:   256,
-	}))
-
-	// Edit Assignee Modal
-	m.modalManager.RegisterModal(modal.NewTextInputModal(modal.TextInputConfig{
-		ID:          modal.ModalEditAssignee,
-		Label:       "Edit assignee (Enter to save, Esc to cancel):",
-		Placeholder: "Assignee name...",
-		SaveKeys:    []string{"enter"},
-		CharLimit:   64,
-	}))
-
-	// Edit Description Modal
-	m.modalManager.RegisterModal(modal.NewTextAreaModal(modal.TextAreaConfig{
-		ID:          modal.ModalEditDescription,
-		Label:       "Edit description (Ctrl+S to save, Esc to cancel):",
-		Placeholder: "Issue description...",
-		SaveKeys:    []string{"ctrl+s"},
-		InputHeight: 10,
-	}))
-
-	// Delete Confirm Modal
-	m.modalManager.RegisterModal(modal.NewConfirmModal(modal.ConfirmConfig{
-		ID:      modal.ModalConfirmDelete,
-		Message: "Delete issue?",
-		YesKeys: []string{"y", "Y"},
-		NoKeys:  []string{"n", "N", "esc"},
-	}))
-
-	// Status Select Modal
-	m.modalManager.RegisterModal(modal.NewSelectModal(modal.SelectConfig{
-		ID:      modal.ModalSelectStatus,
-		Label:   "Change status:",
-		Options: modal.StatusOptions(),
-	}))
-
-	// Close Reason Select Modal
-	m.modalManager.RegisterModal(modal.NewSelectModal(modal.SelectConfig{
-		ID:      modal.ModalSelectCloseReason,
-		Label:   "Choose closing reason:",
-		Options: modal.CloseReasonOptions(),
-	}))
-
-	// Priority Select Modal
-	m.modalManager.RegisterModal(modal.NewSelectModal(modal.SelectConfig{
-		ID:      modal.ModalSelectPriority,
-		Label:   "Change priority:",
-		Options: modal.PriorityOptions(),
-	}))
-
-	// Type Select Modal
-	m.modalManager.RegisterModal(modal.NewSelectModal(modal.SelectConfig{
-		ID:      modal.ModalSelectType,
-		Label:   "Change type:",
-		Options: modal.TypeOptions(),
-	}))
-
-	// Close Reason TextArea Modal
-	m.modalManager.RegisterModal(modal.NewTextAreaModal(modal.TextAreaConfig{
-		ID:          modal.ModalCloseReason,
-		Label:       "Enter closing reason (Enter or Ctrl+S to save, Esc to cancel):",
-		Placeholder: "Enter closing reason...",
-		SaveKeys:    []string{"enter", "ctrl+s"},
-		InputHeight: 4,
-	}))
+	modal.RegisterCommonModals(m.modalManager)
 }
 
 func (m *Model) logAction(action string) {
@@ -218,14 +124,6 @@ func (m *Model) submitValidation() {
 	}
 }
 
-func (m *Model) Init() tea.Cmd {
-	if m.submitChan != nil {
-		m.submitChan <- struct{}{}
-		m.logAction("tui submitted validation")
-	}
-	return components.ListenForValidation(m.feedbackChan)
-}
-
 func (m *Model) IsInModal() bool {
 	return m.modalManager.IsModalActive()
 }
@@ -238,21 +136,13 @@ func (m *Model) IsFocusedOnDetail() bool {
 	return m.focusManager.IsDetailFocused()
 }
 
-func (m *Model) FocusList() {
-	m.focusManager.SetCurrent(modal.FocusColumn1)
-	m.issueDetail.SetFocused(false)
-}
-
-func (m *Model) FocusDetail() {
-	m.focusManager.SetCurrent(modal.FocusDetail)
-	m.issueDetail.SetFocused(true)
-}
-
 func (m *Model) ToggleFocus() {
 	if m.focusManager.IsDetailFocused() {
-		m.FocusList()
+		m.focusManager.SetCurrent(modal.FocusColumn1)
+		m.issueDetail.SetFocused(false)
 	} else {
-		m.FocusDetail()
+		m.focusManager.SetCurrent(modal.FocusDetail)
+		m.issueDetail.SetFocused(true)
 	}
 }
 
@@ -274,8 +164,19 @@ func (m *Model) FocusedIssueList() *IssueList {
 func (m *Model) updateDetailFromSelection() {
 	selected := m.FocusedIssueList().SelectedItem()
 	if selected.ID != "" {
-		m.issueDetail.SetIssue(selected.Issue)
+		m.setDetailIssueWithComments(selected.Issue)
 	}
+}
+
+// setDetailIssueWithComments sets the issue in the detail pane and loads its comments.
+func (m *Model) setDetailIssueWithComments(issue models.Issue) {
+	m.issueDetail.SetIssue(issue)
+	if issue.ID == "" {
+		m.issueDetail.SetComments(nil)
+		return
+	}
+	comments, _ := m.app.Issues.GetIssueComments(context.Background(), issue.ID)
+	m.issueDetail.SetComments(comments)
 }
 
 func statusForColumn(col modal.FocusArea) models.Status {

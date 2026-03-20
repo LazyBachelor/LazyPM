@@ -9,28 +9,13 @@ import (
 // Modal is the core interface that all modals must implement.
 // It defines the contract for modal lifecycle, rendering, and input handling.
 type Modal interface {
-	// ID returns a unique identifier for this modal instance
 	ID() string
-
-	// Type returns the modal type for categorization
 	Type() ModalType
-
-	// IsActive returns true if the modal should be rendered and handle input
 	IsActive() bool
-
-	// Activate starts the modal and prepares it for interaction
 	Activate() tea.Cmd
-
-	// Deactivate stops the modal and cleans up resources
 	Deactivate()
-
-	// Update handles input messages when the modal is active
 	Update(msg tea.Msg) (tea.Cmd, bool)
-
-	// View returns the rendered modal content (without outer frame)
 	View() string
-
-	// SetSize updates the modal dimensions
 	SetSize(width, height int)
 }
 
@@ -137,11 +122,20 @@ func (s *ModalStack) Clear() {
 }
 
 // Update routes messages to the active modal
+// Returns handled=false for global messages like WindowSizeMsg so they pass through to the view
 func (s *ModalStack) Update(msg tea.Msg) (tea.Cmd, bool) {
 	active := s.ActiveModal()
 	if active == nil {
 		return nil, false
 	}
+
+	// WindowSizeMsg should pass through to the view even when modal is active
+	// This allows both the modal and the underlying view to resize
+	if _, ok := msg.(tea.WindowSizeMsg); ok {
+		cmd, _ := active.Update(msg)
+		return cmd, false
+	}
+
 	return active.Update(msg)
 }
 

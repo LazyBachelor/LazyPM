@@ -3,7 +3,7 @@ package modal
 import (
 	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
-	"github.com/LazyBachelor/LazyPM/pkg/tui/styles"
+	"github.com/LazyBachelor/LazyPM/internal/style"
 )
 
 // SelectResult is returned when a select modal completes
@@ -59,13 +59,15 @@ func NewSelectModal(cfg SelectConfig) *SelectModal {
 		height:    cfg.Height,
 	}
 
-	// Build help text from options
+	// Build help text from options with styled keys in vertical layout
 	var parts []string
 	for _, opt := range cfg.Options {
-		parts = append(parts, opt.Key+" = "+opt.Label)
+		styledKey := lipgloss.NewStyle().Foreground(style.Primary).Bold(true).Render(opt.Key)
+		styledLabel := lipgloss.NewStyle().Foreground(style.SecondaryText).Render(opt.Label)
+		option := lipgloss.NewStyle().Foreground(style.FaintText).Render("  ") + styledKey + lipgloss.NewStyle().Foreground(style.FaintText).Render(" → ") + styledLabel
+		parts = append(parts, option)
 	}
-	mod.helpText = lipgloss.NewStyle().Foreground(styles.FaintText).
-		Render(lipgloss.JoinHorizontal(lipgloss.Left, parts...))
+	mod.helpText = lipgloss.JoinVertical(lipgloss.Left, parts...)
 
 	if mod.width == 0 {
 		mod.width = 70
@@ -140,22 +142,21 @@ func (s *SelectModal) View() string {
 		return ""
 	}
 
-	boxWidth := min(70, s.width-4)
-	if boxWidth < 1 {
-		boxWidth = 1
-	}
+	boxWidth := max(min(70, s.width-4), 1)
 
 	cancelText := lipgloss.NewStyle().
-		Foreground(styles.FaintText).
+		Foreground(style.FaintText).
 		Render(s.cancelKey + " = cancel")
 
 	content := lipgloss.JoinVertical(lipgloss.Left,
-		styles.LabelStyle.Render(s.label),
+		style.ValueStyle.Render(s.label),
+		"",
 		s.helpText,
+		"",
 		cancelText,
 	)
 
-	return styles.ModalContainerStyle.
+	return style.ModalContainerStyle.
 		Width(boxWidth).
 		Render(content)
 }
@@ -205,8 +206,8 @@ func TypeOptions() []SelectOption {
 // CloseReasonOptions returns options for close reason selection
 func CloseReasonOptions() []SelectOption {
 	return []SelectOption{
-		{Key: "d", Label: "Done", Value: "Done"},
-		{Key: "u", Label: "Duplicate issue", Value: "Duplicate issue"},
+		{Key: "c", Label: "Done", Value: "Done"},
+		{Key: "d", Label: "Duplicate", Value: "Duplicate issue"},
 		{Key: "w", Label: "Won't fix", Value: "Won't fix"},
 		{Key: "o", Label: "Obsolete", Value: "Obsolete"},
 		{Key: "h", Label: "Other", Value: "other"},

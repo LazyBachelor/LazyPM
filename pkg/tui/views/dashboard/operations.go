@@ -48,8 +48,6 @@ func (m *Model) refreshAndSubmit(issueID string) tea.Cmd {
 	return refreshCmd
 }
 
-// Modal action handlers - return tea.Cmd for use in key handlers
-
 func (m *Model) startEditTitle(selected ListIssue) tea.Cmd {
 	m.currentIssueID = selected.ID
 	titleModal := m.modalManager.GetTextInputModal(modal.ModalEditTitle)
@@ -248,7 +246,6 @@ func (m *Model) handleModalCancelled(msg modal.ModalCancelledMsg) {
 }
 
 func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
-	// Handle modal updates first - if a modal handled it, stop here
 	if cmd, handled := m.modalManager.Update(msg); handled {
 		return m, cmd
 	}

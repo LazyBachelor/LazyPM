@@ -73,71 +73,71 @@ func (m *Model) handleKeyPressMsg(msg tea.KeyPressMsg) tea.Cmd {
 	var cmd tea.Cmd
 
 	switch {
-	case key.Matches(msg, m.keyMap.Help):
+	case m.notInModalMsgWithKey(msg, m.keyMap.Help):
 		m.helpBar.ToggleHelp()
 		m.logAction("tui toggled help")
 
-	case key.Matches(msg, m.keyMap.Quit):
+	case m.notInModalMsgWithKey(msg, m.keyMap.Quit):
 		m.logAction("tui quit requested")
 		return tea.Quit
 
-	case !m.IsInModal() && key.Matches(msg, m.keyMap.SwitchToKanbanBoard):
+	case m.notInModalMsgWithKey(msg, m.keyMap.SwitchToKanbanBoard):
 		return func() tea.Msg { return msgs.SwitchToKanbanBoardMsg{} }
 
-	case m.IsFocusedOnDetail() && key.Matches(msg, m.keyMap.ScrollUp):
+	case m.notInModalMsgWithKey(msg, m.keyMap.ScrollUp):
 		m.issueDetail.ScrollUp(1)
 		m.logAction("tui scrolled issue detail up")
 
-	case m.IsFocusedOnDetail() && key.Matches(msg, m.keyMap.ScrollDown):
+	case m.notInModalMsgWithKey(msg, m.keyMap.ScrollDown):
 		m.issueDetail.ScrollDown(1)
 		m.logAction("tui scrolled issue detail down")
 
-	case !m.IsInModal() && key.Matches(msg, m.keyMap.EditTitle):
+	case m.notInModalMsgWithKey(msg, m.keyMap.EditTitle):
 		if selected := m.issueList.SelectedItem(); selected.ID != "" {
 			cmd = m.startEditTitle(selected)
 			m.logAction("tui started editing issue title")
 		}
 
-	case !m.IsInModal() && key.Matches(msg, m.keyMap.EditDescription):
+	case m.notInModalMsgWithKey(msg, m.keyMap.EditDescription):
 		if selected := m.issueList.SelectedItem(); selected.ID != "" {
 			cmd = m.startEditDescription(selected)
 			m.logAction("tui started editing issue description")
 		}
 
-	case !m.IsInModal() && key.Matches(msg, m.keyMap.ChangeStatus):
+	case m.notInModalMsgWithKey(msg, m.keyMap.ChangeStatus):
 		if selected := m.issueList.SelectedItem(); selected.ID != "" {
 			cmd = m.startChooseStatus(selected)
 			m.logAction("tui opened status picker")
 		}
 
-	case !m.IsInModal() && key.Matches(msg, m.keyMap.ChangePriority):
+	case m.notInModalMsgWithKey(msg, m.keyMap.ChangePriority):
 		if selected := m.issueList.SelectedItem(); selected.ID != "" {
 			cmd = m.startChoosePriority(selected)
 			m.logAction("tui opened priority picker")
 		}
 
-	case !m.IsInModal() && key.Matches(msg, m.keyMap.ChangeType):
+	case m.notInModalMsgWithKey(msg, m.keyMap.ChangeType):
 		if selected := m.issueList.SelectedItem(); selected.ID != "" {
 			cmd = m.startChooseType(selected)
 			m.logAction("tui opened type picker")
 		}
 
-	case !m.IsInModal() && key.Matches(msg, m.keyMap.ChangeAssignee):
+	case m.notInModalMsgWithKey(msg, m.keyMap.ChangeAssignee):
 		if selected := m.issueList.SelectedItem(); selected.ID != "" {
 			cmd = m.startEditAssignee(selected)
 			m.logAction("tui started editing assignee")
 		}
 
-	case !m.IsInModal() && key.Matches(msg, m.keyMap.AddComment):
+	case m.notInModalMsgWithKey(msg, m.keyMap.AddComment):
 		if selected := m.issueList.SelectedItem(); selected.ID != "" {
 			cmd = m.startAddComment(selected)
 		}
 
-	case !m.IsInModal() && key.Matches(msg, m.keyMap.AddIssue):
+	case m.notInModalMsgWithKey(msg, m.keyMap.AddIssue):
 		cmd = m.startCreateIssue()
 		m.logAction("tui started creating issue")
 
-	case !m.IsInModal() && key.Matches(msg, m.keyMap.DeleteIssue):
+	case m.notInModalMsgWithKey(msg, m.keyMap.DeleteIssue):
 		fl := m.issueList
 		if selected := fl.SelectedItem(); selected.ID != "" {
 			cmd = m.startConfirmDelete(selected.ID, fl.Index())
@@ -146,4 +146,8 @@ func (m *Model) handleKeyPressMsg(msg tea.KeyPressMsg) tea.Cmd {
 	}
 
 	return cmd
+}
+
+func (m *Model) notInModalMsgWithKey(msg tea.KeyPressMsg, keyBinding key.Binding) bool {
+	return !m.IsInModal() && key.Matches(msg, keyBinding)
 }

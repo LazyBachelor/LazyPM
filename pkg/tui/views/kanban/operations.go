@@ -2,6 +2,8 @@ package kanban
 
 import (
 	"context"
+	"os"
+	"os/user"
 	"strconv"
 
 	"charm.land/bubbles/v2/list"
@@ -11,6 +13,19 @@ import (
 	"github.com/LazyBachelor/LazyPM/pkg/tui/modal"
 	"github.com/LazyBachelor/LazyPM/pkg/tui/msgs"
 )
+
+func defaultCommentAuthor() string {
+	if u, err := user.Current(); err == nil && u.Username != "" {
+		return u.Username
+	}
+	if s := os.Getenv("USER"); s != "" {
+		return s
+	}
+	if s := os.Getenv("USERNAME"); s != "" {
+		return s
+	}
+	return "user"
+}
 
 func (m *Model) refreshIssueListsAndSelectIssue(issueID string) tea.Cmd {
 	allIssues, err := m.app.Issues.SearchIssues(context.Background(), "", models.IssueFilter{})
@@ -31,7 +46,7 @@ func (m *Model) refreshIssueListsAndSelectIssue(issueID string) tea.Cmd {
 	var targetStatus models.Status
 	for _, issue := range allIssues {
 		if issue.ID == issueID {
-			m.issueDetail.SetIssue(*issue)
+			m.setDetailIssueWithComments(*issue)
 			targetStatus = issue.Status
 			break
 		}
@@ -48,12 +63,9 @@ func (m *Model) refreshIssueListsAndSelectIssue(issueID string) tea.Cmd {
 		m.focusManager.SetCurrent(modal.FocusColumn4)
 	}
 
-	m.todoList.SelectIssueID(issueID)
-	m.inProgList.SelectIssueID(issueID)
-	m.blockedList.SelectIssueID(issueID)
-	m.doneList.SelectIssueID(issueID)
-
-	return tea.Sequence(todoCmd, inProgCmd, blockedCmd, doneCmd)
+	return tea.Sequence(todoCmd, inProgCmd, blockedCmd, doneCmd, func() tea.Msg {
+		return msgs.SelectIssueMsg{IssueID: issueID}
+	})
 }
 
 func (m *Model) refreshAndSubmit(issueID string) tea.Cmd {
@@ -75,16 +87,6 @@ func (m *Model) startEditTitle(selected ListIssue) tea.Cmd {
 	return nil
 }
 
-func (m *Model) handleTitleComplete(value string) tea.Msg {
-	cmd := msgs.UpdateIssueTitleCmd(m.app, m.currentIssueID, value)
-	return cmd()
-}
-
-func (m *Model) handleTitleCancel() tea.Msg {
-	m.currentIssueID = ""
-	return nil
-}
-
 func (m *Model) startEditDescription(selected ListIssue) tea.Cmd {
 	m.currentIssueID = selected.ID
 	descModal := m.modalManager.GetTextAreaModal(modal.ModalEditDescription)
@@ -92,16 +94,6 @@ func (m *Model) startEditDescription(selected ListIssue) tea.Cmd {
 		descModal.SetValue(selected.Issue.Description)
 		return m.modalManager.ShowModal(modal.ModalEditDescription)
 	}
-	return nil
-}
-
-func (m *Model) handleDescriptionComplete(value string) tea.Msg {
-	cmd := msgs.UpdateIssueDescriptionCmd(m.app, m.currentIssueID, value)
-	return cmd()
-}
-
-func (m *Model) handleDescriptionCancel() tea.Msg {
-	m.currentIssueID = ""
 	return nil
 }
 
@@ -114,33 +106,13 @@ func (m *Model) startCreateIssue() tea.Cmd {
 	return nil
 }
 
-func (m *Model) handleCreateComplete(title string) tea.Msg {
-	cmd := msgs.CreateIssueCmd(m.app, title)
-	return cmd()
-}
-
-func (m *Model) handleCreateCancel() tea.Msg {
-	return nil
-}
-
 func (m *Model) startConfirmDelete(issueID string, index int) tea.Cmd {
 	m.currentIssueID = issueID
 	m.deleteIndex = index
-	return m.modalManager.ShowModal(modal.ModalConfirmDelete)
-}
-
-func (m *Model) handleDeleteConfirm() tea.Msg {
-	idx := m.deleteIndex
-	issueID := m.currentIssueID
-	m.deleteIndex = -1
-	m.currentIssueID = ""
-	cmd := msgs.DeleteIssueCmd(m.app, issueID, idx)
-	return cmd()
-}
-
-func (m *Model) handleDeleteCancel() tea.Msg {
-	m.deleteIndex = -1
-	m.currentIssueID = ""
+	deleteModal := m.modalManager.GetConfirmModal(modal.ModalConfirmDelete)
+	if deleteModal != nil {
+		return m.modalManager.ShowModal(modal.ModalConfirmDelete)
+	}
 	return nil
 }
 
@@ -149,50 +121,14 @@ func (m *Model) startChooseStatus(selected ListIssue) tea.Cmd {
 	return m.modalManager.ShowModal(modal.ModalSelectStatus)
 }
 
-func (m *Model) handleStatusComplete(status string) tea.Msg {
-	cmd := msgs.UpdateIssueStatusCmd(m.app, m.currentIssueID, status)
-	return cmd()
-}
-
-func (m *Model) handleStatusClosing() tea.Msg {
-	return m.modalManager.ShowModal(modal.ModalSelectCloseReason)
-}
-
-func (m *Model) handleStatusCancel() tea.Msg {
-	m.currentIssueID = ""
-	return nil
-}
-
 func (m *Model) startChoosePriority(selected ListIssue) tea.Cmd {
 	m.currentIssueID = selected.ID
 	return m.modalManager.ShowModal(modal.ModalSelectPriority)
 }
 
-func (m *Model) handlePriorityComplete(priorityStr string) tea.Msg {
-	priority, _ := strconv.Atoi(priorityStr)
-	cmd := msgs.UpdateIssuePriorityCmd(m.app, m.currentIssueID, priority)
-	return cmd()
-}
-
-func (m *Model) handlePriorityCancel() tea.Msg {
-	m.currentIssueID = ""
-	return nil
-}
-
 func (m *Model) startChooseType(selected ListIssue) tea.Cmd {
 	m.currentIssueID = selected.ID
 	return m.modalManager.ShowModal(modal.ModalSelectType)
-}
-
-func (m *Model) handleTypeComplete(typeStr string) tea.Msg {
-	issueType := models.IssueType(typeStr)
-	cmd := msgs.UpdateIssueTypeCmd(m.app, m.currentIssueID, issueType)
-	return cmd()
-}
-
-func (m *Model) handleTypeCancel() tea.Msg {
-	m.currentIssueID = ""
-	return nil
 }
 
 func (m *Model) startEditAssignee(selected ListIssue) tea.Cmd {
@@ -206,37 +142,13 @@ func (m *Model) startEditAssignee(selected ListIssue) tea.Cmd {
 	return nil
 }
 
-func (m *Model) handleAssigneeComplete(assignee string) tea.Msg {
-	cmd := msgs.UpdateIssueAssigneeCmd(m.app, m.currentIssueID, assignee)
-	return cmd()
-}
-
-func (m *Model) handleAssigneeCancel() tea.Msg {
-	m.currentIssueID = ""
-	return nil
-}
-
-func (m *Model) handleCloseReasonSelectComplete(reason string) tea.Msg {
-	cmd := msgs.CloseIssueCmd(m.app, m.currentIssueID, reason)
-	return cmd()
-}
-
-func (m *Model) handleCloseReasonOther() tea.Msg {
-	closeReasonModal := m.modalManager.GetTextAreaModal(modal.ModalCloseReason)
-	if closeReasonModal != nil {
-		closeReasonModal.SetValue("")
-		return m.modalManager.ShowModal(modal.ModalCloseReason)
+func (m *Model) startAddComment(selected ListIssue) tea.Cmd {
+	m.currentIssueID = selected.ID
+	commentModal := m.modalManager.GetTextAreaModal(modal.ModalAddComment)
+	if commentModal != nil {
+		commentModal.Reset()
+		return m.modalManager.ShowModal(modal.ModalAddComment)
 	}
-	return nil
-}
-
-func (m *Model) handleCloseReasonComplete(reason string) tea.Msg {
-	cmd := msgs.CloseIssueCmd(m.app, m.currentIssueID, reason)
-	return cmd()
-}
-
-func (m *Model) handleCloseReasonCancel() tea.Msg {
-	m.currentIssueID = ""
 	return nil
 }
 
@@ -305,6 +217,11 @@ func (m *Model) handleModalCompleted(msg modal.ModalCompletedMsg) tea.Cmd {
 			cmd := msgs.CloseIssueCmd(m.app, m.currentIssueID, r.Value)
 			return func() tea.Msg { return cmd() }
 		}
+	case modal.ModalAddComment:
+		if r, ok := msg.Value.(modal.TextAreaResult); ok && r.Value != "" {
+			cmd := msgs.AddIssueCommentCmd(m.app, m.currentIssueID, defaultCommentAuthor(), r.Value)
+			return func() tea.Msg { return cmd() }
+		}
 	}
 	return nil
 }
@@ -333,11 +250,12 @@ func (m *Model) handleModalCancelled(msg modal.ModalCancelledMsg) {
 		m.currentIssueID = ""
 	case modal.ModalCloseReason:
 		m.currentIssueID = ""
+	case modal.ModalAddComment:
+		m.currentIssueID = ""
 	}
 }
 
 func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
-	// Handle modal updates first
 	if cmd, handled := m.modalManager.Update(msg); handled {
 		return m, cmd
 	}
@@ -394,6 +312,15 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 		return m, m.refreshAndSubmit(msg.IssueID)
 
+	case msgs.IssueCommentAddedMsg:
+		m.modalManager.GetTextAreaModal(modal.ModalAddComment).Reset()
+		m.currentIssueID = ""
+		if msg.Err != nil {
+			return m, nil
+		}
+		m.submitValidation()
+		return m, m.refreshIssueListsAndSelectIssue(msg.IssueID)
+
 	case msgs.SelectIssueMsg:
 		m.todoList.SelectIssueID(msg.IssueID)
 		m.inProgList.SelectIssueID(msg.IssueID)
@@ -431,7 +358,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 		}
 
-		m.issueDetail.SetIssue(*selectedIssue)
+		m.setDetailIssueWithComments(*selectedIssue)
 		m.submitValidation()
 		return m, tea.Sequence(todoCmd, inProgCmd, blockedCmd, doneCmd, func() tea.Msg {
 			return msgs.SelectIssueMsg{IssueID: selectedIssue.ID}
@@ -459,7 +386,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		doneCmd := m.doneList.SetIssues(doneIssues)
 
 		if len(todoIssues) == 0 && len(inProgIssues) == 0 && len(blockedIssues) == 0 && len(doneIssues) == 0 {
-			m.issueDetail.SetIssue(models.Issue{})
+			m.setDetailIssueWithComments(models.Issue{})
 			m.submitValidation()
 			return m, tea.Sequence(todoCmd, inProgCmd, blockedCmd, doneCmd)
 		}
@@ -525,7 +452,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 
 		if len(targetIssues) == 0 {
-			m.issueDetail.SetIssue(models.Issue{})
+			m.setDetailIssueWithComments(models.Issue{})
 			m.submitValidation()
 			return m, tea.Sequence(todoCmd, inProgCmd, blockedCmd, doneCmd)
 		}
@@ -535,7 +462,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			newIndex = len(targetIssues) - 1
 		}
 		selectedIssue := targetIssues[newIndex]
-		m.issueDetail.SetIssue(*selectedIssue)
+		m.setDetailIssueWithComments(*selectedIssue)
 		m.submitValidation()
 		return m, tea.Sequence(todoCmd, inProgCmd, blockedCmd, doneCmd, func() tea.Msg {
 			return msgs.SelectIssueMsg{IssueID: selectedIssue.ID}
@@ -576,8 +503,20 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	cmd, changed := fl.Update(msg)
 	if changed {
 		if selected := fl.SelectedItem(); selected.ID != "" {
-			m.issueDetail.SetIssue(selected.Issue)
+			m.setDetailIssueWithComments(selected.Issue)
 		}
 	}
+
+	// Only propagate non-key messages to other lists (SetItems, etc.)
+	// Key messages should only affect the focused list
+	if _, isKeyMsg := msg.(tea.KeyPressMsg); !isKeyMsg {
+		// Update all lists to ensure they receive commands like SetItems
+		todoCmd, _ := m.todoList.Update(msg)
+		inProgCmd, _ := m.inProgList.Update(msg)
+		blockedCmd, _ := m.blockedList.Update(msg)
+		doneCmd, _ := m.doneList.Update(msg)
+		return m, tea.Sequence(cmd, todoCmd, inProgCmd, blockedCmd, doneCmd)
+	}
+
 	return m, cmd
 }

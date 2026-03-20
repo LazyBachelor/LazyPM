@@ -3,7 +3,7 @@ package modal
 import (
 	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
-	"github.com/LazyBachelor/LazyPM/pkg/tui/styles"
+	"github.com/LazyBachelor/LazyPM/internal/style"
 )
 
 // BaseModal provides common functionality for all modals.
@@ -21,7 +21,7 @@ func NewBaseModal(id string, modType ModalType) BaseModal {
 	return BaseModal{
 		id:      id,
 		modType: modType,
-		width:   60,
+		width:   80,
 		height:  20,
 	}
 }
@@ -80,12 +80,9 @@ func ModalFrame(content string, width int) string {
 		return ""
 	}
 
-	boxWidth := min(60, width-4)
-	if boxWidth < 1 {
-		boxWidth = 1
-	}
+	boxWidth := max(min(80, width-4), 1)
 
-	return styles.ModalContainerStyle.
+	return style.ModalContainerStyle.
 		Width(boxWidth).
 		Render(content)
 }
@@ -97,7 +94,7 @@ func ModalWithLabel(label, content string, width int) string {
 	}
 
 	fullContent := lipgloss.JoinVertical(lipgloss.Left,
-		styles.LabelStyle.Render(label),
+		style.LabelStyle.Render(label),
 		content,
 	)
 

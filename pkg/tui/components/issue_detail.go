@@ -6,7 +6,7 @@ import (
 	"charm.land/bubbles/v2/viewport"
 	"charm.land/lipgloss/v2"
 	"github.com/LazyBachelor/LazyPM/internal/models"
-	"github.com/LazyBachelor/LazyPM/pkg/tui/styles"
+	"github.com/LazyBachelor/LazyPM/internal/style"
 )
 
 type IssueDetail struct {
@@ -46,20 +46,20 @@ func (i *IssueDetail) SetFocused(focused bool) {
 func (i *IssueDetail) refreshContent() {
 	contentWidth := max(i.viewport.Width()-2, 1)
 
-	titleRow := styles.RowStyle.Render(
-		styles.TitleStyle.Render(i.issue.Title),
+	titleRow := style.RowStyle.Render(
+		style.TitleStyle.Render(i.issue.Title),
 	)
 
-	idRow := styles.RowStyle.Render(
-		styles.LabelStyle.Render("ID:") + styles.ValueStyle.Render(i.issue.ID),
+	idRow := style.RowStyle.Render(
+		style.LabelStyle.Render("ID:") + style.ValueStyle.Render(i.issue.ID),
 	)
 
-	typeRow := styles.RowStyle.Render(
-		styles.LabelStyle.Render("Type:") + styles.ValueStyle.Render(string(i.issue.IssueType)),
+	typeRow := style.RowStyle.Render(
+		style.LabelStyle.Render("Type:") + style.ValueStyle.Render(string(i.issue.IssueType)),
 	)
 
-	statusRow := styles.RowStyle.Render(
-		styles.LabelStyle.Render("Status:") + styles.StatusStyle(string(i.issue.Status)).Render(string(i.issue.Status)),
+	statusRow := style.RowStyle.Render(
+		style.LabelStyle.Render("Status:") + style.StatusStyle(string(i.issue.Status)).Render(string(i.issue.Status)),
 	)
 
 	var closingReasonRow string
@@ -70,23 +70,23 @@ func (i *IssueDetail) refreshContent() {
 		} else {
 			closingReason = string(i.issue.CloseReason)
 		}
-		closingReasonRow = styles.RowStyle.Render(
-			styles.LabelStyle.Render("Close reason: ") + styles.ValueStyle.Render(closingReason))
+		closingReasonRow = style.RowStyle.Render(
+			style.LabelStyle.Render("Close reason: ") + style.ValueStyle.Render(closingReason))
 	}
 
-	priorityRow := styles.RowStyle.Render(
-		styles.LabelStyle.Render("Priority:") + styles.ValueStyle.Render(PriorityCodeName(i.issue.Priority)),
+	priorityRow := style.RowStyle.Render(
+		style.LabelStyle.Render("Priority:") + style.ValueStyle.Render(PriorityCodeName(i.issue.Priority)),
 	)
 
-	assigneeRow := styles.RowStyle.Render(
-		styles.LabelStyle.Render("Assignee:") + styles.ValueStyle.Render(i.issue.Assignee),
+	assigneeRow := style.RowStyle.Render(
+		style.LabelStyle.Render("Assignee:") + style.ValueStyle.Render(i.issue.Assignee),
 	)
 
-	descLabel := styles.LabelStyle.Render("Description:")
-	descStyle := styles.ValueStyle.Width(contentWidth)
+	descLabel := style.LabelStyle.Render("Description:")
+	descStyle := style.ValueStyle.Width(contentWidth)
 	descContent := descStyle.Render(i.issue.Description)
 
-	commentsLabel := styles.LabelStyle.MarginTop(1).Render("Comments:")
+	commentsLabel := style.LabelStyle.MarginTop(1).Render("Comments:")
 
 	var parts []string
 	parts = append(parts, titleRow, idRow, typeRow, statusRow, closingReasonRow, priorityRow, assigneeRow, descLabel, descContent, commentsLabel)
@@ -106,14 +106,14 @@ func (i IssueDetail) View() string {
 	vpHeight := i.viewport.Height()
 
 	if i.focused {
-		return styles.DetailsContainerStyle.
-			BorderForeground(styles.PrimaryBorder).
+		return style.DetailsContainerStyle.
+			BorderForeground(style.PrimaryBorder).
 			Width(vpWidth).
 			Height(vpHeight).
 			MaxHeight(vpHeight).
 			Render(content)
 	}
-	return styles.DetailsContainerStyle.
+	return style.DetailsContainerStyle.
 		Width(vpWidth).
 		Height(vpHeight).
 		MaxHeight(vpHeight).
@@ -133,12 +133,12 @@ func (i *IssueDetail) renderComments() []string {
 
 	var parts []string
 	if len(i.comments) == 0 {
-		parts = append(parts, styles.ValueStyle.Render("No comments yet."))
+		parts = append(parts, style.ValueStyle.Render("No comments yet."))
 	} else {
 		for _, c := range i.comments {
-			authorDate := lipgloss.NewStyle().Foreground(styles.Primary).Render(c.Author) + " " +
-				lipgloss.NewStyle().Foreground(styles.FaintText).Render(formatCommentTime(c.CreatedAt))
-			commentTextStyle := styles.ValueStyle.Width(contentWidth)
+			authorDate := lipgloss.NewStyle().Foreground(style.Primary).Render(c.Author) + " " +
+				lipgloss.NewStyle().Foreground(style.FaintText).Render(formatCommentTime(c.CreatedAt))
+			commentTextStyle := style.ValueStyle.Width(contentWidth)
 			commentRow := lipgloss.JoinVertical(lipgloss.Left,
 				authorDate,
 				commentTextStyle.MarginLeft(1).Render(c.Text),

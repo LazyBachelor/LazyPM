@@ -5,7 +5,7 @@ import (
 	"charm.land/lipgloss/v2"
 	"github.com/LazyBachelor/LazyPM/pkg/tui/components"
 	"github.com/LazyBachelor/LazyPM/pkg/tui/modal"
-	"github.com/LazyBachelor/LazyPM/pkg/tui/styles"
+	"github.com/LazyBachelor/LazyPM/internal/style"
 )
 
 func (m *Model) View() tea.View {
@@ -28,13 +28,12 @@ func (m *Model) View() tea.View {
 	halfHeight := max(availableForLists/2, 1)
 
 	totalContentWidth := m.width - 1
-	listWidth := totalContentWidth * styles.ListViewRatio / 100
+	listWidth := totalContentWidth * style.ListViewRatio / 100
 	detailWidth := totalContentWidth - listWidth
 
 	m.issueList.SetSize(listWidth, halfHeight)
 	m.issueDetail.SetSize(detailWidth, contentHeight)
 
-	// Only highlight the focused list
 	m.issueList.SetHighlightSelected(m.focusManager.IsFocused(modal.FocusList))
 	m.closedIssueList.SetHighlightSelected(m.focusManager.IsFocused(modal.FocusDetail))
 
@@ -46,6 +45,5 @@ func (m *Model) View() tea.View {
 
 	mainView := lipgloss.JoinVertical(lipgloss.Left, header, content, footer)
 
-	// Use modal manager to render active modal or main view
 	return tea.NewView(m.modalManager.RenderWithMainView(mainView))
 }

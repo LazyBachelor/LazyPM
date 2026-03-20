@@ -1,9 +1,11 @@
 package modal
 
 import (
+	"slices"
+
 	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
-	"github.com/LazyBachelor/LazyPM/pkg/tui/styles"
+	"github.com/LazyBachelor/LazyPM/internal/style"
 )
 
 // ConfirmResult is returned when a confirm modal completes
@@ -90,8 +92,7 @@ func (c *ConfirmModal) Update(msg tea.Msg) (tea.Cmd, bool) {
 		s := msg.String()
 
 		// Check yes keys
-		for _, key := range c.yesKeys {
-			if s == key {
+		if slices.Contains(c.yesKeys, s) {
 				c.Deactivate()
 				return func() tea.Msg {
 					return ModalCompletedMsg{
@@ -100,20 +101,16 @@ func (c *ConfirmModal) Update(msg tea.Msg) (tea.Cmd, bool) {
 					}
 				}, true
 			}
-		}
 
 		// Check no/cancel keys
-		for _, key := range c.noKeys {
-			if s == key {
+		if slices.Contains(c.noKeys, s) {
 				c.Deactivate()
 				return func() tea.Msg {
 					return ModalCancelledMsg{ModalID: c.ID()}
 				}, true
 			}
-		}
 	}
 
-	// Consume all keys when modal is active to prevent leakage to underlying components
 	return nil, true
 }
 
@@ -123,18 +120,15 @@ func (c *ConfirmModal) View() string {
 		return ""
 	}
 
-	boxWidth := min(50, c.width-4)
-	if boxWidth < 1 {
-		boxWidth = 1
-	}
+	boxWidth := max(min(50, c.width-4), 1)
 
 	content := lipgloss.JoinVertical(lipgloss.Left,
-		styles.LabelStyle.Render(c.message),
-		lipgloss.NewStyle().Foreground(styles.FaintText).
+		style.LabelStyle.Render(c.message),
+		lipgloss.NewStyle().Foreground(style.FaintText).
 			Render("Press y to confirm, n or Esc to cancel"),
 	)
 
-	return styles.ModalContainerStyle.
+	return style.ModalContainerStyle.
 		Width(boxWidth).
 		Render(content)
 }

@@ -13,7 +13,7 @@ import (
 	"charm.land/lipgloss/v2"
 	"github.com/LazyBachelor/LazyPM/internal/app"
 	"github.com/LazyBachelor/LazyPM/internal/models"
-	"github.com/LazyBachelor/LazyPM/pkg/tui/styles"
+	"github.com/LazyBachelor/LazyPM/internal/style"
 	"github.com/muesli/reflow/truncate"
 )
 
@@ -116,7 +116,7 @@ var priorityCodeNames = map[int]string{
 
 func renderHeaders(cols []tableColumn) string {
 	var parts []string
-	headerStyle := lipgloss.NewStyle().Foreground(styles.FaintText).Bold(true)
+	headerStyle := lipgloss.NewStyle().Foreground(style.FaintText).Bold(true)
 
 	for _, col := range cols {
 		colWidth := col.width
@@ -302,14 +302,14 @@ func (l IssueList) renderResponsive() string {
 
 	if l.list.FilterState() == list.Filtering {
 		filterText := l.list.FilterInput.Value()
-		filterView := styles.FilterStyle.Render("🔍 " + filterText)
+		filterView := style.FilterStyle.Render("🔍 " + filterText)
 		content = append(content, filterView)
 	}
 
 	itemsView := l.renderFilteredItems()
 	content = append(content, header, itemsView)
 
-	return styles.ContainerStyle.
+	return style.ContainerStyle.
 		Width(l.width).
 		MaxWidth(l.width).
 		MaxHeight(l.height).
@@ -409,16 +409,16 @@ func renderRow(issue ListIssue, isSelected bool, cols []tableColumn) string {
 			colWidth = 1
 		}
 
-		style := lipgloss.NewStyle().Width(int(colWidth))
+		cellStyle := lipgloss.NewStyle().Width(int(colWidth))
 		if isSelected {
-			style = style.Background(styles.SelectedBackground).Bold(true)
+			cellStyle = cellStyle.Background(style.SelectedBackground).Bold(true)
 		}
 		if issue.Status == models.StatusClosed {
-			style = style.Strikethrough(true).Foreground(styles.FaintText)
+			cellStyle = cellStyle.Strikethrough(true).Foreground(style.FaintText)
 		}
 
 		truncated := truncate.StringWithTail(value, colWidth, "...")
-		parts = append(parts, style.Render(truncated))
+		parts = append(parts, cellStyle.Render(truncated))
 	}
 
 	return lipgloss.JoinHorizontal(lipgloss.Left, parts...)
