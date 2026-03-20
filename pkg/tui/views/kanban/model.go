@@ -5,7 +5,7 @@ import (
 
 	"charm.land/bubbles/v2/textarea"
 	"charm.land/bubbles/v2/textinput"
-	"charm.land/bubbletea/v2"
+	tea "charm.land/bubbletea/v2"
 	"github.com/LazyBachelor/LazyPM/internal/app"
 	"github.com/LazyBachelor/LazyPM/internal/models"
 	"github.com/LazyBachelor/LazyPM/pkg/tui/components"
@@ -169,7 +169,20 @@ func (m *Model) startEditAssignee(selected ListIssue) {
 	m.assigneeInput.CursorEnd()
 }
 
+func (m *Model) logAction(action string) {
+	if m.app != nil {
+		m.app.LogAction(models.EncodeActionEvent(models.ActionEvent{
+			Source: "tui",
+			Action: action,
+		}))
+	}
+}
+
 func (m *Model) Init() tea.Cmd {
+	if m.submitChan != nil {
+		m.submitChan <- struct{}{}
+		m.logAction("tui submitted validation")
+	}
 	return components.ListenForValidation(m.feedbackChan)
 }
 
