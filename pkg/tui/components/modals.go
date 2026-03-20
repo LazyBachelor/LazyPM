@@ -3,6 +3,7 @@ package components
 import (
 	"charm.land/lipgloss/v2"
 	"github.com/LazyBachelor/LazyPM/internal/models"
+	"github.com/LazyBachelor/LazyPM/internal/style"
 	"github.com/LazyBachelor/LazyPM/pkg/tui/styles"
 )
 
@@ -202,9 +203,6 @@ func RenderModals(
 	return mainView
 }
 
-// RenderFooter renders the shared footer with the help bar and optional
-// validation feedback message.
-
 // truncateToWidth trims the given text so that its rendered width does not
 // exceed maxWidth. If truncation occurs and there is room, an ellipsis is
 // appended to indicate that the text was shortened.
@@ -237,12 +235,14 @@ func truncateToWidth(text string, maxWidth int) string {
 	return current + ellipsis
 }
 
+// RenderFooter renders the shared footer with the help bar and optional
+// validation feedback message.
 func RenderFooter(width int, helpBar *HelpBar, feedback models.ValidationFeedback) string {
 	feedbackStatus := feedback.Message
 
 	// Ensure the feedback message does not exceed the total available width.
 	if feedback.Message != "" {
-		feedbackStatus = truncateToWidth(feedbackStatus+" [Press Shift+S to re-submit]", width)
+		feedbackStatus = truncateToWidth(style.ErrorStyle.Render(feedbackStatus+" [Press '?' for details]"), width)
 
 		if helpBar.IsExpanded() && feedbackStatus != "" {
 			for _, check := range feedback.Checks {
@@ -254,10 +254,7 @@ func RenderFooter(width int, helpBar *HelpBar, feedback models.ValidationFeedbac
 				}
 
 				// Ensure each check line does not exceed the available width.
-				remainingWidth := width - lipgloss.Width(prefix)
-				if remainingWidth < 0 {
-					remainingWidth = 0
-				}
+				remainingWidth := max(width-lipgloss.Width(prefix), 0)
 				truncatedMsg := truncateToWidth(check.Message, remainingWidth)
 
 				feedbackStatus += "\n" + prefix + truncatedMsg
@@ -269,10 +266,7 @@ func RenderFooter(width int, helpBar *HelpBar, feedback models.ValidationFeedbac
 		return helpBar.View()
 	}
 
-	helpWidth := width - lipgloss.Width(feedbackStatus)
-	if helpWidth < 0 {
-		helpWidth = 0
-	}
+	helpWidth := max(width-lipgloss.Width(feedbackStatus), 0)
 
 	helpBar.SetWidth(helpWidth)
 	return lipgloss.JoinHorizontal(lipgloss.Left, helpBar.View(), feedbackStatus)

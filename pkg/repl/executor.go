@@ -8,7 +8,7 @@ import (
 )
 
 // execute processes the input command and returns the output
-func execute(input string) (string, error) {
+func (r *REPL) execute(input string) (string, error) {
 	if input == "" {
 		return "", nil
 	}

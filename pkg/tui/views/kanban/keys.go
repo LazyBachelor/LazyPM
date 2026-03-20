@@ -2,7 +2,7 @@ package kanban
 
 import (
 	"charm.land/bubbles/v2/key"
-	"charm.land/bubbletea/v2"
+	tea "charm.land/bubbletea/v2"
 	"github.com/LazyBachelor/LazyPM/pkg/tui/components"
 	"github.com/LazyBachelor/LazyPM/pkg/tui/msgs"
 )
@@ -78,10 +78,6 @@ func (d *Model) handleKeyPressMsg(msg tea.KeyPressMsg) tea.Cmd {
 		cmd = d.moveIssue(+1)
 	case !d.IsInModal() && key.Matches(msg, d.keyMap.MoveIssueLeft):
 		cmd = d.moveIssue(-1)
-	case d.IsFocusedOnList() && key.Matches(msg, d.keyMap.SelectIssue):
-		d.FocusDetail()
-	case d.IsFocusedOnDetail() && (key.Matches(msg, d.keyMap.BackToList) || key.Matches(msg, d.keyMap.SelectIssue)):
-		d.FocusList()
 	case d.IsFocusedOnDetail() && key.Matches(msg, d.keyMap.ScrollUp):
 		d.issueDetail.ScrollUp(1)
 	case d.IsFocusedOnDetail() && key.Matches(msg, d.keyMap.ScrollDown):

@@ -124,7 +124,7 @@ func (t *CodingTask) Setup(ctx context.Context) error {
 
 	t.issue = NewIssueBuilder().
 		WithTitle("Upgrade MongoDB Driver").
-		WithDescription(codingDescription).
+		WithPriority(4).WithDescription(codingDescription).
 		Build()
 
 	return t.app.Issues.CreateIssue(ctx, t.issue, "")

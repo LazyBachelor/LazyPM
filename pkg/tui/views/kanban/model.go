@@ -5,11 +5,11 @@ import (
 
 	"charm.land/bubbles/v2/textarea"
 	"charm.land/bubbles/v2/textinput"
-	"charm.land/bubbletea/v2"
+	tea "charm.land/bubbletea/v2"
 	"github.com/LazyBachelor/LazyPM/internal/app"
 	"github.com/LazyBachelor/LazyPM/internal/models"
 	"github.com/LazyBachelor/LazyPM/pkg/tui/components"
-	"github.com/LazyBachelor/LazyPM/pkg/tui/issues"
+	"github.com/LazyBachelor/LazyPM/pkg/tui/msgs"
 )
 
 type (
@@ -82,6 +82,8 @@ func NewDashboard(app *app.App, feedbackChan chan models.ValidationFeedback, qui
 		quitChan:      quitChan,
 		submitChan:    submitChan,
 	}
+	m.issueDetail = components.NewIssueDetail()
+	m.helpBar = components.NewHelpBar(components.ViewKanban)
 
 	allIssues, _ := app.Issues.SearchIssues(context.Background(), "", models.IssueFilter{})
 	todoIssues := components.StatusOnly(allIssues, models.StatusOpen)
@@ -89,12 +91,10 @@ func NewDashboard(app *app.App, feedbackChan chan models.ValidationFeedback, qui
 	blockedIssues := components.StatusOnly(allIssues, models.StatusBlocked)
 	doneIssues := components.StatusOnly(allIssues, models.StatusClosed)
 
-	m.todoList = components.NewIssueListFromIssues(app, todoIssues, 0, 0)
-	m.inProgList = components.NewIssueListFromIssues(app, inProgIssues, 0, 0)
-	m.blockedList = components.NewIssueListFromIssues(app, blockedIssues, 0, 0)
-	m.doneList = components.NewIssueListFromIssues(app, doneIssues, 0, 0)
-	m.issueDetail = components.NewIssueDetail()
-	m.helpBar = components.NewHelpBar(components.ViewKanban)
+	m.todoList = components.NewIssueListFromIssues(app, todoIssues, 20, 10)
+	m.inProgList = components.NewIssueListFromIssues(app, inProgIssues, 20, 10)
+	m.blockedList = components.NewIssueListFromIssues(app, blockedIssues, 20, 10)
+	m.doneList = components.NewIssueListFromIssues(app, doneIssues, 20, 10)
 
 	inputs := components.NewIssueInputs()
 	m.titleInput = inputs.Title
@@ -169,7 +169,31 @@ func (m *Model) startEditAssignee(selected ListIssue) {
 	m.assigneeInput.CursorEnd()
 }
 
+func (m *Model) logAction(action string) {
+	if m.app != nil {
+		m.app.LogAction(models.EncodeActionEvent(models.ActionEvent{
+			Source: "tui",
+			Action: action,
+		}))
+	}
+}
+
+// submitValidation sends a validation request to the submit channel.
+func (m *Model) submitValidation() {
+	if m.submitChan != nil {
+		select {
+		case m.submitChan <- struct{}{}:
+			m.logAction("tui submitted validation")
+		default:
+		}
+	}
+}
+
 func (m *Model) Init() tea.Cmd {
+	if m.submitChan != nil {
+		m.submitChan <- struct{}{}
+		m.logAction("tui submitted validation")
+	}
 	return components.ListenForValidation(m.feedbackChan)
 }
 
@@ -262,5 +286,5 @@ func (m *Model) moveIssue(delta int) tea.Cmd {
 	}
 
 	newStatus := statusForColumn(newCol)
-	return issues.UpdateIssueStatusCmd(m.app, selected.ID, string(newStatus))
+	return msgs.UpdateIssueStatusCmd(m.app, selected.ID, string(newStatus))
 }

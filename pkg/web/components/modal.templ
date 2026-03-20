@@ -46,7 +46,13 @@ templ Modal(props ModalProps) {
 }
 
 templ ModalContainer() {
-	<div id="modal-container"></div>
+	<div
+		id="modal-container"
+		hx-get="/status/modal"
+		hx-trigger="task-status-success from:body"
+		hx-target="#modal-container"
+		hx-swap="innerHTML"
+	></div>
 }
 
 type ConfirmModalProps struct {

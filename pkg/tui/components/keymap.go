@@ -7,8 +7,6 @@ import "charm.land/bubbles/v2/key"
 type CommonKeyMap struct {
 	Help            key.Binding
 	Quit            key.Binding
-	SelectIssue     key.Binding
-	BackToList      key.Binding
 	ScrollUp        key.Binding
 	ScrollDown      key.Binding
 	EditTitle       key.Binding
@@ -31,14 +29,6 @@ func DefaultCommonKeyMap() CommonKeyMap {
 		Quit: key.NewBinding(
 			key.WithKeys("q", "ctrl+c"),
 			key.WithHelp("q", "quit"),
-		),
-		SelectIssue: key.NewBinding(
-			key.WithKeys("enter"),
-			key.WithHelp("enter", "view issue"),
-		),
-		BackToList: key.NewBinding(
-			key.WithKeys("b"),
-			key.WithHelp("b", "back to list"),
 		),
 		ScrollUp: key.NewBinding(
 			key.WithKeys("up", "k"),

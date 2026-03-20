@@ -38,7 +38,7 @@ var baseLayout = components.LayoutProps{
 	},
 	Header: components.HeaderProps{
 		Title:     "LazyPM",
-		NavbarEnd: components.Status(),
+		NavbarEnd: components.Status(""),
 	},
 	Modal: components.ModalContainer(),
 }
