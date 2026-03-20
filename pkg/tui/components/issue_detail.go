@@ -60,6 +60,18 @@ func (i *IssueDetail) refreshContent() {
 		styles.LabelStyle.Render("Status:") + styles.StatusStyle(string(i.issue.Status)).Render(string(i.issue.Status)),
 	)
 
+	var closingReasonRow string
+	if i.issue.Status == models.StatusClosed {
+		var closingReason string
+		if i.issue.CloseReason == "" {
+			closingReason = "N/A"
+		} else {
+			closingReason = string(i.issue.CloseReason)
+		}
+		closingReasonRow = styles.RowStyle.Render(
+			styles.LabelStyle.Render("Close reason: ") + styles.ValueStyle.Render(closingReason))
+	}
+
 	priorityRow := styles.RowStyle.Render(
 		styles.LabelStyle.Render("Priority:") + styles.ValueStyle.Render(PriorityCodeName(i.issue.Priority)),
 	)
@@ -71,25 +83,11 @@ func (i *IssueDetail) refreshContent() {
 	descLabel := styles.LabelStyle.Render("Description:")
 	descContent := styles.ValueStyle.Render(i.issue.Description)
 
-	var parts []string
-	parts = append(parts, titleRow, idRow, typeRow, statusRow, priorityRow, assigneeRow, descLabel, descContent)
+	commentsLabel := styles.LabelStyle.MarginTop(1).Render("Comments:")
 
-	// Comments section
-	commentsLabel := styles.LabelStyle.Render("Comments:")
-	parts = append(parts, commentsLabel)
-	if len(i.comments) == 0 {
-		parts = append(parts, lipgloss.NewStyle().Foreground(styles.FaintText).Render("  No comments yet."))
-	} else {
-		for _, c := range i.comments {
-			authorDate := lipgloss.NewStyle().Foreground(styles.Primary).Render(c.Author) + " " +
-				lipgloss.NewStyle().Foreground(styles.FaintText).Render(formatCommentTime(c.CreatedAt))
-			commentRow := lipgloss.JoinVertical(lipgloss.Left,
-				authorDate,
-				styles.ValueStyle.Render(c.Text),
-			)
-			parts = append(parts, commentRow)
-		}
-	}
+	var parts []string
+	parts = append(parts, titleRow, idRow, typeRow, statusRow, closingReasonRow, priorityRow, assigneeRow, descLabel, descContent, commentsLabel)
+	parts = append(parts, i.renderComments()...)
 
 	content := lipgloss.JoinVertical(lipgloss.Left, parts...)
 	i.viewport.SetContent(content)
@@ -125,4 +123,22 @@ func (i *IssueDetail) ScrollUp(lines int) {
 
 func (i *IssueDetail) ScrollDown(lines int) {
 	i.viewport.ScrollDown(lines)
+}
+
+func (i *IssueDetail) renderComments() []string {
+	var parts []string
+	if len(i.comments) == 0 {
+		parts = append(parts, styles.ValueStyle.Render("No comments yet."))
+	} else {
+		for _, c := range i.comments {
+			authorDate := lipgloss.NewStyle().Foreground(styles.Primary).Render(c.Author) + " " +
+				lipgloss.NewStyle().Foreground(styles.FaintText).Render(formatCommentTime(c.CreatedAt))
+			commentRow := lipgloss.JoinVertical(lipgloss.Left,
+				authorDate,
+				styles.ValueStyle.MarginLeft(1).Render(c.Text),
+			)
+			parts = append(parts, commentRow)
+		}
+	}
+	return parts
 }
