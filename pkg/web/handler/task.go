@@ -32,7 +32,7 @@ func HandleTaskStatus(w http.ResponseWriter, r *http.Request) {
 	if hx.IsHxRequest() {
 		if taskFeedback.Success {
 			w.Header().Set("HX-Trigger", "task-status-success")
-			w.WriteHeader(http.StatusOK)
+			w.WriteHeader(http.StatusNoContent)
 		} else {
 			hx.WriteString(`
 		<div id="status" type="button" hx-get="/status" hx-target="#status" hx-swap="outerHTML">
