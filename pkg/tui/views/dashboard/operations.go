@@ -6,7 +6,7 @@ import (
 	"os/user"
 
 	"charm.land/bubbles/v2/list"
-	"charm.land/bubbletea/v2"
+	tea "charm.land/bubbletea/v2"
 	"github.com/LazyBachelor/LazyPM/internal/app"
 	"github.com/LazyBachelor/LazyPM/internal/models"
 	"github.com/LazyBachelor/LazyPM/pkg/tui/components"
@@ -78,66 +78,6 @@ func addIssueCommentCmd(app *app.App, issueID, author, text string) tea.Cmd {
 	}
 }
 
-func updateIssueTitleCmd(app *app.App, issueID, newTitle string) tea.Cmd {
-	return func() tea.Msg {
-		updates := map[string]interface{}{"title": newTitle}
-		err := app.Issues.UpdateIssue(context.Background(), issueID, updates, "tui")
-		return issueTitleUpdatedMsg{IssueID: issueID, Err: err}
-	}
-}
-
-func updateIssueDescriptionCmd(app *app.App, issueID, newDescription string) tea.Cmd {
-	return func() tea.Msg {
-		updates := map[string]interface{}{"description": newDescription}
-		err := app.Issues.UpdateIssue(context.Background(), issueID, updates, "tui")
-		return issueDescriptionUpdatedMsg{IssueID: issueID, Err: err}
-	}
-}
-
-func updateIssueStatusCmd(app *app.App, issueID, status string) tea.Cmd {
-	return func() tea.Msg {
-		updates := map[string]interface{}{"status": status}
-		err := app.Issues.UpdateIssue(context.Background(), issueID, updates, "tui")
-		return issueStatusUpdatedMsg{IssueID: issueID, Err: err}
-	}
-}
-
-func updateIssuePriorityCmd(app *app.App, issueID string, priority int) tea.Cmd {
-	return func() tea.Msg {
-		updates := map[string]interface{}{"priority": priority}
-		err := app.Issues.UpdateIssue(context.Background(), issueID, updates, "tui")
-		return issuePriorityUpdatedMsg{IssueID: issueID, Err: err}
-	}
-}
-
-func updateIssueTypeCmd(app *app.App, issueID string, issueType models.IssueType) tea.Cmd {
-	return func() tea.Msg {
-		updates := map[string]interface{}{"issue_type": string(issueType)}
-		err := app.Issues.UpdateIssue(context.Background(), issueID, updates, "tui")
-		return issueTypeUpdatedMsg{IssueID: issueID, Err: err}
-	}
-}
-
-func createIssueCmd(app *app.App, title string) tea.Cmd {
-	return func() tea.Msg {
-		issue := &models.Issue{
-			Title:     title,
-			Status:    models.StatusOpen,
-			IssueType: models.TypeTask,
-			Priority:  2,
-		}
-		err := app.Issues.CreateIssue(context.Background(), issue, "tui")
-		return issueCreatedMsg{Issue: issue, Err: err}
-	}
-}
-
-func deleteIssueCmd(app *app.App, issueID string, currentIndex int) tea.Cmd {
-	return func() tea.Msg {
-		err := app.Issues.DeleteIssue(context.Background(), issueID)
-		return issueDeletedMsg{IssueID: issueID, Err: err, PreviousIndex: currentIndex}
-	}
-}
-
 func (m *Model) refreshIssueListsAndSelectIssue(issueID string) tea.Cmd {
 	/* update handler for issueTitleUpdatedMsg, issueDescriptionUpdatedMsg, and issueStatusUpdatedMsg to avoid using nearly identical code for refreshing the issue lists and updating the detail view
 	Fetch all issues, update both lists, set the detail view for the given issue, and return a command to select that issue. Returns nil if fetch fails.
@@ -154,6 +94,15 @@ func (m *Model) refreshIssueListsAndSelectIssue(issueID string) tea.Cmd {
 			break
 		}
 	}
+
+	if m.submitChan != nil {
+		select {
+		case m.submitChan <- struct{}{}:
+			m.logAction("tui submitted validation")
+		default:
+		}
+	}
+
 	return tea.Sequence(setItemsCmd, closedSetCmd, func() tea.Msg { return issues.SelectIssueMsg{IssueID: issueID} })
 }
 
