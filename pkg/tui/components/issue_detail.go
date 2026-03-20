@@ -44,6 +44,8 @@ func (i *IssueDetail) SetFocused(focused bool) {
 }
 
 func (i *IssueDetail) refreshContent() {
+	contentWidth := max(i.viewport.Width()-2, 1)
+
 	titleRow := styles.RowStyle.Render(
 		styles.TitleStyle.Render(i.issue.Title),
 	)
@@ -81,7 +83,8 @@ func (i *IssueDetail) refreshContent() {
 	)
 
 	descLabel := styles.LabelStyle.Render("Description:")
-	descContent := styles.ValueStyle.Render(i.issue.Description)
+	descStyle := styles.ValueStyle.Width(contentWidth)
+	descContent := descStyle.Render(i.issue.Description)
 
 	commentsLabel := styles.LabelStyle.MarginTop(1).Render("Comments:")
 
@@ -126,6 +129,8 @@ func (i *IssueDetail) ScrollDown(lines int) {
 }
 
 func (i *IssueDetail) renderComments() []string {
+	contentWidth := max(i.viewport.Width()-4, 1)
+
 	var parts []string
 	if len(i.comments) == 0 {
 		parts = append(parts, styles.ValueStyle.Render("No comments yet."))
@@ -133,9 +138,10 @@ func (i *IssueDetail) renderComments() []string {
 		for _, c := range i.comments {
 			authorDate := lipgloss.NewStyle().Foreground(styles.Primary).Render(c.Author) + " " +
 				lipgloss.NewStyle().Foreground(styles.FaintText).Render(formatCommentTime(c.CreatedAt))
+			commentTextStyle := styles.ValueStyle.Width(contentWidth)
 			commentRow := lipgloss.JoinVertical(lipgloss.Left,
 				authorDate,
-				styles.ValueStyle.MarginLeft(1).Render(c.Text),
+				commentTextStyle.MarginLeft(1).Render(c.Text),
 			)
 			parts = append(parts, commentRow)
 		}
