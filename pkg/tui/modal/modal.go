@@ -129,6 +129,13 @@ func (s *ModalStack) Update(msg tea.Msg) (tea.Cmd, bool) {
 		return nil, false
 	}
 
+	// Allow global quit key even when modal is active
+	if key, ok := msg.(tea.KeyPressMsg); ok {
+		if key.String() == "ctrl+c" {
+			return nil, false
+		}
+	}
+
 	// WindowSizeMsg should pass through to the view even when modal is active
 	// This allows both the modal and the underlying view to resize
 	if _, ok := msg.(tea.WindowSizeMsg); ok {
