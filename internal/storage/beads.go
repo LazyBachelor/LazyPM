@@ -52,4 +52,3 @@ func (s *BeadsService) DeleteIssues() error {
 	}
 	return nil
 }
-
