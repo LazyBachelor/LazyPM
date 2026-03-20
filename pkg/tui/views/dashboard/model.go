@@ -143,6 +143,18 @@ func (m *Model) logAction(action string) {
 	}
 }
 
+// submitValidation sends a validation request to the submit channel.
+// Call this after every successful user action that modifies issues.
+func (m *Model) submitValidation() {
+	if m.submitChan != nil {
+		select {
+		case m.submitChan <- struct{}{}:
+			m.logAction("tui submitted validation")
+		default:
+		}
+	}
+}
+
 func (m *Model) startEditTitle(selected ListIssue) {
 	m.editingTitle = true
 	m.editingIssueID = selected.ID

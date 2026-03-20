@@ -41,15 +41,15 @@ func (m *Model) refreshIssueListsAndSelectIssue(issueID string) tea.Cmd {
 		}
 	}
 
-	if m.submitChan != nil {
-		select {
-		case m.submitChan <- struct{}{}:
-			m.logAction("tui submitted validation")
-		default:
-		}
-	}
-
 	return tea.Sequence(setItemsCmd, func() tea.Msg { return msgs.SelectIssueMsg{IssueID: issueID} })
+}
+
+// refreshAndSubmit refreshes the issue lists and submits validation.
+// This is a wrapper that should be used after any successful user action.
+func (m *Model) refreshAndSubmit(issueID string) tea.Cmd {
+	refreshCmd := m.refreshIssueListsAndSelectIssue(issueID)
+	m.submitValidation()
+	return refreshCmd
 }
 
 func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
@@ -63,7 +63,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, nil
 		}
 		m.logAction("tui updated issue title")
-		return m, m.refreshIssueListsAndSelectIssue(msg.IssueID)
+		return m, m.refreshAndSubmit(msg.IssueID)
 
 	case msgs.DescriptionUpdatedMsg:
 		m.editingDescription = false
@@ -74,7 +74,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, nil
 		}
 		m.logAction("tui updated issue description")
-		return m, m.refreshIssueListsAndSelectIssue(msg.IssueID)
+		return m, m.refreshAndSubmit(msg.IssueID)
 
 	case msgs.StatusUpdatedMsg:
 		m.choosingStatus = false
@@ -84,7 +84,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, nil
 		}
 		m.logAction("tui updated issue status")
-		return m, m.refreshIssueListsAndSelectIssue(msg.IssueID)
+		return m, m.refreshAndSubmit(msg.IssueID)
 
 	case msgs.PriorityUpdatedMsg:
 		m.choosingPriority = false
@@ -94,7 +94,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, nil
 		}
 		m.logAction("tui updated issue priority")
-		return m, m.refreshIssueListsAndSelectIssue(msg.IssueID)
+		return m, m.refreshAndSubmit(msg.IssueID)
 
 	case msgs.TypeUpdatedMsg:
 		m.choosingType = false
@@ -104,7 +104,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, nil
 		}
 		m.logAction("tui updated issue type")
-		return m, m.refreshIssueListsAndSelectIssue(msg.IssueID)
+		return m, m.refreshAndSubmit(msg.IssueID)
 
 	case msgs.AssigneeUpdatedMsg:
 		m.editingAssignee = false
@@ -115,7 +115,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, nil
 		}
 		m.logAction("tui updated issue assignee")
-		return m, m.refreshIssueListsAndSelectIssue(msg.IssueID)
+		return m, m.refreshAndSubmit(msg.IssueID)
 
 	case msgs.SelectIssueMsg:
 		m.issueList.SelectIssueID(msg.IssueID)
@@ -150,6 +150,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		m.setDetailIssueWithComments(*selectedIssue)
 		m.logAction("tui created issue")
+		m.submitValidation()
 		return m, tea.Sequence(setItemsCmd, func() tea.Msg { return msgs.SelectIssueMsg{IssueID: selectedIssue.ID} })
 	case msgs.IssueCommentAddedMsg:
 		m.addingComment = false
@@ -159,6 +160,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if msg.Err != nil {
 			return m, nil
 		}
+		m.submitValidation()
 		return m, m.refreshIssueListsAndSelectIssue(msg.IssueID)
 	case msgs.DeletedMsg:
 		m.confirmingDelete = false
@@ -168,6 +170,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, nil
 		}
 		m.logAction("tui deleted issue")
+		m.submitValidation()
 		return m, m.refreshIssueListsAndSelectIssue(msg.IssueID)
 
 	case tea.KeyPressMsg:

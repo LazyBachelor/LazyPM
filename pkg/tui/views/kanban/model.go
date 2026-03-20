@@ -178,6 +178,17 @@ func (m *Model) logAction(action string) {
 	}
 }
 
+// submitValidation sends a validation request to the submit channel.
+func (m *Model) submitValidation() {
+	if m.submitChan != nil {
+		select {
+		case m.submitChan <- struct{}{}:
+			m.logAction("tui submitted validation")
+		default:
+		}
+	}
+}
+
 func (m *Model) Init() tea.Cmd {
 	if m.submitChan != nil {
 		m.submitChan <- struct{}{}

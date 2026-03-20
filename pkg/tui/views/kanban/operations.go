@@ -54,15 +54,15 @@ func (m *Model) refreshIssueListsAndSelectIssue(issueID string) tea.Cmd {
 	m.blockedList.SelectIssueID(issueID)
 	m.doneList.SelectIssueID(issueID)
 
-	if m.submitChan != nil {
-		select {
-		case m.submitChan <- struct{}{}:
-			m.logAction("tui submitted validation")
-		default:
-		}
-	}
-
 	return tea.Sequence(todoCmd, inProgCmd, blockedCmd, doneCmd)
+}
+
+// refreshAndSubmit refreshes the issue lists and submits validation.
+// This is a wrapper that should be used after any successful user action.
+func (m *Model) refreshAndSubmit(issueID string) tea.Cmd {
+	refreshCmd := m.refreshIssueListsAndSelectIssue(issueID)
+	m.submitValidation()
+	return refreshCmd
 }
 
 func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
@@ -74,7 +74,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if msg.Err != nil {
 			return m, nil
 		}
-		return m, m.refreshIssueListsAndSelectIssue(msg.IssueID)
+		return m, m.refreshAndSubmit(msg.IssueID)
 
 	case msgs.DescriptionUpdatedMsg:
 		m.editingDescription = false
@@ -83,7 +83,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if msg.Err != nil {
 			return m, nil
 		}
-		return m, m.refreshIssueListsAndSelectIssue(msg.IssueID)
+		return m, m.refreshAndSubmit(msg.IssueID)
 
 	case msgs.StatusUpdatedMsg:
 		m.choosingStatus = false
@@ -91,7 +91,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if msg.Err != nil {
 			return m, nil
 		}
-		return m, m.refreshIssueListsAndSelectIssue(msg.IssueID)
+		return m, m.refreshAndSubmit(msg.IssueID)
 
 	case msgs.PriorityUpdatedMsg:
 		m.choosingPriority = false
@@ -99,7 +99,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if msg.Err != nil {
 			return m, nil
 		}
-		return m, m.refreshIssueListsAndSelectIssue(msg.IssueID)
+		return m, m.refreshAndSubmit(msg.IssueID)
 
 	case msgs.TypeUpdatedMsg:
 		m.choosingType = false
@@ -107,7 +107,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if msg.Err != nil {
 			return m, nil
 		}
-		return m, m.refreshIssueListsAndSelectIssue(msg.IssueID)
+		return m, m.refreshAndSubmit(msg.IssueID)
 
 	case msgs.AssigneeUpdatedMsg:
 		m.editingAssignee = false
@@ -116,7 +116,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if msg.Err != nil {
 			return m, nil
 		}
-		return m, m.refreshIssueListsAndSelectIssue(msg.IssueID)
+		return m, m.refreshAndSubmit(msg.IssueID)
 
 	case msgs.SelectIssueMsg:
 		m.todoList.SelectIssueID(msg.IssueID)
@@ -160,6 +160,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 
 		m.issueDetail.SetIssue(*selectedIssue)
+		m.submitValidation()
 		return m, tea.Sequence(todoCmd, inProgCmd, blockedCmd, doneCmd, func() tea.Msg { return msgs.SelectIssueMsg{IssueID: selectedIssue.ID} })
 	case msgs.DeletedMsg:
 		m.confirmingDelete = false
@@ -185,6 +186,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		// If there are no msgs at all, clear the detail view and return.
 		if len(todoIssues) == 0 && len(inProgIssues) == 0 && len(blockedIssues) == 0 && len(doneIssues) == 0 {
 			m.issueDetail.SetIssue(models.Issue{})
+			m.submitValidation()
 			return m, tea.Sequence(todoCmd, inProgCmd, blockedCmd, doneCmd)
 		}
 
@@ -252,6 +254,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		// Safety: if targetIssues is still empty here, just clear detail and return.
 		if len(targetIssues) == 0 {
 			m.issueDetail.SetIssue(models.Issue{})
+			m.submitValidation()
 			return m, tea.Sequence(todoCmd, inProgCmd, blockedCmd, doneCmd)
 		}
 
@@ -261,6 +264,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 		selectedIssue := targetIssues[newIndex]
 		m.issueDetail.SetIssue(*selectedIssue)
+		m.submitValidation()
 		return m, tea.Sequence(todoCmd, inProgCmd, blockedCmd, doneCmd, func() tea.Msg {
 			return msgs.SelectIssueMsg{IssueID: selectedIssue.ID}
 		})
