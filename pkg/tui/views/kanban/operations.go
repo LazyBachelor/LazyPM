@@ -7,13 +7,12 @@ import (
 	"charm.land/bubbletea/v2"
 	"github.com/LazyBachelor/LazyPM/internal/models"
 	"github.com/LazyBachelor/LazyPM/pkg/tui/components"
-	"github.com/LazyBachelor/LazyPM/pkg/tui/issues"
+	"github.com/LazyBachelor/LazyPM/pkg/tui/msgs"
 )
 
+// update handler for issueTitleUpdatedMsg, issueDescriptionUpdatedMsg, and issueStatusUpdatedMsg to avoid using nearly identical code for refreshing the issue lists and updating the detail view
+// Fetch all msgs, update both lists, set the detail view for the given issue, and return a command to select that issue. Returns nil if fetch fails.
 func (m *Model) refreshIssueListsAndSelectIssue(issueID string) tea.Cmd {
-	/* update handler for issueTitleUpdatedMsg, issueDescriptionUpdatedMsg, and issueStatusUpdatedMsg to avoid using nearly identical code for refreshing the issue lists and updating the detail view
-	Fetch all issues, update both lists, set the detail view for the given issue, and return a command to select that issue. Returns nil if fetch fails.
-	*/
 	allIssues, err := m.app.Issues.SearchIssues(context.Background(), "", models.IssueFilter{})
 	if err != nil {
 		return nil
@@ -68,7 +67,7 @@ func (m *Model) refreshIssueListsAndSelectIssue(issueID string) tea.Cmd {
 
 func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
-	case issues.TitleUpdatedMsg:
+	case msgs.TitleUpdatedMsg:
 		m.editingTitle = false
 		m.editingIssueID = ""
 		m.titleInput.Blur()
@@ -77,7 +76,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 		return m, m.refreshIssueListsAndSelectIssue(msg.IssueID)
 
-	case issues.DescriptionUpdatedMsg:
+	case msgs.DescriptionUpdatedMsg:
 		m.editingDescription = false
 		m.editingDescIssueID = ""
 		m.descriptionInput.Blur()
@@ -86,7 +85,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 		return m, m.refreshIssueListsAndSelectIssue(msg.IssueID)
 
-	case issues.StatusUpdatedMsg:
+	case msgs.StatusUpdatedMsg:
 		m.choosingStatus = false
 		m.statusIssueID = ""
 		if msg.Err != nil {
@@ -94,7 +93,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 		return m, m.refreshIssueListsAndSelectIssue(msg.IssueID)
 
-	case issues.PriorityUpdatedMsg:
+	case msgs.PriorityUpdatedMsg:
 		m.choosingPriority = false
 		m.priorityIssueID = ""
 		if msg.Err != nil {
@@ -102,7 +101,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 		return m, m.refreshIssueListsAndSelectIssue(msg.IssueID)
 
-	case issues.TypeUpdatedMsg:
+	case msgs.TypeUpdatedMsg:
 		m.choosingType = false
 		m.typeIssueID = ""
 		if msg.Err != nil {
@@ -110,7 +109,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 		return m, m.refreshIssueListsAndSelectIssue(msg.IssueID)
 
-	case issues.AssigneeUpdatedMsg:
+	case msgs.AssigneeUpdatedMsg:
 		m.editingAssignee = false
 		m.assigneeIssueID = ""
 		m.assigneeInput.Blur()
@@ -119,14 +118,14 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 		return m, m.refreshIssueListsAndSelectIssue(msg.IssueID)
 
-	case issues.SelectIssueMsg:
+	case msgs.SelectIssueMsg:
 		m.todoList.SelectIssueID(msg.IssueID)
 		m.inProgList.SelectIssueID(msg.IssueID)
 		m.blockedList.SelectIssueID(msg.IssueID)
 		m.doneList.SelectIssueID(msg.IssueID)
 		return m, nil
 
-	case issues.CreatedMsg:
+	case msgs.CreatedMsg:
 		m.creatingIssue = false
 		m.createTitleInput.Blur()
 		m.createTitleInput.Reset()
@@ -161,8 +160,8 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 
 		m.issueDetail.SetIssue(*selectedIssue)
-		return m, tea.Sequence(todoCmd, inProgCmd, blockedCmd, doneCmd, func() tea.Msg { return issues.SelectIssueMsg{IssueID: selectedIssue.ID} })
-	case issues.DeletedMsg:
+		return m, tea.Sequence(todoCmd, inProgCmd, blockedCmd, doneCmd, func() tea.Msg { return msgs.SelectIssueMsg{IssueID: selectedIssue.ID} })
+	case msgs.DeletedMsg:
 		m.confirmingDelete = false
 		m.deleteConfirmID = ""
 		if msg.Err != nil {
@@ -183,7 +182,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		blockedCmd := m.blockedList.SetIssues(blockedIssues)
 		doneCmd := m.doneList.SetIssues(doneIssues)
 
-		// If there are no issues at all, clear the detail view and return.
+		// If there are no msgs at all, clear the detail view and return.
 		if len(todoIssues) == 0 && len(inProgIssues) == 0 && len(blockedIssues) == 0 && len(doneIssues) == 0 {
 			m.issueDetail.SetIssue(models.Issue{})
 			return m, tea.Sequence(todoCmd, inProgCmd, blockedCmd, doneCmd)
@@ -263,7 +262,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		selectedIssue := targetIssues[newIndex]
 		m.issueDetail.SetIssue(*selectedIssue)
 		return m, tea.Sequence(todoCmd, inProgCmd, blockedCmd, doneCmd, func() tea.Msg {
-			return issues.SelectIssueMsg{IssueID: selectedIssue.ID}
+			return msgs.SelectIssueMsg{IssueID: selectedIssue.ID}
 		})
 
 	case tea.KeyPressMsg:
@@ -274,7 +273,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				idx := m.deleteConfirmIndex
 				m.confirmingDelete = false
 				m.deleteConfirmID = ""
-				return m, issues.DeleteIssueCmd(m.app, issueID, idx)
+				return m, msgs.DeleteIssueCmd(m.app, issueID, idx)
 			case "n", "N", "esc":
 				m.confirmingDelete = false
 				m.deleteConfirmID = ""
@@ -288,22 +287,22 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				issueID := m.statusIssueID
 				m.choosingStatus = false
 				m.statusIssueID = ""
-				return m, issues.UpdateIssueStatusCmd(m.app, issueID, string(models.StatusOpen))
+				return m, msgs.UpdateIssueStatusCmd(m.app, issueID, string(models.StatusOpen))
 			case "i":
 				issueID := m.statusIssueID
 				m.choosingStatus = false
 				m.statusIssueID = ""
-				return m, issues.UpdateIssueStatusCmd(m.app, issueID, string(models.StatusInProgress))
+				return m, msgs.UpdateIssueStatusCmd(m.app, issueID, string(models.StatusInProgress))
 			case "b":
 				issueID := m.statusIssueID
 				m.choosingStatus = false
 				m.statusIssueID = ""
-				return m, issues.UpdateIssueStatusCmd(m.app, issueID, string(models.StatusBlocked))
+				return m, msgs.UpdateIssueStatusCmd(m.app, issueID, string(models.StatusBlocked))
 			case "r":
 				issueID := m.statusIssueID
 				m.choosingStatus = false
 				m.statusIssueID = ""
-				return m, issues.UpdateIssueStatusCmd(m.app, issueID, string(models.StatusReadyToSprint))
+				return m, msgs.UpdateIssueStatusCmd(m.app, issueID, string(models.StatusReadyToSprint))
 			case "c":
 				issueID := m.statusIssueID
 				m.choosingStatus = false
@@ -345,7 +344,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				issueID := m.closeReasonIssueID
 				m.choosingCloseReason = false
 				m.closeReasonIssueID = ""
-				return m, issues.CloseIssueCmd(m.app, issueID, reason)
+				return m, msgs.CloseIssueCmd(m.app, issueID, reason)
 			}
 		}
 
@@ -358,7 +357,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					m.closingOtherReason = false
 					m.closeReasonIssueID = ""
 					m.closeReasonInput.Blur()
-					return m, issues.CloseIssueCmd(m.app, issueID, reason)
+					return m, msgs.CloseIssueCmd(m.app, issueID, reason)
 				}
 			case "esc":
 				m.closingOtherReason = false
@@ -378,7 +377,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				priority := int(msg.String()[0] - '0')
 				m.choosingPriority = false
 				m.priorityIssueID = ""
-				return m, issues.UpdateIssuePriorityCmd(m.app, issueID, priority)
+				return m, msgs.UpdateIssuePriorityCmd(m.app, issueID, priority)
 			case "esc":
 				m.choosingPriority = false
 				m.priorityIssueID = ""
@@ -394,27 +393,27 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				issueID := m.typeIssueID
 				m.choosingType = false
 				m.typeIssueID = ""
-				return m, issues.UpdateIssueTypeCmd(m.app, issueID, models.TypeBug)
+				return m, msgs.UpdateIssueTypeCmd(m.app, issueID, models.TypeBug)
 			case "f":
 				issueID := m.typeIssueID
 				m.choosingType = false
 				m.typeIssueID = ""
-				return m, issues.UpdateIssueTypeCmd(m.app, issueID, models.TypeFeature)
+				return m, msgs.UpdateIssueTypeCmd(m.app, issueID, models.TypeFeature)
 			case "t":
 				issueID := m.typeIssueID
 				m.choosingType = false
 				m.typeIssueID = ""
-				return m, issues.UpdateIssueTypeCmd(m.app, issueID, models.TypeTask)
+				return m, msgs.UpdateIssueTypeCmd(m.app, issueID, models.TypeTask)
 			case "e":
 				issueID := m.typeIssueID
 				m.choosingType = false
 				m.typeIssueID = ""
-				return m, issues.UpdateIssueTypeCmd(m.app, issueID, models.TypeEpic)
+				return m, msgs.UpdateIssueTypeCmd(m.app, issueID, models.TypeEpic)
 			case "c":
 				issueID := m.typeIssueID
 				m.choosingType = false
 				m.typeIssueID = ""
-				return m, issues.UpdateIssueTypeCmd(m.app, issueID, models.TypeChore)
+				return m, msgs.UpdateIssueTypeCmd(m.app, issueID, models.TypeChore)
 			case "esc":
 				m.choosingType = false
 				m.typeIssueID = ""
@@ -428,7 +427,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if msg.String() == "enter" {
 				title := m.createTitleInput.Value()
 				if title != "" {
-					return m, issues.CreateIssueCmd(m.app, title)
+					return m, msgs.CreateIssueCmd(m.app, title)
 				}
 			}
 			if msg.String() == "esc" {
@@ -445,7 +444,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if m.editingAssignee {
 			if msg.String() == "enter" {
 				assignee := m.assigneeInput.Value()
-				return m, issues.UpdateIssueAssigneeCmd(m.app, m.assigneeIssueID, assignee)
+				return m, msgs.UpdateIssueAssigneeCmd(m.app, m.assigneeIssueID, assignee)
 			}
 			if msg.String() == "esc" {
 				m.editingAssignee = false
@@ -462,7 +461,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if msg.String() == "enter" {
 				newTitle := m.titleInput.Value()
 				if newTitle != "" {
-					return m, issues.UpdateIssueTitleCmd(m.app, m.editingIssueID, newTitle)
+					return m, msgs.UpdateIssueTitleCmd(m.app, m.editingIssueID, newTitle)
 				}
 			}
 			if msg.String() == "esc" {
@@ -483,7 +482,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.editingDescription = false
 				m.editingDescIssueID = ""
 				m.descriptionInput.Blur()
-				return m, issues.UpdateIssueDescriptionCmd(m.app, issueID, newDesc)
+				return m, msgs.UpdateIssueDescriptionCmd(m.app, issueID, newDesc)
 			}
 			if msg.String() == "esc" {
 				m.editingDescription = false
