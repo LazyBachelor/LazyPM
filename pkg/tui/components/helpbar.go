@@ -106,10 +106,7 @@ func (h HelpBar) fullHelp() string {
 		)
 	}
 
-	innerWidth := h.width - 2
-	if innerWidth < 1 {
-		innerWidth = 1
-	}
+	innerWidth := max(h.width - 2, 1)
 
 	cellWidth := fullHelpKeyWidth + 1 + fullHelpDescWidth
 	cols := fitHelpColumns(
@@ -196,32 +193,23 @@ func helpBarConfig(view ViewKind) HelpBarConfig {
 	case ViewIssues:
 		return HelpBarConfig{
 			ShortItems: []HelpItem{
-				{Key: "tab", Desc: "switch"},
 				{Key: "v", Desc: "kanban"},
 				{Key: "↑/k", Desc: "up"},
 				{Key: "↓/j", Desc: "down"},
-				{Key: "pgup/pgdn", Desc: "page"},
 				{Key: "a", Desc: "add"},
 				{Key: "c", Desc: "comment"},
 				{Key: "e/d/s/p/t/A", Desc: "edit"},
 				{Key: "x", Desc: "delete"},
-				{Key: "S", Desc: "submit"},
 				{Key: "q", Desc: "quit"},
 				{Key: "?", Desc: "help"},
 			},
 			FullItems: []HelpItem{
-				{Key: "tab", Desc: "switch window"},
-				{Key: "enter", Desc: "view issue"},
-				{Key: "b", Desc: "back to list"},
 				{Key: "v", Desc: "kanban"},
 				{Key: "↑/k", Desc: "up"},
 				{Key: "↓/j", Desc: "down"},
-				{Key: "pgup", Desc: "page up"},
-				{Key: "pgdn", Desc: "page down"},
 				{Key: "a", Desc: "add issue"},
 				{Key: "c", Desc: "add comment"},
 				{Key: "x", Desc: "delete issue"},
-				{Key: "S", Desc: "submit"},
 				{Key: "e", Desc: "edit title"},
 				{Key: "d", Desc: "edit description"},
 				{Key: "s", Desc: "change status"},
@@ -246,13 +234,10 @@ func helpBarConfig(view ViewKind) HelpBarConfig {
 				{Key: "e/d/s/p/t/A", Desc: "edit"},
 				{Key: "x", Desc: "delete"},
 				{Key: "q", Desc: "quit"},
-				{Key: "S", Desc: "submit"},
 				{Key: "?", Desc: "help"},
 			},
 			FullItems: []HelpItem{
 				{Key: "v", Desc: "list view"},
-				{Key: "enter", Desc: "view issue"},
-				{Key: "b", Desc: "back to list"},
 				{Key: "h/l", Desc: "switch column"},
 				{Key: "←/→", Desc: "move issue"},
 				{Key: "↑/k", Desc: "up"},
@@ -261,7 +246,6 @@ func helpBarConfig(view ViewKind) HelpBarConfig {
 				{Key: "pgdn", Desc: "page down"},
 				{Key: "a", Desc: "add issue"},
 				{Key: "x", Desc: "delete issue"},
-				{Key: "S", Desc: "submit"},
 				{Key: "e", Desc: "edit title"},
 				{Key: "d", Desc: "edit description"},
 				{Key: "s", Desc: "change status"},
