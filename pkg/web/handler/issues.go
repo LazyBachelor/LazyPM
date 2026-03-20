@@ -3,8 +3,8 @@ package handler
 import (
 	"context"
 	"html"
-	"net/url"
 	"net/http"
+	"net/url"
 	"strings"
 
 	"github.com/LazyBachelor/LazyPM/internal/models"
@@ -303,8 +303,13 @@ func AddDependencyHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	depType := models.DepBlocks
+	dep := &models.Dependency{
+		IssueID:     issue.ID,
+		DependsOnID: dependsOnID,
+		Type:        depType,
+	}
 
-	if err := app.Issues.AddDependency(r.Context(), issue.ID, dependsOnID, depType, "web"); err != nil {
+	if err := app.Issues.AddDependency(r.Context(), dep, "web"); err != nil {
 		http.Error(w, "Failed to add dependency: "+err.Error(), http.StatusInternalServerError)
 		return
 	}

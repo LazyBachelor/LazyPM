@@ -41,6 +41,11 @@ var ContainerStyle = lipgloss.NewStyle().
 	BorderForeground(SecondaryBorder).
 	Padding(1)
 
+var ModalContainerStyle = lipgloss.NewStyle().
+	Border(DefaultBorder).
+	BorderForeground(PrimaryBorder).
+	Padding(2, 3)
+
 var DetailsContainerStyle = lipgloss.NewStyle().
 	Border(DefaultBorder, true, false, false, true).
 	BorderForeground(SecondaryBorder).
