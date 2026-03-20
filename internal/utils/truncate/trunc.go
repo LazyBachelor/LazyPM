@@ -22,14 +22,15 @@ func TruncateToWidth(text string, maxWidth int) string {
 	}
 
 	runes := []rune(text)
-	current := ""
-	for _, r := range runes {
-		next := current + string(r)
-		if lipgloss.Width(next)+ellipsisWidth > maxWidth {
+	lastSafe := 0
+	for i := range runes {
+		candidate := string(runes[:i+1])
+		if lipgloss.Width(candidate)+ellipsisWidth > maxWidth {
 			break
 		}
-		current = next
+		lastSafe = i + 1
 	}
 
+	current := string(runes[:lastSafe])
 	return current + ellipsis
 }
