@@ -2,16 +2,17 @@ package kanban
 
 import (
 	"context"
+	"strconv"
 
 	"charm.land/bubbles/v2/list"
-	"charm.land/bubbletea/v2"
+	tea "charm.land/bubbletea/v2"
 	"github.com/LazyBachelor/LazyPM/internal/models"
+	"github.com/LazyBachelor/LazyPM/internal/utils/user"
 	"github.com/LazyBachelor/LazyPM/pkg/tui/components"
+	"github.com/LazyBachelor/LazyPM/pkg/tui/modal"
 	"github.com/LazyBachelor/LazyPM/pkg/tui/msgs"
 )
 
-// update handler for issueTitleUpdatedMsg, issueDescriptionUpdatedMsg, and issueStatusUpdatedMsg to avoid using nearly identical code for refreshing the issue lists and updating the detail view
-// Fetch all issues, update both lists, set the detail view for the given issue, and return a command to select that issue. Returns nil if fetch fails.
 func (m *Model) refreshIssueListsAndSelectIssue(issueID string) tea.Cmd {
 	allIssues, err := m.app.Issues.SearchIssues(context.Background(), "", models.IssueFilter{})
 	if err != nil {
@@ -31,7 +32,7 @@ func (m *Model) refreshIssueListsAndSelectIssue(issueID string) tea.Cmd {
 	var targetStatus models.Status
 	for _, issue := range allIssues {
 		if issue.ID == issueID {
-			m.issueDetail.SetIssue(*issue)
+			m.setDetailIssueWithComments(*issue)
 			targetStatus = issue.Status
 			break
 		}
@@ -39,84 +40,275 @@ func (m *Model) refreshIssueListsAndSelectIssue(issueID string) tea.Cmd {
 
 	switch targetStatus {
 	case models.StatusOpen:
-		m.focusedColumn = 0
+		m.focusManager.SetCurrent(modal.FocusColumn1)
 	case models.StatusInProgress:
-		m.focusedColumn = 1
+		m.focusManager.SetCurrent(modal.FocusColumn2)
 	case models.StatusBlocked:
-		m.focusedColumn = 2
+		m.focusManager.SetCurrent(modal.FocusColumn3)
 	case models.StatusClosed:
-		m.focusedColumn = 3
+		m.focusManager.SetCurrent(modal.FocusColumn4)
 	}
 
-	// Select the moved issue in its new column immediately so the highlight follows it.
-	m.todoList.SelectIssueID(issueID)
-	m.inProgList.SelectIssueID(issueID)
-	m.blockedList.SelectIssueID(issueID)
-	m.doneList.SelectIssueID(issueID)
-
-	return tea.Sequence(todoCmd, inProgCmd, blockedCmd, doneCmd)
+	return tea.Sequence(todoCmd, inProgCmd, blockedCmd, doneCmd, func() tea.Msg {
+		return msgs.SelectIssueMsg{IssueID: issueID}
+	})
 }
 
-// refreshAndSubmit refreshes the issue lists and submits validation.
-// This is a wrapper that should be used after any successful user action.
 func (m *Model) refreshAndSubmit(issueID string) tea.Cmd {
 	refreshCmd := m.refreshIssueListsAndSelectIssue(issueID)
 	m.submitValidation()
 	return refreshCmd
 }
 
+// Modal action handlers
+
+func (m *Model) startEditTitle(selected ListIssue) tea.Cmd {
+	m.currentIssueID = selected.ID
+	titleModal := m.modalManager.GetTextInputModal(modal.ModalEditTitle)
+	if titleModal != nil {
+		titleModal.SetValue(selected.Issue.Title)
+		titleModal.CursorEnd()
+		return m.modalManager.ShowModal(modal.ModalEditTitle)
+	}
+	return nil
+}
+
+func (m *Model) startEditDescription(selected ListIssue) tea.Cmd {
+	m.currentIssueID = selected.ID
+	descModal := m.modalManager.GetTextAreaModal(modal.ModalEditDescription)
+	if descModal != nil {
+		descModal.SetValue(selected.Issue.Description)
+		return m.modalManager.ShowModal(modal.ModalEditDescription)
+	}
+	return nil
+}
+
+func (m *Model) startCreateIssue() tea.Cmd {
+	createModal := m.modalManager.GetTextInputModal(modal.ModalCreateIssue)
+	if createModal != nil {
+		createModal.Reset()
+		return m.modalManager.ShowModal(modal.ModalCreateIssue)
+	}
+	return nil
+}
+
+func (m *Model) startConfirmDelete(issueID string, index int) tea.Cmd {
+	m.currentIssueID = issueID
+	m.deleteIndex = index
+	deleteModal := m.modalManager.GetConfirmModal(modal.ModalConfirmDelete)
+	if deleteModal != nil {
+		return m.modalManager.ShowModal(modal.ModalConfirmDelete)
+	}
+	return nil
+}
+
+func (m *Model) startChooseStatus(selected ListIssue) tea.Cmd {
+	m.currentIssueID = selected.ID
+	return m.modalManager.ShowModal(modal.ModalSelectStatus)
+}
+
+func (m *Model) startChoosePriority(selected ListIssue) tea.Cmd {
+	m.currentIssueID = selected.ID
+	return m.modalManager.ShowModal(modal.ModalSelectPriority)
+}
+
+func (m *Model) startChooseType(selected ListIssue) tea.Cmd {
+	m.currentIssueID = selected.ID
+	return m.modalManager.ShowModal(modal.ModalSelectType)
+}
+
+func (m *Model) startEditAssignee(selected ListIssue) tea.Cmd {
+	m.currentIssueID = selected.ID
+	assigneeModal := m.modalManager.GetTextInputModal(modal.ModalEditAssignee)
+	if assigneeModal != nil {
+		assigneeModal.SetValue(selected.Assignee)
+		assigneeModal.CursorEnd()
+		return m.modalManager.ShowModal(modal.ModalEditAssignee)
+	}
+	return nil
+}
+
+func (m *Model) startAddComment(selected ListIssue) tea.Cmd {
+	m.currentIssueID = selected.ID
+	commentModal := m.modalManager.GetTextAreaModal(modal.ModalAddComment)
+	if commentModal != nil {
+		commentModal.Reset()
+		return m.modalManager.ShowModal(modal.ModalAddComment)
+	}
+	return nil
+}
+
+// handleModalCompleted handles all modal completion messages
+func (m *Model) handleModalCompleted(msg modal.ModalCompletedMsg) tea.Cmd {
+	switch msg.ModalID {
+	case modal.ModalEditTitle:
+		if r, ok := msg.Value.(modal.TextInputResult); ok {
+			cmd := msgs.UpdateIssueTitleCmd(m.app, m.currentIssueID, r.Value)
+			return func() tea.Msg { return cmd() }
+		}
+	case modal.ModalCreateIssue:
+		if r, ok := msg.Value.(modal.TextInputResult); ok && r.Value != "" {
+			cmd := msgs.CreateIssueCmd(m.app, r.Value)
+			return func() tea.Msg { return cmd() }
+		}
+	case modal.ModalEditAssignee:
+		if r, ok := msg.Value.(modal.TextInputResult); ok {
+			cmd := msgs.UpdateIssueAssigneeCmd(m.app, m.currentIssueID, r.Value)
+			return func() tea.Msg { return cmd() }
+		}
+	case modal.ModalEditDescription:
+		if r, ok := msg.Value.(modal.TextAreaResult); ok {
+			cmd := msgs.UpdateIssueDescriptionCmd(m.app, m.currentIssueID, r.Value)
+			return func() tea.Msg { return cmd() }
+		}
+	case modal.ModalConfirmDelete:
+		if r, ok := msg.Value.(modal.ConfirmResult); ok && r.Confirmed {
+			idx := m.deleteIndex
+			issueID := m.currentIssueID
+			m.deleteIndex = -1
+			m.currentIssueID = ""
+			cmd := msgs.DeleteIssueCmd(m.app, issueID, idx)
+			return func() tea.Msg { return cmd() }
+		}
+	case modal.ModalSelectStatus:
+		if r, ok := msg.Value.(modal.SelectResult); ok {
+			if r.SelectedValue == "closing" {
+				return m.modalManager.ShowModal(modal.ModalSelectCloseReason)
+			}
+			cmd := msgs.UpdateIssueStatusCmd(m.app, m.currentIssueID, r.SelectedValue)
+			return func() tea.Msg { return cmd() }
+		}
+	case modal.ModalSelectCloseReason:
+		if r, ok := msg.Value.(modal.SelectResult); ok {
+			if r.SelectedValue == "other" {
+				return m.modalManager.ShowModal(modal.ModalCloseReason)
+			}
+			cmd := msgs.CloseIssueCmd(m.app, m.currentIssueID, r.SelectedValue)
+			return func() tea.Msg { return cmd() }
+		}
+	case modal.ModalSelectPriority:
+		if r, ok := msg.Value.(modal.SelectResult); ok {
+			priority, err := strconv.Atoi(r.SelectedValue)
+			if err != nil {
+				return nil
+			}
+			cmd := msgs.UpdateIssuePriorityCmd(m.app, m.currentIssueID, priority)
+			return func() tea.Msg { return cmd() }
+		}
+	case modal.ModalSelectType:
+		if r, ok := msg.Value.(modal.SelectResult); ok {
+			issueType := models.IssueType(r.SelectedValue)
+			cmd := msgs.UpdateIssueTypeCmd(m.app, m.currentIssueID, issueType)
+			return func() tea.Msg { return cmd() }
+		}
+	case modal.ModalCloseReason:
+		if r, ok := msg.Value.(modal.TextAreaResult); ok && r.Value != "" {
+			cmd := msgs.CloseIssueCmd(m.app, m.currentIssueID, r.Value)
+			return func() tea.Msg { return cmd() }
+		}
+	case modal.ModalAddComment:
+		if r, ok := msg.Value.(modal.TextAreaResult); ok && r.Value != "" {
+			cmd := msgs.AddIssueCommentCmd(m.app, m.currentIssueID, user.GetOsUsername(), r.Value)
+			return func() tea.Msg { return cmd() }
+		}
+	}
+	return nil
+}
+
+// handleModalCancelled handles all modal cancellation messages
+func (m *Model) handleModalCancelled(msg modal.ModalCancelledMsg) {
+	switch msg.ModalID {
+	case modal.ModalEditTitle:
+		m.currentIssueID = ""
+	case modal.ModalCreateIssue:
+		// No cleanup needed
+	case modal.ModalEditAssignee:
+		m.currentIssueID = ""
+	case modal.ModalEditDescription:
+		m.currentIssueID = ""
+	case modal.ModalConfirmDelete:
+		m.deleteIndex = -1
+		m.currentIssueID = ""
+	case modal.ModalSelectStatus:
+		m.currentIssueID = ""
+	case modal.ModalSelectCloseReason:
+		m.currentIssueID = ""
+	case modal.ModalSelectPriority:
+		m.currentIssueID = ""
+	case modal.ModalSelectType:
+		m.currentIssueID = ""
+	case modal.ModalCloseReason:
+		m.currentIssueID = ""
+	case modal.ModalAddComment:
+		m.currentIssueID = ""
+	}
+}
+
 func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	if cmd, handled := m.modalManager.Update(msg); handled {
+		return m, cmd
+	}
+
 	switch msg := msg.(type) {
+	case modal.ModalCompletedMsg:
+		return m, m.handleModalCompleted(msg)
+
+	case modal.ModalCancelledMsg:
+		m.handleModalCancelled(msg)
+		return m, nil
 	case msgs.TitleUpdatedMsg:
-		m.editingTitle = false
-		m.editingIssueID = ""
-		m.titleInput.Blur()
+		m.modalManager.GetTextInputModal(modal.ModalEditTitle).Reset()
+		m.currentIssueID = ""
 		if msg.Err != nil {
 			return m, nil
 		}
 		return m, m.refreshAndSubmit(msg.IssueID)
 
 	case msgs.DescriptionUpdatedMsg:
-		m.editingDescription = false
-		m.editingDescIssueID = ""
-		m.descriptionInput.Blur()
+		m.modalManager.GetTextAreaModal(modal.ModalEditDescription).Reset()
+		m.currentIssueID = ""
 		if msg.Err != nil {
 			return m, nil
 		}
 		return m, m.refreshAndSubmit(msg.IssueID)
 
 	case msgs.StatusUpdatedMsg:
-		m.choosingStatus = false
-		m.statusIssueID = ""
+		m.currentIssueID = ""
 		if msg.Err != nil {
 			return m, nil
 		}
 		return m, m.refreshAndSubmit(msg.IssueID)
 
 	case msgs.PriorityUpdatedMsg:
-		m.choosingPriority = false
-		m.priorityIssueID = ""
+		m.currentIssueID = ""
 		if msg.Err != nil {
 			return m, nil
 		}
 		return m, m.refreshAndSubmit(msg.IssueID)
 
 	case msgs.TypeUpdatedMsg:
-		m.choosingType = false
-		m.typeIssueID = ""
+		m.currentIssueID = ""
 		if msg.Err != nil {
 			return m, nil
 		}
 		return m, m.refreshAndSubmit(msg.IssueID)
 
 	case msgs.AssigneeUpdatedMsg:
-		m.editingAssignee = false
-		m.assigneeIssueID = ""
-		m.assigneeInput.Blur()
+		m.modalManager.GetTextInputModal(modal.ModalEditAssignee).Reset()
+		m.currentIssueID = ""
 		if msg.Err != nil {
 			return m, nil
 		}
 		return m, m.refreshAndSubmit(msg.IssueID)
+
+	case msgs.IssueCommentAddedMsg:
+		m.modalManager.GetTextAreaModal(modal.ModalAddComment).Reset()
+		m.currentIssueID = ""
+		if msg.Err != nil {
+			return m, nil
+		}
+		m.submitValidation()
+		return m, m.refreshIssueListsAndSelectIssue(msg.IssueID)
 
 	case msgs.SelectIssueMsg:
 		m.todoList.SelectIssueID(msg.IssueID)
@@ -126,9 +318,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m, nil
 
 	case msgs.CreatedMsg:
-		m.creatingIssue = false
-		m.createTitleInput.Blur()
-		m.createTitleInput.Reset()
+		m.modalManager.GetTextInputModal(modal.ModalCreateIssue).Reset()
 		if msg.Err != nil || msg.Issue == nil {
 			return m, nil
 		}
@@ -147,11 +337,9 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		blockedCmd := m.blockedList.SetIssues(blockedIssues)
 		doneCmd := m.doneList.SetIssues(doneIssues)
 
-		// Determine the created issue from the refreshed list to ensure all fields (like ID) are populated.
 		selectedIssue := msg.Issue
 		if selectedIssue.ID == "" {
 			for _, issue := range allIssues {
-				// Prefer an issue that matches the created issue's title when ID is not yet known.
 				if issue.Title == msg.Issue.Title {
 					selectedIssue = issue
 					break
@@ -159,12 +347,15 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 		}
 
-		m.issueDetail.SetIssue(*selectedIssue)
+		m.setDetailIssueWithComments(*selectedIssue)
 		m.submitValidation()
-		return m, tea.Sequence(todoCmd, inProgCmd, blockedCmd, doneCmd, func() tea.Msg { return msgs.SelectIssueMsg{IssueID: selectedIssue.ID} })
+		return m, tea.Sequence(todoCmd, inProgCmd, blockedCmd, doneCmd, func() tea.Msg {
+			return msgs.SelectIssueMsg{IssueID: selectedIssue.ID}
+		})
+
 	case msgs.DeletedMsg:
-		m.confirmingDelete = false
-		m.deleteConfirmID = ""
+		m.deleteIndex = -1
+		m.currentIssueID = ""
 		if msg.Err != nil {
 			return m, nil
 		}
@@ -183,77 +374,74 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		blockedCmd := m.blockedList.SetIssues(blockedIssues)
 		doneCmd := m.doneList.SetIssues(doneIssues)
 
-		// If there are no issues at all, clear the detail view and return.
 		if len(todoIssues) == 0 && len(inProgIssues) == 0 && len(blockedIssues) == 0 && len(doneIssues) == 0 {
-			m.issueDetail.SetIssue(models.Issue{})
+			m.setDetailIssueWithComments(models.Issue{})
 			m.submitValidation()
 			return m, tea.Sequence(todoCmd, inProgCmd, blockedCmd, doneCmd)
 		}
 
-		// Determine which column to use for the next selection based on the current focus.
 		var targetIssues []*models.Issue
-		switch m.focusedColumn {
-		case 0:
+		switch m.focusManager.Current() {
+		case modal.FocusColumn1:
 			targetIssues = todoIssues
 			if len(targetIssues) == 0 {
 				if len(inProgIssues) > 0 {
 					targetIssues = inProgIssues
-					m.focusedColumn = 1
+					m.focusManager.SetCurrent(modal.FocusColumn2)
 				} else if len(blockedIssues) > 0 {
 					targetIssues = blockedIssues
-					m.focusedColumn = 2
+					m.focusManager.SetCurrent(modal.FocusColumn3)
 				} else if len(doneIssues) > 0 {
 					targetIssues = doneIssues
-					m.focusedColumn = 3
+					m.focusManager.SetCurrent(modal.FocusColumn4)
 				}
 			}
-		case 1:
+		case modal.FocusColumn2:
 			targetIssues = inProgIssues
 			if len(targetIssues) == 0 {
 				if len(todoIssues) > 0 {
 					targetIssues = todoIssues
-					m.focusedColumn = 0
+					m.focusManager.SetCurrent(modal.FocusColumn1)
 				} else if len(blockedIssues) > 0 {
 					targetIssues = blockedIssues
-					m.focusedColumn = 2
+					m.focusManager.SetCurrent(modal.FocusColumn3)
 				} else if len(doneIssues) > 0 {
 					targetIssues = doneIssues
-					m.focusedColumn = 3
+					m.focusManager.SetCurrent(modal.FocusColumn4)
 				}
 			}
-		case 2:
+		case modal.FocusColumn3:
 			targetIssues = blockedIssues
 			if len(targetIssues) == 0 {
 				if len(inProgIssues) > 0 {
 					targetIssues = inProgIssues
-					m.focusedColumn = 1
+					m.focusManager.SetCurrent(modal.FocusColumn2)
 				} else if len(todoIssues) > 0 {
 					targetIssues = todoIssues
-					m.focusedColumn = 0
+					m.focusManager.SetCurrent(modal.FocusColumn1)
 				} else if len(doneIssues) > 0 {
 					targetIssues = doneIssues
-					m.focusedColumn = 3
+					m.focusManager.SetCurrent(modal.FocusColumn4)
 				}
 			}
-		case 3:
+		case modal.FocusColumn4:
 			targetIssues = doneIssues
 			if len(targetIssues) == 0 {
 				if len(blockedIssues) > 0 {
 					targetIssues = blockedIssues
-					m.focusedColumn = 2
+					m.focusManager.SetCurrent(modal.FocusColumn3)
 				} else if len(inProgIssues) > 0 {
 					targetIssues = inProgIssues
-					m.focusedColumn = 1
+					m.focusManager.SetCurrent(modal.FocusColumn2)
 				} else if len(todoIssues) > 0 {
 					targetIssues = todoIssues
-					m.focusedColumn = 0
+					m.focusManager.SetCurrent(modal.FocusColumn1)
 				}
 			}
 		}
 
-		// Safety: if targetIssues is still empty here, just clear detail and return.
 		if len(targetIssues) == 0 {
-			m.issueDetail.SetIssue(models.Issue{})
+			m.setDetailIssueWithComments(models.Issue{})
 			m.submitValidation()
 			return m, tea.Sequence(todoCmd, inProgCmd, blockedCmd, doneCmd)
 		}
@@ -263,249 +451,19 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			newIndex = len(targetIssues) - 1
 		}
 		selectedIssue := targetIssues[newIndex]
-		m.issueDetail.SetIssue(*selectedIssue)
+		m.setDetailIssueWithComments(*selectedIssue)
 		m.submitValidation()
 		return m, tea.Sequence(todoCmd, inProgCmd, blockedCmd, doneCmd, func() tea.Msg {
 			return msgs.SelectIssueMsg{IssueID: selectedIssue.ID}
 		})
 
 	case tea.KeyPressMsg:
-		if m.confirmingDelete {
-			switch msg.String() {
-			case "y", "Y":
-				issueID := m.deleteConfirmID
-				idx := m.deleteConfirmIndex
-				m.confirmingDelete = false
-				m.deleteConfirmID = ""
-				return m, msgs.DeleteIssueCmd(m.app, issueID, idx)
-			case "n", "N", "esc":
-				m.confirmingDelete = false
-				m.deleteConfirmID = ""
-				return m, nil
-			}
-		}
-
-		if m.choosingStatus {
-			switch msg.String() {
-			case "o":
-				issueID := m.statusIssueID
-				m.choosingStatus = false
-				m.statusIssueID = ""
-				return m, msgs.UpdateIssueStatusCmd(m.app, issueID, string(models.StatusOpen))
-			case "i":
-				issueID := m.statusIssueID
-				m.choosingStatus = false
-				m.statusIssueID = ""
-				return m, msgs.UpdateIssueStatusCmd(m.app, issueID, string(models.StatusInProgress))
-			case "b":
-				issueID := m.statusIssueID
-				m.choosingStatus = false
-				m.statusIssueID = ""
-				return m, msgs.UpdateIssueStatusCmd(m.app, issueID, string(models.StatusBlocked))
-			case "r":
-				issueID := m.statusIssueID
-				m.choosingStatus = false
-				m.statusIssueID = ""
-				return m, msgs.UpdateIssueStatusCmd(m.app, issueID, string(models.StatusReadyToSprint))
-			case "c":
-				issueID := m.statusIssueID
-				m.choosingStatus = false
-				m.statusIssueID = ""
-				m.choosingCloseReason = true
-				m.closeReasonIssueID = issueID
-				return m, nil
-			case "esc":
-				m.choosingStatus = false
-				m.statusIssueID = ""
-				return m, nil
-			}
-		}
-
-		if m.choosingCloseReason {
-			var reason string
-			switch msg.String() {
-			case "d":
-				reason = "Done"
-			case "u":
-				reason = "Duplicate issue"
-			case "w":
-				reason = "Won't fix"
-			case "o":
-				reason = "Obsolete"
-			case "h":
-				m.choosingCloseReason = false
-				m.closingOtherReason = true
-				m.closeReasonInput.SetValue("")
-				m.closeReasonInput.Focus()
-				return m, nil
-			case "esc":
-				m.choosingCloseReason = false
-				m.closeReasonIssueID = ""
-				return m, nil
-			}
-
-			if reason != "" {
-				issueID := m.closeReasonIssueID
-				m.choosingCloseReason = false
-				m.closeReasonIssueID = ""
-				return m, msgs.CloseIssueCmd(m.app, issueID, reason)
-			}
-		}
-
-		if m.closingOtherReason {
-			switch msg.String() {
-			case "enter", "ctrl+s":
-				reason := m.closeReasonInput.Value()
-				if reason != "" {
-					issueID := m.closeReasonIssueID
-					m.closingOtherReason = false
-					m.closeReasonIssueID = ""
-					m.closeReasonInput.Blur()
-					return m, msgs.CloseIssueCmd(m.app, issueID, reason)
-				}
-			case "esc":
-				m.closingOtherReason = false
-				m.closeReasonIssueID = ""
-				m.closeReasonInput.Blur()
-				return m, nil
-			}
-			var cmd tea.Cmd
-			m.closeReasonInput, cmd = m.closeReasonInput.Update(msg)
+		fl := m.FocusedIssueList()
+		if fl.FilterState() == list.Filtering {
+			cmd, _ := fl.Update(msg)
 			return m, cmd
 		}
 
-		if m.choosingPriority {
-			switch msg.String() {
-			case "0", "1", "2", "3", "4":
-				issueID := m.priorityIssueID
-				priority := int(msg.String()[0] - '0')
-				m.choosingPriority = false
-				m.priorityIssueID = ""
-				return m, msgs.UpdateIssuePriorityCmd(m.app, issueID, priority)
-			case "esc":
-				m.choosingPriority = false
-				m.priorityIssueID = ""
-				return m, nil
-			default:
-				return m, nil
-			}
-		}
-
-		if m.choosingType {
-			switch msg.String() {
-			case "b":
-				issueID := m.typeIssueID
-				m.choosingType = false
-				m.typeIssueID = ""
-				return m, msgs.UpdateIssueTypeCmd(m.app, issueID, models.TypeBug)
-			case "f":
-				issueID := m.typeIssueID
-				m.choosingType = false
-				m.typeIssueID = ""
-				return m, msgs.UpdateIssueTypeCmd(m.app, issueID, models.TypeFeature)
-			case "t":
-				issueID := m.typeIssueID
-				m.choosingType = false
-				m.typeIssueID = ""
-				return m, msgs.UpdateIssueTypeCmd(m.app, issueID, models.TypeTask)
-			case "e":
-				issueID := m.typeIssueID
-				m.choosingType = false
-				m.typeIssueID = ""
-				return m, msgs.UpdateIssueTypeCmd(m.app, issueID, models.TypeEpic)
-			case "c":
-				issueID := m.typeIssueID
-				m.choosingType = false
-				m.typeIssueID = ""
-				return m, msgs.UpdateIssueTypeCmd(m.app, issueID, models.TypeChore)
-			case "esc":
-				m.choosingType = false
-				m.typeIssueID = ""
-				return m, nil
-			default:
-				return m, nil
-			}
-		}
-
-		if m.creatingIssue {
-			if msg.String() == "enter" {
-				title := m.createTitleInput.Value()
-				if title != "" {
-					return m, msgs.CreateIssueCmd(m.app, title)
-				}
-			}
-			if msg.String() == "esc" {
-				m.creatingIssue = false
-				m.createTitleInput.Blur()
-				m.createTitleInput.Reset()
-				return m, nil
-			}
-			var cmd tea.Cmd
-			m.createTitleInput, cmd = m.createTitleInput.Update(msg)
-			return m, cmd
-		}
-
-		if m.editingAssignee {
-			if msg.String() == "enter" {
-				assignee := m.assigneeInput.Value()
-				return m, msgs.UpdateIssueAssigneeCmd(m.app, m.assigneeIssueID, assignee)
-			}
-			if msg.String() == "esc" {
-				m.editingAssignee = false
-				m.assigneeIssueID = ""
-				m.assigneeInput.Blur()
-				return m, nil
-			}
-			var cmd tea.Cmd
-			m.assigneeInput, cmd = m.assigneeInput.Update(msg)
-			return m, cmd
-		}
-
-		if m.editingTitle {
-			if msg.String() == "enter" {
-				newTitle := m.titleInput.Value()
-				if newTitle != "" {
-					return m, msgs.UpdateIssueTitleCmd(m.app, m.editingIssueID, newTitle)
-				}
-			}
-			if msg.String() == "esc" {
-				m.editingTitle = false
-				m.editingIssueID = ""
-				m.titleInput.Blur()
-				return m, nil
-			}
-			var cmd tea.Cmd
-			m.titleInput, cmd = m.titleInput.Update(msg)
-			return m, cmd
-		}
-
-		if m.editingDescription {
-			if msg.String() == "ctrl+s" {
-				issueID := m.editingDescIssueID
-				newDesc := m.descriptionInput.Value()
-				m.editingDescription = false
-				m.editingDescIssueID = ""
-				m.descriptionInput.Blur()
-				return m, msgs.UpdateIssueDescriptionCmd(m.app, issueID, newDesc)
-			}
-			if msg.String() == "esc" {
-				m.editingDescription = false
-				m.editingDescIssueID = ""
-				m.descriptionInput.Blur()
-				return m, nil
-			}
-			var cmd tea.Cmd
-			m.descriptionInput, cmd = m.descriptionInput.Update(msg)
-			return m, cmd
-		}
-
-		focusedList := m.FocusedIssueList()
-		if focusedList.FilterState() == list.Filtering {
-			cmd, _ := focusedList.Update(msg)
-			return m, cmd
-		}
-
-		// On main dashboard, ESC does nothing; only q quits; like in lazybeads.
 		if msg.String() == "esc" {
 			return m, nil
 		}
@@ -514,6 +472,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if cmd != nil {
 			return m, cmd
 		}
+
 	case components.ValidationFeedbackMsg:
 		m.currentFeedback = msg.Feedback
 		if msg.Feedback.Success {
@@ -525,6 +484,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.WindowSizeMsg:
 		m.width = msg.Width
 		m.height = msg.Height
+		m.modalManager.SetSize(msg.Width, msg.Height)
 		return m, nil
 	}
 
@@ -532,8 +492,20 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	cmd, changed := fl.Update(msg)
 	if changed {
 		if selected := fl.SelectedItem(); selected.ID != "" {
-			m.issueDetail.SetIssue(selected.Issue)
+			m.setDetailIssueWithComments(selected.Issue)
 		}
 	}
+
+	// Only propagate non-key messages to other lists (SetItems, etc.)
+	// Key messages should only affect the focused list
+	if _, isKeyMsg := msg.(tea.KeyPressMsg); !isKeyMsg {
+		// Update all lists to ensure they receive commands like SetItems
+		todoCmd, _ := m.todoList.Update(msg)
+		inProgCmd, _ := m.inProgList.Update(msg)
+		blockedCmd, _ := m.blockedList.Update(msg)
+		doneCmd, _ := m.doneList.Update(msg)
+		return m, tea.Sequence(cmd, todoCmd, inProgCmd, blockedCmd, doneCmd)
+	}
+
 	return m, cmd
 }

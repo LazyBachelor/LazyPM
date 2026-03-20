@@ -1,19 +1,20 @@
 package kanban
 
 import (
-	"charm.land/bubbletea/v2"
+	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
 	"github.com/LazyBachelor/LazyPM/pkg/tui/components"
-	"github.com/LazyBachelor/LazyPM/pkg/tui/styles"
+	"github.com/LazyBachelor/LazyPM/pkg/tui/modal"
+	"github.com/LazyBachelor/LazyPM/internal/style"
 )
 
 func (m *Model) View() tea.View {
 	if m.width == 0 || m.height == 0 {
-		// if there is no space just print a loading message
 		return tea.NewView("Loading...")
 	}
 
 	m.helpBar.SetWidth(m.width)
+	m.modalManager.SetSize(m.width, m.height)
 
 	header := m.header.View(m.width)
 	headerHeight := m.header.Height()
@@ -23,45 +24,40 @@ func (m *Model) View() tea.View {
 
 	contentHeight := m.height - headerHeight - footerHeight
 	totalContentWidth := m.width - 1
-	colWidth := totalContentWidth / 4
-	if colWidth < 20 {
-		colWidth = 20
+	colWidth := max(totalContentWidth/4, 20)
+
+	// Calculate initial list height (half of content height, minimum 5 rows)
+	listHeight := contentHeight / 2
+	if listHeight < 5 {
+		listHeight = contentHeight
 	}
 
-	// Leave some space for the detail view below the board.
-	boardHeight := contentHeight / 2
-	if boardHeight < 5 {
-		boardHeight = contentHeight
-	}
+	m.todoList.SetSize(colWidth, listHeight-1)
+	m.inProgList.SetSize(colWidth, listHeight-1)
+	m.blockedList.SetSize(colWidth, listHeight-1)
+	m.doneList.SetSize(colWidth, listHeight-1)
 
-	m.todoList.SetSize(colWidth, boardHeight-1)
-	m.inProgList.SetSize(colWidth, boardHeight-1)
-	m.blockedList.SetSize(colWidth, boardHeight-1)
-	m.doneList.SetSize(colWidth, boardHeight-1)
+	// Only highlight the focused column's selected row
+	currentFocus := m.focusManager.Current()
+	m.todoList.SetHighlightSelected(currentFocus == modal.FocusColumn1)
+	m.inProgList.SetHighlightSelected(currentFocus == modal.FocusColumn2)
+	m.blockedList.SetHighlightSelected(currentFocus == modal.FocusColumn3)
+	m.doneList.SetHighlightSelected(currentFocus == modal.FocusColumn4)
 
-	// Only highlight the selected row in the focused column.
-	m.todoList.SetHighlightSelected(!m.focusOnDetail && m.focusedColumn == 0)
-	m.inProgList.SetHighlightSelected(!m.focusOnDetail && m.focusedColumn == 1)
-	m.blockedList.SetHighlightSelected(!m.focusOnDetail && m.focusedColumn == 2)
-	m.doneList.SetHighlightSelected(!m.focusOnDetail && m.focusedColumn == 3)
+	todoLabel := style.LabelStyle.Render("To Do")
+	inProgLabel := style.LabelStyle.Render("In Progress")
+	blockedLabel := style.LabelStyle.Render("Blocked")
+	doneLabel := style.LabelStyle.Render("Done")
 
-	// Detail view takes full width below the board.
-	m.issueDetail.SetSize(totalContentWidth, contentHeight-boardHeight)
-
-	todoLabel := styles.LabelStyle.Render("To Do")
-	inProgLabel := styles.LabelStyle.Render("In Progress")
-	blockedLabel := styles.LabelStyle.Render("Blocked")
-	doneLabel := styles.LabelStyle.Render("Done")
-
-	highlight := lipgloss.NewStyle().Foreground(styles.Primary).Bold(true)
-	switch m.focusedColumn {
-	case 0:
+	highlight := lipgloss.NewStyle().Foreground(style.Primary).Bold(true)
+	switch currentFocus {
+	case modal.FocusColumn1:
 		todoLabel = highlight.Render("To Do ▶")
-	case 1:
+	case modal.FocusColumn2:
 		inProgLabel = highlight.Render("In Progress ▶")
-	case 2:
+	case modal.FocusColumn3:
 		blockedLabel = highlight.Render("Blocked ▶")
-	case 3:
+	case modal.FocusColumn4:
 		doneLabel = highlight.Render("Done ▶")
 	}
 
@@ -71,10 +67,13 @@ func (m *Model) View() tea.View {
 	doneCol := lipgloss.JoinVertical(lipgloss.Left, doneLabel, m.doneList.View())
 
 	board := lipgloss.JoinHorizontal(lipgloss.Left, todoCol, inProgCol, blockedCol, doneCol)
+	boardHeight := lipgloss.Height(board)
+
+	detailHeight := max(contentHeight-boardHeight, 5)
+	m.issueDetail.SetSize(totalContentWidth, detailHeight)
+
 	content := lipgloss.JoinVertical(lipgloss.Left, board, m.issueDetail.View())
 
-	// Add spacer to lock footer to bottom of screen when content is shorter than available space
-	// This is to avoid having the footer floating above the bottom of the screen
 	mainView := lipgloss.JoinVertical(lipgloss.Left, header, content, footer)
 	mainViewHeight := lipgloss.Height(mainView)
 	if mainViewHeight < m.height {
@@ -83,60 +82,5 @@ func (m *Model) View() tea.View {
 		mainView = lipgloss.JoinVertical(lipgloss.Left, header, content, spacer, footer)
 	}
 
-	if m.choosingCloseReason {
-		reasonContent := lipgloss.JoinVertical(lipgloss.Left,
-			styles.LabelStyle.Render("Choose closing reason for "+m.closeReasonIssueID+":"),
-			lipgloss.NewStyle().Foreground(styles.FaintText).Render("d = Done   u = Duplicate issue   w = Won't fix   o = Obsolete   h = Other"),
-			lipgloss.NewStyle().Foreground(styles.FaintText).Render("Esc = cancel"),
-		)
-		reasonBoxWidth := min(70, m.width-4)
-		reasonBox := styles.ContainerStyle.
-			Width(reasonBoxWidth).
-			BorderForeground(styles.PrimaryBorder).
-			Render(reasonContent)
-		return tea.NewView(lipgloss.Place(m.width, m.height, lipgloss.Center, lipgloss.Center, reasonBox))
-	}
-
-	if m.closingOtherReason {
-		editBoxWidth := min(60, m.width-4)
-		m.closeReasonInput.SetWidth(editBoxWidth - 2)
-		m.closeReasonInput.SetHeight(4)
-		editContent := lipgloss.JoinVertical(lipgloss.Left,
-			styles.LabelStyle.Render("Enter closing reason for "+m.closeReasonIssueID+" (Enter or Ctrl+S to save, Esc to cancel):"),
-			m.closeReasonInput.View(),
-		)
-		editBox := styles.ContainerStyle.
-			Width(editBoxWidth).
-			BorderForeground(styles.PrimaryBorder).
-			Render(editContent)
-		return tea.NewView(lipgloss.Place(m.width, m.height, lipgloss.Center, lipgloss.Center, editBox))
-	}
-
-	return tea.NewView(components.RenderModals(
-		m.width,
-		m.height,
-		m.editingTitle,
-		m.titleInput.View(),
-		m.editingDescription,
-		m.descriptionInput.View(),
-		m.creatingIssue,
-		m.createTitleInput.View(),
-		m.confirmingDelete,
-		m.deleteConfirmID,
-		m.choosingStatus,
-		m.statusIssueID,
-		m.choosingPriority,
-		m.priorityIssueID,
-		m.choosingType,
-		m.typeIssueID,
-		m.editingAssignee,
-		m.assigneeInput.View(),
-		mainView,
-	))
-
-}
-
-func (m *Model) footer() string {
-	// Kept for backwards compatibility; delegate to the shared helper.
-	return components.RenderFooter(m.width, &m.helpBar, m.currentFeedback)
+	return tea.NewView(m.modalManager.RenderWithMainView(mainView))
 }

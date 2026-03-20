@@ -10,35 +10,47 @@ import (
 
 // Msg types used by both dashboard and kanban TUI views.
 type (
+	SwitchToDashboardMsg struct{}
+
+	SwitchToKanbanBoardMsg struct{}
+
+	SelectIssueMsg struct{ IssueID string }
+
 	TitleUpdatedMsg struct {
 		IssueID string
 		Err     error
 	}
+
 	DescriptionUpdatedMsg struct {
 		IssueID string
 		Err     error
 	}
+
 	StatusUpdatedMsg struct {
 		IssueID string
 		Err     error
 	}
+
 	PriorityUpdatedMsg struct {
 		IssueID string
 		Err     error
 	}
+
 	TypeUpdatedMsg struct {
 		IssueID string
 		Err     error
 	}
+
 	AssigneeUpdatedMsg struct {
 		IssueID string
 		Err     error
 	}
-	SelectIssueMsg struct{ IssueID string }
-	CreatedMsg     struct {
+
+	CreatedMsg struct {
 		Issue *models.Issue
 		Err   error
 	}
+
 	DeletedMsg struct {
 		IssueID       string
 		Err           error
@@ -50,11 +62,14 @@ type (
 		Err     error
 	}
 
-	// SwitchToDashboardMsg signals to switch to the main dashboard view.
-	SwitchToDashboardMsg struct{}
+	ModalCompletedMsg struct {
+		ModalID string
+		Result  interface{}
+	}
 
-	// SwitchToKanbanBoardMsg signals to switch to the kanban board view.
-	SwitchToKanbanBoardMsg struct{}
+	ModalCancelledMsg struct {
+		ModalID string
+	}
 )
 
 // UpdateIssueTitleCmd returns a command that updates an issue's title.

@@ -2,7 +2,7 @@ package components
 
 import (
 	"charm.land/lipgloss/v2"
-	"github.com/LazyBachelor/LazyPM/pkg/tui/styles"
+	"github.com/LazyBachelor/LazyPM/internal/style"
 )
 
 type Header struct {
@@ -14,7 +14,7 @@ func NewHeader(title string) Header {
 }
 
 func (h Header) View(width int) string {
-	title := styles.HeaderTitleStyle.Render(h.Title)
+	title := style.HeaderTitleStyle.Render(h.Title)
 
 	return lipgloss.PlaceHorizontal(
 		width,

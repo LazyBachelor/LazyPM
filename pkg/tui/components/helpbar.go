@@ -4,7 +4,7 @@ import (
 	"strings"
 
 	"charm.land/lipgloss/v2"
-	"github.com/LazyBachelor/LazyPM/pkg/tui/styles"
+	"github.com/LazyBachelor/LazyPM/internal/style"
 )
 
 type ViewKind int
@@ -66,7 +66,7 @@ func (h HelpBar) shortHelp() string {
 	for _, item := range h.config.ShortItems {
 		items = append(
 			items,
-			styles.HighlightKey(item.Key)+item.Desc+"  ",
+			style.HighlightKey(item.Key)+item.Desc+"  ",
 		)
 	}
 
@@ -74,7 +74,7 @@ func (h HelpBar) shortHelp() string {
 
 	return lipgloss.NewStyle().
 		Border(lipgloss.Border{Top: "─"}, true, false, false, false).
-		BorderForeground(styles.SecondaryBorder).
+		BorderForeground(style.SecondaryBorder).
 		Padding(0, 1).
 		Width(h.width).
 		Render(content)
@@ -91,7 +91,7 @@ func (h HelpBar) fullHelp() string {
 
 	renderItem := func(item HelpItem) string {
 		return cellStyle.Render(
-			keyStyle.Render(styles.HighlightKey(item.Key)) + " " + descStyle.Render(item.Desc),
+			keyStyle.Render(style.HighlightKey(item.Key)) + " " + descStyle.Render(item.Desc),
 		)
 	}
 
@@ -115,7 +115,7 @@ func (h HelpBar) fullHelp() string {
 	content := lipgloss.JoinVertical(lipgloss.Left, result...)
 	return lipgloss.NewStyle().
 		Border(lipgloss.Border{Top: "─"}, true, false, false, false).
-		BorderForeground(styles.SecondaryBorder).
+		BorderForeground(style.SecondaryBorder).
 		Padding(0, 1).
 		Width(h.width).
 		Render(content)

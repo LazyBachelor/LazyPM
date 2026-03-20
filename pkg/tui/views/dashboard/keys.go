@@ -7,7 +7,7 @@ import (
 	"github.com/LazyBachelor/LazyPM/pkg/tui/msgs"
 )
 
-type DashboardKeyMap struct {
+type KeyMap struct {
 	components.CommonKeyMap
 	SwitchToKanbanBoard key.Binding
 	Quit                key.Binding
@@ -26,7 +26,7 @@ type DashboardKeyMap struct {
 	DeleteIssue         key.Binding
 }
 
-var defaultDashboardKeyMap = DashboardKeyMap{
+var defaultDashboardKeyMap = KeyMap{
 	CommonKeyMap: components.DefaultCommonKeyMap(),
 	SwitchToKanbanBoard: key.NewBinding(
 		key.WithKeys("v"),
@@ -69,73 +69,85 @@ var defaultDashboardKeyMap = DashboardKeyMap{
 	),
 }
 
-func (d *Model) handleKeyPressMsg(msg tea.KeyPressMsg) tea.Cmd {
+func (m *Model) handleKeyPressMsg(msg tea.KeyPressMsg) tea.Cmd {
 	var cmd tea.Cmd
 
 	switch {
-	case key.Matches(msg, d.keyMap.Help):
-		d.helpBar.ToggleHelp()
-		d.logAction("tui toggled help")
-	case key.Matches(msg, d.keyMap.Quit):
-		d.logAction("tui quit requested")
+	case m.notInModalMsgWithKey(msg, m.keyMap.Help):
+		m.helpBar.ToggleHelp()
+		m.logAction("tui toggled help")
+
+	case m.notInModalMsgWithKey(msg, m.keyMap.Quit):
+		m.logAction("tui quit requested")
 		return tea.Quit
-	case !d.IsInModal() && key.Matches(msg, d.keyMap.SwitchToKanbanBoard):
+
+	case m.notInModalMsgWithKey(msg, m.keyMap.SwitchToKanbanBoard):
 		return func() tea.Msg { return msgs.SwitchToKanbanBoardMsg{} }
-	case d.IsFocusedOnDetail() && key.Matches(msg, d.keyMap.ScrollUp):
-		d.issueDetail.ScrollUp(1)
-		d.logAction("tui scrolled issue detail up")
-	case d.IsFocusedOnDetail() && key.Matches(msg, d.keyMap.ScrollDown):
-		d.issueDetail.ScrollDown(1)
-		d.logAction("tui scrolled issue detail down")
-	case !d.IsInModal() && !d.addingComment && key.Matches(msg, d.keyMap.EditTitle):
-		if selected := d.issueList.SelectedItem(); selected.ID != "" {
-			d.startEditTitle(selected)
-			cmd = d.titleInput.Focus()
-			d.logAction("tui started editing issue title")
+
+	case m.notInModalMsgWithKey(msg, m.keyMap.ScrollUp):
+		m.issueDetail.ScrollUp(1)
+		m.logAction("tui scrolled issue detail up")
+
+	case m.notInModalMsgWithKey(msg, m.keyMap.ScrollDown):
+		m.issueDetail.ScrollDown(1)
+		m.logAction("tui scrolled issue detail down")
+
+	case m.notInModalMsgWithKey(msg, m.keyMap.EditTitle):
+		if selected := m.issueList.SelectedItem(); selected.ID != "" {
+			cmd = m.startEditTitle(selected)
+			m.logAction("tui started editing issue title")
 		}
-	case !d.IsInModal() && !d.addingComment && key.Matches(msg, d.keyMap.EditDescription):
-		if selected := d.issueList.SelectedItem(); selected.ID != "" {
-			d.startEditDescription(selected)
-			cmd = d.descriptionInput.Focus()
-			d.logAction("tui started editing issue description")
+
+	case m.notInModalMsgWithKey(msg, m.keyMap.EditDescription):
+		if selected := m.issueList.SelectedItem(); selected.ID != "" {
+			cmd = m.startEditDescription(selected)
+			m.logAction("tui started editing issue description")
 		}
-	case !d.IsInModal() && !d.addingComment && key.Matches(msg, d.keyMap.ChangeStatus):
-		if selected := d.issueList.SelectedItem(); selected.ID != "" {
-			d.startChooseStatus(selected)
-			d.logAction("tui opened status picker")
+
+	case m.notInModalMsgWithKey(msg, m.keyMap.ChangeStatus):
+		if selected := m.issueList.SelectedItem(); selected.ID != "" {
+			cmd = m.startChooseStatus(selected)
+			m.logAction("tui opened status picker")
 		}
-	case !d.IsInModal() && !d.addingComment && key.Matches(msg, d.keyMap.ChangePriority):
-		if selected := d.issueList.SelectedItem(); selected.ID != "" {
-			d.startChoosePriority(selected)
-			d.logAction("tui opened priority picker")
+
+	case m.notInModalMsgWithKey(msg, m.keyMap.ChangePriority):
+		if selected := m.issueList.SelectedItem(); selected.ID != "" {
+			cmd = m.startChoosePriority(selected)
+			m.logAction("tui opened priority picker")
 		}
-	case !d.IsInModal() && !d.addingComment && key.Matches(msg, d.keyMap.ChangeType):
-		if selected := d.issueList.SelectedItem(); selected.ID != "" {
-			d.startChooseType(selected)
-			d.logAction("tui opened type picker")
+
+	case m.notInModalMsgWithKey(msg, m.keyMap.ChangeType):
+		if selected := m.issueList.SelectedItem(); selected.ID != "" {
+			cmd = m.startChooseType(selected)
+			m.logAction("tui opened type picker")
 		}
-	case !d.IsInModal() && !d.addingComment && key.Matches(msg, d.keyMap.ChangeAssignee):
-		if selected := d.issueList.SelectedItem(); selected.ID != "" {
-			d.startEditAssignee(selected)
-			cmd = d.assigneeInput.Focus()
-			d.logAction("tui started editing assignee")
+
+	case m.notInModalMsgWithKey(msg, m.keyMap.ChangeAssignee):
+		if selected := m.issueList.SelectedItem(); selected.ID != "" {
+			cmd = m.startEditAssignee(selected)
+			m.logAction("tui started editing assignee")
 		}
-	case !d.IsInModal() && !d.addingComment && key.Matches(msg, d.keyMap.AddComment):
-		if selected := d.issueList.SelectedItem(); selected.ID != "" {
-			d.startAddComment(selected)
-			cmd = d.commentInput.Focus()
+
+	case m.notInModalMsgWithKey(msg, m.keyMap.AddComment):
+		if selected := m.issueList.SelectedItem(); selected.ID != "" {
+			cmd = m.startAddComment(selected)
 		}
-	case !d.editingTitle && !d.creatingIssue && !d.editingDescription && !d.choosingStatus && !d.choosingPriority && !d.confirmingDelete && !d.choosingType && !d.editingAssignee && !d.addingComment && key.Matches(msg, d.keyMap.AddIssue):
-		d.startCreateIssue()
-		cmd = d.createTitleInput.Focus()
-		d.logAction("tui started creating issue")
-	case !d.IsInModal() && !d.addingComment && key.Matches(msg, d.keyMap.DeleteIssue):
-		fl := d.issueList
+
+	case m.notInModalMsgWithKey(msg, m.keyMap.AddIssue):
+		cmd = m.startCreateIssue()
+		m.logAction("tui started creating issue")
+
+	case m.notInModalMsgWithKey(msg, m.keyMap.DeleteIssue):
+		fl := m.issueList
 		if selected := fl.SelectedItem(); selected.ID != "" {
-			d.startConfirmDelete(selected.ID, fl.Index())
-			d.logAction("tui opened delete confirmation")
+			cmd = m.startConfirmDelete(selected.ID, fl.Index())
+			m.logAction("tui opened delete confirmation")
 		}
 	}
 
 	return cmd
+}
+
+func (m *Model) notInModalMsgWithKey(msg tea.KeyPressMsg, keyBinding key.Binding) bool {
+	return !m.IsInModal() && key.Matches(msg, keyBinding)
 }
