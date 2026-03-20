@@ -85,9 +85,8 @@ func NewDashboard(app *app.App, feedbackChan chan models.ValidationFeedback, qui
 	}
 
 	allIssues, _ := app.Issues.SearchIssues(context.Background(), "", models.IssueFilter{})
-	m.issueList = components.NewIssueListFromIssues(app, components.OpenAndInProgressOnly(allIssues), 0, 0)
+	m.issueList = components.NewIssueListFromIssues(app, components.SortedIssues(allIssues), 0, 0)
 	m.issueDetail = components.NewIssueDetail()
-	m.closedIssueList = components.NewIssueListFromIssues(app, components.ClosedOnly(allIssues), 0, 0)
 	m.helpBar = components.NewHelpBar(components.ViewIssues)
 
 	inputs := components.NewIssueInputs()
@@ -220,53 +219,4 @@ func (m *Model) IsFocusedOnDetail() bool {
 		return m.focusedPaneMain == 1
 	}
 	return m.focusedPaneClosed == 1
-}
-
-func (m *Model) FocusList() {
-	if m.focusedWindow == 0 {
-		m.focusedPaneMain = 0
-	} else {
-		m.focusedPaneClosed = 0
-	}
-	m.issueDetail.SetFocused(false)
-}
-
-func (m *Model) FocusDetail() {
-	if m.focusedWindow == 0 {
-		m.focusedPaneMain = 1
-	} else {
-		m.focusedPaneClosed = 1
-	}
-	m.issueDetail.SetFocused(true)
-}
-
-func (m *Model) ToggleFocus() {
-	if m.IsFocusedOnList() {
-		m.FocusDetail()
-	} else {
-		m.FocusList()
-	}
-}
-
-func (m *Model) FocusedIssueList() *IssueList {
-	// return the issue list of the currently focused window so we can use two tui windows for issues
-	if m.focusedWindow == 0 {
-		return &m.issueList
-	}
-	return &m.closedIssueList
-}
-
-func (m *Model) ToggleFocusedWindow() {
-	// switch focus between open/in-progress and closed issues window
-	m.focusedWindow = 1 - m.focusedWindow
-	if m.focusedWindow == 0 {
-		if selected := m.issueList.SelectedItem(); selected.ID != "" {
-			m.setDetailIssueWithComments(selected.Issue)
-		}
-	} else {
-		if selected := m.closedIssueList.SelectedItem(); selected.ID != "" {
-			m.setDetailIssueWithComments(selected.Issue)
-		}
-	}
-	m.issueDetail.SetFocused(m.IsFocusedOnDetail())
 }
