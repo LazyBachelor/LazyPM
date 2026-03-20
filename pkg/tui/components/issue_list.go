@@ -14,7 +14,6 @@ import (
 	"github.com/LazyBachelor/LazyPM/internal/app"
 	"github.com/LazyBachelor/LazyPM/internal/models"
 	"github.com/LazyBachelor/LazyPM/internal/style"
-	"github.com/LazyBachelor/LazyPM/pkg/tui/styles"
 	"github.com/muesli/reflow/truncate"
 )
 
