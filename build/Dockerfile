@@ -6,8 +6,7 @@ RUN apk add --no-cache \
 	gcompat \
 	libc6-compat \
 	bash \
-	bash-completion \
-	alacritty && \
+	bash-completion && \
 	update-ca-certificates
 
 COPY pm /usr/local/bin/pm

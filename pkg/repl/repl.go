@@ -29,10 +29,11 @@ Type 'status' to check task progress.`
 )
 
 type REPL struct {
-	feedbackChan chan ValidationFeedback
-	quitChan     chan bool
-	submitChan   chan<- struct{}
-	app          *App
+	feedbackChan   chan ValidationFeedback
+	quitChan       chan bool
+	submitChan     chan<- struct{}
+	completionChan chan struct{}
+	app            *App
 
 	currentFeedback ValidationFeedback
 	exitRequested   bool
@@ -49,6 +50,7 @@ func (r *REPL) Run(ctx context.Context, config app.Config) error {
 	r.taskCompleted = false
 	r.exitRequested = false
 	r.currentFeedback = ValidationFeedback{}
+	r.completionChan = make(chan struct{}, 1)
 
 	// Set terminal to raw mode to capture input properly in the REPL.
 	// This allows us to handle input character by character and provide a better user experience.
@@ -89,28 +91,33 @@ func (r *REPL) Run(ctx context.Context, config app.Config) error {
 
 	// Start the REPL loop, which continues until the user types "exit" or "quit" or task completes.
 	reader := bufio.NewReader(os.Stdin)
+replLoop:
 	for !r.exitRequested {
-		// Check if task completed - wait for Enter before exiting
-		if r.taskCompleted {
-			fmt.Println(style.TitleStyle.Render("Task completed successfully!"))
-			fmt.Print("Press Enter to exit...")
-			// Restore terminal to normal mode for input
-			term.Restore(int(os.Stdin.Fd()), oldState)
-			reader.ReadString('\n')
-			break
-		}
-
 		// Check if we should exit before prompting (non-blocking check)
 		if r.exitRequested {
 			break
 		}
 
 		// Prompt the user for input, and provide suggestions.
-		input := prompt.Input(
-			PromptPrefix,
-			completer,
-			promptOptions(history)...,
-		)
+		inputChan := make(chan string, 1)
+		go func(hist []string) {
+			inputChan <- prompt.Input(
+				PromptPrefix,
+				completer,
+				promptOptions(hist)...,
+			)
+		}(history)
+
+		var input string
+		select {
+		case input = <-inputChan:
+		case <-r.completionChan:
+			fmt.Println(style.TitleStyle.Render("Task completed successfully!"))
+			fmt.Print("Press Enter to exit...")
+			term.Restore(int(os.Stdin.Fd()), oldState)
+			reader.ReadString('\n')
+			break replLoop
+		}
 
 		// Check again after prompt returns (in case validation completed while waiting)
 		if r.exitRequested {
@@ -118,15 +125,6 @@ func (r *REPL) Run(ctx context.Context, config app.Config) error {
 		}
 
 		// Check if task completed while waiting at prompt
-		if r.taskCompleted {
-			fmt.Println(style.TitleStyle.Render("Task completed successfully!"))
-			fmt.Print("Press Enter to exit...")
-			// Restore terminal to normal mode for input
-			term.Restore(int(os.Stdin.Fd()), oldState)
-			reader.ReadString('\n')
-			break
-		}
-
 		// Trim whitespace from the input to ensure consistent command processing.
 		input = strings.TrimSpace(input)
 
@@ -144,7 +142,16 @@ func (r *REPL) Run(ctx context.Context, config app.Config) error {
 		// Add the input to the history for future navigation.
 		history = append(history, input)
 
-		output, err := execute(input)
+		output, err := r.execute(input)
+
+		// Send submit signal to trigger validation after any command
+		if r.submitChan != nil {
+			select {
+			case r.submitChan <- struct{}{}:
+			default:
+			}
+		}
+
 		if err != nil {
 			// Show command output (even on error) in normal text style
 			if output != "" {
@@ -177,6 +184,12 @@ func (r *REPL) watchValidation() {
 			}
 			if feedback.Success {
 				r.taskCompleted = true
+				if r.completionChan != nil {
+					select {
+					case r.completionChan <- struct{}{}:
+					default:
+					}
+				}
 				return
 			}
 		case <-r.quitChan:

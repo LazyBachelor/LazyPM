@@ -1,13 +1,13 @@
 package kanban
 
 import (
+	"charm.land/bubbles/v2/key"
+	tea "charm.land/bubbletea/v2"
 	"github.com/LazyBachelor/LazyPM/pkg/tui/components"
 	"github.com/LazyBachelor/LazyPM/pkg/tui/msgs"
-	"github.com/charmbracelet/bubbles/key"
-	tea "github.com/charmbracelet/bubbletea"
 )
 
-type KanbanKeyMap struct {
+type KeyMap struct {
 	components.CommonKeyMap
 	SwitchToDashboard key.Binding
 	MoveColumnLeft    key.Binding
@@ -15,17 +15,14 @@ type KanbanKeyMap struct {
 	MoveIssueLeft     key.Binding
 	MoveIssueRight    key.Binding
 	SubmitValidation  key.Binding
+	AddComment        key.Binding
 }
 
-var defaultKanbanKeyMap = KanbanKeyMap{
+var defaultKanbanKeyMap = KeyMap{
 	CommonKeyMap: components.DefaultCommonKeyMap(),
-	SubmitValidation: key.NewBinding(
-		key.WithKeys("S"),
-		key.WithHelp("S", "submit validation"),
-	),
 	SwitchToDashboard: key.NewBinding(
 		key.WithKeys("v"),
-		key.WithHelp("v", "dashboard 1"),
+		key.WithHelp("v", "dashboard"),
 	),
 	MoveColumnLeft: key.NewBinding(
 		key.WithKeys("h"),
@@ -43,86 +40,87 @@ var defaultKanbanKeyMap = KanbanKeyMap{
 		key.WithKeys("right", "]"),
 		key.WithHelp("→/]", "move issue right"),
 	),
+	AddComment: key.NewBinding(
+		key.WithKeys("c"),
+		key.WithHelp("c", "add comment"),
+	),
 }
 
-func (d *Model) handleKeyMsg(msg tea.KeyMsg) tea.Cmd {
+func (m *Model) handleKeyPressMsg(msg tea.KeyPressMsg) tea.Cmd {
 	var cmd tea.Cmd
 
 	switch {
-	case key.Matches(msg, d.keyMap.SubmitValidation):
-		if d.submitChan != nil {
-			select {
-			case d.submitChan <- struct{}{}:
-			default:
-			}
-		}
-	case key.Matches(msg, d.keyMap.Help):
-		d.helpBar.ToggleHelp()
-	case key.Matches(msg, d.keyMap.Quit):
-		d.startConfirmQuit()
-		return nil
-	case !d.IsInModal() && msg.String() == " ":
-		return func() tea.Msg { return nil } // consume space
-	case !d.IsInModal() && key.Matches(msg, d.keyMap.SwitchToDashboard):
+	case m.notInModalMsgWithKey(msg, m.keyMap.Help):
+		m.helpBar.ToggleHelp()
+
+	case m.notInModalMsgWithKey(msg, m.keyMap.Quit):
+		return tea.Quit
+
+	case m.notInModalMsgWithKey(msg, m.keyMap.SwitchToDashboard):
 		return func() tea.Msg { return msgs.SwitchToDashboardMsg{} }
-	case !d.IsInModal() && key.Matches(msg, d.keyMap.MoveColumnLeft):
-		if d.focusedColumn > 0 {
-			d.focusedColumn--
-			d.updateDetailFromSelection()
+
+	case m.notInModalMsgWithKey(msg, m.keyMap.MoveColumnLeft):
+		m.focusManager.PreviousColumn()
+		m.updateDetailFromSelection()
+
+	case m.notInModalMsgWithKey(msg, m.keyMap.MoveColumnRight):
+		m.focusManager.NextColumn()
+		m.updateDetailFromSelection()
+
+	case m.notInModalMsgWithKey(msg, m.keyMap.MoveIssueRight):
+		cmd = m.moveIssue(+1)
+
+	case m.notInModalMsgWithKey(msg, m.keyMap.MoveIssueLeft):
+		cmd = m.moveIssue(-1)
+
+	case m.IsFocusedOnDetail() && key.Matches(msg, m.keyMap.ScrollUp):
+		m.issueDetail.ScrollUp(1)
+
+	case m.notInModalMsgWithKey(msg, m.keyMap.ScrollDown):
+		m.issueDetail.ScrollDown(1)
+
+	case m.notInModalMsgWithKey(msg, m.keyMap.EditTitle):
+		if selected := m.FocusedIssueList().SelectedItem(); selected.ID != "" {
+			cmd = m.startEditTitle(selected)
 		}
-	case !d.IsInModal() && key.Matches(msg, d.keyMap.MoveColumnRight):
-		if d.focusedColumn < 3 {
-			d.focusedColumn++
-			d.updateDetailFromSelection()
+	case m.notInModalMsgWithKey(msg, m.keyMap.EditDescription):
+		if selected := m.FocusedIssueList().SelectedItem(); selected.ID != "" {
+			cmd = m.startEditDescription(selected)
 		}
-	case !d.IsInModal() && key.Matches(msg, d.keyMap.MoveIssueRight):
-		cmd = d.moveIssue(+1)
-	case !d.IsInModal() && key.Matches(msg, d.keyMap.MoveIssueLeft):
-		cmd = d.moveIssue(-1)
-	case d.IsFocusedOnList() && key.Matches(msg, d.keyMap.SelectIssue):
-		d.FocusDetail()
-	case d.IsFocusedOnDetail() && (key.Matches(msg, d.keyMap.BackToList) || key.Matches(msg, d.keyMap.SelectIssue)):
-		d.FocusList()
-	case d.IsFocusedOnDetail() && key.Matches(msg, d.keyMap.ScrollUp):
-		d.issueDetail.ScrollUp(1)
-	case d.IsFocusedOnDetail() && key.Matches(msg, d.keyMap.ScrollDown):
-		d.issueDetail.ScrollDown(1)
-	case !d.editingTitle && !d.creatingIssue && !d.editingDescription && !d.choosingStatus && !d.choosingPriority && !d.confirmingDelete && !d.choosingType && !d.editingAssignee && key.Matches(msg, d.keyMap.EditTitle):
-		if selected := d.FocusedIssueList().SelectedItem(); selected.ID != "" {
-			d.startEditTitle(selected)
-			cmd = d.titleInput.Focus()
+	case m.notInModalMsgWithKey(msg, m.keyMap.ChangeStatus):
+		if selected := m.FocusedIssueList().SelectedItem(); selected.ID != "" {
+			cmd = m.startChooseStatus(selected)
 		}
-	case !d.IsInModal() && key.Matches(msg, d.keyMap.EditDescription):
-		if selected := d.FocusedIssueList().SelectedItem(); selected.ID != "" {
-			d.startEditDescription(selected)
-			cmd = d.descriptionInput.Focus()
+	case m.notInModalMsgWithKey(msg, m.keyMap.ChangePriority):
+		if selected := m.FocusedIssueList().SelectedItem(); selected.ID != "" {
+			cmd = m.startChoosePriority(selected)
 		}
-	case !d.editingTitle && !d.creatingIssue && !d.editingDescription && !d.choosingStatus && !d.choosingPriority && !d.confirmingDelete && !d.choosingType && key.Matches(msg, d.keyMap.ChangeStatus):
-		if selected := d.FocusedIssueList().SelectedItem(); selected.ID != "" {
-			d.startChooseStatus(selected)
+	case m.notInModalMsgWithKey(msg, m.keyMap.ChangeType):
+		if selected := m.FocusedIssueList().SelectedItem(); selected.ID != "" {
+			cmd = m.startChooseType(selected)
 		}
-	case !d.IsInModal() && key.Matches(msg, d.keyMap.ChangePriority):
-		if selected := d.FocusedIssueList().SelectedItem(); selected.ID != "" {
-			d.startChoosePriority(selected)
+	case m.notInModalMsgWithKey(msg, m.keyMap.ChangeAssignee):
+		if selected := m.FocusedIssueList().SelectedItem(); selected.ID != "" {
+			cmd = m.startEditAssignee(selected)
 		}
-	case !d.editingTitle && !d.creatingIssue && !d.editingDescription && !d.choosingStatus && !d.choosingPriority && !d.confirmingDelete && !d.choosingType && key.Matches(msg, d.keyMap.ChangeType):
-		if selected := d.FocusedIssueList().SelectedItem(); selected.ID != "" {
-			d.startChooseType(selected)
+	case m.notInModalMsgWithKey(msg, m.keyMap.AddIssue):
+		cmd = m.startCreateIssue()
+
+	case m.notInModalMsgWithKey(msg, m.keyMap.AddComment):
+		if selected := m.FocusedIssueList().SelectedItem(); selected.ID != "" {
+			cmd = m.startAddComment(selected)
 		}
-	case !d.IsInModal() && key.Matches(msg, d.keyMap.ChangeAssignee):
-		if selected := d.FocusedIssueList().SelectedItem(); selected.ID != "" {
-			d.startEditAssignee(selected)
-			cmd = d.assigneeInput.Focus()
-		}
-	case !d.IsInModal() && key.Matches(msg, d.keyMap.AddIssue):
-		d.startCreateIssue()
-		cmd = d.createTitleInput.Focus()
-	case !d.IsInModal() && key.Matches(msg, d.keyMap.DeleteIssue):
-		fl := d.FocusedIssueList()
+
+	case m.notInModalMsgWithKey(msg, m.keyMap.DeleteIssue):
+		fl := m.FocusedIssueList()
 		if selected := fl.SelectedItem(); selected.ID != "" {
-			d.startConfirmDelete(selected.ID, fl.Index())
+			cmd = m.startConfirmDelete(selected.ID, fl.Index())
 		}
 	}
 
 	return cmd
+}
+
+func (m *Model) notInModalMsgWithKey(msg tea.KeyPressMsg, keyBinding key.Binding) bool {
+	return !m.IsInModal() && key.Matches(msg, keyBinding)
 }

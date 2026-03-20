@@ -109,10 +109,12 @@ func (e *Expector) NotNil(value any, message string) *Expector {
 }
 
 func (e *Expector) Contains(s, substr, message string) *Expector {
-	check := NewCheck(message, strings.Contains(s, substr))
-	e.Checks = append(e.Checks, check)
-	return e
+	if !strings.Contains(s, substr) {
+		return e.Fail(fmt.Sprintf(`%s expected to contain "%v", but it does not.`, message, substr))
+	}
+	return e.Pass(fmt.Sprintf(`%s contains "%v"`, message, substr))
 }
+
 
 func (e *Expector) NotContains(s, substr, message string) *Expector {
 	check := NewCheck(message, !strings.Contains(s, substr))

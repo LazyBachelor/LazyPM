@@ -1,9 +1,9 @@
 package main
 
 import (
+	"charm.land/bubbletea/v2"
+	"charm.land/huh/v2"
 	"github.com/LazyBachelor/LazyPM/pkg/task"
-	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/huh"
 )
 
 type IntroQuestionnaire struct{}
@@ -14,7 +14,7 @@ func newIntroQuestionnaire() *IntroQuestionnaire {
 
 func (iq *IntroQuestionnaire) Run() (map[string]any, error) {
 	model := task.NewQuestionnaireModel(iq.Questions(), iq.Keys())
-	app := tea.NewProgram(model, tea.WithAltScreen())
+	app := tea.NewProgram(model)
 
 	m, err := app.Run()
 	if err != nil {

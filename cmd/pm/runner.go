@@ -5,13 +5,15 @@ import (
 	"errors"
 	"fmt"
 	"math/rand"
+	"os"
 	"time"
 
+	"charm.land/huh/v2"
 	"github.com/LazyBachelor/LazyPM/cmd/pm/tasks"
 	"github.com/LazyBachelor/LazyPM/internal/commands/survey"
 	"github.com/LazyBachelor/LazyPM/internal/storage"
+	"github.com/LazyBachelor/LazyPM/internal/style"
 	"github.com/LazyBachelor/LazyPM/pkg/task"
-	"github.com/charmbracelet/huh"
 	"github.com/spf13/cobra"
 )
 
@@ -54,7 +56,7 @@ func runStartCmd(cmd *cobra.Command, args []string) error {
 				Title("Do you want to continue without submitting your responses?").
 				Description("You can fix your database connection and submit your responses later with the submit command.").
 				Value(&continueWithoutSubmitting).
-				WithTheme(huh.ThemeBase16()).
+				WithTheme(style.Base16Theme{}).
 				RunAccessible(cmd.OutOrStdout(), cmd.InOrStdin()); err != nil {
 				return fmt.Errorf("failed to read user input: %w", err)
 			}
@@ -181,6 +183,10 @@ func taskLoop(ctx context.Context, application *task.App, surveyTasks map[string
 		}
 
 		runner := task.NewTaskRunner(application)
+
+		if err := os.WriteFile("Task Details.txt", []byte(t.Details(tasks.InterfaceToType(selected)).Description), 0644); err != nil {
+			return fmt.Errorf("failed to write task details: %w", err)
+		}
 
 		if err := runner.Run(ctx, t, selected, tasks.InterfaceToType(selected)); err != nil {
 			return err

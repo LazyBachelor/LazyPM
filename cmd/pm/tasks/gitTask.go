@@ -6,20 +6,22 @@ import (
 	"os"
 	"strings"
 
+	"charm.land/huh/v2"
 	"github.com/LazyBachelor/LazyPM/internal/models"
 	"github.com/LazyBachelor/LazyPM/internal/utils/check"
-	"github.com/charmbracelet/huh"
 	"github.com/go-git/go-git/v6"
 )
 
 const gitTaskDescription = `You are tasked with performing a Git operation.
 
-This task will test your ability to use Git effectively within a project management workflow. Your goal is to modify a file in a Git repository and commit the change.
+This task will test your ability to use Git effectively within a project management workflow.
+Your goal is to modify a file in a Git repository and commit the change.
 
 Your task:
-1. Set the Issue status to "In Progress" when you are ready to start.
-2. A folder called "task" is created in the project directory when you start this task. Open it.
-3. Inside the folder you will find README.md. Edit this file and add something to it (e.g. your name, a short note, or a new line). The file must be different from its original content.
+1. Assign the given issue to yourself as 'Me'.
+2. A folder called "task" is created in the project directory when you start this task.
+3. Inside the folder you will find README.md. Edit this file and add something to it.
+   The file must be different from its original content.
 4. Commit your change:
    - Open a terminal and change into the task folder.
    - Run "git add ." to stage the changes.
@@ -102,7 +104,7 @@ func (t *GitTask) Setup(ctx context.Context) error {
 	_ = os.WriteFile("./task/.gitattributes", []byte("* text=auto\n"), 0o644)
 
 	t.setupIssue = NewIssueBuilder().
-		WithTitle("Git Task Setup Issue").
+		WithTitle("Upgrade the codebase").
 		WithDescription(gitTaskDescription).
 		WithIssueType(models.TypeTask).
 		Build()
@@ -117,19 +119,18 @@ func (t *GitTask) Setup(ctx context.Context) error {
 func (t *GitTask) Validate(ctx context.Context) ValidationFeedback {
 	expect := check.NewExpector()
 
-	issues, err := FetchIssues(ctx, t.app, t.setupIssue)
+	issue, err := t.app.Issues.GetIssue(ctx, t.setupIssue.ID)
 	if err != nil {
+		return expect.Fatal("Could not fetch issue")
+	}
+	if issue == nil {
+		expect.Fail("Issue could not be found. It may have been deleted; please recreate it and try again.")
 		return expect.ValidationFeedback
 	}
 
-	_ = issues
+	expect.Equal(issue.Assignee, "Me", "Issue Assignee")
 
-	issue := t.setupIssue
-
-	if issue.Status == models.StatusInProgress || gitTaskInProgress {
-		gitTaskInProgress = true
-	} else {
-		expect.Fail("The issue should be marked as In Progress while working on the Git task.")
+	if !expect.Valid() {
 		return expect.ValidationFeedback
 	}
 
@@ -175,16 +176,19 @@ func (t *GitTask) Validate(ctx context.Context) ValidationFeedback {
 	}
 
 	expect.Assert(readmeContent != gitTaskReadmeContent,
-		"You should modify README.md content before committing (make appropriate changes to complete the task).")
+		"You should modify README.md content before committing")
 
 	if wt, err := t.repo.Worktree(); err == nil {
 		if status, err := wt.Status(); err == nil {
-			expect.Assert(status.IsClean(), "The working tree should be clean after committing (no unstaged changes).")
+			expect.Assert(status.IsClean(), "The working tree should be clean after committing")
 		}
 	}
 
-	expect.Assert(gitTaskInProgress && issue.Status == models.StatusClosed,
-		"The issue should be marked as Closed after completing the Git task.")
+	if !expect.Valid() {
+		return expect.ValidationFeedback
+	}
+
+	expect.Equal(issue.Status, models.StatusClosed, "Issue Status")
 
 	return expect.Complete()
 }

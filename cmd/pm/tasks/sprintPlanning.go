@@ -3,9 +3,9 @@ package tasks
 import (
 	"context"
 
+	"charm.land/huh/v2"
 	"github.com/LazyBachelor/LazyPM/internal/models"
 	"github.com/LazyBachelor/LazyPM/internal/utils/check"
-	"github.com/charmbracelet/huh"
 )
 
 const sprintPlanningDescription = `You are tasked with sprint planning.
@@ -23,9 +23,8 @@ Your task:
 The goal is to create a realistic sprint plan that delivers value while respecting team capacity.`
 
 type SprintPlanningTask struct {
-	done       bool
-	app        *App
-	setupIssue *Issue
+	done bool
+	app  *App
 }
 
 func NewSprintPlanningTask(app *App) *SprintPlanningTask {
@@ -109,35 +108,21 @@ func (t *SprintPlanningTask) Setup(ctx context.Context) error {
 			Build(),
 	}
 
-	if err := t.app.Issues.CreateIssues(ctx, backlogIssues, ""); err != nil {
-		return err
-	}
-
-	t.setupIssue = NewIssueBuilder().
-		WithTitle("Sprint Planning - Week 1").
-		WithDescription(sprintPlanningDescription).
-		Build()
-
-	return t.app.Issues.CreateIssue(ctx, t.setupIssue, "")
+	return t.app.Issues.CreateIssues(ctx, backlogIssues, "")
 }
 
 func (t *SprintPlanningTask) Validate(ctx context.Context) ValidationFeedback {
 	expect := check.NewExpector()
 
-	issues, err := FetchIssues(ctx, t.app, t.setupIssue)
+	issues, err := FetchIssues(ctx, t.app)
 	if err != nil {
-		return expect.ValidationFeedback
-	}
-
-	if len(issues) == 0 {
-		expect.Fail("No backlog issues found to plan a sprint with.")
 		return expect.ValidationFeedback
 	}
 
 	// Sort by priority ascending (0 is highest priority).
 	sorted := make([]*models.Issue, len(issues))
 	copy(sorted, issues)
-	for i := 0; i < len(sorted); i++ {
+	for i := range sorted {
 		for j := i + 1; j < len(sorted); j++ {
 			if sorted[j].Priority < sorted[i].Priority {
 				sorted[i], sorted[j] = sorted[j], sorted[i]
@@ -145,29 +130,20 @@ func (t *SprintPlanningTask) Validate(ctx context.Context) ValidationFeedback {
 		}
 	}
 
-	topN := 5
-	if len(sorted) < topN {
-		topN = len(sorted)
-	}
+	topN := min(len(sorted), 5)
 	top := sorted[:topN]
 
 	var plannedCount int
-	var readyToSprintCount int
 	for _, issue := range top {
 		if issue.Status == models.StatusReadyToSprint ||
 			issue.Status == models.StatusInProgress ||
 			issue.Status == models.StatusClosed {
 			plannedCount++
 		}
-		if issue.Status == models.StatusReadyToSprint {
-			readyToSprintCount++
-		}
 	}
 
 	expect.Assert(plannedCount >= 3,
 		"Expected at least 3 of the 5 highest-priority issues to be moved into 'ready_to_sprint', 'in_progress', or 'closed' for the sprint.")
-	expect.Assert(readyToSprintCount >= 1,
-		"Expected at least one of the highest-priority issues to be marked as 'ready_to_sprint' to indicate it is planned for the sprint.")
 
 	return expect.Complete()
 }

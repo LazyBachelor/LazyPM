@@ -30,11 +30,15 @@ func HandleTaskStatus(w http.ResponseWriter, r *http.Request) {
 
 	hx := HTMX(r)
 	if hx.IsHxRequest() {
-		hx.WriteString(`
+		if taskFeedback.Success {
+			w.Header().Set("HX-Trigger", "task-status-success")
+			w.WriteHeader(http.StatusNoContent)
+		} else {
+			hx.WriteString(`
 		<div id="status" type="button" hx-get="/status" hx-target="#status" hx-swap="outerHTML">
 				<button class="btn btn-error btn-sm" hx-get="/status/modal" hx-target="#modal-container" hx-swap="innerHTML">` + taskFeedback.Message + `</button>
 		</div>`)
-
+		}
 		return
 	}
 

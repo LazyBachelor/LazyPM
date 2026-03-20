@@ -18,6 +18,9 @@ package.json
 *.db
 *.ext
 
+.env
+.env.example
+
 Makefile
 
 # Added by goreleaser init:

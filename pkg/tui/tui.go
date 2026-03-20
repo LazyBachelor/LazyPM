@@ -3,10 +3,10 @@ package tui
 import (
 	"context"
 
+	"charm.land/bubbletea/v2"
 	"github.com/LazyBachelor/LazyPM/internal/app"
 	"github.com/LazyBachelor/LazyPM/internal/models"
 	"github.com/LazyBachelor/LazyPM/pkg/tui/views"
-	tea "github.com/charmbracelet/bubbletea"
 )
 
 type Config = models.Config
@@ -30,8 +30,7 @@ func (t *Tui) Run(ctx context.Context, config Config) error {
 
 	defer cleanup()
 
-	p := tea.NewProgram(views.NewRootView(app, t.feedbackChan, t.quitChan, t.submitChan),
-		tea.WithAltScreen(), tea.WithMouseAllMotion())
+	p := tea.NewProgram(views.NewRootView(app, t.feedbackChan, t.quitChan, t.submitChan))
 
 	if t.quitChan != nil {
 		go func() {

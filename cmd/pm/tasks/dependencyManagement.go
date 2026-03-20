@@ -4,15 +4,16 @@ import (
 	"context"
 	"fmt"
 
+	"charm.land/huh/v2"
 	"github.com/LazyBachelor/LazyPM/internal/models"
 	"github.com/LazyBachelor/LazyPM/internal/utils/check"
-	"github.com/charmbracelet/huh"
 )
 
 const dependencyManagementDescription = `You are tasked with managing issue dependencies.
 
-Several issues in your project have dependencies on other issues. You need to:
+Several issues in your project have dependencies on other issues. 
 
+You need to:
 1. Find the 4 issues that mention dependencies in their detail description. For example: "Depends on Issue '123'". Set their status to "blocked".
 2. Find the 2 foundational issues that are mentioned by the other issues.
 3. Set priority of the 2 foundational issues to 3 (high).
@@ -22,10 +23,9 @@ Several issues in your project have dependencies on other issues. You need to:
 Resolving dependencies in the right order is critical for efficient team workflow.`
 
 type DependencyManagementTask struct {
-	done       bool
-	app        *App
-	setupIssue *Issue
-	depIssues  []*Issue
+	done      bool
+	app       *App
+	depIssues []*Issue
 }
 
 func NewDependencyManagementTask(app *App) *DependencyManagementTask {
@@ -115,23 +115,13 @@ func (t *DependencyManagementTask) Setup(ctx context.Context) error {
 			Build(),
 	}
 
-	if err := t.app.Issues.CreateIssues(ctx, t.depIssues, ""); err != nil {
-		return err
-	}
-
-	t.setupIssue = NewIssueBuilder().
-		WithTitle("Dependency Management").
-		WithDescription(dependencyManagementDescription).
-		Build()
-
-	return t.app.Issues.CreateIssue(ctx, t.setupIssue, "")
+	return t.app.Issues.CreateIssues(ctx, t.depIssues, "")
 }
 
 func (t *DependencyManagementTask) Validate(ctx context.Context) ValidationFeedback {
 	expect := check.NewExpector()
 
-	taskIssue := t.setupIssue
-	issues, err := FetchIssues(ctx, t.app, t.setupIssue)
+	issues, err := FetchIssues(ctx, t.app)
 	if err != nil {
 		return expect.Fatal("Could not fetch issues")
 	}
@@ -156,13 +146,6 @@ func (t *DependencyManagementTask) Validate(ctx context.Context) ValidationFeedb
 		}
 
 	}
-
-	if !expect.Valid() {
-		return expect.ValidationFeedback
-	}
-
-	expect.Equal(taskIssue.Status, models.StatusClosed,
-		fmt.Sprintf("%s", taskIssue.Title))
 
 	return expect.Complete()
 }

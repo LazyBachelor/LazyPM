@@ -10,7 +10,7 @@ import (
 	"time"
 
 	"github.com/LazyBachelor/LazyPM/internal/models"
-	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/v2/bson"
 )
 
 type MetricsStore interface {
@@ -19,11 +19,11 @@ type MetricsStore interface {
 
 type FileMetricsStore struct {
 	path          string
-	participantID primitive.ObjectID
+	participantID bson.ObjectID
 	logger        *slog.Logger
 }
 
-func NewFileMetricsStore(path string, participantID primitive.ObjectID, logger *slog.Logger) *FileMetricsStore {
+func NewFileMetricsStore(path string, participantID bson.ObjectID, logger *slog.Logger) *FileMetricsStore {
 	return &FileMetricsStore{
 		path:          path,
 		participantID: participantID,
@@ -44,7 +44,7 @@ func (s *FileMetricsStore) Append(ctx context.Context, taskName string, run mode
 	}
 
 	metrics := models.TaskMetricsFile{
-		ID:            primitive.NewObjectID(),
+		ID:            bson.NewObjectID(),
 		ParticipantID: s.participantID,
 		TaskName:      taskName,
 		Runs:          []models.TaskRunMetrics{},

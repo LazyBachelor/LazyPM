@@ -4,9 +4,9 @@ import (
 	"context"
 	"fmt"
 
+	"charm.land/huh/v2"
 	"github.com/LazyBachelor/LazyPM/internal/models"
 	"github.com/LazyBachelor/LazyPM/internal/utils/check"
-	"github.com/charmbracelet/huh"
 )
 
 const priorityManagementDescription = `You are tasked with managing issue priorities.
@@ -17,16 +17,14 @@ The database is not working properly and users are not able to connect and acces
 
 You need to rebalance the current sprint priorities:
 
-1. Assign the task Issue you are currently reading to yourself as "Me" and set status to "In Progress".
-2. A new issue has appeared in the list that needs urgent attention. Change the database related issue's priority to 4 (critical).
-3. Set the priority of the feature and chore issues in the list to 1 (low).
-4. Change this issue status to "Closed".
+1. A new issue has appeared in the list that needs urgent attention.
+   Change the database related issue's priority to 4 (critical).
+2. Set the priority of the feature and chore issues in the list to 1 (low).
 `
 
 type PriorityManagementTask struct {
 	done           bool
 	app            *App
-	setupIssue     *Issue
 	priorityIssues []*models.Issue
 	isInProgress   bool
 }
@@ -111,36 +109,15 @@ func (t *PriorityManagementTask) Setup(ctx context.Context) error {
 			Build(),
 	}
 
-	if err := t.app.Issues.CreateIssues(ctx, t.priorityIssues, ""); err != nil {
-		return err
-	}
-
-	t.setupIssue = NewIssueBuilder().
-		WithTitle("Priority Rebalancing").
-		WithDescription(priorityManagementDescription).
-		Build()
-
-	return t.app.Issues.CreateIssue(ctx, t.setupIssue, "")
+	return t.app.Issues.CreateIssues(ctx, t.priorityIssues, "")
 }
 
 func (t *PriorityManagementTask) Validate(ctx context.Context) ValidationFeedback {
 	expect := check.NewExpector()
 
-	issues, err := FetchIssues(ctx, t.app, t.setupIssue)
+	issues, err := FetchIssues(ctx, t.app)
 	if err != nil {
 		return expect.Fatal("Failed to fetch issues for validation")
-	}
-
-	expect.NotEmptyAndEqual(t.setupIssue.Assignee, "Me",
-		fmt.Sprintf("%s assignee", t.setupIssue.Title))
-
-	if t.setupIssue.Status != models.StatusClosed {
-		expect.Equal(t.setupIssue.Status, models.StatusInProgress,
-			fmt.Sprintf("%s status", t.setupIssue.Title))
-	}
-
-	if !expect.Valid() {
-		return expect.ValidationFeedback
 	}
 
 	for _, issue := range issues {
@@ -152,9 +129,6 @@ func (t *PriorityManagementTask) Validate(ctx context.Context) ValidationFeedbac
 				fmt.Sprintf("Priority of issue %s", issue.Title))
 		}
 	}
-
-	expect.Equal(t.setupIssue.Status, models.StatusClosed,
-		fmt.Sprintf("%s status", t.setupIssue.Title))
 
 	return expect.Complete()
 }
