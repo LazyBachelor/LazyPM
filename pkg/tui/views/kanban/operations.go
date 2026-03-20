@@ -6,6 +6,7 @@ import (
 	"github.com/LazyBachelor/LazyPM/internal/models"
 	"github.com/LazyBachelor/LazyPM/pkg/tui/components"
 	"github.com/LazyBachelor/LazyPM/pkg/tui/issues"
+	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
 )
@@ -259,6 +260,26 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		})
 
 	case tea.KeyMsg:
+		// Always allow quit with q/ctrl+c, even when in inputs or other modals
+		if !m.confirmingQuit && (key.Matches(msg, m.keyMap.Quit) || msg.String() == "q" || msg.String() == "ctrl+c") {
+			m.cancelAllModals()
+			m.startConfirmQuit()
+			return m, nil
+		}
+
+		if m.confirmingQuit {
+			switch msg.String() {
+			case "y", "Y", "ctrl+c":
+				m.confirmingQuit = false
+				return m, tea.Quit
+			case "n", "N", "esc":
+				m.confirmingQuit = false
+				return m, nil
+			default:
+				return m, nil
+			}
+		}
+
 		if m.confirmingDelete {
 			switch msg.String() {
 			case "y", "Y":

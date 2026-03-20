@@ -47,6 +47,7 @@ type Model struct {
 	confirmingDelete   bool // true while confirming a delete
 	deleteConfirmID    string
 	deleteConfirmIndex int
+	confirmingQuit     bool // true while confirming quit
 
 	choosingStatus   bool // true while choosing a status
 	statusIssueID    string
@@ -146,6 +147,34 @@ func (m *Model) startConfirmDelete(issueID string, index int) {
 	m.deleteConfirmIndex = index
 }
 
+func (m *Model) startConfirmQuit() {
+	m.confirmingQuit = true
+}
+
+// cancelAllModals closes any open modal/input so quit can be triggered from anywhere.
+func (m *Model) cancelAllModals() {
+	m.creatingIssue = false
+	m.createTitleInput.Blur()
+	m.createTitleInput.Reset()
+	m.editingTitle = false
+	m.titleInput.Blur()
+	m.editingDescription = false
+	m.descriptionInput.Blur()
+	m.editingAssignee = false
+	m.assigneeInput.Blur()
+	m.choosingStatus = false
+	m.statusIssueID = ""
+	m.choosingPriority = false
+	m.priorityIssueID = ""
+	m.choosingType = false
+	m.typeIssueID = ""
+	m.confirmingDelete = false
+	m.deleteConfirmID = ""
+	m.choosingCloseReason = false
+	m.closingOtherReason = false
+	m.closeReasonInput.Blur()
+}
+
 func (m *Model) startChooseStatus(selected ListIssue) {
 	m.choosingStatus = true
 	m.statusIssueID = selected.ID
@@ -176,7 +205,7 @@ func (m *Model) Init() tea.Cmd {
 func (m *Model) IsInModal() bool {
 	return m.editingTitle || m.creatingIssue || m.editingDescription ||
 		m.choosingStatus || m.choosingPriority || m.confirmingDelete ||
-		m.choosingType || m.editingAssignee ||
+		m.confirmingQuit || m.choosingType || m.editingAssignee ||
 		m.choosingCloseReason || m.closingOtherReason
 }
 

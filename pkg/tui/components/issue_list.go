@@ -211,6 +211,7 @@ func NewIssueListFromIssues(app *app.App, issues []*models.Issue, width, height 
 	l.SetShowHelp(false)
 	l.SetShowStatusBar(false)
 	l.SetFilteringEnabled(true)
+	l.DisableQuitKeybindings()
 	l.FilterInput.PromptStyle = styles.FilterPromptStyle
 	l.FilterInput.Cursor.Style = styles.FilterStyle
 	l.FilterInput.TextStyle = styles.FilterInputStyle

@@ -82,6 +82,10 @@ func (m *Model) View() string {
 		mainView = lipgloss.JoinVertical(lipgloss.Left, header, content, spacer, footer)
 	}
 
+	if m.confirmingQuit {
+		return components.RenderConfirmQuit(m.width, m.height)
+	}
+
 	if m.choosingCloseReason {
 		reasonContent := lipgloss.JoinVertical(lipgloss.Left,
 			styles.LabelStyle.Render("Choose closing reason for "+m.closeReasonIssueID+":"),
@@ -114,6 +118,7 @@ func (m *Model) View() string {
 	return components.RenderModals(
 		m.width,
 		m.height,
+		m.confirmingQuit,
 		m.editingTitle,
 		m.titleInput.View(),
 		m.editingDescription,

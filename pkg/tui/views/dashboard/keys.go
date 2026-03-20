@@ -87,8 +87,9 @@ func (d *Model) handleKeyMsg(msg tea.KeyMsg) tea.Cmd {
 		d.helpBar.ToggleHelp()
 		d.logAction("tui toggled help")
 	case key.Matches(msg, d.keyMap.Quit):
+		d.startConfirmQuit()
 		d.logAction("tui quit requested")
-		return tea.Quit
+		return nil
 	case key.Matches(msg, d.keyMap.SwitchWindow):
 		d.ToggleFocusedWindow()
 	case !d.IsInModal() && key.Matches(msg, d.keyMap.SwitchToKanbanBoard):

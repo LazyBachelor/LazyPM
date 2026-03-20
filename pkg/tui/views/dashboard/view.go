@@ -61,6 +61,19 @@ func (m *Model) View() string {
 
 	mainView := lipgloss.JoinVertical(lipgloss.Left, header, content, footer)
 
+	if m.confirmingQuit {
+		confirmContent := lipgloss.JoinVertical(lipgloss.Left,
+			styles.LabelStyle.Render("Sure you want to quit?"),
+			lipgloss.NewStyle().Foreground(styles.FaintText).Render("y = quit   n/Esc = cancel"),
+		)
+		confirmBoxWidth := min(40, m.width-4)
+		confirmBox := styles.ContainerStyle.
+			Width(confirmBoxWidth).
+			BorderForeground(styles.PrimaryBorder).
+			Render(confirmContent)
+		return lipgloss.Place(m.width, m.height, lipgloss.Center, lipgloss.Center, confirmBox)
+	}
+
 	if m.editingAssignee {
 		editBoxWidth := min(60, m.width-4)
 		m.assigneeInput.Width = editBoxWidth - 2

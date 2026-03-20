@@ -68,6 +68,22 @@ func RenderCreateIssue(width, height int, inputView string) string {
 	return lipgloss.Place(width, height, lipgloss.Center, lipgloss.Center, createBox)
 }
 
+func RenderConfirmQuit(width, height int) string {
+	if width < 5 || height < 5 {
+		return ""
+	}
+	confirmContent := lipgloss.JoinVertical(lipgloss.Left,
+		styles.LabelStyle.Render("Sure you want to quit?"),
+		lipgloss.NewStyle().Foreground(styles.FaintText).Render("y = quit   n/Esc = cancel"),
+	)
+	confirmBoxWidth := modalBoxWidth(40, width)
+	confirmBox := styles.ContainerStyle.
+		Width(confirmBoxWidth).
+		BorderForeground(styles.PrimaryBorder).
+		Render(confirmContent)
+	return lipgloss.Place(width, height, lipgloss.Center, lipgloss.Center, confirmBox)
+}
+
 func RenderConfirmDelete(width, height int, issueID string) string {
 	if width < 5 || height < 5 {
 		return ""
@@ -157,6 +173,7 @@ func RenderChooseType(width, height int, issueID string) string {
 // no modal is active.
 func RenderModals(
 	width, height int,
+	confirmingQuit bool,
 	editingTitle bool, titleInputView string,
 	editingDescription bool, descriptionInputView string,
 	creatingIssue bool, createTitleInputView string,
@@ -167,6 +184,9 @@ func RenderModals(
 	editingAssignee bool, assigneeInputView string,
 	mainView string,
 ) string {
+	if confirmingQuit {
+		return RenderConfirmQuit(width, height)
+	}
 	if editingTitle {
 		return RenderEditTitle(width, height, titleInputView)
 	}

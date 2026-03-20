@@ -59,7 +59,8 @@ func (d *Model) handleKeyMsg(msg tea.KeyMsg) tea.Cmd {
 	case key.Matches(msg, d.keyMap.Help):
 		d.helpBar.ToggleHelp()
 	case key.Matches(msg, d.keyMap.Quit):
-		return tea.Quit
+		d.startConfirmQuit()
+		return nil
 	case !d.IsInModal() && msg.String() == " ":
 		return func() tea.Msg { return nil } // consume space
 	case !d.IsInModal() && key.Matches(msg, d.keyMap.SwitchToDashboard):
