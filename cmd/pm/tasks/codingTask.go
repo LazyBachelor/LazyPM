@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"charm.land/huh/v2"
+	"github.com/LazyBachelor/LazyPM/internal/models"
 	"github.com/LazyBachelor/LazyPM/internal/utils/check"
 )
 
@@ -141,7 +142,9 @@ func (t *CodingTask) Validate(ctx context.Context) ValidationFeedback {
 		return expect.Fatal("Issue was deleted or could not be found")
 	}
 
-	expect.Equal(issue.Assignee, "Me", "Issue Assignee")
+	if !expect.Equal(issue.Assignee, "Me", "Issue Assignee").Valid() {
+		return expect.ValidationFeedback
+	}
 
 	if _, err := os.Stat("./code.txt"); os.IsNotExist(err) {
 		expect.Fail("The code.txt file should exist on the desktop.")
@@ -161,6 +164,11 @@ func (t *CodingTask) Validate(ctx context.Context) ValidationFeedback {
 	}
 
 	expect.Contains(code, "go.mongodb.org/mongo-driver v1.17.9", "MongoDB Driver version")
+	if !expect.Valid() {
+		return expect.ValidationFeedback
+	}
+
+	expect.Equal(issue.Status, models.StatusClosed, "Issue Status")
 
 	return expect.Complete()
 }
