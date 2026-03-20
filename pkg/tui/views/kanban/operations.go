@@ -55,6 +55,14 @@ func (m *Model) refreshIssueListsAndSelectIssue(issueID string) tea.Cmd {
 	m.blockedList.SelectIssueID(issueID)
 	m.doneList.SelectIssueID(issueID)
 
+	if m.submitChan != nil {
+		select {
+		case m.submitChan <- struct{}{}:
+			m.logAction("tui submitted validation")
+		default:
+		}
+	}
+
 	return tea.Sequence(todoCmd, inProgCmd, blockedCmd, doneCmd)
 }
 
