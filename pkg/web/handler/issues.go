@@ -3,6 +3,7 @@ package handler
 import (
 	"context"
 	"html"
+	"net/url"
 	"net/http"
 	"strings"
 
@@ -229,6 +230,178 @@ func UpdateAssignee(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	HTMX(r).WriteJSON(issue)
+}
+
+// Returns a simple HTML fragment listing dependencies for an issue
+func ListDependencies(w http.ResponseWriter, r *http.Request) {
+	issue := r.Context().Value(issueKey).(*models.Issue)
+	app := App(r)
+
+	deps, err := app.Issues.GetDependencies(r.Context(), issue.ID)
+	if err != nil {
+		http.Error(w, "Failed to load dependencies", http.StatusInternalServerError)
+		return
+	}
+
+	containerID := r.URL.Query().Get("container_id")
+	if containerID == "" {
+		containerID = "dependencies-list"
+	}
+
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+
+	if len(deps) == 0 {
+		_, _ = w.Write([]byte(`<div id="` + html.EscapeString(containerID) + `" class="text-sm text-base-content/60">No dependencies.</div>`))
+		return
+	}
+
+	builder := strings.Builder{}
+	builder.WriteString(`<div id="` + html.EscapeString(containerID) + `" class="space-y-1">`)
+	for _, d := range deps {
+		if d == nil {
+			continue
+		}
+		builder.WriteString(`<div class="flex items-center justify-between gap-2 border rounded px-2 py-1 text-sm">`)
+		builder.WriteString(`<span class="truncate">`)
+		builder.WriteString(`<span class="font-mono">`)
+		builder.WriteString(html.EscapeString(d.ID))
+		builder.WriteString(`</span>`)
+		if d.Title != "" {
+			builder.WriteString(`<span class="opacity-70"> — `)
+			builder.WriteString(html.EscapeString(d.Title))
+			builder.WriteString(`</span>`)
+		}
+		builder.WriteString(`</span>`)
+		builder.WriteString(`<button class="btn btn-xs btn-ghost text-error" `)
+		builder.WriteString(`hx-delete="/issues/`)
+		builder.WriteString(html.EscapeString(issue.ID))
+		builder.WriteString(`/dependencies?container_id=` + url.QueryEscape(containerID) + `" hx-target="#` + html.EscapeString(containerID) + `" hx-swap="outerHTML" `)
+		builder.WriteString(`hx-vals='{"depends_on_id":"`)
+		builder.WriteString(html.EscapeString(d.ID))
+		builder.WriteString(`"}'>Remove</button>`)
+		builder.WriteString(`</div>`)
+	}
+	builder.WriteString(`</div>`)
+
+	_, _ = w.Write([]byte(builder.String()))
+}
+
+// Adding a new dependency (issue depends on depends_on_id)
+func AddDependencyHandler(w http.ResponseWriter, r *http.Request) {
+	issue := r.Context().Value(issueKey).(*models.Issue)
+	app := App(r)
+
+	if err := r.ParseForm(); err != nil {
+		http.Error(w, "Invalid form data", http.StatusBadRequest)
+		return
+	}
+
+	dependsOnID := r.FormValue("depends_on_id")
+	if dependsOnID == "" {
+		http.Error(w, "Dependency ID is required", http.StatusBadRequest)
+		return
+	}
+
+	depType := models.DepBlocks
+
+	if err := app.Issues.AddDependency(r.Context(), issue.ID, dependsOnID, depType, "web"); err != nil {
+		http.Error(w, "Failed to add dependency: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("HX-Trigger", "dependencies-updated")
+
+	// Re-render the list so HTMX can swap it in
+	ListDependencies(w, r)
+}
+
+// Removing an existing dependency
+func RemoveDependencyHandler(w http.ResponseWriter, r *http.Request) {
+	issue := r.Context().Value(issueKey).(*models.Issue)
+	app := App(r)
+
+	dependsOnID := r.FormValue("depends_on_id")
+	if dependsOnID == "" {
+		dependsOnID = r.URL.Query().Get("depends_on_id")
+	}
+	if dependsOnID == "" {
+		http.Error(w, "Dependency ID is required", http.StatusBadRequest)
+		return
+	}
+
+	if err := app.Issues.RemoveDependency(r.Context(), issue.ID, dependsOnID, "web"); err != nil {
+		http.Error(w, "Failed to remove dependency: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("HX-Trigger", "dependencies-updated")
+
+	// Re-render the list so HTMX can swap it in
+	ListDependencies(w, r)
+}
+
+// DependencyOptions renders <option> tags for dependency selection in the edit modal.
+// we exclude:
+// - the current issue
+// - issues this issue already depends on
+// - issues that already depend on this issue (dependents)
+func DependencyOptions(w http.ResponseWriter, r *http.Request) {
+	issue := r.Context().Value(issueKey).(*models.Issue)
+	app := App(r)
+
+	all, err := app.Issues.SearchIssues(r.Context(), "", models.IssueFilter{})
+	if err != nil {
+		http.Error(w, "Failed to load issues", http.StatusInternalServerError)
+		return
+	}
+
+	deps, err := app.Issues.GetDependencies(r.Context(), issue.ID)
+	if err != nil {
+		http.Error(w, "Failed to load dependencies", http.StatusInternalServerError)
+		return
+	}
+
+	dependents, err := app.Issues.GetDependents(r.Context(), issue.ID)
+	if err != nil {
+		http.Error(w, "Failed to load dependents", http.StatusInternalServerError)
+		return
+	}
+
+	exclude := map[string]struct{}{issue.ID: {}}
+	for _, d := range deps {
+		if d != nil {
+			exclude[d.ID] = struct{}{}
+		}
+	}
+	for _, d := range dependents {
+		if d != nil {
+			exclude[d.ID] = struct{}{}
+		}
+	}
+
+	var b strings.Builder
+	b.WriteString(`<option value="">Select issue…</option>`)
+	for _, iss := range all {
+		if iss == nil {
+			continue
+		}
+		if _, skip := exclude[iss.ID]; skip {
+			continue
+		}
+		// Show "ID — Title" for quick scanning
+		b.WriteString(`<option value="`)
+		b.WriteString(html.EscapeString(iss.ID))
+		b.WriteString(`">`)
+		b.WriteString(html.EscapeString(iss.ID))
+		if iss.Title != "" {
+			b.WriteString(` — `)
+			b.WriteString(html.EscapeString(iss.Title))
+		}
+		b.WriteString(`</option>`)
+	}
+
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	_, _ = w.Write([]byte(b.String()))
 }
 
 func DeleteIssue(w http.ResponseWriter, r *http.Request) {

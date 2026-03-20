@@ -52,3 +52,65 @@ func (s *BeadsService) DeleteIssues() error {
 	}
 	return nil
 }
+
+
+/////////////////////////////////////////////////////////////////////////////////////
+// Dependency Management API wrappers over the underlying beads storage API
+/////////////////////////////////////////////////////////////////////////////////////
+// AddDependency creates a dependency edge between two issues.
+// It is a thin wrapper over the underlying beads storage AddDependency API.
+func (s *BeadsService) AddDependency(ctx context.Context, issueID, dependsOnID string, depType models.DependencyType, actor string) error {
+	dep := &beads.Dependency{
+		IssueID:     issueID,
+		DependsOnID: dependsOnID,
+		Type:        beads.DependencyType(depType),
+	}
+	return s.Storage.AddDependency(ctx, dep, actor)
+}
+
+// RemoveDependency removes a dependency edge between two issues.
+func (s *BeadsService) RemoveDependency(ctx context.Context, issueID, dependsOnID string, actor string) error {
+	return s.Storage.RemoveDependency(ctx, issueID, dependsOnID, actor)
+}
+
+// GetDependencies returns issues that the given issue depends on.
+func (s *BeadsService) GetDependencies(ctx context.Context, issueID string) ([]*models.Issue, error) {
+	issues, err := s.Storage.GetDependencies(ctx, issueID)
+	if err != nil {
+		return nil, err
+	}
+	if len(issues) == 0 {
+		return []*models.Issue{}, nil
+	}
+	// types.Issue is layout-compatible with models.Issue (alias to beads.Issue),
+	// so we can return the slice directly as []*models.Issue.
+	result := make([]*models.Issue, 0, len(issues))
+	for _, iss := range issues {
+		if iss == nil {
+			continue
+		}
+		casted := models.Issue(*iss)
+		result = append(result, &casted)
+	}
+	return result, nil
+}
+
+// GetDependents returns issues that depend on the given issue.
+func (s *BeadsService) GetDependents(ctx context.Context, issueID string) ([]*models.Issue, error) {
+	issues, err := s.Storage.GetDependents(ctx, issueID)
+	if err != nil {
+		return nil, err
+	}
+	if len(issues) == 0 {
+		return []*models.Issue{}, nil
+	}
+	result := make([]*models.Issue, 0, len(issues))
+	for _, iss := range issues {
+		if iss == nil {
+			continue
+		}
+		casted := models.Issue(*iss)
+		result = append(result, &casted)
+	}
+	return result, nil
+}

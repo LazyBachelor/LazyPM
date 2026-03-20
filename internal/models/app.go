@@ -53,6 +53,12 @@ type IssueService interface {
 	AddIssueComment(ctx context.Context, issueID, author, text string) (*Comment, error)
 	GetIssueComments(ctx context.Context, issueID string) ([]*Comment, error)
 	GetCommentCounts(ctx context.Context, issueIDs []string) (map[string]int, error)
+
+	// Dependency management (thin wrappers over beads dependency API)
+	AddDependency(ctx context.Context, issueID, dependsOnID string, depType DependencyType, actor string) error
+	RemoveDependency(ctx context.Context, issueID, dependsOnID string, actor string) error
+	GetDependencies(ctx context.Context, issueID string) ([]*Issue, error)
+	GetDependents(ctx context.Context, issueID string) ([]*Issue, error)
 }
 
 type StatsService interface {
