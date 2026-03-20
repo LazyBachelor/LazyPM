@@ -14,13 +14,15 @@ const dependencyManagementDescription = `You are tasked with managing issue depe
 Several issues in your project have dependencies on other issues. 
 
 You need to:
-1. Find the 4 issues that mention dependencies in their detail description. For example: "Depends on Issue '123'". Set their status to "blocked".
-2. Find the 2 foundational issues that are mentioned by the other issues.
-3. Set priority of the 2 foundational issues to 3 (high).
-4. Set status of the 2 foundational issues to in-progress.
-5. Assign the 2 foundational issues to yourself as "Me".
+1. Find 2 issues that mention dependencies in their detail description.
+   For example: "Depends on Issue '123'". Set their status to "blocked".
 
-Resolving dependencies in the right order is critical for efficient team workflow.`
+2. Find the issue that is mentioned by the other issues:
+   - Set priority to 3 (high).
+   - Set status to in-progress.
+   - Assign the to yourself as "Me".
+
+Resolving dependencies in the right order is critical for a efficient team`
 
 type DependencyManagementTask struct {
 	done      bool
@@ -79,13 +81,6 @@ func (t *DependencyManagementTask) Setup(ctx context.Context) error {
 			WithIssueType(models.TypeTask).
 			Build(),
 		NewIssueBuilder().
-			WithTitle("Create home page for the website").
-			WithDescription("Create a page for the website.").
-			WithPriority(2).
-			WithStatus(models.StatusOpen).
-			WithIssueType(models.TypeTask).
-			Build(),
-		NewIssueBuilder().
 			WithTitle("Implement Authentication System").
 			WithDescription("Add login/logout functionality. Depends on 'Setup database connection' issue.").
 			WithPriority(2).
@@ -96,20 +91,6 @@ func (t *DependencyManagementTask) Setup(ctx context.Context) error {
 			WithTitle("Add user management operations").
 			WithDescription("Add operations for user management. Depends on 'Setup database connection' issue.").
 			WithPriority(3).
-			WithStatus(models.StatusOpen).
-			WithIssueType(models.TypeTask).
-			Build(),
-		NewIssueBuilder().
-			WithTitle("Create user profile page").
-			WithDescription("Frontend user profile page. Depends on 'Create home page for the website' issue.").
-			WithPriority(3).
-			WithStatus(models.StatusOpen).
-			WithIssueType(models.TypeTask).
-			Build(),
-		NewIssueBuilder().
-			WithTitle("Create about page").
-			WithDescription("Frontend about page. Depends on 'Create home page for the website' issue.").
-			WithPriority(2).
 			WithStatus(models.StatusOpen).
 			WithIssueType(models.TypeTask).
 			Build(),
@@ -127,14 +108,18 @@ func (t *DependencyManagementTask) Validate(ctx context.Context) ValidationFeedb
 	}
 
 	for _, issue := range issues {
-		for _, depIssue := range t.depIssues[2:] {
+		for _, depIssue := range t.depIssues[1:] {
 			if issue.Title == depIssue.Title {
 				expect.Equal(issue.Status, models.StatusBlocked,
 					fmt.Sprintf("%s status", issue.Title))
 			}
 		}
-
-		for _, foundationalIssue := range t.depIssues[:2] {
+	}
+	if !expect.Valid() {
+		return expect.ValidationFeedback
+	}
+	for _, issue := range issues {
+		for _, foundationalIssue := range t.depIssues[:1] {
 			if issue.Title == foundationalIssue.Title {
 				expect.Equal(issue.Priority, 3,
 					fmt.Sprintf("%s priority", issue.Title))
@@ -144,7 +129,6 @@ func (t *DependencyManagementTask) Validate(ctx context.Context) ValidationFeedb
 					fmt.Sprintf("%s status", issue.Title))
 			}
 		}
-
 	}
 
 	return expect.Complete()
