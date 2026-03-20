@@ -1,6 +1,8 @@
 package components
 
 import (
+	"strings"
+
 	"charm.land/lipgloss/v2"
 	"github.com/LazyBachelor/LazyPM/pkg/tui/styles"
 )
@@ -12,21 +14,21 @@ const (
 	ViewKanban
 )
 
-type ShortItem struct {
+const (
+	fullHelpKeyWidth  = 10
+	fullHelpDescWidth = 18
+	fullHelpColGap    = 4
+	maxFullHelpCols   = 4
+)
+
+type HelpItem struct {
 	Key  string
 	Desc string
 }
 
-type FullRow struct {
-	LeftKey   string
-	LeftDesc  string
-	RightKey  string
-	RightDesc string
-}
-
 type HelpBarConfig struct {
-	ShortItems []ShortItem
-	FullRows   []FullRow
+	ShortItems []HelpItem
+	FullItems  []HelpItem
 }
 
 type HelpBar struct {
@@ -37,7 +39,10 @@ type HelpBar struct {
 }
 
 func NewHelpBar(view ViewKind) HelpBar {
-	return HelpBar{view: view, config: helpBarConfig(view)}
+	return HelpBar{
+		view:   view,
+		config: helpBarConfig(view),
+	}
 }
 
 func (h *HelpBar) SetWidth(width int) {
@@ -48,18 +53,25 @@ func (h HelpBar) View() string {
 	if h.width == 0 {
 		return ""
 	}
+
 	if h.showAll {
 		return h.fullHelp()
 	}
+
 	return h.shortHelp()
 }
 
 func (h HelpBar) shortHelp() string {
-	keys := make([]string, 0, len(h.config.ShortItems))
+	items := make([]string, 0, len(h.config.ShortItems))
 	for _, item := range h.config.ShortItems {
-		keys = append(keys, styles.HighlightKey(item.Key)+item.Desc+"  ")
+		items = append(
+			items,
+			styles.HighlightKey(item.Key)+item.Desc+"  ",
+		)
 	}
-	content := lipgloss.JoinHorizontal(lipgloss.Left, keys...)
+
+	content := lipgloss.JoinHorizontal(lipgloss.Left, items...)
+
 	return lipgloss.NewStyle().
 		Border(lipgloss.Border{Top: "─"}, true, false, false, false).
 		BorderForeground(styles.SecondaryBorder).
@@ -69,29 +81,60 @@ func (h HelpBar) shortHelp() string {
 }
 
 func (h HelpBar) fullHelp() string {
-	keyStyle := lipgloss.NewStyle().Width(8).Align(lipgloss.Right)
-	descStyle := lipgloss.NewStyle().Width(12)
+	if len(h.config.FullItems) == 0 {
+		return ""
+	}
 
-	renderHelpItem := func(key, desc string) string {
-		return lipgloss.JoinHorizontal(
-			lipgloss.Left,
-			keyStyle.Render(styles.HighlightKey(key)),
-			" ",
-			descStyle.Render(desc),
+	keyStyle := lipgloss.NewStyle().
+		Width(fullHelpKeyWidth).
+		Align(lipgloss.Right)
+
+	descStyle := lipgloss.NewStyle().
+		Width(fullHelpDescWidth)
+
+	cellStyle := lipgloss.NewStyle().
+		Width(fullHelpKeyWidth + 1 + fullHelpDescWidth)
+
+	renderHelpItem := func(item HelpItem) string {
+		return cellStyle.Render(
+			lipgloss.JoinHorizontal(
+				lipgloss.Left,
+				keyStyle.Render(styles.HighlightKey(item.Key)),
+				" ",
+				descStyle.Render(item.Desc),
+			),
 		)
 	}
 
-	renderRow := func(leftKey, leftDesc, rightKey, rightDesc string) string {
-		leftItem := renderHelpItem(leftKey, leftDesc)
-		rightItem := renderHelpItem(rightKey, rightDesc)
-		return lipgloss.JoinHorizontal(lipgloss.Left, leftItem, "  ", rightItem)
+	innerWidth := h.width - 2
+	if innerWidth < 1 {
+		innerWidth = 1
 	}
 
-	rows := make([]string, 0, len(h.config.FullRows))
-	for _, r := range h.config.FullRows {
-		rows = append(rows, renderRow(r.LeftKey, r.LeftDesc, r.RightKey, r.RightDesc))
+	cellWidth := fullHelpKeyWidth + 1 + fullHelpDescWidth
+	cols := fitHelpColumns(
+		innerWidth,
+		cellWidth,
+		fullHelpColGap,
+		maxFullHelpCols,
+	)
+
+	gap := strings.Repeat(" ", fullHelpColGap)
+	rows := make([]string, 0, (len(h.config.FullItems)+cols-1)/cols)
+
+	for i := 0; i < len(h.config.FullItems); i += cols {
+		end := min(i + cols, len(h.config.FullItems))
+
+		cells := make([]string, 0, cols)
+		for _, item := range h.config.FullItems[i:end] {
+			cells = append(cells, renderHelpItem(item))
+		}
+
+		rows = append(rows, joinHorizontalWithGap(cells, gap))
 	}
+
 	content := lipgloss.JoinVertical(lipgloss.Left, rows...)
+
 	return lipgloss.NewStyle().
 		Border(lipgloss.Border{Top: "─"}, true, false, false, false).
 		BorderForeground(styles.SecondaryBorder).
@@ -104,6 +147,7 @@ func (h HelpBar) Height() int {
 	if h.width == 0 {
 		return 0
 	}
+
 	return lipgloss.Height(h.View())
 }
 
@@ -115,11 +159,43 @@ func (h *HelpBar) ToggleHelp() {
 	h.showAll = !h.showAll
 }
 
+func fitHelpColumns(
+	availableWidth int,
+	cellWidth int,
+	gapWidth int,
+	maxCols int,
+) int {
+	for cols := maxCols; cols >= 1; cols-- {
+		neededWidth := cols*cellWidth + (cols-1)*gapWidth
+		if neededWidth <= availableWidth {
+			return cols
+		}
+	}
+
+	return 1
+}
+
+func joinHorizontalWithGap(cells []string, gap string) string {
+	if len(cells) == 0 {
+		return ""
+	}
+
+	parts := make([]string, 0, len(cells)*2-1)
+	for i, cell := range cells {
+		if i > 0 {
+			parts = append(parts, gap)
+		}
+		parts = append(parts, cell)
+	}
+
+	return lipgloss.JoinHorizontal(lipgloss.Left, parts...)
+}
+
 func helpBarConfig(view ViewKind) HelpBarConfig {
 	switch view {
 	case ViewIssues:
 		return HelpBarConfig{
-			ShortItems: []ShortItem{
+			ShortItems: []HelpItem{
 				{Key: "tab", Desc: "switch"},
 				{Key: "v", Desc: "kanban"},
 				{Key: "↑/k", Desc: "up"},
@@ -133,23 +209,33 @@ func helpBarConfig(view ViewKind) HelpBarConfig {
 				{Key: "q", Desc: "quit"},
 				{Key: "?", Desc: "help"},
 			},
-			FullRows: []FullRow{
-				{LeftKey: "tab", LeftDesc: "switch window", RightKey: "↑/k", RightDesc: "up"},
-				{LeftKey: "enter", LeftDesc: "view issue", RightKey: "↓/j", RightDesc: "down"},
-				{LeftKey: "pgup", LeftDesc: "page up", RightKey: "pgdn", RightDesc: "page down"},
-				{LeftKey: "b", LeftDesc: "back to list", RightKey: "a", RightDesc: "add issue"},
-				{LeftKey: "c", LeftDesc: "add comment", RightKey: "", RightDesc: ""},
-				{LeftKey: "e", LeftDesc: "edit title", RightKey: "d", RightDesc: "edit description"},
-				{LeftKey: "s", LeftDesc: "change status", RightKey: "p", RightDesc: "change priority"},
-				{LeftKey: "t", LeftDesc: "change type", RightKey: "A", RightDesc: "change assignee"},
-				{LeftKey: "x", LeftDesc: "delete issue", RightKey: "v", RightDesc: "kanban"},
-				{LeftKey: "q", LeftDesc: "quit", RightKey: "S", RightDesc: "submit"},
-				{LeftKey: "?", LeftDesc: "help", RightKey: "", RightDesc: ""},
+			FullItems: []HelpItem{
+				{Key: "tab", Desc: "switch window"},
+				{Key: "enter", Desc: "view issue"},
+				{Key: "b", Desc: "back to list"},
+				{Key: "v", Desc: "kanban"},
+				{Key: "↑/k", Desc: "up"},
+				{Key: "↓/j", Desc: "down"},
+				{Key: "pgup", Desc: "page up"},
+				{Key: "pgdn", Desc: "page down"},
+				{Key: "a", Desc: "add issue"},
+				{Key: "c", Desc: "add comment"},
+				{Key: "x", Desc: "delete issue"},
+				{Key: "S", Desc: "submit"},
+				{Key: "e", Desc: "edit title"},
+				{Key: "d", Desc: "edit description"},
+				{Key: "s", Desc: "change status"},
+				{Key: "p", Desc: "change priority"},
+				{Key: "t", Desc: "change type"},
+				{Key: "A", Desc: "change assignee"},
+				{Key: "q", Desc: "quit"},
+				{Key: "?", Desc: "help"},
 			},
 		}
+
 	case ViewKanban:
 		return HelpBarConfig{
-			ShortItems: []ShortItem{
+			ShortItems: []HelpItem{
 				{Key: "v", Desc: "list view"},
 				{Key: "↑/k", Desc: "up"},
 				{Key: "↓/j", Desc: "down"},
@@ -163,19 +249,30 @@ func helpBarConfig(view ViewKind) HelpBarConfig {
 				{Key: "S", Desc: "submit"},
 				{Key: "?", Desc: "help"},
 			},
-			FullRows: []FullRow{
-				{LeftKey: "v", LeftDesc: "list view", RightKey: "↑/k", RightDesc: "up"},
-				{LeftKey: "enter", LeftDesc: "view issue", RightKey: "↓/j", RightDesc: "down"},
-				{LeftKey: "pgup", LeftDesc: "page up", RightKey: "pgdn", RightDesc: "page down"},
-				{LeftKey: "h/l", LeftDesc: "switch column", RightKey: "←/→", RightDesc: "move issue"},
-				{LeftKey: "b", LeftDesc: "back to list", RightKey: "a", RightDesc: "add issue"},
-				{LeftKey: "e", LeftDesc: "edit title", RightKey: "d", RightDesc: "edit description"},
-				{LeftKey: "s", LeftDesc: "change status", RightKey: "p", RightDesc: "change priority"},
-				{LeftKey: "t", LeftDesc: "change type", RightKey: "A", RightDesc: "change assignee"},
-				{LeftKey: "x", LeftDesc: "delete issue", RightKey: "q", RightDesc: "quit"},
-				{LeftKey: "S", LeftDesc: "submit", RightKey: "?", RightDesc: "help"},
+			FullItems: []HelpItem{
+				{Key: "v", Desc: "list view"},
+				{Key: "enter", Desc: "view issue"},
+				{Key: "b", Desc: "back to list"},
+				{Key: "h/l", Desc: "switch column"},
+				{Key: "←/→", Desc: "move issue"},
+				{Key: "↑/k", Desc: "up"},
+				{Key: "↓/j", Desc: "down"},
+				{Key: "pgup", Desc: "page up"},
+				{Key: "pgdn", Desc: "page down"},
+				{Key: "a", Desc: "add issue"},
+				{Key: "x", Desc: "delete issue"},
+				{Key: "S", Desc: "submit"},
+				{Key: "e", Desc: "edit title"},
+				{Key: "d", Desc: "edit description"},
+				{Key: "s", Desc: "change status"},
+				{Key: "p", Desc: "change priority"},
+				{Key: "t", Desc: "change type"},
+				{Key: "A", Desc: "change assignee"},
+				{Key: "q", Desc: "quit"},
+				{Key: "?", Desc: "help"},
 			},
 		}
+
 	default:
 		return HelpBarConfig{}
 	}
