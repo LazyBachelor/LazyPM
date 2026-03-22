@@ -3,7 +3,7 @@ module github.com/LazyBachelor/LazyPM
 go 1.26.1
 
 require (
-	github.com/c-bata/go-prompt v0.2.6
+	github.com/c-bata/go-prompt v0.2.7-0.20250812090649-d000795a4f93
 	github.com/go-git/go-git/v6 v6.0.0-20260317113930-fb0d09929504
 	github.com/joho/godotenv v1.5.1
 	github.com/muesli/reflow v0.3.0
