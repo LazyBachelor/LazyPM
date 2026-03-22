@@ -2,10 +2,9 @@ package task
 
 import (
 	"fmt"
-	"strings"
 
 	"charm.land/bubbles/v2/key"
-	"charm.land/bubbletea/v2"
+	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
 	"github.com/LazyBachelor/LazyPM/internal/models"
 	"github.com/LazyBachelor/LazyPM/internal/style"
@@ -38,7 +37,7 @@ var DefaultTaskKeys = TaskHelpKeys{
 	),
 	About: key.NewBinding(
 		key.WithKeys("?"),
-		key.WithHelp("?", "Details about the interface"),
+		key.WithHelp("?", "Learn interface"),
 	),
 }
 
@@ -75,46 +74,99 @@ func (m TaskModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 func (m TaskModel) View() tea.View {
 	if m.width < 55 || m.height < 16 {
-		content := lipgloss.Place(m.width, m.height, lipgloss.Center, lipgloss.Center,
-			style.TextStyle.Render("Terminal too small."))
+		content := lipgloss.Place(
+			m.width,
+			m.height,
+			lipgloss.Center,
+			lipgloss.Center,
+			style.TextStyle.Render("Terminal too small."),
+		)
 		v := tea.NewView(content)
 		v.AltScreen = true
 		return v
 	}
 
-	boxWidth := min(m.width-10, 120)
+	boxWidth := min(m.width-8, 120)
 
-	detailsText := fmt.Sprintf("Interface Type: %s | Time to complete: %s | Difficulty: %s", m.InterfaceType, m.TimeToComplete, m.Difficulty)
+	cardStyle := style.BorderStyle.Padding(1, 2)
+	bodyWidth := boxWidth - cardStyle.GetHorizontalFrameSize()
+	cardStyle = cardStyle.Width(bodyWidth)
 
-	boxStyle := style.BorderStyle.Padding(2, 4).Width(boxWidth)
+	textWidth := min(bodyWidth, 64)
 
-	var b strings.Builder
+	titleWrap := lipgloss.NewStyle().
+		Width(boxWidth).
+		Align(lipgloss.Center)
 
-	b.WriteString(style.TitleStyle.Render(m.Title))
-	b.WriteString("\n")
+	helpWrap := lipgloss.NewStyle().
+		Width(boxWidth).
+		Align(lipgloss.Center)
 
-	content := lipgloss.JoinVertical(
-		lipgloss.Center,
-		style.TextStyle.Render(m.Description),
-		"\n",
-		style.TextStyle.Foreground(style.SecondaryColor).Render(detailsText),
-		style.ErrorStyle.Render(m.interfaceHelpText()),
-		style.ErrorStyle.Render(m.getQuitHelpText()),
-	)
+	descStyle := style.TextStyle.
+		Width(textWidth).
+		Align(lipgloss.Left)
 
-	if m.aboutVisible {
-		b.WriteString(boxStyle.Render(m.InterfaceDescription))
-	} else {
-		b.WriteString(boxStyle.Render(content))
+	detailsStyle := style.TextStyle.
+		Foreground(style.SecondaryText).
+		Width(textWidth).
+		Align(lipgloss.Center)
 
+	infoStyle := style.ErrorStyle.
+		Width(textWidth).
+		Align(lipgloss.Center)
+
+	centerInCard := func(s string) string {
+		return lipgloss.PlaceHorizontal(bodyWidth, lipgloss.Center, s)
 	}
 
-	b.WriteString("\n")
+	detailsText := fmt.Sprintf(
+		"Interface Type: %s | Time to complete: %s | Difficulty: %s",
+		m.InterfaceType,
+		m.TimeToComplete,
+		m.Difficulty,
+	)
 
-	helpText := "Press " + m.keys.Start.Help().Key + " to start • " + m.keys.Quit.Help().Key + " to quit • " + m.keys.About.Help().Key + " " + m.keys.About.Help().Desc
-	b.WriteString(style.HelpStyle.Render(helpText))
+	var body string
+	if m.aboutVisible {
+		about := style.TextStyle.
+			Width(textWidth).
+			Align(lipgloss.Left).
+			Render(m.InterfaceDescription)
 
-	final := lipgloss.Place(m.width, m.height, lipgloss.Center, lipgloss.Center, b.String())
+		body = centerInCard(about)
+	} else {
+		body = lipgloss.JoinVertical(
+			lipgloss.Left,
+			centerInCard(descStyle.Render(m.Description)),
+			"",
+			centerInCard(detailsStyle.Render(detailsText)),
+			centerInCard(infoStyle.Render(m.interfaceHelpText())),
+			centerInCard(infoStyle.Render(m.getQuitHelpText())),
+		)
+	}
+
+	card := cardStyle.Render(body)
+
+	helpText := "Press " + m.keys.Start.Help().Key + " " + m.keys.Start.Help().Desc +
+		"  • " + m.keys.Quit.Help().Key + " " + m.keys.Quit.Help().Desc +
+		" • " + m.keys.About.Help().Key + " " + m.keys.About.Help().Desc
+
+	view := lipgloss.JoinVertical(
+		lipgloss.Center,
+		titleWrap.Render(style.TitleStyle.Render(m.Title)),
+		"",
+		card,
+		"",
+		helpWrap.Render(style.HelpStyle.Render(helpText)),
+	)
+
+	final := lipgloss.Place(
+		m.width,
+		m.height,
+		lipgloss.Center,
+		lipgloss.Center,
+		view,
+	)
 
 	v := tea.NewView(final)
 	v.AltScreen = true
@@ -137,7 +189,7 @@ func (m TaskModel) getQuitHelpText() string {
 func (m TaskModel) interfaceHelpText() string {
 	switch m.InterfaceType {
 	case models.InterfaceTypeWeb:
-		return "Press the button in the upper right corner to view task progress and completion criteria"
+		return "Press the button in the upper right corner to view task progress"
 	case models.InterfaceTypeTUI:
 		return "Press Shift+S to view task progress and completion criteria"
 	case models.InterfaceTypeCLI, models.InterfaceTypeREPL:
