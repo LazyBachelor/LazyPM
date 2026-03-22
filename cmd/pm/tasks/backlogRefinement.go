@@ -11,10 +11,11 @@ import (
 
 const backlogRefinementDescription = `You are tasked with backlog refinement.
 
-The product backlog has become cluttered with old and unclear issues. You need to groom the backlog:
+The product backlog has become cluttered with old and unclear issues.
 
+You need to groom the backlog:
 1. Go to the backlog.
-2. Find two issues that got the same name or describe the same problem.
+2. Find two issues that have the same name.
 3. Open one of these issues.
 4. Select "Close issue"
 5. Choose "Duplicate issue" as closing reason.

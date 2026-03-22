@@ -14,14 +14,14 @@ import (
 
 const gitTaskDescription = `You are tasked with performing a Git operation.
 
-This task will test your ability to use Git effectively within a project management workflow.
-Your goal is to modify a file in a Git repository and commit the change.
+Modify a file in a Git repository and commit the change.
 
 Your task:
 1. Assign the given issue to yourself as 'Me'.
-2. A folder called "task" is created in the project directory when you start this task.
-3. Inside the folder you will find README.md. Edit this file and add something to it.
-   The file must be different from its original content.
+2. A folder called "task" is created in this directory.
+3. Inside the folder you will find README.md.
+   - Edit this file and add something to it.
+   - The file must be different from its original content.
 4. Commit your change:
    - Open a terminal and change into the task folder.
    - Run "git add ." to stage the changes.

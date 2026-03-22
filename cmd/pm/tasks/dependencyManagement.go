@@ -14,15 +14,11 @@ const dependencyManagementDescription = `You are tasked with managing issue depe
 Several issues in your project have dependencies on other issues. 
 
 You need to:
-1. Find 2 issues that mention dependencies in their detail description.
-   For example: "Depends on Issue '123'". Set their status to "blocked".
-
+1. Find 2 issues that mention dependencies in their description.
 2. Find the issue that is mentioned by the other issues:
    - Set priority to 3 (high).
    - Set status to in-progress.
-   - Assign the to yourself as "Me".
-
-Resolving dependencies in the right order is critical for a efficient team`
+   - Assign the to yourself as "Me".`
 
 type DependencyManagementTask struct {
 	done      bool

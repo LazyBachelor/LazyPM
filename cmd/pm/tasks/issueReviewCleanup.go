@@ -9,8 +9,7 @@ import (
 
 const issueReviewCleanupDescription = `You are responsible for reviewing and maintaining the current project issues.
 
-Using the system, complete the following steps:
-
+Complete the following steps:
 1. Add a comment to two issues
 2. Delete the issue titled "Delete this issue"`
 

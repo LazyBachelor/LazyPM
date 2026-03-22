@@ -12,15 +12,13 @@ import (
 const priorityManagementDescription = `You are tasked with managing issue priorities.
 
 A critical production issue has been reported.
-
 The database is not working properly and users are not able to connect and access their data.
 
 You need to rebalance the current sprint priorities:
 
-1. A new issue has appeared in the list that needs urgent attention.
-   Change the database related issue's priority to 4 (critical).
-2. Set the priority of the feature and chore issues in the list to 1 (low).
-`
+1. A new issue has appeared in the list that needs urgent attention:
+   - Change the database related issue's priority to 4.
+2. Set the priority of the feature and chore issues in the list to 1.`
 
 type PriorityManagementTask struct {
 	done           bool

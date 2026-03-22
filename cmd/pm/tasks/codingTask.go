@@ -10,17 +10,13 @@ import (
 	"github.com/LazyBachelor/LazyPM/internal/utils/check"
 )
 
-const codingDescription = `You are tasked with doing a chore in the codebase.
-
-This task will test your ability to read and understand instructions, change text, and save it to a file.
-
-The MongoDB Driver dependency in the file is outdated and needs to be updated to the latest version.
-This is a common task for developers, and it requires attention to detail and the ability to follow instructions carefully.
+const codingDescription = `You are tasked with doing a upgrading a dependency in the codebase.
 
 Your task:
 1. Assign the given issue to yourself as 'Me'.
-2. A file will appear in the current directory named "code.txt".
-   Open it and follow the instructions inside. And save the file after you are done.
+2. A text file will appear in the this directory:
+   - Open it and follow the instructions inside.
+   - Save the file after you are done.
 3. When you are done, mark this task as "Closed".`
 
 var textFileDescription = `
