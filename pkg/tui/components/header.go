@@ -21,6 +21,7 @@ func (h Header) View(width int) string {
 		lipgloss.Left,
 		title,
 		lipgloss.WithWhitespaceChars("─"),
+		lipgloss.WithWhitespaceStyle(style.TitleStyle),
 	)
 }
 

@@ -33,7 +33,7 @@ var DefaultBorder = lipgloss.ThickBorder()
 
 var (
 	HeaderStyle      = lipgloss.NewStyle().Foreground(Primary).Padding(0, 1).Bold(true)
-	HeaderTitleStyle = lipgloss.NewStyle().Foreground(Primary).Bold(true).Padding(0)
+	HeaderTitleStyle = lipgloss.NewStyle().Foreground(Primary).Bold(true).PaddingRight(1)
 )
 
 var ContainerStyle = lipgloss.NewStyle().
