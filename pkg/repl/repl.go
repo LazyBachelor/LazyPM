@@ -52,14 +52,11 @@ func (r *REPL) Run(ctx context.Context, config app.Config) error {
 	r.currentFeedback = ValidationFeedback{}
 	r.completionChan = make(chan struct{}, 1)
 
-	// Set terminal to raw mode to capture input properly in the REPL.
-	// This allows us to handle input character by character and provide a better user experience.
-	// We also ensure that the terminal state is restored when the REPL exits, even if an error occurs.
+	// Save terminal state to restore on exit (go-prompt v0.2.6 doesn't restore properly)
 	oldState, err := term.GetState(int(os.Stdin.Fd()))
-	if err != nil {
-		return fmt.Errorf("failed to get terminal state: %w", err)
+	if err == nil {
+		defer term.Restore(int(os.Stdin.Fd()), oldState)
 	}
-	defer term.Restore(int(os.Stdin.Fd()), oldState)
 
 	// Initialize services for beads, config and stats.
 	app, cleanup, err := app.New(ctx, config)
@@ -114,7 +111,10 @@ replLoop:
 		case <-r.completionChan:
 			fmt.Println(style.TitleStyle.Render("Task completed successfully!"))
 			fmt.Print("Press Enter to exit...")
-			term.Restore(int(os.Stdin.Fd()), oldState)
+			// Restore terminal before reading final input (go-prompt doesn't restore properly)
+			if oldState != nil {
+				term.Restore(int(os.Stdin.Fd()), oldState)
+			}
 			reader.ReadString('\n')
 			break replLoop
 		}
