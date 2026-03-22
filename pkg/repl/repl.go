@@ -28,11 +28,10 @@ Type 'status' to check task progress.`
 )
 
 type REPL struct {
-	feedbackChan   chan ValidationFeedback
-	quitChan       chan bool
-	submitChan     chan<- struct{}
-	completionChan chan struct{}
-	app            *App
+	feedbackChan chan ValidationFeedback
+	quitChan     chan bool
+	submitChan   chan<- struct{}
+	app          *App
 
 	currentFeedback ValidationFeedback
 	exitRequested   bool
@@ -49,7 +48,6 @@ func (r *REPL) Run(ctx context.Context, config app.Config) error {
 	r.taskCompleted = false
 	r.exitRequested = false
 	r.currentFeedback = ValidationFeedback{}
-	r.completionChan = make(chan struct{}, 1)
 
 	// Save terminal state to restore on exit
 	oldState, err := term.GetState(int(os.Stdin.Fd()))
@@ -81,31 +79,21 @@ func (r *REPL) Run(ctx context.Context, config app.Config) error {
 		go r.watchValidation()
 	}
 
-	// Goroutine to inject newline when task completes to wake up blocked prompt
-	go func() {
-		for range r.completionChan {
-			if tty, err := os.OpenFile("/dev/tty", os.O_WRONLY, 0); err == nil {
-				tty.Write([]byte("\n"))
-				tty.Close()
-			}
-		}
-	}()
-
 	// history keeps track of command history.
 	var history []string
 
 	// Start the REPL loop
 replLoop:
-	for !r.exitRequested {
-		// Check if we should exit before prompting (non-blocking check)
-		if r.exitRequested {
-			break
-		}
-
+	for !r.exitRequested || r.taskCompleted {
 		// Check if task completed before showing prompt
 		if r.taskCompleted {
-			fmt.Println("\nTask completed successfully!")
+			fmt.Scanln()
 			break replLoop
+		}
+
+		// Check if we should exit before prompting
+		if r.exitRequested {
+			break
 		}
 
 		// Prompt the user for input, and provide suggestions.
@@ -117,12 +105,11 @@ replLoop:
 
 		// Check if task completed while at prompt (will be true if newline was injected)
 		if r.taskCompleted {
-			fmt.Println("\nTask completed successfully!")
 			break replLoop
 		}
 
 		// Check again after prompt returns (in case validation completed while waiting)
-		if r.exitRequested {
+		if r.exitRequested && !r.taskCompleted {
 			break
 		}
 
@@ -185,16 +172,15 @@ func (r *REPL) watchValidation() {
 			}
 			if feedback.Success {
 				r.taskCompleted = true
-				if r.completionChan != nil {
-					select {
-					case r.completionChan <- struct{}{}:
-					default:
-					}
-				}
+				// Print completion message immediately
+				fmt.Fprintf(os.Stderr, "\n\nTASK COMPLETED\n%s\nPress Enter to exit...\n\n", feedback.Message)
+				os.Stderr.Sync()
 				return
 			}
 		case <-r.quitChan:
-			r.exitRequested = true
+			if !r.taskCompleted {
+				r.exitRequested = true
+			}
 			return
 		}
 	}
