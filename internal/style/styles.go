@@ -6,21 +6,54 @@ import (
 )
 
 var (
-	Primary   = compat.AdaptiveColor{Light: lipgloss.Color("#5A56E0"), Dark: lipgloss.Color("#7571F9")}
-	Secondary = compat.AdaptiveColor{Light: lipgloss.Color("#02BA84"), Dark: lipgloss.Color("#02BF87")}
+	Primary = compat.AdaptiveColor{
+		Light: lipgloss.Color("6"),
+		Dark:  lipgloss.Color("6"),
+	}
+	Secondary = compat.AdaptiveColor{
+		Light: lipgloss.Color("2"),
+		Dark:  lipgloss.Color("2"),
+	}
 
-	Success = compat.AdaptiveColor{Light: lipgloss.Color("#02BA84"), Dark: lipgloss.Color("#02BF87")}
-	Warning = compat.AdaptiveColor{Light: lipgloss.Color("#F59E0B"), Dark: lipgloss.Color("#F59E0B")}
-	Error   = compat.AdaptiveColor{Light: lipgloss.Color("#FE5F86"), Dark: lipgloss.Color("#FE5F86")}
+	Success = compat.AdaptiveColor{
+		Light: lipgloss.Color("2"),
+		Dark:  lipgloss.Color("2"),
+	}
+	Warning = compat.AdaptiveColor{
+		Light: lipgloss.Color("3"),
+		Dark:  lipgloss.Color("3"),
+	}
+	Error = compat.AdaptiveColor{
+		Light: lipgloss.Color("9"),
+		Dark:  lipgloss.Color("9"),
+	}
 
-	PrimaryText   = compat.AdaptiveColor{Light: lipgloss.Color("#1A1A1A"), Dark: lipgloss.Color("#E0E0E0")}
-	SecondaryText = compat.AdaptiveColor{Light: lipgloss.Color("#666666"), Dark: lipgloss.Color("#999999")}
-	FaintText     = compat.AdaptiveColor{Light: lipgloss.Color("#999999"), Dark: lipgloss.Color("#666666")}
+	PrimaryText = compat.AdaptiveColor{
+		Light: lipgloss.Color("7"),
+		Dark:  lipgloss.Color("7"),
+	}
+	SecondaryText = compat.AdaptiveColor{
+		Light: lipgloss.Color("8"),
+		Dark:  lipgloss.Color("8"),
+	}
+	FaintText = compat.AdaptiveColor{
+		Light: lipgloss.Color("8"),
+		Dark:  lipgloss.Color("8"),
+	}
 
-	PrimaryBorder   = compat.AdaptiveColor{Light: lipgloss.Color("#5A56E0"), Dark: lipgloss.Color("#7571F9")}
-	SecondaryBorder = compat.AdaptiveColor{Light: lipgloss.Color("#CCCCCC"), Dark: lipgloss.Color("#444444")}
+	PrimaryBorder = compat.AdaptiveColor{
+		Light: lipgloss.Color("8"),
+		Dark:  lipgloss.Color("8"),
+	}
+	SecondaryBorder = compat.AdaptiveColor{
+		Light: lipgloss.Color("8"),
+		Dark:  lipgloss.Color("8"),
+	}
 
-	SelectedBackground = compat.AdaptiveColor{Light: lipgloss.Color("#E8E8E8"), Dark: lipgloss.Color("#333333")}
+	SelectedBackground = compat.AdaptiveColor{
+		Light: lipgloss.Color("5"),
+		Dark:  lipgloss.Color("5"),
+	}
 )
 
 const (
@@ -95,5 +128,3 @@ var (
 	ErrorStyle  = lipgloss.NewStyle().Foreground(Error).Bold(true)
 	HelpStyle   = lipgloss.NewStyle().Align(lipgloss.Center).Foreground(Secondary)
 )
-
-var SecondaryColor = lipgloss.Color("#02BA84")
