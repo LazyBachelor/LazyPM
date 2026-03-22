@@ -2,7 +2,6 @@
 package repl
 
 import (
-	"bufio"
 	"context"
 	"fmt"
 	"os"
@@ -52,7 +51,7 @@ func (r *REPL) Run(ctx context.Context, config app.Config) error {
 	r.currentFeedback = ValidationFeedback{}
 	r.completionChan = make(chan struct{}, 1)
 
-	// Save terminal state to restore on exit (go-prompt v0.2.6 doesn't restore properly)
+	// Save terminal state to restore on exit
 	oldState, err := term.GetState(int(os.Stdin.Fd()))
 	if err == nil {
 		defer term.Restore(int(os.Stdin.Fd()), oldState)
@@ -82,12 +81,20 @@ func (r *REPL) Run(ctx context.Context, config app.Config) error {
 		go r.watchValidation()
 	}
 
+	// Goroutine to inject newline when task completes to wake up blocked prompt
+	go func() {
+		for range r.completionChan {
+			if tty, err := os.OpenFile("/dev/tty", os.O_WRONLY, 0); err == nil {
+				tty.Write([]byte("\n"))
+				tty.Close()
+			}
+		}
+	}()
+
 	// history keeps track of command history.
-	// This enables navigating through previous commands.
 	var history []string
 
-	// Start the REPL loop, which continues until the user types "exit" or "quit" or task completes.
-	reader := bufio.NewReader(os.Stdin)
+	// Start the REPL loop
 replLoop:
 	for !r.exitRequested {
 		// Check if we should exit before prompting (non-blocking check)
@@ -95,27 +102,22 @@ replLoop:
 			break
 		}
 
-		// Prompt the user for input, and provide suggestions.
-		inputChan := make(chan string, 1)
-		go func(hist []string) {
-			inputChan <- prompt.Input(
-				PromptPrefix,
-				completer,
-				promptOptions(hist)...,
-			)
-		}(history)
+		// Check if task completed before showing prompt
+		if r.taskCompleted {
+			fmt.Println("\nTask completed successfully!")
+			break replLoop
+		}
 
-		var input string
-		select {
-		case input = <-inputChan:
-		case <-r.completionChan:
-			fmt.Println(style.TitleStyle.Render("Task completed successfully!"))
-			fmt.Print("Press Enter to exit...")
-			// Restore terminal before reading final input (go-prompt doesn't restore properly)
-			if oldState != nil {
-				term.Restore(int(os.Stdin.Fd()), oldState)
-			}
-			reader.ReadString('\n')
+		// Prompt the user for input, and provide suggestions.
+		input := prompt.Input(
+			PromptPrefix,
+			completer,
+			promptOptions(history)...,
+		)
+
+		// Check if task completed while at prompt (will be true if newline was injected)
+		if r.taskCompleted {
+			fmt.Println("\nTask completed successfully!")
 			break replLoop
 		}
 
@@ -124,8 +126,7 @@ replLoop:
 			break
 		}
 
-		// Check if task completed while waiting at prompt
-		// Trim whitespace from the input to ensure consistent command processing.
+		// Trim whitespace from the input
 		input = strings.TrimSpace(input)
 
 		// If the user types "exit" or "quit", break the loop and exit the REPL.
@@ -139,7 +140,7 @@ replLoop:
 			r.logAction("repl command: " + input)
 		}
 
-		// Add the input to the history for future navigation.
+		// Add the input to the history
 		history = append(history, input)
 
 		output, err := r.execute(input)
@@ -153,11 +154,11 @@ replLoop:
 		}
 
 		if err != nil {
-			// Show command output (even on error) in normal text style
+			// Show command output (even on error)
 			if output != "" {
 				fmt.Println(style.TextStyle.Render(output))
 			}
-			// Show error message in red if no output was captured
+			// Show error message in red if no output
 			if output == "" {
 				fmt.Println(style.ErrorStyle.Render(err.Error()))
 			}
