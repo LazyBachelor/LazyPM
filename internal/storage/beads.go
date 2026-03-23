@@ -60,11 +60,11 @@ func (s *BeadsService) CreateIssue(ctx context.Context, issue *models.Issue, act
 
 	backlogNum, err := s.GetBacklogSprint(ctx)
 	if err != nil {
-		return nil
+		return err
 	}
 
 	if err := s.AddIssueToSprint(ctx, issue.ID, backlogNum); err != nil {
-		return nil
+		return err
 	}
 
 	return nil
