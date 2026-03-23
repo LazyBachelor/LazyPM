@@ -3,11 +3,11 @@ package handler
 import (
 	"context"
 	"html"
-	"net/url"
 	"net/http"
 	"strings"
 
 	"github.com/LazyBachelor/LazyPM/internal/models"
+	"github.com/LazyBachelor/LazyPM/pkg/web/components"
 	"github.com/LazyBachelor/LazyPM/pkg/web/routes"
 	"github.com/go-chi/chi/v5"
 )
@@ -244,41 +244,11 @@ func ListDependencies(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-
-	if len(deps) == 0 {
-		_, _ = w.Write([]byte(`<div id="` + html.EscapeString(containerID) + `" class="text-sm text-base-content/60">No dependencies.</div>`))
-		return
-	}
-
-	builder := strings.Builder{}
-	builder.WriteString(`<div id="` + html.EscapeString(containerID) + `" class="space-y-1">`)
-	for _, d := range deps {
-		if d == nil {
-			continue
-		}
-		builder.WriteString(`<div class="flex items-center justify-between gap-2 border rounded px-2 py-1 text-sm">`)
-		builder.WriteString(`<span class="truncate">`)
-		builder.WriteString(`<span class="font-mono">`)
-		builder.WriteString(html.EscapeString(d.ID))
-		builder.WriteString(`</span>`)
-		if d.Title != "" {
-			builder.WriteString(`<span class="opacity-70"> — `)
-			builder.WriteString(html.EscapeString(d.Title))
-			builder.WriteString(`</span>`)
-		}
-		builder.WriteString(`</span>`)
-		builder.WriteString(`<button class="btn btn-xs btn-ghost text-error" `)
-		builder.WriteString(`hx-delete="/issues/`)
-		builder.WriteString(html.EscapeString(issue.ID))
-		builder.WriteString(`/dependencies?container_id=` + url.QueryEscape(containerID) + `" hx-target="#` + html.EscapeString(containerID) + `" hx-swap="outerHTML" `)
-		builder.WriteString(`hx-vals='{"depends_on_id":"`)
-		builder.WriteString(html.EscapeString(d.ID))
-		builder.WriteString(`"}'>Remove</button>`)
-		builder.WriteString(`</div>`)
-	}
-	builder.WriteString(`</div>`)
-
-	_, _ = w.Write([]byte(builder.String()))
+	components.DependenciesList(components.DependenciesListProps{
+		ContainerID: containerID,
+		IssueID:     issue.ID,
+		Deps:        deps,
+	}).Render(r.Context(), w)
 }
 
 // Adding a new dependency (issue depends on depends_on_id)
