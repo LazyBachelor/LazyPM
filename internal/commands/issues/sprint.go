@@ -136,6 +136,7 @@ func runSprintIssuesCmd(cmd *cobra.Command, args []string) error {
 	ctx := cmd.Context()
 
 	var sprintNum int
+	var isBacklog bool
 	var err error
 
 	if len(args) == 0 || args[0] == "backlog" {
@@ -143,21 +144,26 @@ func runSprintIssuesCmd(cmd *cobra.Command, args []string) error {
 		if err != nil {
 			return fmt.Errorf("failed to get backlog sprint: %w", err)
 		}
+		isBacklog = true
 	} else {
 		sprintNum, err = strconv.Atoi(args[0])
 		if err != nil {
 			return fmt.Errorf("invalid sprint number: %s", args[0])
 		}
+		isBacklog = false
 	}
 
-	issues, err := app.Issues.GetIssuesBySprint(ctx, sprintNum)
+	var issues []*models.Issue
+	if isBacklog {
+		issues, err = app.Issues.GetIssuesNotInAnySprint(ctx)
+	} else {
+		issues, err = app.Issues.GetIssuesBySprint(ctx, sprintNum)
+	}
 	if err != nil {
 		return fmt.Errorf("failed to get issues in sprint %d: %w", sprintNum, err)
 	}
 
-	backlogNum, _ := app.Issues.GetBacklogSprint(ctx)
-
-	if sprintNum == backlogNum {
+	if isBacklog {
 		cmd.Printf("Backlog (%d issues):\n", len(issues))
 	} else {
 		cmd.Printf("Sprint %d (%d issues):\n", sprintNum, len(issues))
@@ -252,12 +258,7 @@ func runSprintBacklogCmd(cmd *cobra.Command, args []string) error {
 	app := AppFromContext(cmd.Context())
 	ctx := cmd.Context()
 
-	sprintNum, err := app.Issues.GetBacklogSprint(ctx)
-	if err != nil {
-		return fmt.Errorf("failed to get backlog sprint: %w", err)
-	}
-
-	issues, err := app.Issues.GetIssuesBySprint(ctx, sprintNum)
+	issues, err := app.Issues.GetIssuesNotInAnySprint(ctx)
 	if err != nil {
 		return fmt.Errorf("failed to get backlog issues: %w", err)
 	}
