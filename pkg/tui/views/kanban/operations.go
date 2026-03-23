@@ -202,15 +202,18 @@ func (m *Model) startSelectSprint() tea.Cmd {
 }
 
 func (m *Model) startCreateSprint() tea.Cmd {
-	return func() tea.Msg {
-		ctx := context.Background()
-		newSprintNum, err := m.app.Issues.AddSprint(ctx)
-		if err != nil {
+	return tea.Sequence(
+		func() tea.Msg {
+			ctx := context.Background()
+			newSprintNum, err := m.app.Issues.AddSprint(ctx)
+			if err != nil {
+				return nil
+			}
+			m.currentSprintNum = newSprintNum
 			return nil
-		}
-		m.currentSprintNum = newSprintNum
-		return m.refreshAllIssueLists()
-	}
+		},
+		m.refreshAllIssueLists(),
+	)
 }
 
 func (m *Model) startEditAssignee(selected ListIssue) tea.Cmd {
