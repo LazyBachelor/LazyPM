@@ -2,8 +2,10 @@ package handler
 
 import (
 	"context"
+	"fmt"
 	"html"
 	"net/http"
+	"net/url"
 	"strings"
 
 	"github.com/LazyBachelor/LazyPM/internal/models"
@@ -17,7 +19,7 @@ const commentsKey = "comments"
 type IssueForm struct {
 	Title       string           `form:"title" validate:"required,max=255"`
 	Description string           `form:"description" validate:"max=2000"`
-	Status      models.Status    `form:"status" validate:"required,oneof=open in_progress blocked ready_to_sprint closed"`
+	Status      models.Status    `form:"status" validate:"required,oneof=open in_progress blocked closed"`
 	IssueType   models.IssueType `form:"issue_type" validate:"required,oneof=task bug feature chore"`
 	Priority    int              `form:"priority" validate:"gte=0,lte=4"`
 }
@@ -25,10 +27,11 @@ type IssueForm struct {
 type UpdateIssueForm struct {
 	Title       *string           `form:"title" validate:"omitempty,max=255"`
 	Description *string           `form:"description" validate:"omitempty,max=2000"`
-	Status      *models.Status    `form:"status" validate:"omitempty,oneof=open in_progress blocked ready_to_sprint closed"`
+	Status      *models.Status    `form:"status" validate:"omitempty,oneof=open in_progress blocked closed"`
 	CloseReason *string           `form:"close_reason" validate:"omitempty,max=2000"`
 	IssueType   *models.IssueType `form:"issue_type" validate:"omitempty,oneof=task bug feature chore"`
 	Priority    *int              `form:"priority" validate:"omitempty,gte=0,lte=4"`
+	Assignee    *string           `form:"assignee" validate:"omitempty,max=100"`
 }
 
 func CreateIssue(w http.ResponseWriter, r *http.Request) {
@@ -122,20 +125,8 @@ func GetIssue(w http.ResponseWriter, r *http.Request) {
 	comments := r.Context().Value(commentsKey).([]*models.Comment)
 	hx := HTMX(r)
 
-	from := r.URL.Query().Get("from")
-	detailProps := routes.IssueDetailProps{
-		Issue:    issue,
-		Comments: comments,
-		From:     from,
-	}
-
-	if !hx.IsHxRequest() && strings.Contains(r.Header.Get("Accept"), "text/html") {
-		routes.IssueDetail(detailProps).Render(r.Context(), w)
-		return
-	}
-
-	if hx.IsHxRequest() {
-		routes.IssueDetailContent(detailProps).Render(r.Context(), w)
+	if strings.Contains(r.Header.Get("Accept"), "text/html") {
+		routes.IssueDetailPage(issue, comments).Render(r.Context(), w)
 		return
 	}
 
@@ -170,6 +161,24 @@ func UpdateIssue(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	ctx := r.Context()
+	addToSprint := r.FormValue("add_to_sprint")
+	removeFromSprint := r.FormValue("remove_from_sprint")
+
+	if addToSprint != "" {
+		sprintNum := 0
+		fmt.Sscanf(addToSprint, "%d", &sprintNum)
+		if sprintNum > 0 {
+			app.Issues.AddIssueToSprint(ctx, issue.ID, sprintNum)
+		}
+	} else if removeFromSprint != "" {
+		sprintNum := 0
+		fmt.Sscanf(removeFromSprint, "%d", &sprintNum)
+		if sprintNum > 0 {
+			app.Issues.RemoveIssueFromSprint(ctx, issue.ID, sprintNum)
+		}
+	}
+
 	issue, err = app.Issues.GetIssue(r.Context(), issue.ID)
 	if err != nil {
 		http.Error(w, "Failed to retrieve updated issue", http.StatusInternalServerError)
@@ -177,13 +186,20 @@ func UpdateIssue(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if hx.IsHxRequest() {
-		// Check if 'from' parameter says board view
 		from := r.URL.Query().Get("from")
 		referer := r.Header.Get("Referer")
 		boardView := from == "board" || strings.Contains(referer, "board=true")
 
 		if boardView {
-			w.Header().Set("HX-Redirect", "/?board=true")
+			redirectURL := "/?board=true"
+			if strings.Contains(referer, "sprint=") {
+				if parsedURL, err := url.Parse(referer); err == nil {
+					if sprintParam := parsedURL.Query().Get("sprint"); sprintParam != "" {
+						redirectURL = redirectURL + "&sprint=" + sprintParam
+					}
+				}
+			}
+			w.Header().Set("HX-Redirect", redirectURL)
 		} else {
 			w.Header().Set("HX-Redirect", "/?selected-issue="+issue.ID)
 		}
@@ -328,6 +344,9 @@ func (f *UpdateIssueForm) toChanges() map[string]any {
 	}
 	if f.Priority != nil {
 		changes["priority"] = *f.Priority
+	}
+	if f.Assignee != nil {
+		changes["assignee"] = *f.Assignee
 	}
 	return changes
 }

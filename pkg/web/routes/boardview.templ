@@ -7,10 +7,14 @@ import (
 )
 
 type BoardViewProps struct {
-	Issues     []*models.Issue
-	BaseURL    string
-	QueryParam string
-	EmptyText  string
+	Issues        []*models.Issue
+	BacklogIssues []*models.Issue
+	SprintIssues  []*models.Issue
+	CurrentSprint int
+	Sprints       []int
+	BaseURL       string
+	QueryParam    string
+	EmptyText     string
 }
 
 templ BoardView(props BoardViewProps) {
@@ -22,13 +26,6 @@ templ BoardView(props BoardViewProps) {
 templ BoardViewContent(props BoardViewProps) {
 	<div class="flex flex-col h-full">
 		<div class="flex flex-col border-b border-base-200">
-			<div class="flex p-2 border-b border-base-200 items-center gap-2">
-				@components.SearchForm(components.SearchFormProps{
-					RootURL:     props.BaseURL,
-					SearchQuery: props.QueryParam,
-					Target:      "#board-container",
-				})
-			</div>
 			<div class="flex p-2 justify-between items-center gap-2">
 				<div class="flex gap-2">
 					<div class="join">
@@ -50,53 +47,86 @@ templ BoardViewContent(props BoardViewProps) {
 						New Issue
 					</button>
 				</div>
+				<div class="flex items-center gap-2">
+					<span class="text-sm font-medium">Sprint:</span>
+					<select
+						class="select select-sm select-bordered"
+						hx-get="/board/sprint"
+						hx-target="#board-columns-container"
+						hx-swap="innerHTML"
+						name="sprint"
+					>
+						if len(props.Sprints) == 0 {
+							<option value="0">No Sprints</option>
+						}
+						for _, sprintNum := range props.Sprints {
+							if sprintNum == props.CurrentSprint {
+								<option value={ fmt.Sprintf("%d", sprintNum) } selected>{ fmt.Sprintf("Sprint %d", sprintNum) }</option>
+							} else {
+								<option value={ fmt.Sprintf("%d", sprintNum) }>{ fmt.Sprintf("Sprint %d", sprintNum) }</option>
+							}
+						}
+					</select>
+					<button
+						class="btn btn-sm btn-outline"
+						hx-post="/board/sprint/new"
+						hx-target="#board-columns-container"
+						hx-swap="innerHTML"
+					>
+						New Sprint
+					</button>
+				</div>
 			</div>
 		</div>
-		<div id="board-container" class="flex-1 overflow-x-auto p-4">
-			@BoardColumns(props.Issues)
+		<div id="board-columns-container" class="flex-1 overflow-x-auto p-4">
+			@BoardColumns(props)
 		</div>
 	</div>
 }
 
-templ BoardColumns(issues []*models.Issue) {
+templ BoardColumns(props BoardViewProps) {
 	{{
-		openIssues := []*models.Issue{}
+		backlogIssues := props.BacklogIssues
+
+		todoIssues := []*models.Issue{}
 		inProgressIssues := []*models.Issue{}
 		blockedIssues := []*models.Issue{}
-		readyToSprintIssues := []*models.Issue{}
-		closedIssues := []*models.Issue{}
+		doneIssues := []*models.Issue{}
 
-		for _, issue := range issues {
+		for _, issue := range props.SprintIssues {
 			switch issue.Status {
 			case "open":
-				openIssues = append(openIssues, issue)
+				todoIssues = append(todoIssues, issue)
 			case "in_progress":
 				inProgressIssues = append(inProgressIssues, issue)
 			case "blocked":
 				blockedIssues = append(blockedIssues, issue)
-			case "ready_to_sprint":
-				readyToSprintIssues = append(readyToSprintIssues, issue)
 			case "closed":
-				closedIssues = append(closedIssues, issue)
+				doneIssues = append(doneIssues, issue)
 			}
+		}
+
+		sprintName := "No Sprint"
+		if props.CurrentSprint > 0 {
+			sprintName = fmt.Sprintf("Sprint %d", props.CurrentSprint)
 		}
 	}}
 	<div class="flex gap-4 h-full" id="board-columns">
-		@BoardColumn("Open", "open", openIssues, "badge-info")
-		@BoardColumn("In Progress", "in_progress", inProgressIssues, "badge-warning")
-		@BoardColumn("Blocked", "blocked", blockedIssues, "badge-error")
-		@BoardColumn("Ready to sprint", "ready_to_sprint", readyToSprintIssues, "badge-primary")
-		@BoardColumn("Closed", "closed", closedIssues, "badge-success")
+		@BoardColumn("Backlog", "backlog", backlogIssues, "badge-ghost", "")
+		@BoardColumn(fmt.Sprintf("%s - To Do", sprintName), "todo", todoIssues, "badge-info", sprintName)
+		@BoardColumn(fmt.Sprintf("%s - In Progress", sprintName), "in_progress", inProgressIssues, "badge-warning", sprintName)
+		@BoardColumn(fmt.Sprintf("%s - Blocked", sprintName), "blocked", blockedIssues, "badge-error", sprintName)
+		@BoardColumn(fmt.Sprintf("%s - Done", sprintName), "done", doneIssues, "badge-success", sprintName)
 	</div>
 }
 
-templ BoardColumn(title string, status string, issues []*models.Issue, badgeClass string) {
-	<div class="flex-1 min-w-80 flex flex-col board-column" data-status={ status }>
+templ BoardColumn(title string, status string, issues []*models.Issue, badgeClass string, sprintName string) {
+	<div class="flex-1 min-w-80 flex flex-col board-column" data-status={ status } data-sprint={ sprintName }>
 		<div class="flex items-center gap-2 mb-4">
 			<h2 class="text-lg font-semibold">{ title }</h2>
 			<span class={ "badge", badgeClass }>{ fmt.Sprintf("%d", len(issues)) }</span>
 		</div>
-		<div class="flex-1 space-y-2 bg-base-200 rounded-lg p-2 min-h-[120px] column-drop-zone" data-status={ status }>
+		<div class="flex-1 space-y-2 bg-base-200 rounded-lg p-2 min-h-30 column-drop-zone" data-status={ status } data-sprint={ sprintName }>
 			if len(issues) == 0 {
 				<div class="text-center text-base-content/50 py-4 empty-drop-hint">Drop issues here</div>
 			}
@@ -116,7 +146,7 @@ templ BoardCard(issue *models.Issue) {
 		<div class="card-body p-4">
 			<div class="flex items-start justify-between gap-2">
 				<h3 class="card-title text-sm font-medium line-clamp-2 flex-1">{ issue.Title }</h3>
-				<div class="flex gap-1 flex-shrink-0">
+				<div class="flex gap-1 shrink-0">
 					<button
 						class="btn btn-ghost btn-xs"
 						hx-get={ "/issues/" + issue.ID + "?from=board" }
