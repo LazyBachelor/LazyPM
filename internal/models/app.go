@@ -4,7 +4,7 @@ import (
 	"context"
 	"log/slog"
 
-	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/v2/bson"
 )
 
 type App struct {
@@ -58,13 +58,22 @@ type IssueService interface {
 	RemoveDependency(ctx context.Context, issueID, dependsOnID string, actor string) error
 	GetDependencies(ctx context.Context, issueID string) ([]*Issue, error)
 	GetDependents(ctx context.Context, issueID string) ([]*Issue, error)
+
+	AddSprint(ctx context.Context) (int, error)
+	RemoveSprint(ctx context.Context, sprintNum int) error
+	GetSprints(ctx context.Context) ([]int, error)
+	GetBacklogSprint(ctx context.Context) (int, error)
+	GetIssuesBySprint(ctx context.Context, sprintNum int) ([]*Issue, error)
+	GetIssuesNotInAnySprint(ctx context.Context) ([]*Issue, error)
+	AddIssueToSprint(ctx context.Context, issueID string, sprintNum int) error
+	RemoveIssueFromSprint(ctx context.Context, issueID string, sprintNum int) error
 }
 
 type StatsService interface {
 	Load(ctx context.Context) error
 	Save(ctx context.Context) error
 	GetStatistics() (Statistics, error)
-	GetParticipantID() primitive.ObjectID
+	GetParticipantID() bson.ObjectID
 	RecordTaskRun(ctx context.Context, run TaskRunMetrics) error
 	RecordIntroQuestionnaireAnswers(answers map[string]any) error
 }

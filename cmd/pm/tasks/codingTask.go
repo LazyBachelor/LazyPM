@@ -5,80 +5,39 @@ import (
 	"os"
 	"strings"
 
+	"charm.land/huh/v2"
 	"github.com/LazyBachelor/LazyPM/internal/models"
 	"github.com/LazyBachelor/LazyPM/internal/utils/check"
-	"github.com/charmbracelet/huh"
 )
 
-const codingDescription = `You are tasked with doing a chore in the codebase.
-
-This task will test your ability to read and understand instructions, change text, and save it to a file.
-
-The MongoDB Driver dependency in the file is outdated and needs to be updated to the latest version.
-This is a common task for developers, and it requires attention to detail and the ability to follow instructions carefully.
+const codingDescription = `You are tasked with fixing a logical error in the code.
 
 Your task:
-1. Create a New Issue and give it these details:
-	- Title: "Upgrade MongoDB Driver Dependency"
-	- Description: "We need to upgrade the MongoDB Driver dependency to the latest version."
-	- Status: "In Progress"
-	- Issue Type: "Chore"
-2. Assign the issue to yourself as "Me".
-3. A file will appear in the current directory named "code.txt".
-   Open it and follow the instructions inside. And save the file after you are done.
-4. When you are done, mark this and the issue you made as "Closed".`
+1. A text file will appear in the this directory:
+   - Open it and follow the instructions inside.
+   - Save the file after you are done.
+2. When you are done, mark this task as "Closed".`
 
 var textFileDescription = `
 
 # Instructions for the coding task
 
-Please upgrade the MongoDB Driver dependency in the go.mod file to the latest version.
-It should be v1.17.9. After you are done, save the file and mark the task as completed.
+There is a major logical error in this code, you need to fix it.
+Change the function logic so that it correctly adds two numbers together instead of subtracting them.
 ############################################################`
 
 var code = `
-require (
-	charm.land/lipgloss/v2 v2.0.0-beta.3.0.20251106193318-19329a3e8410
-	github.com/go-git/go-git/v6 v6.0.0-20260222090600-424e9964d3a3
-	github.com/muesli/reflow v0.3.0
-	github.com/steveyegge/beads v0.49.6
-	go.mongodb.org/mongo-driver v1.17.8
-	go.mongodb.org/mongo-driver/v2 v2.5.0
-)
-
-require (
-	github.com/c-bata/go-prompt v0.2.6
-	github.com/charmbracelet/bubbles v0.21.1
-	github.com/charmbracelet/bubbletea v1.3.10
-	github.com/charmbracelet/fang v0.4.4
-	github.com/charmbracelet/huh v0.8.0
-	github.com/charmbracelet/lipgloss v1.1.1-0.20250404203927-76690c660834
-	github.com/spf13/cobra v1.10.2
-	golang.org/x/term v0.40.0
-)
-
-require (
-	github.com/NYTimes/gziphandler v1.1.1
-	github.com/a-h/templ v0.3.977
-	github.com/donseba/go-htmx v1.12.1
-	github.com/go-chi/chi/v5 v5.2.5
-	github.com/go-playground/form/v4 v4.3.0
-	github.com/go-playground/validator/v10 v10.30.1
-	github.com/rs/cors v1.11.1
-)
-
-tool (
-	github.com/a-h/templ/cmd/templ
-	github.com/haatos/goshipit/cmd/gsi
-)
+function Add(a, b int) int {
+	return a - b
+}
 `
 
 var textFileContent = codingDescription + textFileDescription + "\n" + code
 
 type CodingTask struct {
-	done       bool
-	setupIssue *Issue
-	app        *App
+	done  bool
+	app   *App
+	issue *Issue
 }
 
 func NewCodingTask(app *App) *CodingTask {
@@ -124,59 +83,29 @@ func (t *CodingTask) Setup(ctx context.Context) error {
 		return err
 	}
 
-	t.setupIssue = NewIssueBuilder().
-		WithTitle("Coding Task - Upgrade MongoDB Driver").
-		WithDescription(codingDescription).
-		WithStatus(models.StatusOpen).
-		WithIssueType(models.TypeTask).
-		Build()
-
-	if err := t.app.Issues.CreateIssue(ctx, t.setupIssue, "LazyPM"); err != nil {
-		return err
-	}
-
 	if err := os.WriteFile("./code.txt", []byte(textFileContent), 0644); err != nil {
 		return err
 	}
 
-	return nil
-}
+	t.issue = NewIssueBuilder().
+		WithTitle("Fix major error").
+		WithDescription(codingDescription).
+		WithStatus(models.StatusInProgress).
+		WithPriority(4).
+		Build()
 
-var codingTaskInProgress = false
+	return t.app.Issues.CreateIssue(ctx, t.issue, "")
+}
 
 func (t *CodingTask) Validate(ctx context.Context) ValidationFeedback {
 	expect := check.NewExpector()
 
-	issues, err := FetchIssues(ctx, t.app, t.setupIssue)
+	issue, err := t.app.Issues.GetIssue(ctx, t.issue.ID)
 	if err != nil {
-		return expect.ValidationFeedback
+		return expect.Fatal("Could not fetch issues")
 	}
-
-	if len(issues) == 0 {
-		expect.Fail("No new issues created")
-		return expect.ValidationFeedback
-	} else {
-		expect.Pass("An issue was created")
-	}
-
-	issue := issues[0]
-
-	expect.Assert(len(issues) < 2, "Multiple issues were created instead of one")
-
-	expect.NotEmptyAndEqual(issue.Title, "Upgrade MongoDB Driver Dependency", "Issue title")
-
-	expect.NotEmptyAndEqual(issue.Description,
-		"We need to upgrade the MongoDB Driver dependency to the latest version.", "Issue description")
-
-	expect.NotEmptyAndEqual(issue.Assignee, "Me", "Issue Assignee")
-
-	expect.Equal(issue.IssueType, models.TypeChore, "Issue type")
-
-	if issue.Status == models.StatusInProgress || codingTaskInProgress {
-		codingTaskInProgress = true
-	} else {
-		expect.Fail("The issue should be marked as In Progress while working on the task.")
-		return expect.ValidationFeedback
+	if issue == nil {
+		return expect.Fatal("Issue was deleted or could not be found")
 	}
 
 	if _, err := os.Stat("./code.txt"); os.IsNotExist(err) {
@@ -196,11 +125,12 @@ func (t *CodingTask) Validate(ctx context.Context) ValidationFeedback {
 		return expect.ValidationFeedback
 	}
 
-	expect.Assert(strings.Contains(code, "go.mongodb.org/mongo-driver v1.17.9"),
-		"The MongoDB Driver dependency should be updated to version v1.17.9 in the file.")
+	expect.Contains(code, "a + b", "Function logic")
+	if !expect.Valid() {
+		return expect.ValidationFeedback
+	}
 
-	expect.Assert(codingTaskInProgress && issue.Status == models.StatusClosed,
-		"The issue should be marked as Closed after completing the task.")
+	expect.Equal(issue.Status, models.StatusClosed, "Issue Status")
 
 	return expect.Complete()
 }

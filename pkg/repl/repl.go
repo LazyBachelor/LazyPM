@@ -2,7 +2,6 @@
 package repl
 
 import (
-	"bufio"
 	"context"
 	"fmt"
 	"os"
@@ -50,14 +49,11 @@ func (r *REPL) Run(ctx context.Context, config app.Config) error {
 	r.exitRequested = false
 	r.currentFeedback = ValidationFeedback{}
 
-	// Set terminal to raw mode to capture input properly in the REPL.
-	// This allows us to handle input character by character and provide a better user experience.
-	// We also ensure that the terminal state is restored when the REPL exits, even if an error occurs.
+	// Save terminal state to restore on exit
 	oldState, err := term.GetState(int(os.Stdin.Fd()))
-	if err != nil {
-		return fmt.Errorf("failed to get terminal state: %w", err)
+	if err == nil {
+		defer term.Restore(int(os.Stdin.Fd()), oldState)
 	}
-	defer term.Restore(int(os.Stdin.Fd()), oldState)
 
 	// Initialize services for beads, config and stats.
 	app, cleanup, err := app.New(ctx, config)
@@ -84,23 +80,18 @@ func (r *REPL) Run(ctx context.Context, config app.Config) error {
 	}
 
 	// history keeps track of command history.
-	// This enables navigating through previous commands.
 	var history []string
 
-	// Start the REPL loop, which continues until the user types "exit" or "quit" or task completes.
-	reader := bufio.NewReader(os.Stdin)
-	for !r.exitRequested {
-		// Check if task completed - wait for Enter before exiting
+	// Start the REPL loop
+replLoop:
+	for !r.exitRequested || r.taskCompleted {
+		// Check if task completed before showing prompt
 		if r.taskCompleted {
-			fmt.Println(style.TitleStyle.Render("Task completed successfully!"))
-			fmt.Print("Press Enter to exit...")
-			// Restore terminal to normal mode for input
-			term.Restore(int(os.Stdin.Fd()), oldState)
-			reader.ReadString('\n')
-			break
+			fmt.Scanln()
+			break replLoop
 		}
 
-		// Check if we should exit before prompting (non-blocking check)
+		// Check if we should exit before prompting
 		if r.exitRequested {
 			break
 		}
@@ -112,22 +103,17 @@ func (r *REPL) Run(ctx context.Context, config app.Config) error {
 			promptOptions(history)...,
 		)
 
-		// Check again after prompt returns (in case validation completed while waiting)
-		if r.exitRequested {
-			break
-		}
-
-		// Check if task completed while waiting at prompt
+		// Check if task completed while at prompt (will be true if newline was injected)
 		if r.taskCompleted {
-			fmt.Println(style.TitleStyle.Render("Task completed successfully!"))
-			fmt.Print("Press Enter to exit...")
-			// Restore terminal to normal mode for input
-			term.Restore(int(os.Stdin.Fd()), oldState)
-			reader.ReadString('\n')
+			break replLoop
+		}
+
+		// Check again after prompt returns (in case validation completed while waiting)
+		if r.exitRequested && !r.taskCompleted {
 			break
 		}
 
-		// Trim whitespace from the input to ensure consistent command processing.
+		// Trim whitespace from the input
 		input = strings.TrimSpace(input)
 
 		// If the user types "exit" or "quit", break the loop and exit the REPL.
@@ -141,16 +127,25 @@ func (r *REPL) Run(ctx context.Context, config app.Config) error {
 			r.logAction("repl command: " + input)
 		}
 
-		// Add the input to the history for future navigation.
+		// Add the input to the history
 		history = append(history, input)
 
-		output, err := execute(input)
+		output, err := r.execute(input)
+
+		// Send submit signal to trigger validation after any command
+		if r.submitChan != nil {
+			select {
+			case r.submitChan <- struct{}{}:
+			default:
+			}
+		}
+
 		if err != nil {
-			// Show command output (even on error) in normal text style
+			// Show command output (even on error)
 			if output != "" {
 				fmt.Println(style.TextStyle.Render(output))
 			}
-			// Show error message in red if no output was captured
+			// Show error message in red if no output
 			if output == "" {
 				fmt.Println(style.ErrorStyle.Render(err.Error()))
 			}
@@ -177,10 +172,15 @@ func (r *REPL) watchValidation() {
 			}
 			if feedback.Success {
 				r.taskCompleted = true
+				// Print completion message immediately
+				fmt.Fprintf(os.Stderr, "\n\nTASK COMPLETED\n%s\nPress Enter to exit...\n\n", feedback.Message)
+				os.Stderr.Sync()
 				return
 			}
 		case <-r.quitChan:
-			r.exitRequested = true
+			if !r.taskCompleted {
+				r.exitRequested = true
+			}
 			return
 		}
 	}

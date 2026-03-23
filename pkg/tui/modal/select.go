@@ -1,0 +1,240 @@
+package modal
+
+import (
+	"fmt"
+
+	tea "charm.land/bubbletea/v2"
+	"charm.land/lipgloss/v2"
+	"github.com/LazyBachelor/LazyPM/internal/style"
+)
+
+// SelectResult is returned when a select modal completes
+type SelectResult struct {
+	SelectedKey   string
+	SelectedValue string
+}
+
+// SelectOption represents a selectable option
+type SelectOption struct {
+	Key   string // The key to press
+	Label string // Display label
+	Value string // The actual value to return
+}
+
+// SelectModal is a modal for selecting from a list of options
+// Suitable for: status selection, priority selection, type selection, etc.
+type SelectModal struct {
+	BaseModal
+	label     string
+	options   []SelectOption
+	helpText  string
+	cancelKey string
+	issueID   string
+	width     int
+	height    int
+}
+
+// SelectConfig configures a select modal
+type SelectConfig struct {
+	ID        string
+	Label     string
+	Options   []SelectOption
+	CancelKey string
+	IssueID   string
+	Width     int
+	Height    int
+}
+
+// NewSelectModal creates a new select modal
+func NewSelectModal(cfg SelectConfig) *SelectModal {
+	if cfg.CancelKey == "" {
+		cfg.CancelKey = "esc"
+	}
+
+	mod := &SelectModal{
+		BaseModal: NewBaseModal(cfg.ID, TypeSelect),
+		label:     cfg.Label,
+		options:   cfg.Options,
+		cancelKey: cfg.CancelKey,
+		issueID:   cfg.IssueID,
+		width:     cfg.Width,
+		height:    cfg.Height,
+	}
+
+	// Build help text from options with styled keys in vertical layout
+	var parts []string
+	for _, opt := range cfg.Options {
+		styledKey := lipgloss.NewStyle().Foreground(style.Primary).Bold(true).Render(opt.Key)
+		styledLabel := lipgloss.NewStyle().Foreground(style.SecondaryText).Render(opt.Label)
+		option := lipgloss.NewStyle().Foreground(style.FaintText).Render("  ") + styledKey + lipgloss.NewStyle().Foreground(style.FaintText).Render(" → ") + styledLabel
+		parts = append(parts, option)
+	}
+	mod.helpText = lipgloss.JoinVertical(lipgloss.Left, parts...)
+
+	if mod.width == 0 {
+		mod.width = 70
+	}
+	if mod.height == 0 {
+		mod.height = 20
+	}
+
+	return mod
+}
+
+// Activate prepares the modal
+func (s *SelectModal) Activate() tea.Cmd {
+	s.BaseModal.activate()
+	return nil
+}
+
+// Deactivate cleans up the modal
+func (s *SelectModal) Deactivate() {
+	s.BaseModal.deactivate()
+}
+
+// IssueID returns the associated issue ID
+func (s *SelectModal) IssueID() string {
+	return s.issueID
+}
+
+// Options returns the available options
+func (s *SelectModal) Options() []SelectOption {
+	return s.options
+}
+
+// Update handles input when the modal is active
+func (s *SelectModal) Update(msg tea.Msg) (tea.Cmd, bool) {
+	if !s.IsActive() {
+		return nil, false
+	}
+
+	switch msg := msg.(type) {
+	case tea.KeyPressMsg:
+		key := msg.String()
+
+		// Check cancel key
+		if key == s.cancelKey {
+			s.Deactivate()
+			return func() tea.Msg {
+				return ModalCancelledMsg{ModalID: s.ID()}
+			}, true
+		}
+
+		// Check option keys
+		for _, opt := range s.options {
+			if key == opt.Key {
+				s.Deactivate()
+				return func() tea.Msg {
+					return ModalCompletedMsg{
+						ModalID: s.ID(),
+						Value:   SelectResult{SelectedKey: opt.Key, SelectedValue: opt.Value},
+					}
+				}, true
+			}
+		}
+	}
+
+	// Consume all keys when modal is active to prevent leakage to underlying components
+	return nil, true
+}
+
+// View renders the modal
+func (s *SelectModal) View() string {
+	if s.width < 5 {
+		return ""
+	}
+
+	boxWidth := max(min(70, s.width-4), 1)
+
+	cancelText := lipgloss.NewStyle().
+		Foreground(style.FaintText).
+		Render(s.cancelKey + " = cancel")
+
+	content := lipgloss.JoinVertical(lipgloss.Left,
+		style.ValueStyle.Render(s.label),
+		"",
+		s.helpText,
+		"",
+		cancelText,
+	)
+
+	return style.ModalContainerStyle.
+		Width(boxWidth).
+		Render(content)
+}
+
+// SetSize updates the modal dimensions
+func (s *SelectModal) SetSize(width, height int) {
+	s.BaseModal.SetSize(width, height)
+	s.width = width
+	s.height = height
+}
+
+// Predefined option sets for common use cases
+
+// StatusOptions returns options for status selection
+func StatusOptions() []SelectOption {
+	return []SelectOption{
+		{Key: "o", Label: "open", Value: "open"},
+		{Key: "i", Label: "in_progress", Value: "in_progress"},
+		{Key: "b", Label: "blocked", Value: "blocked"},
+		{Key: "c", Label: "closing", Value: "closing"},
+	}
+}
+
+// PriorityOptions returns options for priority selection
+func PriorityOptions() []SelectOption {
+	return []SelectOption{
+		{Key: "0", Label: "irrelevant", Value: "0"},
+		{Key: "1", Label: "low", Value: "1"},
+		{Key: "2", Label: "normal", Value: "2"},
+		{Key: "3", Label: "high", Value: "3"},
+		{Key: "4", Label: "critical", Value: "4"},
+	}
+}
+
+// TypeOptions returns options for issue type selection
+func TypeOptions() []SelectOption {
+	return []SelectOption{
+		{Key: "b", Label: "bug", Value: "bug"},
+		{Key: "f", Label: "feature", Value: "feature"},
+		{Key: "t", Label: "task", Value: "task"},
+		{Key: "e", Label: "epic", Value: "epic"},
+		{Key: "c", Label: "chore", Value: "chore"},
+	}
+}
+
+// CloseReasonOptions returns options for close reason selection
+func CloseReasonOptions() []SelectOption {
+	return []SelectOption{
+		{Key: "c", Label: "Done", Value: "Done"},
+		{Key: "d", Label: "Duplicate", Value: "Duplicate issue"},
+		{Key: "w", Label: "Won't fix", Value: "Won't fix"},
+		{Key: "o", Label: "Obsolete", Value: "Obsolete"},
+		{Key: "h", Label: "Other", Value: "other"},
+	}
+}
+
+// SprintOptions generates sprint selection options from available sprints
+func SprintOptions(sprints []int, backlogNum int) []SelectOption {
+	options := make([]SelectOption, 0, len(sprints))
+	for _, sprintNum := range sprints {
+		label := fmt.Sprintf("Sprint %d", sprintNum)
+		if sprintNum == backlogNum {
+			label = "Backlog"
+		}
+
+		key := fmt.Sprintf("%d", sprintNum)
+		if sprintNum <= 9 {
+			key = fmt.Sprintf("%d", sprintNum)
+		} else {
+			continue
+		}
+		options = append(options, SelectOption{
+			Key:   key,
+			Label: label,
+			Value: fmt.Sprintf("%d", sprintNum),
+		})
+	}
+	return options
+}

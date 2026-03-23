@@ -9,17 +9,14 @@ import (
 
 const issueReviewCleanupDescription = `You are responsible for reviewing and maintaining the current project issues.
 
-Using the system, complete the following steps:
-
-1. Open three different issues and read their titles and descriptions
-2. Add a comment to two issues
-3. Delete this cleanup task issue ("Issue Review and Cleanup Task") from the issue list — do not delete the other project issues
-4. Confirm that the cleanup task issue no longer appears in the list`
+Complete the following steps:
+1. Add a comment to two issues
+2. Delete the issue titled "Delete this issue"`
 
 type IssueReviewCleanupTask struct {
-	done       bool
-	app        *App
-	setupIssue *models.Issue
+	done         bool
+	app          *App
+	reviewIssues []*models.Issue
 }
 
 func NewIssueReviewCleanupTask(app *App) *IssueReviewCleanupTask {
@@ -51,10 +48,10 @@ func (t *IssueReviewCleanupTask) Setup(ctx context.Context) error {
 		return err
 	}
 
-	reviewIssues := []*models.Issue{
+	t.reviewIssues = []*models.Issue{
 		models.NewIssueBuilder().
-			WithTitle("Fix login page layout").
-			WithDescription("The login form is misaligned on smaller screens. Needs responsive CSS adjustments.").
+			WithTitle("Delete this issue").
+			WithDescription("").
 			WithPriority(2).
 			WithStatus(models.StatusOpen).
 			WithIssueType(models.TypeTask).
@@ -89,22 +86,13 @@ func (t *IssueReviewCleanupTask) Setup(ctx context.Context) error {
 			Build(),
 	}
 
-	if err := t.app.Issues.CreateIssues(ctx, reviewIssues, ""); err != nil {
-		return err
-	}
-
-	t.setupIssue = models.NewBaseIssue().
-		WithTitle("Issue Review and Cleanup Task").
-		WithDescription(issueReviewCleanupDescription).
-		Build()
-
-	return t.app.Issues.CreateIssue(ctx, t.setupIssue, "")
+	return t.app.Issues.CreateIssues(ctx, t.reviewIssues, "")
 }
 
 func (t *IssueReviewCleanupTask) Validate(ctx context.Context) ValidationFeedback {
 	expect := check.NewExpector()
 
-	issues, err := FetchIssues(ctx, t.app, t.setupIssue)
+	issues, err := FetchIssues(ctx, t.app)
 	if err != nil {
 		return expect.Fatal("Could not fetch issues")
 	}
@@ -125,16 +113,18 @@ func (t *IssueReviewCleanupTask) Validate(ctx context.Context) ValidationFeedbac
 	}
 
 	expect.Equal(commentsInIssues, 2, "Comments on issues")
+	expect.Equal(len(issues), len(t.reviewIssues)-1, "Remaining issues after cleanup")
 
-	// Fetching the setup issue as as FetchIssues only updates the setup issue if it exists,
-	// we can check if it was deleted by seeing if it can be fetched again
-	if t.setupIssue, err = t.app.Issues.GetIssue(ctx, t.setupIssue.ID); t.setupIssue != nil {
-		expect.Fail("Setup issue still exists")
-	} else {
-		expect.Pass("Setup issue deleted")
+	issue, err := t.app.Issues.GetIssue(ctx, t.reviewIssues[0].ID)
+	if err != nil {
+		return expect.Fatal("Deleted issue should not be found")
 	}
 
-	expect.Equal(len(issues), 5, "Number of remaining issues")
+	if issue != nil {
+		expect.Fail("The issue titled 'Delete this issue' should have been deleted.")
+	} else {
+		expect.Pass("Issue deleted successfully")
+	}
 
 	return expect.Complete()
 }

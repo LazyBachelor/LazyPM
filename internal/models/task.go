@@ -3,7 +3,7 @@ package models
 import (
 	"context"
 
-	"github.com/charmbracelet/huh"
+	"charm.land/huh/v2"
 )
 
 type Tasker interface {

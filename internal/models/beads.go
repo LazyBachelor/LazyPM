@@ -35,12 +35,11 @@ type (
 
 // Status constants
 const (
-	StatusOpen                 = beads.StatusOpen
-	StatusInProgress           = beads.StatusInProgress
-	StatusBlocked              = beads.StatusBlocked
-	StatusDeferred             = beads.StatusDeferred
-	StatusClosed               = beads.StatusClosed
-	StatusReadyToSprint Status = "ready_to_sprint"
+	StatusOpen       = beads.StatusOpen
+	StatusInProgress = beads.StatusInProgress
+	StatusBlocked    = beads.StatusBlocked
+	StatusDeferred   = beads.StatusDeferred
+	StatusClosed     = beads.StatusClosed
 )
 
 // IssueType constants

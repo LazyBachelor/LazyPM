@@ -76,7 +76,7 @@ func (e *Expector) Fail(message string) *Expector {
 func (e *Expector) NotEmptyAndEqual(val, expected string, message string) *Expector {
 	if val == "" {
 		return e.Fail(fmt.Sprintf("%s is empty", message))
-	} else if val != expected {
+	} else if !strings.EqualFold(val, expected) {
 		return e.Fail(fmt.Sprintf(`%s expected "%v", got "%v"`, message, expected, val))
 	}
 	return e.Pass(message + " is correct")
@@ -109,9 +109,10 @@ func (e *Expector) NotNil(value any, message string) *Expector {
 }
 
 func (e *Expector) Contains(s, substr, message string) *Expector {
-	check := NewCheck(message, strings.Contains(s, substr))
-	e.Checks = append(e.Checks, check)
-	return e
+	if !strings.Contains(s, substr) {
+		return e.Fail(fmt.Sprintf(`%s expected to contain "%v", but it does not.`, message, substr))
+	}
+	return e.Pass(fmt.Sprintf(`%s contains "%v"`, message, substr))
 }
 
 func (e *Expector) NotContains(s, substr, message string) *Expector {

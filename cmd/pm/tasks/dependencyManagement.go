@@ -4,28 +4,26 @@ import (
 	"context"
 	"fmt"
 
+	"charm.land/huh/v2"
 	"github.com/LazyBachelor/LazyPM/internal/models"
 	"github.com/LazyBachelor/LazyPM/internal/utils/check"
-	"github.com/charmbracelet/huh"
 )
 
 const dependencyManagementDescription = `You are tasked with managing issue dependencies.
 
-Several issues in your project have dependencies on other issues. You need to:
+Several issues in your project have dependencies on other issues. 
 
-1. Find the 4 issues that mention dependencies in their detail description. For example: "Depends on Issue '123'". Set their status to "blocked".
-2. Find the 2 foundational issues that are mentioned by the other issues.
-3. Set priority of the 2 foundational issues to 3 (high).
-4. Set status of the 2 foundational issues to in-progress.
-5. Assign the 2 foundational issues to yourself as "Me".
-
-Resolving dependencies in the right order is critical for efficient team workflow.`
+You need to:
+1. Find 2 issues that mention dependencies in their description.
+2. Find the issue that is mentioned by the other issues:
+   - Set priority to 3 (high).
+   - Set status to in-progress.
+   - Assign the to yourself as "Me".`
 
 type DependencyManagementTask struct {
-	done       bool
-	app        *App
-	setupIssue *Issue
-	depIssues  []*Issue
+	done      bool
+	app       *App
+	depIssues []*Issue
 }
 
 func NewDependencyManagementTask(app *App) *DependencyManagementTask {
@@ -79,13 +77,6 @@ func (t *DependencyManagementTask) Setup(ctx context.Context) error {
 			WithIssueType(models.TypeTask).
 			Build(),
 		NewIssueBuilder().
-			WithTitle("Create home page for the website").
-			WithDescription("Create a page for the website.").
-			WithPriority(2).
-			WithStatus(models.StatusOpen).
-			WithIssueType(models.TypeTask).
-			Build(),
-		NewIssueBuilder().
 			WithTitle("Implement Authentication System").
 			WithDescription("Add login/logout functionality. Depends on 'Setup database connection' issue.").
 			WithPriority(2).
@@ -99,52 +90,32 @@ func (t *DependencyManagementTask) Setup(ctx context.Context) error {
 			WithStatus(models.StatusOpen).
 			WithIssueType(models.TypeTask).
 			Build(),
-		NewIssueBuilder().
-			WithTitle("Create user profile page").
-			WithDescription("Frontend user profile page. Depends on 'Create home page for the website' issue.").
-			WithPriority(3).
-			WithStatus(models.StatusOpen).
-			WithIssueType(models.TypeTask).
-			Build(),
-		NewIssueBuilder().
-			WithTitle("Create about page").
-			WithDescription("Frontend about page. Depends on 'Create home page for the website' issue.").
-			WithPriority(2).
-			WithStatus(models.StatusOpen).
-			WithIssueType(models.TypeTask).
-			Build(),
 	}
 
-	if err := t.app.Issues.CreateIssues(ctx, t.depIssues, ""); err != nil {
-		return err
-	}
-
-	t.setupIssue = NewIssueBuilder().
-		WithTitle("Dependency Management").
-		WithDescription(dependencyManagementDescription).
-		Build()
-
-	return t.app.Issues.CreateIssue(ctx, t.setupIssue, "")
+	return t.app.Issues.CreateIssues(ctx, t.depIssues, "")
 }
 
 func (t *DependencyManagementTask) Validate(ctx context.Context) ValidationFeedback {
 	expect := check.NewExpector()
 
-	taskIssue := t.setupIssue
-	issues, err := FetchIssues(ctx, t.app, t.setupIssue)
+	issues, err := FetchIssues(ctx, t.app)
 	if err != nil {
 		return expect.Fatal("Could not fetch issues")
 	}
 
 	for _, issue := range issues {
-		for _, depIssue := range t.depIssues[2:] {
+		for _, depIssue := range t.depIssues[1:] {
 			if issue.Title == depIssue.Title {
 				expect.Equal(issue.Status, models.StatusBlocked,
 					fmt.Sprintf("%s status", issue.Title))
 			}
 		}
-
-		for _, foundationalIssue := range t.depIssues[:2] {
+	}
+	if !expect.Valid() {
+		return expect.ValidationFeedback
+	}
+	for _, issue := range issues {
+		for _, foundationalIssue := range t.depIssues[:1] {
 			if issue.Title == foundationalIssue.Title {
 				expect.Equal(issue.Priority, 3,
 					fmt.Sprintf("%s priority", issue.Title))
@@ -154,15 +125,7 @@ func (t *DependencyManagementTask) Validate(ctx context.Context) ValidationFeedb
 					fmt.Sprintf("%s status", issue.Title))
 			}
 		}
-
 	}
-
-	if !expect.Valid() {
-		return expect.ValidationFeedback
-	}
-
-	expect.Equal(taskIssue.Status, models.StatusClosed,
-		fmt.Sprintf("%s", taskIssue.Title))
 
 	return expect.Complete()
 }

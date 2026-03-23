@@ -72,52 +72,52 @@ templ IssueDetail(props IssueDetailProps) {
 templ StatusBadge(status models.Status) {
 	switch status {
 		case "open":
-			<span class="badge badge-info badge-sm">Open</span>
+			<span class="badge badge-info badge-sm whitespace-nowrap">Open</span>
 		case "in_progress":
-			<span class="badge badge-warning badge-sm">In Progress</span>
+			<span class="badge badge-warning badge-sm whitespace-nowrap">In Progress</span>
 		case "ready_to_sprint":
-			<span class="badge badge-primary badge-sm">Ready to sprint</span>
+			<span class="badge badge-primary badge-sm whitespace-nowrap">Ready to sprint</span>
 		case "closed":
-			<span class="badge badge-success badge-sm">Closed</span>
+			<span class="badge badge-success badge-sm whitespace-nowrap">Closed</span>
 		case "blocked":
-			<span class="badge badge-error badge-sm">Blocked</span>
+			<span class="badge badge-error badge-sm whitespace-nowrap">Blocked</span>
 		case "deferred":
-			<span class="badge badge-ghost badge-sm">Deferred</span>
+			<span class="badge badge-ghost badge-sm whitespace-nowrap">Deferred</span>
 		default:
-			<span class="badge badge-ghost badge-sm">{ string(status) }</span>
+			<span class="badge badge-ghost badge-sm whitespace-nowrap">{ string(status) }</span>
 	}
 }
 
 templ TypeBadge(issueType models.IssueType) {
 	switch issueType {
 		case "bug":
-			<span class="badge badge-outline badge-error badge-sm">Bug</span>
+			<span class="badge badge-outline badge-error badge-sm whitespace-nowrap">Bug</span>
 		case "feature":
-			<span class="badge badge-outline badge-success badge-sm">Feature</span>
+			<span class="badge badge-outline badge-success badge-sm whitespace-nowrap">Feature</span>
 		case "task":
-			<span class="badge badge-outline badge-info badge-sm">Task</span>
+			<span class="badge badge-outline badge-info badge-sm whitespace-nowrap">Task</span>
 		case "chore":
-			<span class="badge badge-outline badge-warning badge-sm">Chore</span>
+			<span class="badge badge-outline badge-warning badge-sm whitespace-nowrap">Chore</span>
 		case "epic":
-			<span class="badge badge-outline badge-secondary badge-sm">Epic</span>
+			<span class="badge badge-outline badge-secondary badge-sm whitespace-nowrap">Epic</span>
 		default:
-			<span class="badge badge-outline badge-sm">{ string(issueType) }</span>
+			<span class="badge badge-outline badge-sm whitespace-nowrap">{ string(issueType) }</span>
 	}
 }
 
 templ PriorityBadge(priority int) {
 	switch priority {
 		case 0:
-			<span class="badge badge-ghost badge-sm">Irrelevant</span>
+			<span class="badge badge-ghost badge-sm whitespace-nowrap">Irrelevant</span>
 		case 1:
-			<span class="badge badge-ghost badge-sm">Low</span>
+			<span class="badge badge-ghost badge-sm whitespace-nowrap">Low</span>
 		case 2:
-			<span class="badge badge-info badge-sm">Normal</span>
+			<span class="badge badge-info badge-sm whitespace-nowrap">Normal</span>
 		case 3:
-			<span class="badge badge-warning badge-sm">High</span>
+			<span class="badge badge-warning badge-sm whitespace-nowrap">High</span>
 		case 4:
-			<span class="badge badge-error badge-sm">Critical</span>
+			<span class="badge badge-error badge-sm whitespace-nowrap">Critical</span>
 		default:
-			<span class="badge badge-ghost badge-sm">{ fmt.Sprintf("P%d", priority) }</span>
+			<span class="badge badge-ghost badge-sm whitespace-nowrap">{ fmt.Sprintf("P%d", priority) }</span>
 	}
 }

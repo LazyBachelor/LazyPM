@@ -44,12 +44,10 @@ func runGetIssuesCmd(cmd *cobra.Command, args []string) error {
 	// Only set filter fields if the corresponding flags
 	// were explicitly provided by the user.
 	if cmd.Flags().Changed("status") {
-		s := models.Status(listFlags.status)
-		filter.Status = &s
+		filter.Status = new(models.Status(listFlags.status))
 	}
 	if cmd.Flags().Changed("type") {
-		t := models.IssueType(listFlags.issueType)
-		filter.IssueType = &t
+		filter.IssueType = new(models.IssueType(listFlags.issueType))
 	}
 	if cmd.Flags().Changed("priority") {
 		filter.Priority = &listFlags.priority
@@ -76,7 +74,7 @@ func runGetIssuesCmd(cmd *cobra.Command, args []string) error {
 func init() {
 	ListCmd.Flags().StringVar(&listFlags.title, "title", "", "Filter issues by title")
 	ListCmd.Flags().StringVarP(&listFlags.description, "desc", "d", "", "Filter issues by description")
-	ListCmd.Flags().StringVarP(&listFlags.status, "status", "s", "", "Filter issues by status (open, closed, in_progress, ready_to_sprint)")
+	ListCmd.Flags().StringVarP(&listFlags.status, "status", "s", "", "Filter issues by status (open, closed, in_progress)")
 	ListCmd.Flags().StringVarP(&listFlags.issueType, "type", "t", "", "Filter issues by type (bug, feature, task)")
 	ListCmd.Flags().IntVarP(&listFlags.priority, "priority", "p", 0, "Filter issues by priority (0-4)")
 	ListCmd.Flags().StringVarP(&listFlags.assignee, "assignee", "a", "", "Filter issues by assignee")

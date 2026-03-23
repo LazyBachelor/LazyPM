@@ -6,6 +6,7 @@ import (
 	"github.com/LazyBachelor/LazyPM/internal/models"
 	"github.com/LazyBachelor/LazyPM/internal/utils/shellcomp"
 	"github.com/spf13/cobra"
+	"github.com/spf13/pflag"
 )
 
 var updateFlags Flags
@@ -52,13 +53,20 @@ func runUpdateCmd(cmd *cobra.Command, args []string) error {
 
 	cmd.Printf("Updated issue to:\n%s", models.IssueString(*updatedIssue))
 
+	updateFlags = Flags{}
+
+	cmd.Flags().VisitAll(func(f *pflag.Flag) {
+		f.Changed = false
+		_ = f.Value.Set(f.DefValue)
+	})
+
 	return nil
 }
 
 func init() {
 	UpdateCmd.Flags().StringVar(&updateFlags.title, "title", "", "New issue title")
 	UpdateCmd.Flags().StringVarP(&updateFlags.description, "desc", "d", "", "New issue description")
-	UpdateCmd.Flags().StringVarP(&updateFlags.status, "status", "s", "", "New issue status(open, closed, in_progress, ready_to_sprint)")
+	UpdateCmd.Flags().StringVarP(&updateFlags.status, "status", "s", "", "New issue status(open, closed, in_progress)")
 	UpdateCmd.Flags().StringVarP(&updateFlags.issueType, "type", "t", "", "New issue type(bug, feature, task)")
 	UpdateCmd.Flags().IntVarP(&updateFlags.priority, "priority", "p", 0, "New issue priority(0-4)")
 	UpdateCmd.Flags().StringVarP(&updateFlags.assignee, "assignee", "a", "", "New issue assignee")

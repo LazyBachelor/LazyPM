@@ -26,7 +26,7 @@ var CreateCmd = &cobra.Command{
 	Example: createCmdExample,
 
 	Args:    cobra.MinimumNArgs(0),
-	Aliases: []string{"add"},
+	Aliases: []string{"add", "new"},
 	RunE:    runCreateCmd,
 }
 
@@ -112,7 +112,7 @@ func runCreateInteractive() error {
 func init() {
 	//CreateCmd.Flags().BoolVarP(&createFlags.interactive, "interactive", "i", false, "Create issue interactively")
 	CreateCmd.Flags().StringVarP(&createFlags.description, "desc", "d", "", "Issue description")
-	CreateCmd.Flags().StringVarP(&createFlags.status, "status", "s", "open", "Issue status(open, closed, in_progress, ready_to_sprint)")
+	CreateCmd.Flags().StringVarP(&createFlags.status, "status", "s", "open", "Issue status(open, closed, in_progress)")
 	CreateCmd.Flags().StringVarP(&createFlags.issueType, "type", "t", "task", "Issue type(bug, feature, task)")
 	CreateCmd.Flags().IntVarP(&createFlags.priority, "priority", "p", 0, "Issue priority(0-4)")
 	CreateCmd.Flags().StringVarP(&createFlags.assignee, "assignee", "a", "", "Issue assignee")

@@ -1,14 +1,14 @@
 package kanban
+
 import (
 	"context"
 
+	tea "charm.land/bubbletea/v2"
 	"github.com/LazyBachelor/LazyPM/internal/app"
 	"github.com/LazyBachelor/LazyPM/internal/models"
 	"github.com/LazyBachelor/LazyPM/pkg/tui/components"
-	"github.com/LazyBachelor/LazyPM/pkg/tui/issues"
-	"github.com/charmbracelet/bubbles/textarea"
-	"github.com/charmbracelet/bubbles/textinput"
-	tea "github.com/charmbracelet/bubbletea"
+	"github.com/LazyBachelor/LazyPM/pkg/tui/modal"
+	"github.com/LazyBachelor/LazyPM/pkg/tui/msgs"
 )
 
 type (
@@ -20,52 +20,34 @@ type (
 
 type Model struct {
 	header      Header
+	backlogList IssueList
 	todoList    IssueList
 	inProgList  IssueList
 	blockedList IssueList
 	doneList    IssueList
 	issueDetail IssueDetail
 	helpBar     components.HelpBar
-	keyMap      KanbanKeyMap
+	keyMap      KeyMap
 	app         *app.App
 	width       int
 	height      int
 
-	focusedColumn int  // 0 = To Do, 1 = In Progress, 2 = Blocked, 3 = Done
-	focusOnDetail bool // true when detail pane is focused
+	currentSprintNum int
+	backlogNum       int
 
-	editingTitle   bool // true while we are editing a title
-	titleInput     textinput.Model
-	editingIssueID string
+	// Modal and Focus management
+	modalManager *modal.Manager
+	focusManager *modal.FocusManager
 
-	editingDescription bool // true while editing a description
-	descriptionInput   textarea.Model
-	editingDescIssueID string
-	creatingIssue      bool // true while creating a new issue
-	createTitleInput   textinput.Model
+	// Current issue being operated on
+	currentIssueID string
+	deleteIndex    int
 
-	confirmingDelete   bool // true while confirming a delete
-	deleteConfirmID    string
-	deleteConfirmIndex int
-
-	choosingStatus   bool // true while choosing a status
-	statusIssueID    string
-	choosingPriority bool // true while choosing a priority
-	priorityIssueID  string
-	choosingType     bool // true while choosing a type
-	typeIssueID      string
-	editingAssignee  bool // true while editing assignee
-	assigneeInput    textinput.Model
-	assigneeIssueID  string
-	choosingCloseReason bool // true while choosing a close reason
-	closeReasonIssueID  string
-	closingOtherReason  bool // true while entering a custom close reason
-	closeReasonInput    textarea.Model
-	feedbackChan        chan models.ValidationFeedback
-	quitChan            chan bool
-	submitChan          chan<- struct{}
-	currentFeedback     models.ValidationFeedback
-	showComplete        bool
+	feedbackChan    chan models.ValidationFeedback
+	quitChan        chan bool
+	currentFeedback models.ValidationFeedback
+	showComplete    bool
+	submitChan      chan<- struct{}
 }
 
 func NewDashboard(app *app.App, feedbackChan chan models.ValidationFeedback, quitChan chan bool, submitChan chan<- struct{}) *Model {
@@ -75,179 +57,170 @@ func NewDashboard(app *app.App, feedbackChan chan models.ValidationFeedback, qui
 		app:          app,
 		width:        80,
 		height:       24,
-		focusedColumn: 0,
-		focusOnDetail: false,
-		feedbackChan:  feedbackChan,
-		quitChan:      quitChan,
-		submitChan:    submitChan,
+		feedbackChan: feedbackChan,
+		quitChan:     quitChan,
+		submitChan:   submitChan,
+		modalManager: modal.NewManager(),
+		focusManager: modal.NewFocusManager(),
+		deleteIndex:  -1,
 	}
 
-	allIssues, _ := app.Issues.SearchIssues(context.Background(), "", models.IssueFilter{})
-	todoIssues := components.StatusOnly(allIssues, models.StatusOpen)
-	inProgIssues := components.StatusOnly(allIssues, models.StatusInProgress)
-	blockedIssues := components.StatusOnly(allIssues, models.StatusBlocked)
-	doneIssues := components.StatusOnly(allIssues, models.StatusClosed)
-
-	m.todoList = components.NewIssueListFromIssues(app, todoIssues, 0, 0)
-	m.inProgList = components.NewIssueListFromIssues(app, inProgIssues, 0, 0)
-	m.blockedList = components.NewIssueListFromIssues(app, blockedIssues, 0, 0)
-	m.doneList = components.NewIssueListFromIssues(app, doneIssues, 0, 0)
 	m.issueDetail = components.NewIssueDetail()
 	m.helpBar = components.NewHelpBar(components.ViewKanban)
 
-	inputs := components.NewIssueInputs()
-	m.titleInput = inputs.Title
-	m.createTitleInput = inputs.CreateTitle
-	m.descriptionInput = inputs.Description
-	m.assigneeInput = inputs.Assignee
+	ctx := context.Background()
+	backlogNum, _ := app.Issues.GetBacklogSprint(ctx)
+	m.backlogNum = backlogNum
 
-	closeReasonTa := textarea.New()
-	closeReasonTa.Placeholder = "Enter closing reason..."
-	closeReasonTa.SetWidth(56)
-	closeReasonTa.SetHeight(4)
-	m.closeReasonInput = closeReasonTa
+	backlogIssues, _ := app.Issues.GetIssuesNotInAnySprint(ctx)
+	m.backlogList = components.NewIssueListFromIssues(app, backlogIssues, 20, 10)
 
-	if selected := m.todoList.SelectedItem(); selected.ID != "" {
-		m.issueDetail.SetIssue(selected.Issue)
-	} else if selected := m.inProgList.SelectedItem(); selected.ID != "" {
-		m.issueDetail.SetIssue(selected.Issue)
-	} else if selected := m.blockedList.SelectedItem(); selected.ID != "" {
-		m.issueDetail.SetIssue(selected.Issue)
-	} else if selected := m.doneList.SelectedItem(); selected.ID != "" {
-		m.issueDetail.SetIssue(selected.Issue)
+	sprints, _ := app.Issues.GetSprints(ctx)
+	m.currentSprintNum = 0
+	for _, sprintNum := range sprints {
+		if sprintNum != backlogNum {
+			m.currentSprintNum = sprintNum
+			break
+		}
+	}
+
+	var sprintIssues []*models.Issue
+	if m.currentSprintNum > 0 {
+		sprintIssues, _ = app.Issues.GetIssuesBySprint(ctx, m.currentSprintNum)
+	}
+	todoIssues := components.StatusOnly(sprintIssues, models.StatusOpen)
+	inProgIssues := components.StatusOnly(sprintIssues, models.StatusInProgress)
+	blockedIssues := components.StatusOnly(sprintIssues, models.StatusBlocked)
+	doneIssues := components.StatusOnly(sprintIssues, models.StatusClosed)
+
+	m.todoList = components.NewIssueListFromIssues(app, todoIssues, 20, 10)
+	m.inProgList = components.NewIssueListFromIssues(app, inProgIssues, 20, 10)
+	m.blockedList = components.NewIssueListFromIssues(app, blockedIssues, 20, 10)
+	m.doneList = components.NewIssueListFromIssues(app, doneIssues, 20, 10)
+
+	// Setup focus areas for kanban columns
+	m.focusManager.EnableArea(modal.FocusColumn0)
+	m.focusManager.EnableArea(modal.FocusColumn1)
+	m.focusManager.EnableArea(modal.FocusColumn2)
+	m.focusManager.EnableArea(modal.FocusColumn3)
+	m.focusManager.EnableArea(modal.FocusColumn4)
+	m.focusManager.SetCurrent(modal.FocusColumn0)
+
+	// Register modals
+	m.registerModals()
+
+	if selected := m.backlogList.SelectedItem(); selected.ID != "" {
+		m.setDetailIssueWithComments(selected.Issue)
 	}
 
 	return m
 }
 
-func (m *Model) startEditTitle(selected ListIssue) {
-	m.editingTitle = true
-	m.editingIssueID = selected.ID
-	m.titleInput.SetValue(selected.Issue.Title)
-	m.titleInput.CursorEnd()
-}
-
-func (m *Model) startEditDescription(selected ListIssue) {
-	m.editingDescription = true
-	m.editingDescIssueID = selected.ID
-	m.descriptionInput.SetValue(selected.Issue.Description)
-	m.descriptionInput.CursorEnd()
-}
-
-func (m *Model) startCreateIssue() {
-	m.creatingIssue = true
-	m.createTitleInput.SetValue("")
-	m.createTitleInput.Reset()
-}
-
-func (m *Model) startConfirmDelete(issueID string, index int) {
-	m.confirmingDelete = true
-	m.deleteConfirmID = issueID
-	m.deleteConfirmIndex = index
-}
-
-func (m *Model) startChooseStatus(selected ListIssue) {
-	m.choosingStatus = true
-	m.statusIssueID = selected.ID
-}
-
-func (m *Model) startChoosePriority(selected ListIssue) {
-	m.choosingPriority = true
-	m.priorityIssueID = selected.ID
-}
-
-func (m *Model) startChooseType(selected ListIssue) {
-	m.choosingType = true
-	m.typeIssueID = selected.ID
-}
-
-func (m *Model) startEditAssignee(selected ListIssue) {
-	m.editingAssignee = true
-	m.assigneeIssueID = selected.ID
-	m.assigneeInput.SetValue(selected.Assignee)
-	m.assigneeInput.CursorEnd()
-}
-
 func (m *Model) Init() tea.Cmd {
+	if m.submitChan != nil {
+		m.submitChan <- struct{}{}
+		m.logAction("tui submitted validation")
+	}
 	return components.ListenForValidation(m.feedbackChan)
 }
 
-// IsInModal returns true when a modal (edit, create, delete confirm, choose status/priority/type) is active.
+func (m *Model) registerModals() {
+	modal.RegisterCommonModals(m.modalManager)
+}
+
+func (m *Model) logAction(action string) {
+	if m.app != nil {
+		m.app.LogAction(models.EncodeActionEvent(models.ActionEvent{
+			Source: "tui",
+			Action: action,
+		}))
+	}
+}
+
+func (m *Model) submitValidation() {
+	if m.submitChan != nil {
+		select {
+		case m.submitChan <- struct{}{}:
+			m.logAction("tui submitted validation")
+		default:
+		}
+	}
+}
+
 func (m *Model) IsInModal() bool {
-	return m.editingTitle || m.creatingIssue || m.editingDescription ||
-		m.choosingStatus || m.choosingPriority || m.confirmingDelete ||
-		m.choosingType || m.editingAssignee ||
-		m.choosingCloseReason || m.closingOtherReason
+	return m.modalManager.IsModalActive()
 }
 
 func (m *Model) IsFocusedOnList() bool {
-	return !m.focusOnDetail
+	return m.focusManager.IsListFocused()
 }
 
 func (m *Model) IsFocusedOnDetail() bool {
-	return m.focusOnDetail
-}
-
-func (m *Model) FocusList() {
-	m.focusOnDetail = false
-	m.issueDetail.SetFocused(false)
-}
-
-func (m *Model) FocusDetail() {
-	m.focusOnDetail = true
-	m.issueDetail.SetFocused(true)
+	return m.focusManager.IsDetailFocused()
 }
 
 func (m *Model) ToggleFocus() {
-	if m.IsFocusedOnList() {
-		m.FocusDetail()
+	if m.focusManager.IsDetailFocused() {
+		m.focusManager.SetCurrent(modal.FocusColumn0)
+		m.issueDetail.SetFocused(false)
 	} else {
-		m.FocusList()
+		m.focusManager.SetCurrent(modal.FocusDetail)
+		m.issueDetail.SetFocused(true)
 	}
 }
 
 func (m *Model) FocusedIssueList() *IssueList {
-	switch m.focusedColumn {
-	case 0:
+	switch m.focusManager.Current() {
+	case modal.FocusColumn0:
+		return &m.backlogList
+	case modal.FocusColumn1:
 		return &m.todoList
-	case 1:
+	case modal.FocusColumn2:
 		return &m.inProgList
-	case 2:
+	case modal.FocusColumn3:
 		return &m.blockedList
-	case 3:
+	case modal.FocusColumn4:
 		return &m.doneList
 	default:
-		return &m.todoList
+		return &m.backlogList
 	}
 }
 
-// updateDetailFromSelection updates the detail pane based on the currently
-// focused column's selected issue.
 func (m *Model) updateDetailFromSelection() {
 	selected := m.FocusedIssueList().SelectedItem()
 	if selected.ID != "" {
-		m.issueDetail.SetIssue(selected.Issue)
+		m.setDetailIssueWithComments(selected.Issue)
 	}
 }
 
-// statusForColumn maps a board column index to a Status.
-func statusForColumn(col int) models.Status {
+// setDetailIssueWithComments sets the issue in the detail pane and loads its comments.
+func (m *Model) setDetailIssueWithComments(issue models.Issue) {
+	m.issueDetail.SetIssue(issue)
+	if issue.ID == "" {
+		m.issueDetail.SetComments(nil)
+		return
+	}
+	comments, _ := m.app.Issues.GetIssueComments(context.Background(), issue.ID)
+	m.issueDetail.SetComments(comments)
+}
+
+func statusForColumn(col modal.FocusArea) models.Status {
 	switch col {
-	case 0:
+	case modal.FocusColumn0:
 		return models.StatusOpen
-	case 1:
+	case modal.FocusColumn1:
+		return models.StatusOpen
+	case modal.FocusColumn2:
 		return models.StatusInProgress
-	case 2:
+	case modal.FocusColumn3:
 		return models.StatusBlocked
-	case 3:
+	case modal.FocusColumn4:
 		return models.StatusClosed
 	default:
 		return models.StatusOpen
 	}
 }
 
-// moveIssue moves the currently selected issue in the focused column horizontally
-// to an adjacent column by updating its status.
 func (m *Model) moveIssue(delta int) tea.Cmd {
 	fl := m.FocusedIssueList()
 	selected := fl.SelectedItem()
@@ -255,11 +228,65 @@ func (m *Model) moveIssue(delta int) tea.Cmd {
 		return nil
 	}
 
-	newCol := m.focusedColumn + delta
-	if newCol < 0 || newCol > 3 {
+	currentCol := m.focusManager.Current()
+	var newCol modal.FocusArea
+	switch currentCol {
+	case modal.FocusColumn0: // Backlog
+		if delta > 0 {
+			return m.moveIssueToSprint(selected.ID, m.currentSprintNum)
+		}
+	case modal.FocusColumn1: // To Do
+		if delta > 0 {
+			newCol = modal.FocusColumn2 // To In Progress
+		} else if delta < 0 {
+			return m.moveIssueToBacklog(selected.ID)
+		}
+	case modal.FocusColumn2: // In Progress
+		if delta > 0 {
+			newCol = modal.FocusColumn3 // To Blocked
+		} else {
+			newCol = modal.FocusColumn1 // To To Do
+		}
+	case modal.FocusColumn3: // Blocked
+		if delta > 0 {
+			newCol = modal.FocusColumn4 // To Done
+		} else {
+			newCol = modal.FocusColumn2 // To In Progress
+		}
+	case modal.FocusColumn4: // Done
+		if delta < 0 {
+			newCol = modal.FocusColumn3 // To Blocked
+		}
+	}
+
+	if newCol == modal.FocusNone {
 		return nil
 	}
 
 	newStatus := statusForColumn(newCol)
-		return issues.UpdateIssueStatusCmd(m.app, selected.ID, string(newStatus))
+	return msgs.UpdateIssueStatusCmd(m.app, selected.ID, string(newStatus))
+}
+
+// moveIssueToSprint moves an issue to a sprint
+func (m *Model) moveIssueToSprint(issueID string, sprintNum int) tea.Cmd {
+	return func() tea.Msg {
+		err := m.app.Issues.AddIssueToSprint(context.Background(), issueID, sprintNum)
+		m.submitValidation()
+		if err != nil {
+			return m.refreshIssueListsAndSelectIssue(issueID)()
+		}
+		return m.refreshIssueListsAndSelectIssue(issueID)()
+	}
+}
+
+// moveIssueToBacklog removes an issue from the current sprint (moves it to backlog)
+func (m *Model) moveIssueToBacklog(issueID string) tea.Cmd {
+	return func() tea.Msg {
+		err := m.app.Issues.RemoveIssueFromSprint(context.Background(), issueID, m.currentSprintNum)
+		m.submitValidation()
+		if err != nil {
+			return m.refreshIssueListsAndSelectIssue(issueID)()
+		}
+		return m.refreshIssueListsAndSelectIssue(issueID)()
+	}
 }

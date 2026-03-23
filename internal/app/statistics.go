@@ -9,7 +9,7 @@ import (
 
 	"github.com/LazyBachelor/LazyPM/internal/models"
 	"github.com/LazyBachelor/LazyPM/internal/storage"
-	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/v2/bson"
 )
 
 type StatisticsService struct {
@@ -43,12 +43,12 @@ func (s *StatisticsService) GetStatistics() (models.Statistics, error) {
 	return *s.storage.Data, nil
 }
 
-func (s *StatisticsService) GetParticipantID() primitive.ObjectID {
+func (s *StatisticsService) GetParticipantID() bson.ObjectID {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
 	if s.storage.Data == nil {
-		return primitive.NilObjectID
+		return bson.NilObjectID
 	}
 	return s.storage.Data.ID
 }

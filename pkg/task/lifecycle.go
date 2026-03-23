@@ -4,7 +4,7 @@ import (
 	"log/slog"
 
 	"github.com/LazyBachelor/LazyPM/internal/models"
-	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/v2/bson"
 )
 
 type RunLifecycle struct {
@@ -24,7 +24,7 @@ func NewRunLifecycle(app *App, config Config, details models.TaskDetails, iType 
 		collector.recordUserAction(action)
 	})
 
-	var participantID primitive.ObjectID
+	var participantID bson.ObjectID
 	var store MetricsStore
 	if config.StatisticsStoragePath != "" {
 		participantID = app.Stats.GetParticipantID()

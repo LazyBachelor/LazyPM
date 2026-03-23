@@ -6,17 +6,16 @@ import (
 	"io"
 	"sort"
 
+	"charm.land/bubbles/v2/list"
+	"charm.land/bubbles/v2/textarea"
+	"charm.land/bubbles/v2/textinput"
+	tea "charm.land/bubbletea/v2"
+	"charm.land/lipgloss/v2"
 	"github.com/LazyBachelor/LazyPM/internal/app"
 	"github.com/LazyBachelor/LazyPM/internal/models"
-	"github.com/LazyBachelor/LazyPM/pkg/tui/styles"
-	"github.com/charmbracelet/bubbles/list"
-	"github.com/charmbracelet/bubbles/textarea"
-	"github.com/charmbracelet/bubbles/textinput"
-	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/lipgloss"
+	"github.com/LazyBachelor/LazyPM/internal/style"
 	"github.com/muesli/reflow/truncate"
 )
-
 
 type IssueList struct {
 	list              list.Model
@@ -25,7 +24,6 @@ type IssueList struct {
 	height            int
 	highlightSelected bool
 }
-
 
 type ListIssue struct {
 	models.Issue
@@ -43,29 +41,54 @@ type tableColumn struct {
 
 func getTableColumns(width int) []tableColumn {
 	switch {
+	case width < 20:
+		return []tableColumn{
+			{width: 10, label: "ID", key: "id"},
+		}
+	case width < 30:
+		return []tableColumn{
+			{width: 10, label: "ID", key: "id"},
+			{width: 10, label: "TITLE", key: "title"},
+		}
 	case width < 45:
 		return []tableColumn{
 			{width: 10, label: "ID", key: "id"},
-			{width: uint(width - 10), label: "TITLE", key: "title"},
+			{width: 20, label: "TITLE", key: "title"},
 		}
 	case width < 60:
 		return []tableColumn{
 			{width: 10, label: "ID", key: "id"},
-			{width: 20, label: "TITLE", key: "title"},
+			{width: 22, label: "TITLE", key: "title"},
 			{width: 15, label: "STATUS", key: "status"},
 		}
 	case width < 75:
 		return []tableColumn{
+			{width: 10, label: "ID", key: "id"},
+			{width: 25, label: "TITLE", key: "title"},
+			{width: 15, label: "STATUS", key: "status"},
+			{width: 10, label: "TYPE", key: "type"},
+		}
+	case width < 95:
+		return []tableColumn{
 			{width: 12, label: "ID", key: "id"},
-			{width: 20, label: "TITLE", key: "title"},
+			{width: 25, label: "TITLE", key: "title"},
 			{width: 15, label: "STATUS", key: "status"},
 			{width: 10, label: "TYPE", key: "type"},
 			{width: 15, label: "PRIORITY", key: "priority"},
 		}
+	case width < 120:
+		return []tableColumn{
+			{width: 12, label: "ID", key: "id"},
+			{width: 30, label: "TITLE", key: "title"},
+			{width: 15, label: "STATUS", key: "status"},
+			{width: 11, label: "TYPE", key: "type"},
+			{width: 14, label: "PRIORITY", key: "priority"},
+			{width: 12, label: "ASSIGNEE", key: "assignee"},
+		}
 	default:
 		return []tableColumn{
 			{width: 12, label: "ID", key: "id"},
-			{width: 20, label: "TITLE", key: "title"},
+			{width: 40, label: "TITLE", key: "title"},
 			{width: 15, label: "STATUS", key: "status"},
 			{width: 11, label: "TYPE", key: "type"},
 			{width: 14, label: "PRIORITY", key: "priority"},
@@ -93,7 +116,7 @@ var priorityCodeNames = map[int]string{
 
 func renderHeaders(cols []tableColumn) string {
 	var parts []string
-	headerStyle := lipgloss.NewStyle().Foreground(styles.FaintText).Bold(true)
+	headerStyle := lipgloss.NewStyle().Foreground(style.FaintText).Bold(true)
 
 	for _, col := range cols {
 		colWidth := col.width
@@ -157,7 +180,6 @@ func ListenForValidation(ch chan models.ValidationFeedback) tea.Cmd {
 	}
 }
 
-
 func NewIssueList(app *app.App, width, height int) IssueList {
 	// NewIssueList creates an IssueList populated from the app.
 	issues, err := app.Issues.SearchIssues(context.Background(), "", models.IssueFilter{})
@@ -180,10 +202,6 @@ func NewIssueList(app *app.App, width, height int) IssueList {
 	l.SetShowHelp(false)
 	l.SetShowStatusBar(false)
 	l.SetFilteringEnabled(true)
-	l.FilterInput.PromptStyle = styles.FilterPromptStyle
-	l.FilterInput.Cursor.Style = styles.FilterStyle
-	l.FilterInput.TextStyle = styles.FilterInputStyle
-	l.FilterInput.Prompt = "🔍 "
 
 	return IssueList{
 		list:              l,
@@ -211,10 +229,6 @@ func NewIssueListFromIssues(app *app.App, issues []*models.Issue, width, height 
 	l.SetShowHelp(false)
 	l.SetShowStatusBar(false)
 	l.SetFilteringEnabled(true)
-	l.FilterInput.PromptStyle = styles.FilterPromptStyle
-	l.FilterInput.Cursor.Style = styles.FilterStyle
-	l.FilterInput.TextStyle = styles.FilterInputStyle
-	l.FilterInput.Prompt = "🔍 "
 	return IssueList{
 		list:              l,
 		app:               app,
@@ -224,49 +238,40 @@ func NewIssueListFromIssues(app *app.App, issues []*models.Issue, width, height 
 	}
 }
 
-func OpenAndInProgressOnly(issues []*models.Issue) []*models.Issue {
-	// used to display open & in-progress issues in the first window in the dashboard
-	out := make([]*models.Issue, 0, len(issues))
-	for _, issue := range issues {
-		if issue.Status == models.StatusOpen ||
-			issue.Status == models.StatusInProgress ||
-			issue.Status == models.StatusBlocked ||
-			issue.Status == models.StatusReadyToSprint {
-			out = append(out, issue)
-		}
-	}
-	sortByPriorityDesc(out)
-	return out
-}
-
-func ClosedOnly(issues []*models.Issue) []*models.Issue {
-	// used to display issues in the second window in the dashboard
-	out := make([]*models.Issue, 0, len(issues))
-	for _, issue := range issues {
-		if issue.Status == models.StatusClosed {
-			out = append(out, issue)
-		}
-	}
-	sortByPriorityDesc(out)
-	return out
+func SortedIssues(issues []*models.Issue) []*models.Issue {
+	sortByClosedThenPriorityDesc(issues)
+	return issues
 }
 
 // StatusOnly returns issues that exactly match the given status, sorted by priority.
 func StatusOnly(issues []*models.Issue, status models.Status) []*models.Issue {
 	out := make([]*models.Issue, 0, len(issues))
 	for _, issue := range issues {
-		if issue.Status == status ||
-			(status == models.StatusOpen && issue.Status == models.StatusReadyToSprint) {
+		if issue == nil {
+			continue
+		}
+		if issue.Status == status {
 			out = append(out, issue)
 		}
 	}
-	sortByPriorityDesc(out)
+	sortByClosedThenPriorityDesc(out)
 	return out
 }
 
-func sortByPriorityDesc(issues []*models.Issue) {
-	sort.Slice(issues, func(i, j int) bool {
-		return issues[i].Priority > issues[j].Priority
+func sortByClosedThenPriorityDesc(issues []*models.Issue) {
+	sort.SliceStable(issues, func(i, j int) bool {
+		iClosed := issues[i].Status == models.StatusClosed
+		jClosed := issues[j].Status == models.StatusClosed
+
+		if iClosed != jClosed {
+			return !iClosed
+		}
+
+		if issues[i].Priority != issues[j].Priority {
+			return issues[i].Priority > issues[j].Priority
+		}
+
+		return issues[i].ID < issues[j].ID
 	})
 }
 
@@ -299,14 +304,14 @@ func (l IssueList) renderResponsive() string {
 
 	if l.list.FilterState() == list.Filtering {
 		filterText := l.list.FilterInput.Value()
-		filterView := styles.FilterStyle.Render("🔍 " + filterText)
+		filterView := style.FilterStyle.Render("🔍 " + filterText)
 		content = append(content, filterView)
 	}
 
 	itemsView := l.renderFilteredItems()
 	content = append(content, header, itemsView)
 
-	return styles.ContainerStyle.
+	return style.ContainerStyle.
 		Width(l.width).
 		MaxWidth(l.width).
 		MaxHeight(l.height).
@@ -364,7 +369,7 @@ func (l *IssueList) SetIssues(issues []*models.Issue) tea.Cmd {
 
 func (l *IssueList) SelectIssueID(issueID string) {
 	items := l.list.Items()
-	for i := 0; i < len(items); i++ {
+	for i := range items {
 		if item, ok := items[i].(ListIssue); ok && item.ID == issueID {
 			l.list.Select(i)
 			return
@@ -406,13 +411,16 @@ func renderRow(issue ListIssue, isSelected bool, cols []tableColumn) string {
 			colWidth = 1
 		}
 
-		style := lipgloss.NewStyle().Width(int(colWidth))
+		cellStyle := lipgloss.NewStyle().Width(int(colWidth))
 		if isSelected {
-			style = style.Background(styles.SelectedBackground).Bold(true)
+			cellStyle = cellStyle.Background(style.SelectedBackground).Bold(true)
+		}
+		if issue.Status == models.StatusClosed {
+			cellStyle = cellStyle.Strikethrough(true).Foreground(style.FaintText)
 		}
 
 		truncated := truncate.StringWithTail(value, colWidth, "...")
-		parts = append(parts, style.Render(truncated))
+		parts = append(parts, cellStyle.Render(truncated))
 	}
 
 	return lipgloss.JoinHorizontal(lipgloss.Left, parts...)
