@@ -129,12 +129,16 @@ templ IssueForm(props IssueFormProps) {
 							Add
 						</button>
 					</div>
-					<div
-						id="edit-dependencies-list"
-						hx-get={ "/issues/" + props.IssueID + "/dependencies?container_id=edit-dependencies-list" }
-						hx-trigger="load, dependencies-updated from:body"
-						hx-swap="outerHTML"
-					></div>
+				<div
+					id="edit-dependencies-list-container"
+					hx-get={ "/issues/" + props.IssueID + "/dependencies?container_id=edit-dependencies-list" }
+					hx-trigger="load, dependencies-updated from:body"
+					hx-swap="innerHTML"
+				>
+					<div id="edit-dependencies-list" class="animate-pulse">
+						<div class="h-8 bg-base-300 rounded"></div>
+					</div>
+				</div>
 				</div>
 			}
 			<button type="submit" class="btn btn-primary w-full mt-4">

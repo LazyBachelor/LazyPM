@@ -13,33 +13,35 @@ type DependenciesListProps struct {
 }
 
 templ DependenciesList(props DependenciesListProps) {
-	if len(props.Deps) == 0 {
-		<div id={ props.ContainerID } class="text-sm text-base-content/60">
-			No dependencies.
-		</div>
-	} else {
-		<div id={ props.ContainerID } class="space-y-1">
-			for _, d := range props.Deps {
-				if d != nil {
-					<div class="flex items-center justify-between gap-2 border rounded px-2 py-1 text-sm">
-						<span class="truncate">
-							<span class="font-mono">{ d.ID }</span>
-							if d.Title != "" {
-								<span class="opacity-70"> — { d.Title }</span>
-							}
-						</span>
-						<button
-							class="btn btn-xs btn-ghost text-error"
-							hx-delete={ "/issues/" + props.IssueID + "/dependencies?container_id=" + url.QueryEscape(props.ContainerID) }
-							hx-target={ "#" + props.ContainerID }
-							hx-swap="outerHTML"
-							hx-vals={ `{"depends_on_id":"` + d.ID + `"}` }
-						>
-							Remove
-						</button>
-					</div>
+	<div id={ props.ContainerID }>
+		if len(props.Deps) == 0 {
+			<div class="text-sm text-base-content/60">
+				No dependencies.
+			</div>
+		} else {
+			<div class="space-y-1">
+				for _, d := range props.Deps {
+					if d != nil {
+						<div class="flex items-center justify-between gap-2 border rounded px-2 py-1 text-sm">
+							<span class="truncate">
+								<span class="font-mono">{ d.ID }</span>
+								if d.Title != "" {
+									<span class="opacity-70"> — { d.Title }</span>
+								}
+							</span>
+							<button
+								class="btn btn-xs btn-ghost text-error"
+								hx-delete={ "/issues/" + props.IssueID + "/dependencies?container_id=" + url.QueryEscape(props.ContainerID) }
+								hx-target={ "#" + props.ContainerID }
+								hx-swap="innerHTML"
+								hx-vals={ `{"depends_on_id":"` + d.ID + `"}` }
+							>
+								Remove
+							</button>
+						</div>
+					}
 				}
-			}
-		</div>
-	}
+			</div>
+		}
+	</div>
 }
