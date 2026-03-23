@@ -250,8 +250,7 @@ func StatusOnly(issues []*models.Issue, status models.Status) []*models.Issue {
 		if issue == nil {
 			continue
 		}
-		if issue.Status == status ||
-			(status == models.StatusOpen && issue.Status == models.StatusReadyToSprint) {
+		if issue.Status == status {
 			out = append(out, issue)
 		}
 	}

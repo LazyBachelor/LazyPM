@@ -34,8 +34,6 @@ func NewBeadsIssueStorage(ctx context.Context, storage beads.Storage, prefix str
 	);
 	`)
 
-	storage.SetConfig(ctx, "status.custom", "ready_to_sprint")
-
 	backlogNum, err := getBacklogSprintNum(storage)
 	if err != nil {
 		_, err = storage.UnderlyingDB().Exec(

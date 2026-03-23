@@ -207,7 +207,7 @@ func (m *Model) setDetailIssueWithComments(issue models.Issue) {
 func statusForColumn(col modal.FocusArea) models.Status {
 	switch col {
 	case modal.FocusColumn0:
-		return models.StatusReadyToSprint
+		return models.StatusOpen
 	case modal.FocusColumn1:
 		return models.StatusOpen
 	case modal.FocusColumn2:
@@ -271,6 +271,7 @@ func (m *Model) moveIssue(delta int) tea.Cmd {
 func (m *Model) moveIssueToSprint(issueID string, sprintNum int) tea.Cmd {
 	return func() tea.Msg {
 		err := m.app.Issues.AddIssueToSprint(context.Background(), issueID, sprintNum)
+		m.submitValidation()
 		if err != nil {
 			return m.refreshIssueListsAndSelectIssue(issueID)()
 		}
@@ -282,6 +283,7 @@ func (m *Model) moveIssueToSprint(issueID string, sprintNum int) tea.Cmd {
 func (m *Model) moveIssueToBacklog(issueID string) tea.Cmd {
 	return func() tea.Msg {
 		err := m.app.Issues.RemoveIssueFromSprint(context.Background(), issueID, m.currentSprintNum)
+		m.submitValidation()
 		if err != nil {
 			return m.refreshIssueListsAndSelectIssue(issueID)()
 		}

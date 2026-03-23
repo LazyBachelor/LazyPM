@@ -178,7 +178,6 @@ func StatusOptions() []SelectOption {
 		{Key: "o", Label: "open", Value: "open"},
 		{Key: "i", Label: "in_progress", Value: "in_progress"},
 		{Key: "b", Label: "blocked", Value: "blocked"},
-		{Key: "r", Label: "ready_to_sprint", Value: "ready_to_sprint"},
 		{Key: "c", Label: "closing", Value: "closing"},
 	}
 }

@@ -66,7 +66,7 @@ func runUpdateCmd(cmd *cobra.Command, args []string) error {
 func init() {
 	UpdateCmd.Flags().StringVar(&updateFlags.title, "title", "", "New issue title")
 	UpdateCmd.Flags().StringVarP(&updateFlags.description, "desc", "d", "", "New issue description")
-	UpdateCmd.Flags().StringVarP(&updateFlags.status, "status", "s", "", "New issue status(open, closed, in_progress, ready_to_sprint)")
+	UpdateCmd.Flags().StringVarP(&updateFlags.status, "status", "s", "", "New issue status(open, closed, in_progress)")
 	UpdateCmd.Flags().StringVarP(&updateFlags.issueType, "type", "t", "", "New issue type(bug, feature, task)")
 	UpdateCmd.Flags().IntVarP(&updateFlags.priority, "priority", "p", 0, "New issue priority(0-4)")
 	UpdateCmd.Flags().StringVarP(&updateFlags.assignee, "assignee", "a", "", "New issue assignee")
