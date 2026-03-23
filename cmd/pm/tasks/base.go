@@ -57,31 +57,45 @@ func BaseDetails(interfaceType InterfaceType) TaskDetails {
 
 	switch interfaceType {
 	case InterfaceTypeREPL:
-		interfaceDesc = `What is a REPL Interface?
+		interfaceDesc = `About our REPL Interface?
+
 - REPL stands for Read-Eval-Print Loop. It is an interactive programming environment that takes single user inputs (reads), executes them (eval), and returns the result to the user (print), then waits for the next input (loop).
-- In this task, you will interact with the task through a REPL interface, which allows you to execute commands and receive immediate feedback in a command-line environment.
-- You can type commands to perform actions related to the task, and the REPL will process those commands and provide responses based on your input.
-- The REPL interface is designed to facilitate a more dynamic and interactive way of completing the task, allowing you to experiment and receive real-time feedback as you work through the task requirements.
+
+- In a traditional CLI, you would use the help command to see available commands and their descriptions.
+  In this REPL interface, you can also type 'pm help' to get a list of available commands and their descriptions.
+
+- You can also run shell commands directly from the REPL, like "git" or "ls".
+
+- When you type commands in this interface, suggestions will appear as you type, which you can select to auto-complete your command.
+
 - Write "exit" to skip task during the survey.`
 	case InterfaceTypeTUI:
-		interfaceDesc = `What is a TUI Interface?
-- TUI stands for Text User Interface. It is a user interface that uses text-based elements to allow users to interact with the application.
+		interfaceDesc = `About our TUI Interface?
+
+- TUI stands for Terminal User Interface. It is a user interface that uses text-based elements to allow users to interact with the application.
+
 - The main way to interact with a TUI is through keyboard inputs, where you can navigate through menus, select options, and input data using the keyboard.
-- In this task, you will interact with the task through a TUI interface, which provides a more structured and visually organized way to complete the task using text-based menus, forms, and other interactive elements.
-- The TUI interface is designed to enhance usability and provide a more engaging experience while working through the task requirements, allowing you to navigate through options and input information in a more intuitive way.
+
+- At the bottom of the interface you will find the help menu, which lists available keybinds.
+
+- The interface has parts:
+  - List View: This view shows the available issues in a list format, allowing you to browse through them and select one to work on.
+  - Kanban: This view allowtwos you to manage and track the progress of different of issues.
+
 - Press "q" to quit task during the survey.`
 	case InterfaceTypeWeb:
-		interfaceDesc = `What is a Web Interface?
-- A Web Interface is a user interface that is accessed through a web browser. It allows users to interact with the application using graphical elements such as buttons, forms, and menus.
-- In this task, you will interact with the task through a Web interface, which provides a more visually rich and user-friendly way to complete the task using a web-based platform.
-- The Web interface is designed to enhance usability and provide a more engaging experience while working through the task requirements, allowing you to navigate through options and input information in a more intuitive way using a graphical interface.
+		interfaceDesc = `About our Web Interface?
+
+- A Web Interface is a user interface that is accessed through a web browser.
+  It allows users to interact with the application using graphical elements such as buttons, forms, and menus.
+
+- We designed this interface to only be interactive through mouse clicks.
+
+- The interface has parts:
+  - Issues: This view shows the available issues in a list format.
+  - Kanban: This view allows you to manage and track the progress of different issues.
+
 - Press esc/q in the terminal to skip the task.`
-	case InterfaceTypeCLI:
-		interfaceDesc = `What is a CLI Interface?
-- CLI stands for Command-Line Interface. It is a text-based interface where you interact with the application by typing commands.
-- In this task, you will interact with the task through a CLI interface and execute commands directly in the terminal.
-- Write "exit" to skip task during the survey.`
-	default:
 		interfaceDesc = "Unknown Interface"
 	}
 
