@@ -60,7 +60,7 @@ templ IssueDetailContent(props IssueDetailProps) {
 			}
 		</div>
 		<div id="issue-detail-container" class="mb-6">
-			@components.IssueDetail(components.IssueDetailProps{Issue: props.Issue})
+			@components.IssueDetail(components.IssueDetailProps{Issue: props.Issue, From: props.From})
 		</div>
 		@components.CommentSection(components.CommentSectionProps{
 			IssueID:  props.Issue.ID,
@@ -78,7 +78,7 @@ templ IssueDetail(props IssueDetailProps) {
 templ IssueDetailModalContent(props IssueDetailModalProps) {
 	<div class="w-full">
 		<div id="issue-detail-container" class="mb-6">
-			@components.IssueDetail(components.IssueDetailProps{Issue: props.Issue})
+			@components.IssueDetail(components.IssueDetailProps{Issue: props.Issue, From: props.From})
 		</div>
 		@components.CommentSection(components.CommentSectionProps{
 			IssueID:  props.Issue.ID,

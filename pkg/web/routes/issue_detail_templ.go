@@ -113,7 +113,7 @@ func IssueDetailContent(props IssueDetailProps) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = components.IssueDetail(components.IssueDetailProps{Issue: props.Issue}).Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = components.IssueDetail(components.IssueDetailProps{Issue: props.Issue, From: props.From}).Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -208,7 +208,7 @@ func IssueDetailModalContent(props IssueDetailModalProps) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = components.IssueDetail(components.IssueDetailProps{Issue: props.Issue}).Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = components.IssueDetail(components.IssueDetailProps{Issue: props.Issue, From: props.From}).Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
