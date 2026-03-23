@@ -110,6 +110,13 @@ func DashboardHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	if selectedIssue != nil {
+		comments, err := app.Issues.GetIssueComments(r.Context(), selectedIssue.ID)
+		if err == nil && comments != nil {
+			selectedIssue.Comments = comments
+		}
+	}
+
 	isPartial := r.URL.Query().Get("partial") == "true"
 	if hx.IsHxRequest() && isPartial {
 		routes.DashboardIssueList(issues, selectedIssueID).Render(r.Context(), w)
