@@ -10,58 +10,26 @@ import (
 	"github.com/LazyBachelor/LazyPM/internal/utils/check"
 )
 
-const codingDescription = `You are tasked with doing a upgrading a dependency in the codebase.
+const codingDescription = `You are tasked with fixing a logical error in the code.
 
 Your task:
-1. Assign the given issue to yourself as 'Me'.
-2. A text file will appear in the this directory:
+1. A text file will appear in the this directory:
    - Open it and follow the instructions inside.
    - Save the file after you are done.
-3. When you are done, mark this task as "Closed".`
+2. When you are done, mark this task as "Closed".`
 
 var textFileDescription = `
 
 # Instructions for the coding task
 
-Please upgrade the MongoDB Driver dependency in the go.mod file to the latest version.
-It should be v1.17.9. After you are done, save the file and mark the task as completed.
+There is a major logical error in this code, you need to fix it.
+Change the function logic so that it correctly adds two numbers together instead of subtracting them.
 ############################################################`
 
 var code = `
-require (
-	charm.land/lipgloss/v2 v2.0.0-beta.3.0.20251106193318-19329a3e8410
-	github.com/go-git/go-git/v6 v6.0.0-20260222090600-424e9964d3a3
-	github.com/muesli/reflow v0.3.0
-	github.com/steveyegge/beads v0.49.6
-	go.mongodb.org/mongo-driver v1.17.8
-	go.mongodb.org/mongo-driver/v2 v2.5.0
-)
-
-require (
-	github.com/c-bata/go-prompt v0.2.6
-	github.com/charmbracelet/bubbles v0.21.1
-	github.com/charmbracelet/bubbletea v1.3.10
-	github.com/charmbracelet/fang v0.4.4
-	github.com/charmbracelet/huh v0.8.0
-	github.com/charmbracelet/lipgloss v1.1.1-0.20250404203927-76690c660834
-	github.com/spf13/cobra v1.10.2
-	golang.org/x/term v0.40.0
-)
-
-require (
-	github.com/NYTimes/gziphandler v1.1.1
-	github.com/a-h/templ v0.3.977
-	github.com/donseba/go-htmx v1.12.1
-	github.com/go-chi/chi/v5 v5.2.5
-	github.com/go-playground/form/v4 v4.3.0
-	github.com/go-playground/validator/v10 v10.30.1
-	github.com/rs/cors v1.11.1
-)
-
-tool (
-	github.com/a-h/templ/cmd/templ
-	github.com/haatos/goshipit/cmd/gsi
-)
+function Add(a, b int) int {
+	return a - b
+}
 `
 
 var textFileContent = codingDescription + textFileDescription + "\n" + code
@@ -120,8 +88,10 @@ func (t *CodingTask) Setup(ctx context.Context) error {
 	}
 
 	t.issue = NewIssueBuilder().
-		WithTitle("Upgrade MongoDB Driver").
-		WithPriority(4).WithDescription(codingDescription).
+		WithTitle("Fix major error").
+		WithDescription(codingDescription).
+		WithStatus(models.StatusInProgress).
+		WithPriority(4).
 		Build()
 
 	return t.app.Issues.CreateIssue(ctx, t.issue, "")
@@ -136,10 +106,6 @@ func (t *CodingTask) Validate(ctx context.Context) ValidationFeedback {
 	}
 	if issue == nil {
 		return expect.Fatal("Issue was deleted or could not be found")
-	}
-
-	if !expect.Equal(issue.Assignee, "Me", "Issue Assignee").Valid() {
-		return expect.ValidationFeedback
 	}
 
 	if _, err := os.Stat("./code.txt"); os.IsNotExist(err) {
@@ -159,7 +125,7 @@ func (t *CodingTask) Validate(ctx context.Context) ValidationFeedback {
 		return expect.ValidationFeedback
 	}
 
-	expect.Contains(code, "go.mongodb.org/mongo-driver v1.17.9", "MongoDB Driver version")
+	expect.Contains(code, "a + b", "Function logic")
 	if !expect.Valid() {
 		return expect.ValidationFeedback
 	}

@@ -77,7 +77,7 @@ func (s *BeadsService) CreateIssues(ctx context.Context, issues []*models.Issue,
 
 	backlogNum, err := s.GetBacklogSprint(ctx)
 	if err != nil {
-		return nil
+		return err
 	}
 
 	for _, issue := range issues {
@@ -105,14 +105,12 @@ func (s *BeadsService) AllIssues(ctx context.Context) ([]models.Issue, error) {
 }
 
 func (s *BeadsService) DeleteIssues() error {
-
-	var deleteIssues = `DELETE FROM issues;
-	DELETE FROM sprints;`
-
-	if _, err := s.UnderlyingDB().Exec(deleteIssues); err != nil {
+	_, err := s.UnderlyingDB().Exec("DELETE FROM issues; DELETE FROM sprints;")
+	if err != nil {
 		return err
 	}
-	return nil
+	_, err = s.UnderlyingDB().Exec("INSERT INTO sprints (name, issues, sprint_num, is_backlog) VALUES ('backlog', '[]', 0, 1)")
+	return err
 }
 
 func (s *BeadsService) AddSprint(ctx context.Context) (int, error) {
