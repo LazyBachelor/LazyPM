@@ -53,7 +53,7 @@ var SprintIssuesCmd = &cobra.Command{
 
 // SprintAddCmd adds an issue to a sprint
 var SprintAddCmd = &cobra.Command{
-	Use:   "add <issue-id> [sprint-num]",
+	Use:   "add [issue-id] [sprint-num]",
 	Short: "Add an issue to a sprint",
 	Long:  `Add an issue to a sprint. If sprint-num is omitted, adds to backlog.`,
 	Args:  cobra.RangeArgs(1, 2),
@@ -64,7 +64,7 @@ var SprintAddCmd = &cobra.Command{
 
 // SprintRemoveCmd removes an issue from a sprint
 var SprintRemoveCmd = &cobra.Command{
-	Use:     "remove <issue-id> [sprint-num]",
+	Use:     "remove [issue-id] [sprint-num]",
 	Short:   "Remove an issue from a sprint",
 	Long:    `Remove an issue from a sprint. If sprint-num is omitted, removes from backlog.`,
 	Aliases: []string{"rm"},
@@ -84,11 +84,11 @@ var SprintBacklogCmd = &cobra.Command{
 
 // SprintDeleteCmd deletes a sprint
 var SprintDeleteCmd = &cobra.Command{
-	Use:     "delete <sprint-num>",
+	Use:     "delete [sprint-num]",
 	Short:   "Delete a sprint",
 	Long:    `Delete a sprint by its number. Issues in the sprint will not be deleted.`,
 	Aliases: []string{"del"},
-	Args:    cobra.ExactArgs(1),
+	Args:    cobra.MaximumNArgs(1),
 	RunE:    runSprintDeleteCmd,
 }
 
@@ -280,9 +280,19 @@ func runSprintDeleteCmd(cmd *cobra.Command, args []string) error {
 	app := AppFromContext(cmd.Context())
 	ctx := cmd.Context()
 
-	sprintNum, err := strconv.Atoi(args[0])
-	if err != nil {
-		return fmt.Errorf("invalid sprint number: %s", args[0])
+	var sprintNum int
+	var err error
+
+	if len(args) == 0 {
+		sprintNum, err = app.Issues.GetBacklogSprint(ctx)
+		if err != nil {
+			return fmt.Errorf("failed to get backlog sprint: %w", err)
+		}
+	} else {
+		sprintNum, err = strconv.Atoi(args[0])
+		if err != nil {
+			return fmt.Errorf("invalid sprint number: %s", args[0])
+		}
 	}
 
 	backlogNum, _ := app.Issues.GetBacklogSprint(ctx)
@@ -301,11 +311,11 @@ func runSprintDeleteCmd(cmd *cobra.Command, args []string) error {
 
 func init() {
 	SprintCmd.AddCommand(SprintListCmd)
+	SprintCmd.AddCommand(SprintBacklogCmd)
 	SprintCmd.AddCommand(SprintCreateCmd)
 	SprintCmd.AddCommand(SprintIssuesCmd)
 	SprintCmd.AddCommand(SprintAddCmd)
 	SprintCmd.AddCommand(SprintRemoveCmd)
-	SprintCmd.AddCommand(SprintBacklogCmd)
 	SprintCmd.AddCommand(SprintDeleteCmd)
 
 	RootCmd.AddCommand(SprintCmd)
