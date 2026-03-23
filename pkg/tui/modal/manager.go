@@ -262,4 +262,11 @@ func RegisterCommonModals(m *Manager) {
 		Label:   "Change type:",
 		Options: TypeOptions(),
 	}))
+
+	// Sprint Select Modal
+	m.RegisterModal(NewSelectModal(SelectConfig{
+		ID:      ModalSelectSprint,
+		Label:   "Select sprint:",
+		Options: []SelectOption{},
+	}))
 }

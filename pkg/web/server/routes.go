@@ -34,6 +34,8 @@ func (s *Server) RegisterRoutes(assets embed.FS) http.Handler {
 	s.handleAssets(r, assets)
 
 	r.Get("/", handler.DashboardHandler)
+	r.Get("/board/sprint", handler.DashboardHandler)
+	r.Post("/board/sprint/new", handler.CreateSprintHandler)
 	r.Get("/status", handler.HandleTaskStatus)
 	r.Get("/status/modal", handler.HandleTaskStatusModal)
 

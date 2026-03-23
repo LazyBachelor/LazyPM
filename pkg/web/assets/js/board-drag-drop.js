@@ -6,7 +6,14 @@
     if (e.target.closest("button") || e.target.closest("a")) return;
     const card = e.target.closest(".board-card");
     if (!card) return;
+    
+    const column = card.closest(".board-column");
+    const sourceStatus = column?.dataset?.status || "";
+    const sourceSprint = column?.dataset?.sprint || "";
+    
     e.dataTransfer.setData("text/plain", card.dataset.issueId);
+    e.dataTransfer.setData("source-status", sourceStatus);
+    e.dataTransfer.setData("source-sprint", sourceSprint);
     e.dataTransfer.effectAllowed = "move";
     card.classList.add("opacity-50");
   });
@@ -35,12 +42,45 @@
     if (!zone) return;
     e.preventDefault();
     zone.classList.remove("ring-2", "ring-primary", "ring-inset");
+    
     const issueId = e.dataTransfer.getData("text/plain");
+    const sourceStatus = e.dataTransfer.getData("source-status");
+    const sourceSprint = e.dataTransfer.getData("source-sprint");
     const newStatus = zone.dataset.status;
+    const targetSprint = zone.dataset.sprint;
+    
     if (!issueId || !newStatus) return;
 
+    let sourceSprintNum = 0;
+    if (sourceSprint && sourceSprint.startsWith("Sprint ")) {
+      sourceSprintNum = parseInt(sourceSprint.replace("Sprint ", ""), 10);
+    }
+    
+    let targetSprintNum = 0;
+    if (targetSprint && targetSprint.startsWith("Sprint ")) {
+      targetSprintNum = parseInt(targetSprint.replace("Sprint ", ""), 10);
+    }
+
     const formData = new URLSearchParams();
-    formData.append("status", newStatus);
+    
+    let issueStatus = newStatus;
+    if (newStatus === "todo" || newStatus === "backlog") {
+      issueStatus = "open";
+    } else if (newStatus === "done") {
+      issueStatus = "closed";
+    }
+    
+    formData.append("status", issueStatus);
+
+    if (sourceStatus === "backlog" && newStatus !== "backlog" && targetSprintNum > 0) {
+      formData.append("add_to_sprint", targetSprintNum.toString());
+    }
+    else if (sourceStatus !== "backlog" && newStatus === "backlog" && sourceSprintNum > 0) {
+      formData.append("remove_from_sprint", sourceSprintNum.toString());
+    }
+    else if (sourceStatus !== "backlog" && newStatus !== "backlog" && targetSprintNum > 0) {
+      formData.append("add_to_sprint", targetSprintNum.toString());
+    }
 
     fetch("/issues/" + issueId + "?from=board", {
       method: "PATCH",

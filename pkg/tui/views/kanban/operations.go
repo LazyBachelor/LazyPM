@@ -2,6 +2,7 @@ package kanban
 
 import (
 	"context"
+	"fmt"
 	"strconv"
 
 	"charm.land/bubbles/v2/list"
@@ -14,42 +15,63 @@ import (
 )
 
 func (m *Model) refreshIssueListsAndSelectIssue(issueID string) tea.Cmd {
-	allIssues, err := m.app.Issues.SearchIssues(context.Background(), "", models.IssueFilter{})
-	if err != nil {
-		return nil
-	}
+	ctx := context.Background()
 
-	todoIssues := components.StatusOnly(allIssues, models.StatusOpen)
-	inProgIssues := components.StatusOnly(allIssues, models.StatusInProgress)
-	blockedIssues := components.StatusOnly(allIssues, models.StatusBlocked)
-	doneIssues := components.StatusOnly(allIssues, models.StatusClosed)
+	backlogIssues, _ := m.app.Issues.GetIssuesNotInAnySprint(ctx)
+	backlogCmd := m.backlogList.SetIssues(backlogIssues)
+
+	sprintIssues, _ := m.app.Issues.GetIssuesBySprint(ctx, m.currentSprintNum)
+	todoIssues := components.StatusOnly(sprintIssues, models.StatusOpen)
+	inProgIssues := components.StatusOnly(sprintIssues, models.StatusInProgress)
+	blockedIssues := components.StatusOnly(sprintIssues, models.StatusBlocked)
+	doneIssues := components.StatusOnly(sprintIssues, models.StatusClosed)
 
 	todoCmd := m.todoList.SetIssues(todoIssues)
 	inProgCmd := m.inProgList.SetIssues(inProgIssues)
 	blockedCmd := m.blockedList.SetIssues(blockedIssues)
 	doneCmd := m.doneList.SetIssues(doneIssues)
 
+	// Find the issue to determine which column it belongs to
 	var targetStatus models.Status
-	for _, issue := range allIssues {
+	var inBacklog bool
+	for _, issue := range sprintIssues {
+		if issue == nil {
+			continue
+		}
 		if issue.ID == issueID {
-			m.setDetailIssueWithComments(*issue)
 			targetStatus = issue.Status
+			m.setDetailIssueWithComments(*issue)
 			break
 		}
 	}
+	// Check if issue is in backlog
+	if targetStatus == "" {
+		for _, issue := range backlogIssues {
+			if issue == nil {
+				continue
+			}
+			if issue.ID == issueID {
+				inBacklog = true
+				m.setDetailIssueWithComments(*issue)
+				break
+			}
+		}
+	}
 
-	switch targetStatus {
-	case models.StatusOpen:
+	switch {
+	case inBacklog:
+		m.focusManager.SetCurrent(modal.FocusColumn0)
+	case targetStatus == models.StatusOpen:
 		m.focusManager.SetCurrent(modal.FocusColumn1)
-	case models.StatusInProgress:
+	case targetStatus == models.StatusInProgress:
 		m.focusManager.SetCurrent(modal.FocusColumn2)
-	case models.StatusBlocked:
+	case targetStatus == models.StatusBlocked:
 		m.focusManager.SetCurrent(modal.FocusColumn3)
-	case models.StatusClosed:
+	case targetStatus == models.StatusClosed:
 		m.focusManager.SetCurrent(modal.FocusColumn4)
 	}
 
-	return tea.Sequence(todoCmd, inProgCmd, blockedCmd, doneCmd, func() tea.Msg {
+	return tea.Sequence(backlogCmd, todoCmd, inProgCmd, blockedCmd, doneCmd, func() tea.Msg {
 		return msgs.SelectIssueMsg{IssueID: issueID}
 	})
 }
@@ -58,6 +80,27 @@ func (m *Model) refreshAndSubmit(issueID string) tea.Cmd {
 	refreshCmd := m.refreshIssueListsAndSelectIssue(issueID)
 	m.submitValidation()
 	return refreshCmd
+}
+
+// refreshAllIssueLists refreshes all issue lists without selecting a specific issue
+func (m *Model) refreshAllIssueLists() tea.Cmd {
+	ctx := context.Background()
+
+	backlogIssues, _ := m.app.Issues.GetIssuesNotInAnySprint(ctx)
+	backlogCmd := m.backlogList.SetIssues(backlogIssues)
+
+	sprintIssues, _ := m.app.Issues.GetIssuesBySprint(ctx, m.currentSprintNum)
+	todoIssues := components.StatusOnly(sprintIssues, models.StatusOpen)
+	inProgIssues := components.StatusOnly(sprintIssues, models.StatusInProgress)
+	blockedIssues := components.StatusOnly(sprintIssues, models.StatusBlocked)
+	doneIssues := components.StatusOnly(sprintIssues, models.StatusClosed)
+
+	todoCmd := m.todoList.SetIssues(todoIssues)
+	inProgCmd := m.inProgList.SetIssues(inProgIssues)
+	blockedCmd := m.blockedList.SetIssues(blockedIssues)
+	doneCmd := m.doneList.SetIssues(doneIssues)
+
+	return tea.Batch(backlogCmd, todoCmd, inProgCmd, blockedCmd, doneCmd)
 }
 
 // Modal action handlers
@@ -119,6 +162,58 @@ func (m *Model) startChoosePriority(selected ListIssue) tea.Cmd {
 func (m *Model) startChooseType(selected ListIssue) tea.Cmd {
 	m.currentIssueID = selected.ID
 	return m.modalManager.ShowModal(modal.ModalSelectType)
+}
+
+func (m *Model) startSelectSprint() tea.Cmd {
+	sprints, err := m.app.Issues.GetSprints(context.Background())
+	if err != nil {
+		return nil
+	}
+
+	options := make([]modal.SelectOption, 0, len(sprints))
+	for _, sprintNum := range sprints {
+		if sprintNum == m.backlogNum {
+			continue
+		}
+		label := fmt.Sprintf("Sprint %d", sprintNum)
+		key := fmt.Sprintf("%d", sprintNum)
+		if sprintNum > 9 {
+			continue
+		}
+		options = append(options, modal.SelectOption{
+			Key:   key,
+			Label: label,
+			Value: fmt.Sprintf("%d", sprintNum),
+		})
+	}
+
+	if len(options) == 0 {
+		return nil
+	}
+
+	sprintModal := modal.NewSelectModal(modal.SelectConfig{
+		ID:        "dynamic-sprint-select",
+		Label:     "Select sprint to view:",
+		Options:   options,
+		CancelKey: "esc",
+	})
+
+	return m.modalManager.PushModal(sprintModal)
+}
+
+func (m *Model) startCreateSprint() tea.Cmd {
+	return tea.Sequence(
+		func() tea.Msg {
+			ctx := context.Background()
+			newSprintNum, err := m.app.Issues.AddSprint(ctx)
+			if err != nil {
+				return nil
+			}
+			m.currentSprintNum = newSprintNum
+			return nil
+		},
+		m.refreshAllIssueLists(),
+	)
 }
 
 func (m *Model) startEditAssignee(selected ListIssue) tea.Cmd {
@@ -210,6 +305,15 @@ func (m *Model) handleModalCompleted(msg modal.ModalCompletedMsg) tea.Cmd {
 			cmd := msgs.UpdateIssueTypeCmd(m.app, m.currentIssueID, issueType)
 			return func() tea.Msg { return cmd() }
 		}
+	case modal.ModalSelectSprint, "dynamic-sprint-select":
+		if r, ok := msg.Value.(modal.SelectResult); ok {
+			sprintNum, err := strconv.Atoi(r.SelectedValue)
+			if err != nil {
+				return nil
+			}
+			m.currentSprintNum = sprintNum
+			return m.refreshAllIssueLists()
+		}
 	case modal.ModalCloseReason:
 		if r, ok := msg.Value.(modal.TextAreaResult); ok && r.Value != "" {
 			cmd := msgs.CloseIssueCmd(m.app, m.currentIssueID, r.Value)
@@ -248,6 +352,7 @@ func (m *Model) handleModalCancelled(msg modal.ModalCancelledMsg) {
 		m.currentIssueID = ""
 	case modal.ModalSelectType:
 		m.currentIssueID = ""
+	case modal.ModalSelectSprint, "dynamic-sprint-select":
 	case modal.ModalCloseReason:
 		m.currentIssueID = ""
 	case modal.ModalAddComment:
@@ -322,6 +427,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m, m.refreshIssueListsAndSelectIssue(msg.IssueID)
 
 	case msgs.SelectIssueMsg:
+		m.backlogList.SelectIssueID(msg.IssueID)
 		m.todoList.SelectIssueID(msg.IssueID)
 		m.inProgList.SelectIssueID(msg.IssueID)
 		m.blockedList.SelectIssueID(msg.IssueID)
@@ -333,20 +439,22 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if msg.Err != nil || msg.Issue == nil {
 			return m, nil
 		}
-		allIssues, err := m.app.Issues.SearchIssues(context.Background(), "", models.IssueFilter{})
-		if err != nil {
-			return m, nil
-		}
 
-		todoIssues := components.StatusOnly(allIssues, models.StatusOpen)
-		inProgIssues := components.StatusOnly(allIssues, models.StatusInProgress)
-		blockedIssues := components.StatusOnly(allIssues, models.StatusBlocked)
-		doneIssues := components.StatusOnly(allIssues, models.StatusClosed)
+		backlogIssues, _ := m.app.Issues.GetIssuesNotInAnySprint(context.Background())
+		backlogCmd := m.backlogList.SetIssues(backlogIssues)
+
+		sprintIssues, _ := m.app.Issues.GetIssuesBySprint(context.Background(), m.currentSprintNum)
+		todoIssues := components.StatusOnly(sprintIssues, models.StatusOpen)
+		inProgIssues := components.StatusOnly(sprintIssues, models.StatusInProgress)
+		blockedIssues := components.StatusOnly(sprintIssues, models.StatusBlocked)
+		doneIssues := components.StatusOnly(sprintIssues, models.StatusClosed)
 
 		todoCmd := m.todoList.SetIssues(todoIssues)
 		inProgCmd := m.inProgList.SetIssues(inProgIssues)
 		blockedCmd := m.blockedList.SetIssues(blockedIssues)
 		doneCmd := m.doneList.SetIssues(doneIssues)
+
+		allIssues := append(backlogIssues, sprintIssues...)
 
 		selectedIssue := msg.Issue
 		if selectedIssue.ID == "" {
@@ -360,7 +468,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		m.setDetailIssueWithComments(*selectedIssue)
 		m.submitValidation()
-		return m, tea.Sequence(todoCmd, inProgCmd, blockedCmd, doneCmd, func() tea.Msg {
+		return m, tea.Sequence(backlogCmd, todoCmd, inProgCmd, blockedCmd, doneCmd, func() tea.Msg {
 			return msgs.SelectIssueMsg{IssueID: selectedIssue.ID}
 		})
 
