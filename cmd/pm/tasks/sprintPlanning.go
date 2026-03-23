@@ -2,6 +2,7 @@ package tasks
 
 import (
 	"context"
+	"fmt"
 
 	"charm.land/huh/v2"
 	"github.com/LazyBachelor/LazyPM/internal/models"
@@ -16,15 +17,16 @@ You will be given a list of issues with different priorities and dependencies.
 Your task:
 1. Review the backlog issues
 2. Select which issues to include in the sprint
-3. Update issue statuses to move items into the sprint
+3. Add issues to the sprint
 4. Address any blocked or dependent issues
 5. Prioritize high-priority items
 
 The goal is to create a realistic sprint plan that delivers value while respecting team capacity.`
 
 type SprintPlanningTask struct {
-	done bool
-	app  *App
+	done      bool
+	app       *App
+	sprintNum int
 }
 
 func NewSprintPlanningTask(app *App) *SprintPlanningTask {
@@ -70,32 +72,38 @@ func (t *SprintPlanningTask) Setup(ctx context.Context) error {
 		return err
 	}
 
+	sprintNum, err := t.app.Issues.AddSprint(ctx)
+	if err != nil {
+		return err
+	}
+	t.sprintNum = sprintNum
+
 	backlogIssues := []*models.Issue{
 		NewIssueBuilder().
 			WithTitle("Implement user authentication").
 			WithDescription("Add login/logout functionality. Priority: High").
-			WithPriority(1).
+			WithPriority(4).
 			WithStatus(models.StatusOpen).
 			WithIssueType(models.TypeTask).
 			Build(),
 		NewIssueBuilder().
 			WithTitle("Design database schema").
 			WithDescription("Create tables for users and orders. Priority: High").
-			WithPriority(1).
+			WithPriority(4).
 			WithStatus(models.StatusOpen).
 			WithIssueType(models.TypeTask).
 			Build(),
 		NewIssueBuilder().
 			WithTitle("Setup CI/CD pipeline").
 			WithDescription("Configure automated testing and deployment. Currently blocked by server setup").
-			WithPriority(2).
+			WithPriority(3).
 			WithStatus(models.StatusBlocked).
 			WithIssueType(models.TypeTask).
 			Build(),
 		NewIssueBuilder().
 			WithTitle("Create API documentation").
 			WithDescription("Document all REST endpoints. Priority: Low").
-			WithPriority(3).
+			WithPriority(1).
 			WithStatus(models.StatusOpen).
 			WithIssueType(models.TypeTask).
 			Build(),
@@ -114,36 +122,52 @@ func (t *SprintPlanningTask) Setup(ctx context.Context) error {
 func (t *SprintPlanningTask) Validate(ctx context.Context) ValidationFeedback {
 	expect := check.NewExpector()
 
-	issues, err := FetchIssues(ctx, t.app)
-	if err != nil {
-		return expect.ValidationFeedback
+	if t.sprintNum == 0 {
+		return expect.Fatal("No sprint was created. Create a sprint first.")
 	}
 
-	// Sort by priority ascending (0 is highest priority).
-	sorted := make([]*models.Issue, len(issues))
-	copy(sorted, issues)
+	sprintIssues, err := t.app.Issues.GetIssuesBySprint(ctx, t.sprintNum)
+	if err != nil {
+		return expect.Fatal("Could not fetch sprint issues")
+	}
+
+	allIssues, err := FetchIssues(ctx, t.app)
+	if err != nil {
+		return expect.Fatal("Could not fetch issues")
+	}
+
+	expect.Assert(len(sprintIssues) > 0, fmt.Sprintf("Sprint %d has no issues. Move issues from Backlog to the sprint.", t.sprintNum))
+
+	sorted := make([]*models.Issue, len(allIssues))
+	copy(sorted, allIssues)
 	for i := range sorted {
 		for j := i + 1; j < len(sorted); j++ {
-			if sorted[j].Priority < sorted[i].Priority {
+			if sorted[j].Priority > sorted[i].Priority {
 				sorted[i], sorted[j] = sorted[j], sorted[i]
 			}
 		}
 	}
 
-	topN := min(len(sorted), 5)
-	top := sorted[:topN]
+	top3 := sorted[:min(len(sorted), 3)]
+	sprintIssueIDs := make(map[string]bool)
+	for _, issue := range sprintIssues {
+		sprintIssueIDs[issue.ID] = true
+	}
 
-	var plannedCount int
-	for _, issue := range top {
-		if issue.Status == models.StatusReadyToSprint ||
-			issue.Status == models.StatusInProgress ||
-			issue.Status == models.StatusClosed {
-			plannedCount++
+	var topInSprint int
+	for _, issue := range top3 {
+		if sprintIssueIDs[issue.ID] {
+			topInSprint++
 		}
 	}
 
-	expect.Assert(plannedCount >= 3,
-		"Expected at least 3 of the 5 highest-priority issues to be moved into 'ready_to_sprint', 'in_progress', or 'closed' for the sprint.")
+	expect.Assert(topInSprint >= 2,
+		fmt.Sprintf("Only %d of 3 high-priority issues in sprint.\n High priority: \n- %s \n- %s \n- %s",
+			topInSprint, top3[0].Title, top3[1].Title, top3[2].Title))
+
+	expect.Assert(len(sprintIssues) >= 3,
+		fmt.Sprintf("Sprint %d only has %d issues. Add at least %d more from backlog.",
+			t.sprintNum, len(sprintIssues), 3-len(sprintIssues)))
 
 	return expect.Complete()
 }
