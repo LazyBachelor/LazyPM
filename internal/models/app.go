@@ -53,6 +53,14 @@ type IssueService interface {
 	AddIssueComment(ctx context.Context, issueID, author, text string) (*Comment, error)
 	GetIssueComments(ctx context.Context, issueID string) ([]*Comment, error)
 	GetCommentCounts(ctx context.Context, issueIDs []string) (map[string]int, error)
+
+	AddSprint(ctx context.Context) (int, error)
+	RemoveSprint(ctx context.Context, sprintNum int) error
+	GetSprints(ctx context.Context) ([]int, error)
+	GetBacklogSprint(ctx context.Context) (int, error)
+	GetIssuesBySprint(ctx context.Context, sprintNum int) ([]*Issue, error)
+	AddIssueToSprint(ctx context.Context, issueID string, sprintNum int) error
+	RemoveIssueFromSprint(ctx context.Context, issueID string, sprintNum int) error
 }
 
 type StatsService interface {
