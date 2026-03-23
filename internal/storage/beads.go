@@ -39,13 +39,13 @@ func NewBeadsIssueStorage(ctx context.Context, storage beads.Storage, prefix str
 	backlogNum, err := getBacklogSprintNum(storage)
 	if err != nil {
 		_, err = storage.UnderlyingDB().Exec(
-			"INSERT INTO sprints (name, issues, sprint_num, is_backlog) VALUES (?, ?, 1, 1)",
+			"INSERT INTO sprints (name, issues, sprint_num, is_backlog) VALUES (?, ?, 0, 1)",
 			"backlog", "[]",
 		)
 		if err != nil {
 			return nil, fmt.Errorf("failed to create backlog sprint: %w", err)
 		}
-		storage.SetConfig(ctx, "backlog_sprint", "1")
+		storage.SetConfig(ctx, "backlog_sprint", "0")
 	} else {
 		storage.SetConfig(ctx, "backlog_sprint", fmt.Sprintf("%d", backlogNum))
 	}
@@ -108,7 +108,8 @@ func (s *BeadsService) AllIssues(ctx context.Context) ([]models.Issue, error) {
 
 func (s *BeadsService) DeleteIssues() error {
 
-	var deleteIssues = "DELETE FROM issues;"
+	var deleteIssues = `DELETE FROM issues;
+	DELETE FROM sprints;`
 
 	if _, err := s.UnderlyingDB().Exec(deleteIssues); err != nil {
 		return err
@@ -157,7 +158,7 @@ func (s *BeadsService) RemoveSprint(ctx context.Context, sprintNum int) error {
 }
 
 func (s *BeadsService) GetSprints(ctx context.Context) ([]int, error) {
-	rows, err := s.UnderlyingDB().Query("SELECT sprint_num FROM sprints ORDER BY sprint_num")
+	rows, err := s.UnderlyingDB().Query("SELECT sprint_num FROM sprints WHERE is_backlog = 0 ORDER BY sprint_num")
 	if err != nil {
 		return nil, fmt.Errorf("failed to get sprints: %w", err)
 	}
@@ -202,7 +203,8 @@ func (s *BeadsService) GetIssuesBySprint(ctx context.Context, sprintNum int) ([]
 	for _, id := range issueIDs {
 		issue, err := s.Storage.GetIssue(ctx, id)
 		if err != nil {
-			return nil, fmt.Errorf("failed to get issue %s: %w", id, err)
+			// Skip issues that don't exist or can't be retrieved
+			continue
 		}
 		issues = append(issues, issue)
 	}
@@ -211,20 +213,8 @@ func (s *BeadsService) GetIssuesBySprint(ctx context.Context, sprintNum int) ([]
 }
 
 func (s *BeadsService) AddIssueToSprint(ctx context.Context, issueID string, sprintNum int) error {
-	sprints, err := s.GetSprints(ctx)
-	if err != nil {
-		return fmt.Errorf("failed to get sprints: %w", err)
-	}
-
-	for _, num := range sprints {
-		if num == sprintNum {
-			continue
-		}
-		_ = s.RemoveIssueFromSprint(ctx, issueID, num)
-	}
-
 	var issuesJSON string
-	err = s.UnderlyingDB().QueryRow("SELECT issues FROM sprints WHERE sprint_num = ?", sprintNum).Scan(&issuesJSON)
+	err := s.UnderlyingDB().QueryRow("SELECT issues FROM sprints WHERE sprint_num = ?", sprintNum).Scan(&issuesJSON)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return fmt.Errorf("sprint %d not found", sprintNum)
@@ -307,6 +297,45 @@ func (s *BeadsService) GetBacklogSprint(ctx context.Context) (int, error) {
 		return 0, fmt.Errorf("failed to get backlog sprint: %w", err)
 	}
 	return sprintNum, nil
+}
+
+// GetIssuesNotInAnySprint returns issues that are only in the backlog
+func (s *BeadsService) GetIssuesNotInAnySprint(ctx context.Context) ([]*models.Issue, error) {
+	allIssues, err := s.Storage.SearchIssues(ctx, "", models.IssueFilter{})
+	if err != nil {
+		return nil, fmt.Errorf("failed to get all issues: %w", err)
+	}
+
+	rows, err := s.UnderlyingDB().Query("SELECT sprint_num, issues FROM sprints WHERE is_backlog = 0")
+	if err != nil {
+		return nil, fmt.Errorf("failed to get sprint issues: %w", err)
+	}
+	defer rows.Close()
+
+	issuesInSprints := make(map[string]bool)
+	for rows.Next() {
+		var sprintNum int
+		var issuesJSON string
+		if err := rows.Scan(&sprintNum, &issuesJSON); err != nil {
+			continue
+		}
+		var issueIDs []string
+		if err := json.Unmarshal([]byte(issuesJSON), &issueIDs); err != nil {
+			continue
+		}
+		for _, id := range issueIDs {
+			issuesInSprints[id] = true
+		}
+	}
+
+	var backlogIssues []*models.Issue
+	for _, issue := range allIssues {
+		if !issuesInSprints[issue.ID] {
+			backlogIssues = append(backlogIssues, issue)
+		}
+	}
+
+	return backlogIssues, nil
 }
 
 func getBacklogSprintNum(storage beads.Storage) (int, error) {

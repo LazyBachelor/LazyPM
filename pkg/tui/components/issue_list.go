@@ -247,6 +247,9 @@ func SortedIssues(issues []*models.Issue) []*models.Issue {
 func StatusOnly(issues []*models.Issue, status models.Status) []*models.Issue {
 	out := make([]*models.Issue, 0, len(issues))
 	for _, issue := range issues {
+		if issue == nil {
+			continue
+		}
 		if issue.Status == status ||
 			(status == models.StatusOpen && issue.Status == models.StatusReadyToSprint) {
 			out = append(out, issue)

@@ -7,6 +7,7 @@ const (
 	FocusNone FocusArea = iota
 	FocusList
 	FocusDetail
+	FocusColumn0 // Backlog
 	FocusColumn1
 	FocusColumn2
 	FocusColumn3
@@ -46,10 +47,23 @@ func (f *FocusManager) IsFocused(area FocusArea) bool {
 // IsListFocused returns true if any list area is focused
 func (f *FocusManager) IsListFocused() bool {
 	return f.currentArea == FocusList ||
+		f.currentArea == FocusColumn0 ||
 		f.currentArea == FocusColumn1 ||
 		f.currentArea == FocusColumn2 ||
 		f.currentArea == FocusColumn3 ||
 		f.currentArea == FocusColumn4
+}
+
+// NextColumn moves focus to the next column (for kanban)
+func (f *FocusManager) NextColumn() {
+	areas := []FocusArea{FocusColumn0, FocusColumn1, FocusColumn2, FocusColumn3, FocusColumn4}
+	f.cycleFocus(areas)
+}
+
+// PreviousColumn moves focus to the previous column (for kanban)
+func (f *FocusManager) PreviousColumn() {
+	areas := []FocusArea{FocusColumn4, FocusColumn3, FocusColumn2, FocusColumn1, FocusColumn0}
+	f.cycleFocus(areas)
 }
 
 // IsDetailFocused returns true if the detail area is focused
@@ -84,18 +98,6 @@ func (f *FocusManager) Next() {
 // Previous moves focus to the previous enabled area
 func (f *FocusManager) Previous() {
 	areas := []FocusArea{FocusDetail, FocusList}
-	f.cycleFocus(areas)
-}
-
-// NextColumn moves focus to the next column (for kanban)
-func (f *FocusManager) NextColumn() {
-	areas := []FocusArea{FocusColumn1, FocusColumn2, FocusColumn3, FocusColumn4}
-	f.cycleFocus(areas)
-}
-
-// PreviousColumn moves focus to the previous column (for kanban)
-func (f *FocusManager) PreviousColumn() {
-	areas := []FocusArea{FocusColumn4, FocusColumn3, FocusColumn2, FocusColumn1}
 	f.cycleFocus(areas)
 }
 

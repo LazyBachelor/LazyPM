@@ -20,6 +20,7 @@ type (
 
 type Model struct {
 	header      Header
+	backlogList IssueList
 	todoList    IssueList
 	inProgList  IssueList
 	blockedList IssueList
@@ -30,6 +31,9 @@ type Model struct {
 	app         *app.App
 	width       int
 	height      int
+
+	currentSprintNum int
+	backlogNum       int
 
 	// Modal and Focus management
 	modalManager *modal.Manager
@@ -61,15 +65,33 @@ func NewDashboard(app *app.App, feedbackChan chan models.ValidationFeedback, qui
 		deleteIndex:  -1,
 	}
 
-	// Setup lists
 	m.issueDetail = components.NewIssueDetail()
 	m.helpBar = components.NewHelpBar(components.ViewKanban)
 
-	allIssues, _ := app.Issues.SearchIssues(context.Background(), "", models.IssueFilter{})
-	todoIssues := components.StatusOnly(allIssues, models.StatusOpen)
-	inProgIssues := components.StatusOnly(allIssues, models.StatusInProgress)
-	blockedIssues := components.StatusOnly(allIssues, models.StatusBlocked)
-	doneIssues := components.StatusOnly(allIssues, models.StatusClosed)
+	ctx := context.Background()
+	backlogNum, _ := app.Issues.GetBacklogSprint(ctx)
+	m.backlogNum = backlogNum
+
+	backlogIssues, _ := app.Issues.GetIssuesNotInAnySprint(ctx)
+	m.backlogList = components.NewIssueListFromIssues(app, backlogIssues, 20, 10)
+
+	sprints, _ := app.Issues.GetSprints(ctx)
+	m.currentSprintNum = 0
+	for _, sprintNum := range sprints {
+		if sprintNum != backlogNum {
+			m.currentSprintNum = sprintNum
+			break
+		}
+	}
+
+	var sprintIssues []*models.Issue
+	if m.currentSprintNum > 0 {
+		sprintIssues, _ = app.Issues.GetIssuesBySprint(ctx, m.currentSprintNum)
+	}
+	todoIssues := components.StatusOnly(sprintIssues, models.StatusOpen)
+	inProgIssues := components.StatusOnly(sprintIssues, models.StatusInProgress)
+	blockedIssues := components.StatusOnly(sprintIssues, models.StatusBlocked)
+	doneIssues := components.StatusOnly(sprintIssues, models.StatusClosed)
 
 	m.todoList = components.NewIssueListFromIssues(app, todoIssues, 20, 10)
 	m.inProgList = components.NewIssueListFromIssues(app, inProgIssues, 20, 10)
@@ -77,16 +99,17 @@ func NewDashboard(app *app.App, feedbackChan chan models.ValidationFeedback, qui
 	m.doneList = components.NewIssueListFromIssues(app, doneIssues, 20, 10)
 
 	// Setup focus areas for kanban columns
+	m.focusManager.EnableArea(modal.FocusColumn0)
 	m.focusManager.EnableArea(modal.FocusColumn1)
 	m.focusManager.EnableArea(modal.FocusColumn2)
 	m.focusManager.EnableArea(modal.FocusColumn3)
 	m.focusManager.EnableArea(modal.FocusColumn4)
-	m.focusManager.SetCurrent(modal.FocusColumn1)
+	m.focusManager.SetCurrent(modal.FocusColumn0)
 
 	// Register modals
 	m.registerModals()
 
-	if selected := m.todoList.SelectedItem(); selected.ID != "" {
+	if selected := m.backlogList.SelectedItem(); selected.ID != "" {
 		m.setDetailIssueWithComments(selected.Issue)
 	}
 
@@ -138,7 +161,7 @@ func (m *Model) IsFocusedOnDetail() bool {
 
 func (m *Model) ToggleFocus() {
 	if m.focusManager.IsDetailFocused() {
-		m.focusManager.SetCurrent(modal.FocusColumn1)
+		m.focusManager.SetCurrent(modal.FocusColumn0)
 		m.issueDetail.SetFocused(false)
 	} else {
 		m.focusManager.SetCurrent(modal.FocusDetail)
@@ -148,6 +171,8 @@ func (m *Model) ToggleFocus() {
 
 func (m *Model) FocusedIssueList() *IssueList {
 	switch m.focusManager.Current() {
+	case modal.FocusColumn0:
+		return &m.backlogList
 	case modal.FocusColumn1:
 		return &m.todoList
 	case modal.FocusColumn2:
@@ -157,7 +182,7 @@ func (m *Model) FocusedIssueList() *IssueList {
 	case modal.FocusColumn4:
 		return &m.doneList
 	default:
-		return &m.todoList
+		return &m.backlogList
 	}
 }
 
@@ -181,6 +206,8 @@ func (m *Model) setDetailIssueWithComments(issue models.Issue) {
 
 func statusForColumn(col modal.FocusArea) models.Status {
 	switch col {
+	case modal.FocusColumn0:
+		return models.StatusReadyToSprint
 	case modal.FocusColumn1:
 		return models.StatusOpen
 	case modal.FocusColumn2:
@@ -204,25 +231,31 @@ func (m *Model) moveIssue(delta int) tea.Cmd {
 	currentCol := m.focusManager.Current()
 	var newCol modal.FocusArea
 	switch currentCol {
-	case modal.FocusColumn1:
+	case modal.FocusColumn0: // Backlog
 		if delta > 0 {
-			newCol = modal.FocusColumn2
+			return m.moveIssueToSprint(selected.ID, m.currentSprintNum)
 		}
-	case modal.FocusColumn2:
+	case modal.FocusColumn1: // To Do
 		if delta > 0 {
-			newCol = modal.FocusColumn3
+			newCol = modal.FocusColumn2 // To In Progress
+		} else if delta < 0 {
+			return m.moveIssueToBacklog(selected.ID)
+		}
+	case modal.FocusColumn2: // In Progress
+		if delta > 0 {
+			newCol = modal.FocusColumn3 // To Blocked
 		} else {
-			newCol = modal.FocusColumn1
+			newCol = modal.FocusColumn1 // To To Do
 		}
-	case modal.FocusColumn3:
+	case modal.FocusColumn3: // Blocked
 		if delta > 0 {
-			newCol = modal.FocusColumn4
+			newCol = modal.FocusColumn4 // To Done
 		} else {
-			newCol = modal.FocusColumn2
+			newCol = modal.FocusColumn2 // To In Progress
 		}
-	case modal.FocusColumn4:
+	case modal.FocusColumn4: // Done
 		if delta < 0 {
-			newCol = modal.FocusColumn3
+			newCol = modal.FocusColumn3 // To Blocked
 		}
 	}
 
@@ -232,4 +265,26 @@ func (m *Model) moveIssue(delta int) tea.Cmd {
 
 	newStatus := statusForColumn(newCol)
 	return msgs.UpdateIssueStatusCmd(m.app, selected.ID, string(newStatus))
+}
+
+// moveIssueToSprint moves an issue to a sprint
+func (m *Model) moveIssueToSprint(issueID string, sprintNum int) tea.Cmd {
+	return func() tea.Msg {
+		err := m.app.Issues.AddIssueToSprint(context.Background(), issueID, sprintNum)
+		if err != nil {
+			return m.refreshIssueListsAndSelectIssue(issueID)()
+		}
+		return m.refreshIssueListsAndSelectIssue(issueID)()
+	}
+}
+
+// moveIssueToBacklog removes an issue from the current sprint (moves it to backlog)
+func (m *Model) moveIssueToBacklog(issueID string) tea.Cmd {
+	return func() tea.Msg {
+		err := m.app.Issues.RemoveIssueFromSprint(context.Background(), issueID, m.currentSprintNum)
+		if err != nil {
+			return m.refreshIssueListsAndSelectIssue(issueID)()
+		}
+		return m.refreshIssueListsAndSelectIssue(issueID)()
+	}
 }

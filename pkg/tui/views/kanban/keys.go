@@ -16,6 +16,8 @@ type KeyMap struct {
 	MoveIssueRight    key.Binding
 	SubmitValidation  key.Binding
 	AddComment        key.Binding
+	SelectSprint      key.Binding
+	CreateSprint      key.Binding
 }
 
 var defaultKanbanKeyMap = KeyMap{
@@ -43,6 +45,14 @@ var defaultKanbanKeyMap = KeyMap{
 	AddComment: key.NewBinding(
 		key.WithKeys("c"),
 		key.WithHelp("c", "add comment"),
+	),
+	SelectSprint: key.NewBinding(
+		key.WithKeys("S"),
+		key.WithHelp("S", "select sprint"),
+	),
+	CreateSprint: key.NewBinding(
+		key.WithKeys("n"),
+		key.WithHelp("n", "new sprint"),
 	),
 }
 
@@ -117,6 +127,12 @@ func (m *Model) handleKeyPressMsg(msg tea.KeyPressMsg) tea.Cmd {
 		if selected := fl.SelectedItem(); selected.ID != "" {
 			cmd = m.startConfirmDelete(selected.ID, fl.Index())
 		}
+
+	case m.notInModalMsgWithKey(msg, m.keyMap.SelectSprint):
+		cmd = m.startSelectSprint()
+
+	case m.notInModalMsgWithKey(msg, m.keyMap.CreateSprint):
+		cmd = m.startCreateSprint()
 	}
 
 	return cmd

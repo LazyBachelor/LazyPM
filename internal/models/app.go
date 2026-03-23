@@ -59,6 +59,7 @@ type IssueService interface {
 	GetSprints(ctx context.Context) ([]int, error)
 	GetBacklogSprint(ctx context.Context) (int, error)
 	GetIssuesBySprint(ctx context.Context, sprintNum int) ([]*Issue, error)
+	GetIssuesNotInAnySprint(ctx context.Context) ([]*Issue, error)
 	AddIssueToSprint(ctx context.Context, issueID string, sprintNum int) error
 	RemoveIssueFromSprint(ctx context.Context, issueID string, sprintNum int) error
 }

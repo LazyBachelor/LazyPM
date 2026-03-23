@@ -1,6 +1,8 @@
 package modal
 
 import (
+	"fmt"
+
 	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
 	"github.com/LazyBachelor/LazyPM/internal/style"
@@ -212,4 +214,28 @@ func CloseReasonOptions() []SelectOption {
 		{Key: "o", Label: "Obsolete", Value: "Obsolete"},
 		{Key: "h", Label: "Other", Value: "other"},
 	}
+}
+
+// SprintOptions generates sprint selection options from available sprints
+func SprintOptions(sprints []int, backlogNum int) []SelectOption {
+	options := make([]SelectOption, 0, len(sprints))
+	for _, sprintNum := range sprints {
+		label := fmt.Sprintf("Sprint %d", sprintNum)
+		if sprintNum == backlogNum {
+			label = "Backlog"
+		}
+
+		key := fmt.Sprintf("%d", sprintNum)
+		if sprintNum <= 9 {
+			key = fmt.Sprintf("%d", sprintNum)
+		} else {
+			continue
+		}
+		options = append(options, SelectOption{
+			Key:   key,
+			Label: label,
+			Value: fmt.Sprintf("%d", sprintNum),
+		})
+	}
+	return options
 }
