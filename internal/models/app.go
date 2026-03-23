@@ -54,6 +54,11 @@ type IssueService interface {
 	GetIssueComments(ctx context.Context, issueID string) ([]*Comment, error)
 	GetCommentCounts(ctx context.Context, issueIDs []string) (map[string]int, error)
 
+	AddDependency(ctx context.Context, dep *Dependency, actor string) error
+	RemoveDependency(ctx context.Context, issueID, dependsOnID string, actor string) error
+	GetDependencies(ctx context.Context, issueID string) ([]*Issue, error)
+	GetDependents(ctx context.Context, issueID string) ([]*Issue, error)
+
 	AddSprint(ctx context.Context) (int, error)
 	RemoveSprint(ctx context.Context, sprintNum int) error
 	GetSprints(ctx context.Context) ([]int, error)

@@ -10,6 +10,7 @@ type IssueFormProps struct {
 	PostAction   string
 	PatchAction  string
 	DeleteAction string // Optional: URL for delete confirmation modal
+	IssueID      string // Optional: when editing an existing issue
 	Title        string
 	Description  string
 	Status       string
@@ -98,6 +99,48 @@ templ IssueForm(props IssueFormProps) {
 				Value: props.Priority,
 				Step:  1,
 			})
+			if props.IssueID != "" {
+				<div class="mt-4 border-t pt-3 space-y-2">
+					<h3 class="text-sm font-semibold opacity-70">Dependencies</h3>
+					<div class="flex gap-2 items-end">
+						<div class="flex-1">
+							<label class="label">
+								<span class="label-text">Add dependency</span>
+							</label>
+							<select
+								class="select select-bordered w-full"
+								name="depends_on_id"
+								id="dependency-select"
+								hx-get={ "/issues/" + props.IssueID + "/dependencies/options" }
+								hx-trigger="load, dependencies-updated from:body"
+								hx-swap="innerHTML"
+							>
+								<option>Loading…</option>
+							</select>
+						</div>
+						<button
+							type="button"
+							class="btn btn-sm btn-secondary"
+							hx-post={ "/issues/" + props.IssueID + "/dependencies?container_id=edit-dependencies-list" }
+							hx-target="#edit-dependencies-list"
+							hx-swap="outerHTML"
+							hx-include="#dependency-select"
+						>
+							Add
+						</button>
+					</div>
+				<div
+					id="edit-dependencies-list-container"
+					hx-get={ "/issues/" + props.IssueID + "/dependencies?container_id=edit-dependencies-list" }
+					hx-trigger="load, dependencies-updated from:body"
+					hx-swap="innerHTML"
+				>
+					<div id="edit-dependencies-list" class="animate-pulse">
+						<div class="h-8 bg-base-300 rounded"></div>
+					</div>
+				</div>
+				</div>
+			}
 			<button type="submit" class="btn btn-primary w-full mt-4">
 				Submit Issue
 			</button>

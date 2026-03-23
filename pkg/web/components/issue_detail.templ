@@ -8,9 +8,15 @@ import (
 
 type IssueDetailProps struct {
 	Issue *models.Issue
+	From  string // "board" when navigating from board view; passed via hx-vals to child requests
 }
 
 templ IssueDetail(props IssueDetailProps) {
+	<div
+		if props.From == "board" {
+			hx-vals='{"from": "board"}'
+		}
+	>
 	<h2 class="text-2xl font-bold m-2">
 		{ props.Issue.Title }
 	</h2>
@@ -25,6 +31,14 @@ templ IssueDetail(props IssueDetailProps) {
 			<p class="whitespace-pre-wrap text-sm">{ props.Issue.Description }</p>
 		</div>
 	}
+	<div class="mt-4">
+		<h3 class="text-sm font-semibold opacity-70 mb-1">Dependencies</h3>
+		<div
+			id="issue-dependencies-detail"
+			hx-get={ "/issues/" + props.Issue.ID + "/dependencies?container_id=issue-dependencies-detail" }
+			hx-trigger="load"
+		></div>
+	</div>
 	<div class="divider my-2"></div>
 	<div class="grid grid-cols-2 gap-2 text-sm">
 		<div class="bg-base-200 rounded-lg p-2">
@@ -51,6 +65,7 @@ templ IssueDetail(props IssueDetailProps) {
 				<span>Assignee: { props.Issue.Assignee }</span>
 			}
 		</a>
+	</div>
 	</div>
 }
 

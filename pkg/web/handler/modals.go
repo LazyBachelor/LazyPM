@@ -58,6 +58,7 @@ func EditIssueFormModal(w http.ResponseWriter, r *http.Request) {
 	modalContent := components.IssueForm(components.IssueFormProps{
 		PatchAction:  patchAction,
 		DeleteAction: deleteAction,
+		IssueID:      issue.ID,
 		Title:        issue.Title,
 		Description:  issue.Description,
 		Status:       string(issue.Status),

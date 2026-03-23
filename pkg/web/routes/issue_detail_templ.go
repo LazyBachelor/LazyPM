@@ -14,7 +14,18 @@ import (
 	"github.com/LazyBachelor/LazyPM/pkg/web/components"
 )
 
-func IssueDetailPage(issue *models.Issue, comments []*models.Comment) templ.Component {
+type IssueDetailProps struct {
+	Issue    *models.Issue
+	Comments []*models.Comment
+}
+
+type IssueDetailModalProps struct {
+	Issue    *models.Issue
+	Comments []*models.Comment
+	From     string
+}
+
+func IssueDetailContent(props IssueDetailProps) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
@@ -33,6 +44,50 @@ func IssueDetailPage(issue *models.Issue, comments []*models.Comment) templ.Comp
 		templ_7745c5c3_Var1 := templ.GetChildren(ctx)
 		if templ_7745c5c3_Var1 == nil {
 			templ_7745c5c3_Var1 = templ.NopComponent
+		}
+		ctx = templ.ClearChildren(ctx)
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div class=\"max-w-4xl mx-auto p-4\">")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = components.IssueDetail(components.IssueDetailProps{Issue: props.Issue, From: ""}).Render(ctx, templ_7745c5c3_Buffer)
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = components.CommentSection(components.CommentSectionProps{
+			IssueID:  props.Issue.ID,
+			Comments: props.Comments,
+		}).Render(ctx, templ_7745c5c3_Buffer)
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "</div>")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		return nil
+	})
+}
+
+func IssueDetailPage(issue *models.Issue, comments []*models.Comment) templ.Component {
+	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
+		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
+		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
+			return templ_7745c5c3_CtxErr
+		}
+		templ_7745c5c3_Buffer, templ_7745c5c3_IsBuffer := templruntime.GetBuffer(templ_7745c5c3_W)
+		if !templ_7745c5c3_IsBuffer {
+			defer func() {
+				templ_7745c5c3_BufErr := templruntime.ReleaseBuffer(templ_7745c5c3_Buffer)
+				if templ_7745c5c3_Err == nil {
+					templ_7745c5c3_Err = templ_7745c5c3_BufErr
+				}
+			}()
+		}
+		ctx = templ.InitializeContext(ctx)
+		templ_7745c5c3_Var2 := templ.GetChildren(ctx)
+		if templ_7745c5c3_Var2 == nil {
+			templ_7745c5c3_Var2 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
 		issueJSON, _ := templ.JSONString(issue)
@@ -83,7 +138,7 @@ func IssueDetailPage(issue *models.Issue, comments []*models.Comment) templ.Comp
 				window.location.reload()
 			}
 		}`, issueJSON)
-		templ_7745c5c3_Var2 := templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
+		templ_7745c5c3_Var3 := templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 			templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 			templ_7745c5c3_Buffer, templ_7745c5c3_IsBuffer := templruntime.GetBuffer(templ_7745c5c3_W)
 			if !templ_7745c5c3_IsBuffer {
@@ -95,20 +150,20 @@ func IssueDetailPage(issue *models.Issue, comments []*models.Comment) templ.Comp
 				}()
 			}
 			ctx = templ.InitializeContext(ctx)
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div class=\"max-w-4xl mx-auto p-4\" x-data=\"")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "<div class=\"max-w-4xl mx-auto p-4\" x-data=\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			var templ_7745c5c3_Var3 string
-			templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinStringErrs(xData)
+			var templ_7745c5c3_Var4 string
+			templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinStringErrs(xData)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/web/routes/issue_detail.templ`, Line: 61, Col: 51}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/web/routes/issue_detail.templ`, Line: 82, Col: 51}
 			}
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var3))
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var4))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "\"><div class=\"flex justify-between items-center mb-6\"><a href=\"/\" class=\"btn btn-ghost btn-sm\">")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, "\"><div class=\"flex justify-between items-center mb-6\"><a href=\"/\" class=\"btn btn-ghost btn-sm\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -116,62 +171,157 @@ func IssueDetailPage(issue *models.Issue, comments []*models.Comment) templ.Comp
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "Back to Issues</a><div class=\"flex gap-2\"><button class=\"btn btn-error btn-sm\" @click=\"if(confirm('Delete this issue?')) { fetch('/issues/' + issue.id, { method: 'DELETE' }).then(() => window.location.href = '/') }\">Delete</button></div></div><div class=\"card bg-base-100 shadow-xl\"><div class=\"card-body\"><div class=\"mb-4\"><template x-if=\"editing !== 'title'\"><h1 class=\"card-title text-3xl cursor-pointer hover:text-primary\" @click=\"editing = 'title'\" x-text=\"issue.title\"></h1></template><template x-if=\"editing === 'title'\"><div class=\"flex gap-2\"><input type=\"text\" name=\"title\" x-model=\"issue.title\" class=\"input input-bordered text-xl flex-1\" @keydown.enter=\"saveField('title', issue.title)\" @keydown.escape=\"editing = null\" x-init=\"$el.focus()\"> <button class=\"btn btn-primary\" @click=\"saveField('title', issue.title)\">Save</button> <button class=\"btn\" @click=\"editing = null\">Cancel</button></div></template><div class=\"text-sm opacity-60 mt-1\" x-text=\"issue.id\"></div></div><div class=\"flex flex-wrap gap-2 mb-4\"><template x-if=\"editing !== 'status'\"><span :class=\"'badge ' + statusClass + ' cursor-pointer hover:opacity-80 whitespace-nowrap'\" @click=\"editing = 'status'\" x-text=\"issue.status\"></span></template><template x-if=\"editing === 'status'\"><select name=\"status\" x-model=\"issue.status\" class=\"select select-sm select-bordered\" @change=\"saveField('status', issue.status)\"><option value=\"open\">Open</option> <option value=\"in_progress\">In Progress</option> <option value=\"blocked\">Blocked</option> <option value=\"closed\">Closed</option></select></template><template x-if=\"editing !== 'type'\"><span class=\"badge badge-outline cursor-pointer hover:opacity-80 whitespace-nowrap\" @click=\"editing = 'type'\" x-text=\"issue.issue_type\"></span></template><template x-if=\"editing === 'type'\"><select name=\"issue_type\" x-model=\"issue.issue_type\" class=\"select select-sm select-bordered\" @change=\"saveField('issue_type', issue.issue_type)\"><option value=\"task\">Task</option> <option value=\"bug\">Bug</option> <option value=\"feature\">Feature</option> <option value=\"chore\">Chore</option></select></template><template x-if=\"editing !== 'priority'\"><span class=\"badge badge-ghost cursor-pointer hover:opacity-80 whitespace-nowrap\" @click=\"editing = 'priority'\" x-text=\"'P' + issue.priority + ' - ' + priorityLabel\"></span></template><template x-if=\"editing === 'priority'\"><select name=\"priority\" x-model=\"issue.priority\" class=\"select select-sm select-bordered\" @change=\"saveField('priority', issue.priority)\"><option value=\"0\">P0 - Irrelevant</option> <option value=\"1\">P1 - Low</option> <option value=\"2\">P2 - Normal</option> <option value=\"3\">P3 - High</option> <option value=\"4\">P4 - Critical</option></select></template></div><div class=\"mb-6\"><h3 class=\"text-sm font-semibold opacity-70 mb-2\">Description</h3><template x-if=\"editing !== 'description'\"><div class=\"min-h-25 p-4 bg-base-200 rounded-lg cursor-pointer hover:bg-base-300\" @click=\"editing = 'description'\"><p class=\"whitespace-pre-wrap\" x-show=\"issue.description\" x-text=\"issue.description\"></p><p class=\"text-base-content/50 italic\" x-show=\"!issue.description\">Click to add description...</p></div></template><template x-if=\"editing === 'description'\"><div class=\"flex flex-col gap-2\"><textarea name=\"description\" x-model=\"issue.description\" class=\"textarea textarea-bordered min-h-37.5\" @keydown.escape=\"editing = null\" x-init=\"$el.focus()\"></textarea><div class=\"flex gap-2\"><button class=\"btn btn-primary\" @click=\"saveField('description', issue.description)\">Save</button> <button class=\"btn\" @click=\"editing = null\">Cancel</button></div></div></template></div><div class=\"grid grid-cols-2 md:grid-cols-4 gap-4 text-sm\"><div class=\"bg-base-200 rounded-lg p-3\"><span class=\"text-xs opacity-60 block\">Created</span><p x-text=\"new Date(issue.created_at).toLocaleDateString()\"></p><p class=\"text-xs opacity-50\" x-text=\"issue.created_by\"></p></div><div class=\"bg-base-200 rounded-lg p-3\"><span class=\"text-xs opacity-60 block\">Updated</span><p x-text=\"new Date(issue.updated_at).toLocaleDateString()\"></p></div><div class=\"bg-base-200 rounded-lg p-3 cursor-pointer hover:bg-base-300\" @click=\"editing = 'assignee'\"><template x-if=\"editing !== 'assignee'\"><div><span class=\"text-xs opacity-60 block\">Assignee</span><p x-text=\"issue.assignee || 'Unassigned'\"></p></div></template><template x-if=\"editing === 'assignee'\"><div><span class=\"text-xs opacity-60 block\">Assignee</span> <input type=\"text\" name=\"assignee\" x-model=\"issue.assignee\" class=\"input input-sm input-bordered w-full\" @keydown.enter=\"saveField('assignee', issue.assignee)\" @keydown.escape=\"editing = null\" x-init=\"$el.focus()\"><div class=\"flex gap-1 mt-1\"><button class=\"btn btn-xs btn-primary\" @click=\"saveField('assignee', issue.assignee)\">Save</button> <button class=\"btn btn-xs\" @click=\"editing = null\">Cancel</button></div></div></template></div></div></div></div><div class=\"mt-6\"><h3 class=\"text-lg font-semibold mb-4\">Comments</h3><div class=\"card bg-base-100 shadow mb-4\"><div class=\"card-body\"><textarea x-model=\"newComment\" class=\"textarea textarea-bordered w-full\" placeholder=\"Add a comment...\" @keydown.enter.prevent=\"addComment()\"></textarea><div class=\"card-actions justify-end mt-2\"><button class=\"btn btn-primary btn-sm\" @click=\"addComment()\" :disabled=\"!newComment.trim()\">Add Comment</button></div></div></div><div class=\"space-y-4\">")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "Back to Issues</a><div class=\"flex gap-2\"><button class=\"btn btn-error btn-sm\" @click=\"if(confirm('Delete this issue?')) { fetch('/issues/' + issue.id, { method: 'DELETE' }).then(() => window.location.href = '/') }\">Delete</button></div></div><div class=\"card bg-base-100 shadow-xl\"><div class=\"card-body\"><div class=\"mb-4\"><template x-if=\"editing !== 'title'\"><h1 class=\"card-title text-3xl cursor-pointer hover:text-primary\" @click=\"editing = 'title'\" x-text=\"issue.title\"></h1></template><template x-if=\"editing === 'title'\"><div class=\"flex gap-2\"><input type=\"text\" name=\"title\" x-model=\"issue.title\" class=\"input input-bordered text-xl flex-1\" @keydown.enter=\"saveField('title', issue.title)\" @keydown.escape=\"editing = null\" x-init=\"$el.focus()\"> <button class=\"btn btn-primary\" @click=\"saveField('title', issue.title)\">Save</button> <button class=\"btn\" @click=\"editing = null\">Cancel</button></div></template><div class=\"text-sm opacity-60 mt-1\" x-text=\"issue.id\"></div></div><div class=\"flex flex-wrap gap-2 mb-4\"><template x-if=\"editing !== 'status'\"><span :class=\"'badge ' + statusClass + ' cursor-pointer hover:opacity-80 whitespace-nowrap'\" @click=\"editing = 'status'\" x-text=\"issue.status\"></span></template><template x-if=\"editing === 'status'\"><select name=\"status\" x-model=\"issue.status\" class=\"select select-sm select-bordered\" @change=\"saveField('status', issue.status)\"><option value=\"open\">Open</option> <option value=\"in_progress\">In Progress</option> <option value=\"blocked\">Blocked</option> <option value=\"closed\">Closed</option></select></template><template x-if=\"editing !== 'type'\"><span class=\"badge badge-outline cursor-pointer hover:opacity-80 whitespace-nowrap\" @click=\"editing = 'type'\" x-text=\"issue.issue_type\"></span></template><template x-if=\"editing === 'type'\"><select name=\"issue_type\" x-model=\"issue.issue_type\" class=\"select select-sm select-bordered\" @change=\"saveField('issue_type', issue.issue_type)\"><option value=\"task\">Task</option> <option value=\"bug\">Bug</option> <option value=\"feature\">Feature</option> <option value=\"chore\">Chore</option></select></template><template x-if=\"editing !== 'priority'\"><span class=\"badge badge-ghost cursor-pointer hover:opacity-80 whitespace-nowrap\" @click=\"editing = 'priority'\" x-text=\"'P' + issue.priority + ' - ' + priorityLabel\"></span></template><template x-if=\"editing === 'priority'\"><select name=\"priority\" x-model=\"issue.priority\" class=\"select select-sm select-bordered\" @change=\"saveField('priority', issue.priority)\"><option value=\"0\">P0 - Irrelevant</option> <option value=\"1\">P1 - Low</option> <option value=\"2\">P2 - Normal</option> <option value=\"3\">P3 - High</option> <option value=\"4\">P4 - Critical</option></select></template></div><div class=\"mb-6\"><h3 class=\"text-sm font-semibold opacity-70 mb-2\">Description</h3><template x-if=\"editing !== 'description'\"><div class=\"min-h-25 p-4 bg-base-200 rounded-lg cursor-pointer hover:bg-base-300\" @click=\"editing = 'description'\"><p class=\"whitespace-pre-wrap\" x-show=\"issue.description\" x-text=\"issue.description\"></p><p class=\"text-base-content/50 italic\" x-show=\"!issue.description\">Click to add description...</p></div></template><template x-if=\"editing === 'description'\"><div class=\"flex flex-col gap-2\"><textarea name=\"description\" x-model=\"issue.description\" class=\"textarea textarea-bordered min-h-37.5\" @keydown.escape=\"editing = null\" x-init=\"$el.focus()\"></textarea><div class=\"flex gap-2\"><button class=\"btn btn-primary\" @click=\"saveField('description', issue.description)\">Save</button> <button class=\"btn\" @click=\"editing = null\">Cancel</button></div></div></template></div><div class=\"grid grid-cols-2 md:grid-cols-4 gap-4 text-sm\"><div class=\"bg-base-200 rounded-lg p-3\"><span class=\"text-xs opacity-60 block\">Created</span><p x-text=\"new Date(issue.created_at).toLocaleDateString()\"></p><p class=\"text-xs opacity-50\" x-text=\"issue.created_by\"></p></div><div class=\"bg-base-200 rounded-lg p-3\"><span class=\"text-xs opacity-60 block\">Updated</span><p x-text=\"new Date(issue.updated_at).toLocaleDateString()\"></p></div><div class=\"bg-base-200 rounded-lg p-3 cursor-pointer hover:bg-base-300\" @click=\"editing = 'assignee'\"><template x-if=\"editing !== 'assignee'\"><div><span class=\"text-xs opacity-60 block\">Assignee</span><p x-text=\"issue.assignee || 'Unassigned'\"></p></div></template><template x-if=\"editing === 'assignee'\"><div><span class=\"text-xs opacity-60 block\">Assignee</span> <input type=\"text\" name=\"assignee\" x-model=\"issue.assignee\" class=\"input input-sm input-bordered w-full\" @keydown.enter=\"saveField('assignee', issue.assignee)\" @keydown.escape=\"editing = null\" x-init=\"$el.focus()\"><div class=\"flex gap-1 mt-1\"><button class=\"btn btn-xs btn-primary\" @click=\"saveField('assignee', issue.assignee)\">Save</button> <button class=\"btn btn-xs\" @click=\"editing = null\">Cancel</button></div></div></template></div></div></div></div><div class=\"mt-6\"><h3 class=\"text-lg font-semibold mb-4\">Comments</h3><div class=\"card bg-base-100 shadow mb-4\"><div class=\"card-body\"><textarea x-model=\"newComment\" class=\"textarea textarea-bordered w-full\" placeholder=\"Add a comment...\" @keydown.enter.prevent=\"addComment()\"></textarea><div class=\"card-actions justify-end mt-2\"><button class=\"btn btn-primary btn-sm\" @click=\"addComment()\" :disabled=\"!newComment.trim()\">Add Comment</button></div></div></div><div class=\"space-y-4\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			for _, comment := range comments {
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, "<div class=\"card bg-base-200\"><div class=\"card-body py-3\"><div class=\"flex justify-between items-start mb-2\"><span class=\"font-semibold text-sm\">")
-				if templ_7745c5c3_Err != nil {
-					return templ_7745c5c3_Err
-				}
-				var templ_7745c5c3_Var4 string
-				templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinStringErrs(comment.Author)
-				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/web/routes/issue_detail.templ`, Line: 261, Col: 61}
-				}
-				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var4))
-				if templ_7745c5c3_Err != nil {
-					return templ_7745c5c3_Err
-				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "</span> <span class=\"text-xs opacity-50\">")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, "<div class=\"card bg-base-200\"><div class=\"card-body py-3\"><div class=\"flex justify-between items-start mb-2\"><span class=\"font-semibold text-sm\">")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
 				var templ_7745c5c3_Var5 string
-				templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.JoinStringErrs(comment.CreatedAt.Format("Jan 2, 2006 15:04"))
+				templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.JoinStringErrs(comment.Author)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/web/routes/issue_detail.templ`, Line: 262, Col: 89}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/web/routes/issue_detail.templ`, Line: 282, Col: 61}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var5))
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, "</span></div><p class=\"whitespace-pre-wrap text-sm\">")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 7, "</span> <span class=\"text-xs opacity-50\">")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
 				var templ_7745c5c3_Var6 string
-				templ_7745c5c3_Var6, templ_7745c5c3_Err = templ.JoinStringErrs(comment.Text)
+				templ_7745c5c3_Var6, templ_7745c5c3_Err = templ.JoinStringErrs(comment.CreatedAt.Format("Jan 2, 2006 15:04"))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/web/routes/issue_detail.templ`, Line: 264, Col: 61}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/web/routes/issue_detail.templ`, Line: 283, Col: 89}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var6))
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 7, "</p></div></div>")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 8, "</span></div><p class=\"whitespace-pre-wrap text-sm\">")
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+				var templ_7745c5c3_Var7 string
+				templ_7745c5c3_Var7, templ_7745c5c3_Err = templ.JoinStringErrs(comment.Text)
+				if templ_7745c5c3_Err != nil {
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/web/routes/issue_detail.templ`, Line: 285, Col: 61}
+				}
+				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var7))
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 9, "</p></div></div>")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 8, "</div></div></div>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 10, "</div></div></div>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			return nil
 		})
-		templ_7745c5c3_Err = BaseLayout().Render(templ.WithChildren(ctx, templ_7745c5c3_Var2), templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = BaseLayout().Render(templ.WithChildren(ctx, templ_7745c5c3_Var3), templ_7745c5c3_Buffer)
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		return nil
+	})
+}
+
+func IssueDetail(props IssueDetailProps) templ.Component {
+	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
+		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
+		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
+			return templ_7745c5c3_CtxErr
+		}
+		templ_7745c5c3_Buffer, templ_7745c5c3_IsBuffer := templruntime.GetBuffer(templ_7745c5c3_W)
+		if !templ_7745c5c3_IsBuffer {
+			defer func() {
+				templ_7745c5c3_BufErr := templruntime.ReleaseBuffer(templ_7745c5c3_Buffer)
+				if templ_7745c5c3_Err == nil {
+					templ_7745c5c3_Err = templ_7745c5c3_BufErr
+				}
+			}()
+		}
+		ctx = templ.InitializeContext(ctx)
+		templ_7745c5c3_Var8 := templ.GetChildren(ctx)
+		if templ_7745c5c3_Var8 == nil {
+			templ_7745c5c3_Var8 = templ.NopComponent
+		}
+		ctx = templ.ClearChildren(ctx)
+		templ_7745c5c3_Var9 := templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
+			templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
+			templ_7745c5c3_Buffer, templ_7745c5c3_IsBuffer := templruntime.GetBuffer(templ_7745c5c3_W)
+			if !templ_7745c5c3_IsBuffer {
+				defer func() {
+					templ_7745c5c3_BufErr := templruntime.ReleaseBuffer(templ_7745c5c3_Buffer)
+					if templ_7745c5c3_Err == nil {
+						templ_7745c5c3_Err = templ_7745c5c3_BufErr
+					}
+				}()
+			}
+			ctx = templ.InitializeContext(ctx)
+			templ_7745c5c3_Err = IssueDetailContent(props).Render(ctx, templ_7745c5c3_Buffer)
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			return nil
+		})
+		templ_7745c5c3_Err = BaseLayout().Render(templ.WithChildren(ctx, templ_7745c5c3_Var9), templ_7745c5c3_Buffer)
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		return nil
+	})
+}
+
+func IssueDetailModalContent(props IssueDetailModalProps) templ.Component {
+	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
+		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
+		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
+			return templ_7745c5c3_CtxErr
+		}
+		templ_7745c5c3_Buffer, templ_7745c5c3_IsBuffer := templruntime.GetBuffer(templ_7745c5c3_W)
+		if !templ_7745c5c3_IsBuffer {
+			defer func() {
+				templ_7745c5c3_BufErr := templruntime.ReleaseBuffer(templ_7745c5c3_Buffer)
+				if templ_7745c5c3_Err == nil {
+					templ_7745c5c3_Err = templ_7745c5c3_BufErr
+				}
+			}()
+		}
+		ctx = templ.InitializeContext(ctx)
+		templ_7745c5c3_Var10 := templ.GetChildren(ctx)
+		if templ_7745c5c3_Var10 == nil {
+			templ_7745c5c3_Var10 = templ.NopComponent
+		}
+		ctx = templ.ClearChildren(ctx)
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 11, "<div class=\"w-full\"><div id=\"issue-detail-container\" class=\"mb-6\">")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = components.IssueDetail(components.IssueDetailProps{Issue: props.Issue, From: props.From}).Render(ctx, templ_7745c5c3_Buffer)
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 12, "</div>")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = components.CommentSection(components.CommentSectionProps{
+			IssueID:  props.Issue.ID,
+			Comments: props.Comments,
+		}).Render(ctx, templ_7745c5c3_Buffer)
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 13, "</div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
