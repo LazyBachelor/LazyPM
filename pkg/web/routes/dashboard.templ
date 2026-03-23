@@ -334,7 +334,7 @@ templ DashboardIssueRows(issues []*models.Issue, selectedID string) {
 			data-issue-id={ issue.ID }
 		>
 			<td class="min-w-20 truncate">{ issue.ID }</td>
-			<td class="truncate max-w-60" x-text={ fmt.Sprintf(`issues.find(i => i.id === '%s')?.title || '%s'`, issue.ID, issue.Title) }></td>
+			<td class="truncate max-w-60" x-text={ fmt.Sprintf(`issues.find(i => i.id === '%s')?.title || %q`, issue.ID, issue.Title) }></td>
 			<td>
 				@components.StatusBadge(issue.Status)
 			</td>
