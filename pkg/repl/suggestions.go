@@ -22,24 +22,40 @@ var rootSuggestions = []prompt.Suggest{
 // commandSuggestions is a list of prompt suggestions for PM commands.
 var baseSuggestions = []prompt.Suggest{
 	{Text: "help", Description: "Show help information"},
+	{Text: "sprint", Description: "Manage sprints"},
 	{Text: "create", Description: "Create a new issue with title"},
-	{Text: "describe", Description: "Get issue details by ID"},
 	{Text: "list", Description: "List all issues"},
-	{Text: "close", Description: "Close an issue by ID"},
+	{Text: "read", Description: "Read issue details by ID"},
 	{Text: "update", Description: "Update an existing issue by ID"},
+	{Text: "close", Description: "Close an issue by ID"},
 	{Text: "delete", Description: "Delete an issue by ID"},
 	{Text: "comment", Description: "Add a comment on an issue by ID"},
 	{Text: "comments", Description: "List comments on an issue by ID"},
-	{Text: "sprint", Description: "Manage sprints"},
+
+	{Text: "new", Description: "Alias for create command"},
+	{Text: "ls", Description: "Alias for list command"},
+	{Text: "search", Description: "Alias for list command"},
+	{Text: "describe", Description: "Alias for read command"},
+	{Text: "details", Description: "Alias for read command"},
+	{Text: "edit", Description: "Alias for update command"},
+	{Text: "rm", Description: "Alias for delete command"},
+	{Text: "del", Description: "Alias for delete command"},
+	{Text: "get", Description: "Alias for read command"},
 }
 
 // createFlags is a list of prompt suggestions for the create command flags.
 var createFlags = []prompt.Suggest{
 	{Text: "--desc", Description: "Issue description"},
 	{Text: "--status", Description: "Issue status"},
-	{Text: "--type", Description: "Issue type (bug, feature, task)"},
+	{Text: "--type", Description: "Issue type"},
 	{Text: "--priority", Description: "Issue priority"},
 	{Text: "--assignee", Description: "Issue assignee"},
+
+	{Text: "-d", Description: "Issue description (short)"},
+	{Text: "-s", Description: "Issue status (short)"},
+	{Text: "-t", Description: "Issue type (short)"},
+	{Text: "-p", Description: "Issue priority (short)"},
+	{Text: "-a", Description: "Issue assignee (short)"},
 }
 
 // updateFlags is a list of prompt suggestions for the update command flags.
@@ -47,9 +63,15 @@ var updateFlags = []prompt.Suggest{
 	{Text: "--title", Description: "New issue title"},
 	{Text: "--desc", Description: "New issue description"},
 	{Text: "--status", Description: "New issue status"},
-	{Text: "--type", Description: "New issue type (bug, feature, task)"},
+	{Text: "--type", Description: "New issue type"},
 	{Text: "--priority", Description: "New issue priority"},
 	{Text: "--assignee", Description: "New issue assignee"},
+
+	{Text: "-t", Description: "New issue type (short)"},
+	{Text: "-p", Description: "New issue priority (short)"},
+	{Text: "-a", Description: "New issue assignee (short)"},
+	{Text: "-d", Description: "New issue description (short)"},
+	{Text: "-s", Description: "New issue status (short)"},
 }
 
 // listFlags is a list of prompt suggestions for the list command flags.
@@ -61,6 +83,13 @@ var listFlags = []prompt.Suggest{
 	{Text: "--priority", Description: "Filter by priority"},
 	{Text: "--assignee", Description: "Filter by assignee"},
 	{Text: "--limit", Description: "Limit number of results"},
+
+	{Text: "-s", Description: "Filter by status (short)"},
+	{Text: "-t", Description: "Filter by type (short)"},
+	{Text: "-p", Description: "Filter by priority (short)"},
+	{Text: "-a", Description: "Filter by assignee (short)"},
+	{Text: "-d", Description: "Filter by description (short)"},
+	{Text: "-l", Description: "Limit number of results (short)"},
 }
 
 var deleteFlags = []prompt.Suggest{
@@ -70,26 +99,28 @@ var deleteFlags = []prompt.Suggest{
 
 var commentFlags = []prompt.Suggest{
 	{Text: "--message", Description: "Comment text"},
-	{Text: "-m", Description: "Comment text (short)"},
 	{Text: "--author", Description: "Author name for the comment"},
+
+	{Text: "-m", Description: "Comment text (short)"},
 	{Text: "-a", Description: "Author name (short)"},
 }
 
 // sprintSubcommands is a list of prompt suggestions for sprint subcommands.
 var sprintSubcommands = []prompt.Suggest{
 	{Text: "list", Description: "List all sprints"},
-	{Text: "ls", Description: "List all sprints (alias)"},
 	{Text: "create", Description: "Create a new sprint"},
-	{Text: "new", Description: "Create a new sprint (alias)"},
 	{Text: "issues", Description: "List issues in a sprint"},
-	{Text: "show", Description: "List issues in a sprint (alias)"},
-	{Text: "view", Description: "List issues in a sprint (alias)"},
 	{Text: "add", Description: "Add an issue to a sprint"},
 	{Text: "remove", Description: "Remove an issue from a sprint"},
-	{Text: "rm", Description: "Remove an issue from a sprint (alias)"},
 	{Text: "backlog", Description: "Show backlog issues"},
 	{Text: "delete", Description: "Delete a sprint"},
-	{Text: "del", Description: "Delete a sprint (alias)"},
+
+	{Text: "ls", Description: "Alias for list subcommand"},
+	{Text: "new", Description: "Alias for create subcommand"},
+	{Text: "show", Description: "Alias for issues subcommand"},
+	{Text: "view", Description: "Alias for issues subcommand"},
+	{Text: "rm", Description: "Alias for remove subcommand"},
+	{Text: "del", Description: "Alias for delete subcommand"},
 }
 
 // statusValues is a list of prompt suggestions for status types
@@ -222,9 +253,16 @@ func flagSuggestions(cmd string, words []string, text string) []prompt.Suggest {
 	flags := commandFlags[cmd]
 
 	if isIDCommand[cmd] {
-		if len(words) < 2 && !strings.HasPrefix(lastWord, "-") {
-			return issueIDSuggestions(lastWord, true)
+		if len(words) == 1 && strings.HasSuffix(text, " ") {
+			return issueIDSuggestions("", true)
 		}
+
+		if len(words) == 2 &&
+			!strings.HasSuffix(text, " ") &&
+			!strings.HasPrefix(words[1], "-") {
+			return issueIDSuggestions(words[1], true)
+		}
+
 		return filterByPrefix(flags, lastWord)
 	}
 
@@ -253,9 +291,12 @@ func issueIDSuggestions(partial string, hasCommand bool) []prompt.Suggest {
 // sprintNumSuggestions returns a list of prompt suggestions for sprint numbers.
 func sprintNumSuggestions(partial string, includeBacklog bool) []prompt.Suggest {
 	suggestions := []prompt.Suggest{
-		{Text: "1", Description: "Backlog"},
+		{Text: "0", Description: "Backlog"},
+		{Text: "1", Description: "Sprint 1"},
 		{Text: "2", Description: "Sprint 2"},
 		{Text: "3", Description: "Sprint 3"},
+		{Text: "4", Description: "Sprint 4"},
+		{Text: "5", Description: "Sprint 5"},
 	}
 
 	if !includeBacklog {

@@ -26,7 +26,7 @@ var CreateCmd = &cobra.Command{
 	Example: createCmdExample,
 
 	Args:    cobra.MinimumNArgs(0),
-	Aliases: []string{"add"},
+	Aliases: []string{"add", "new"},
 	RunE:    runCreateCmd,
 }
 
