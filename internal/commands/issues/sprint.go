@@ -58,6 +58,8 @@ var SprintAddCmd = &cobra.Command{
 	Long:  `Add an issue to a sprint. If sprint-num is omitted, adds to backlog.`,
 	Args:  cobra.RangeArgs(1, 2),
 	RunE:  runSprintAddCmd,
+
+	ValidArgsFunction: completeIssues,
 }
 
 // SprintRemoveCmd removes an issue from a sprint
@@ -68,6 +70,8 @@ var SprintRemoveCmd = &cobra.Command{
 	Aliases: []string{"rm"},
 	Args:    cobra.RangeArgs(1, 2),
 	RunE:    runSprintRemoveCmd,
+
+	ValidArgsFunction: completeIssues,
 }
 
 // SprintBacklogCmd shows the backlog sprint
@@ -304,8 +308,4 @@ func init() {
 	SprintCmd.AddCommand(SprintDeleteCmd)
 
 	RootCmd.AddCommand(SprintCmd)
-
-	SprintIssuesCmd.RegisterFlagCompletionFunc("issue-id", completeIssues)
-	SprintAddCmd.RegisterFlagCompletionFunc("issue-id", completeIssues)
-	SprintRemoveCmd.RegisterFlagCompletionFunc("issue-id", completeIssues)
 }
