@@ -87,7 +87,7 @@ var SprintDeleteCmd = &cobra.Command{
 	Use:     "delete <sprint-num>",
 	Short:   "Delete a sprint",
 	Long:    `Delete a sprint by its number. Issues in the sprint will not be deleted.`,
-	Aliases: []string{"del", "rm"},
+	Aliases: []string{"del"},
 	Args:    cobra.ExactArgs(1),
 	RunE:    runSprintDeleteCmd,
 }

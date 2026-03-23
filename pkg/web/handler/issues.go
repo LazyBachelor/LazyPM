@@ -125,7 +125,7 @@ func GetIssue(w http.ResponseWriter, r *http.Request) {
 	comments := r.Context().Value(commentsKey).([]*models.Comment)
 	hx := HTMX(r)
 
-	if strings.Contains(r.Header.Get("Accept"), "text/html") {
+	if strings.Contains(r.Header.Get("Accept"), "text/html") && !hx.IsHxRequest() {
 		routes.IssueDetailPage(issue, comments).Render(r.Context(), w)
 		return
 	}
