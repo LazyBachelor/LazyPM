@@ -121,7 +121,7 @@ templ DashboardContent(props DashboardProps) {
 				<template x-for="issue in issues" :key="issue.id">
 					<div x-show="issue.id === selectedId" class="issue-detail max-w-3xl mx-auto" x-data="{ editing: null, saving: false }">
 						<div class="card bg-base-100 shadow-md">
-							<div class="card-body p-4 lg:p-6">
+							<div class="card-body p-2">
 								<div class="m-2">
 									<template x-if="editing !== 'title'">
 										<h2
