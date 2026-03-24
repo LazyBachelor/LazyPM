@@ -15,7 +15,7 @@ type ValidationFeedback = models.ValidationFeedback
 type Tui struct {
 	feedbackChan chan ValidationFeedback
 	quitChan     chan bool
-	submitChan   chan<- struct{}
+	submitChan   chan<- models.ValidationTrigger
 }
 
 func New() *Tui {
@@ -51,6 +51,6 @@ func (t *Tui) SetChannels(feedbackChan chan ValidationFeedback, quitChan chan bo
 	t.quitChan = quitChan
 }
 
-func (t *Tui) SetSubmitChan(submitChan chan<- struct{}) {
+func (t *Tui) SetSubmitChan(submitChan chan<- models.ValidationTrigger) {
 	t.submitChan = submitChan
 }

@@ -14,18 +14,23 @@ import (
 type ValidationFeedback = models.ValidationFeedback
 
 var taskFeedback ValidationFeedback
-var submitChan chan<- struct{}
+var submitChan chan<- models.ValidationTrigger
 
 func SetTaskFeedback(feedback ValidationFeedback) {
 	taskFeedback = feedback
 }
 
-func SetSubmitChan(ch chan<- struct{}) {
+func SetSubmitChan(ch chan<- models.ValidationTrigger) {
 	submitChan = ch
 }
 
 func HandleTaskStatus(w http.ResponseWriter, r *http.Request) {
-	submitChan <- struct{}{}
+	if submitChan != nil {
+		select {
+		case submitChan <- models.ValidationTrigger{Source: models.ValidationTriggerAutoPoll}:
+		default:
+		}
+	}
 	time.Sleep(100 * time.Millisecond)
 
 	hx := HTMX(r)

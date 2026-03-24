@@ -14,12 +14,12 @@ type RootModel struct {
 	app          *app.App
 	feedbackChan chan models.ValidationFeedback
 	quitChan     chan bool
-	submitChan   chan<- struct{}
+	submitChan   chan<- models.ValidationTrigger
 	lastSize     tea.WindowSizeMsg
 	hasSize      bool
 }
 
-func NewRootView(app *app.App, feedbackChan chan models.ValidationFeedback, quitChan chan bool, submitChan chan<- struct{}) *RootModel {
+func NewRootView(app *app.App, feedbackChan chan models.ValidationFeedback, quitChan chan bool, submitChan chan<- models.ValidationTrigger) *RootModel {
 	initialView := dashboard.NewDashboard(app, feedbackChan, quitChan, submitChan)
 	return &RootModel{
 		currentView:  initialView,

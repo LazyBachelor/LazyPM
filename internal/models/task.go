@@ -26,10 +26,24 @@ type Check struct {
 	Valid   bool
 }
 
+type ValidationTriggerSource string
+
+const (
+	ValidationTriggerManualSubmit ValidationTriggerSource = "manual_submit"
+	ValidationTriggerAutoPoll     ValidationTriggerSource = "auto_poll"
+	ValidationTriggerInitCheck    ValidationTriggerSource = "init_check"
+	ValidationTriggerStatusCheck  ValidationTriggerSource = "status_check"
+	ValidationTriggerUnknown      ValidationTriggerSource = "unknown"
+)
+
+type ValidationTrigger struct {
+	Source ValidationTriggerSource
+}
+
 type ValidatedInterface interface {
 	Interface
 	SetChannels(feedbackChan chan ValidationFeedback, quitChan chan bool)
-	SetSubmitChan(submitChan chan<- struct{})
+	SetSubmitChan(submitChan chan<- ValidationTrigger)
 }
 
 type TaskDetails struct {

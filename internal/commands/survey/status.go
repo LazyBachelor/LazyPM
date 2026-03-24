@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/LazyBachelor/LazyPM/internal/commands/issues"
+	"github.com/LazyBachelor/LazyPM/internal/models"
 	"github.com/spf13/cobra"
 )
 
@@ -24,7 +25,7 @@ func runStatusCmd(cmd *cobra.Command, args []string) error {
 
 	if app.SubmitChan != nil {
 		select {
-		case app.SubmitChan <- struct{}{}:
+		case app.SubmitChan <- models.ValidationTrigger{Source: models.ValidationTriggerStatusCheck}:
 		default:
 		}
 	}
