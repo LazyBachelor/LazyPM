@@ -14,9 +14,10 @@ type CommonKeyMap struct {
 	ChangeStatus    key.Binding
 	ChangePriority  key.Binding
 	ChangeType      key.Binding
-	ChangeAssignee  key.Binding
-	AddIssue        key.Binding
-	DeleteIssue     key.Binding
+	ChangeAssignee    key.Binding
+	ManageDependencies key.Binding
+	AddIssue          key.Binding
+	DeleteIssue       key.Binding
 }
 
 // DefaultCommonKeyMap returns the shared default bindings used by both views.
@@ -61,6 +62,10 @@ func DefaultCommonKeyMap() CommonKeyMap {
 		ChangeAssignee: key.NewBinding(
 			key.WithKeys("A"),
 			key.WithHelp("A", "change assignee"),
+		),
+		ManageDependencies: key.NewBinding(
+			key.WithKeys("D"),
+			key.WithHelp("D", "edit dependencies"),
 		),
 		AddIssue: key.NewBinding(
 			key.WithKeys("a"),

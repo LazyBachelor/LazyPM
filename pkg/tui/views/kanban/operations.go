@@ -237,6 +237,13 @@ func (m *Model) startAddComment(selected ListIssue) tea.Cmd {
 	return nil
 }
 
+func (m *Model) startManageDependencies(selected ListIssue) tea.Cmd {
+	m.currentIssueID = selected.ID
+	depModal := modal.NewDependenciesModal(m.app, selected.ID)
+	m.dependenciesModal = depModal
+	return m.modalManager.PushModal(depModal)
+}
+
 // handleModalCompleted handles all modal completion messages
 func (m *Model) handleModalCompleted(msg modal.ModalCompletedMsg) tea.Cmd {
 	switch msg.ModalID {
@@ -324,6 +331,16 @@ func (m *Model) handleModalCompleted(msg modal.ModalCompletedMsg) tea.Cmd {
 			cmd := msgs.AddIssueCommentCmd(m.app, m.currentIssueID, user.GetOsUsername(), r.Value)
 			return func() tea.Msg { return cmd() }
 		}
+	case modal.ModalSelectDependency:
+		if r, ok := msg.Value.(modal.SelectResult); ok && r.SelectedValue != "" {
+			m.modalManager.PopModal()
+			return msgs.AddDependencyCmd(m.app, m.currentIssueID, r.SelectedValue)
+		}
+	case modal.ModalSelectRemoveDependency:
+		if r, ok := msg.Value.(modal.SelectResult); ok && r.SelectedValue != "" {
+			m.modalManager.PopModal()
+			return msgs.RemoveDependencyCmd(m.app, m.currentIssueID, r.SelectedValue)
+		}
 	}
 	return nil
 }
@@ -357,6 +374,16 @@ func (m *Model) handleModalCancelled(msg modal.ModalCancelledMsg) {
 		m.currentIssueID = ""
 	case modal.ModalAddComment:
 		m.currentIssueID = ""
+	case modal.ModalManageDependencies:
+		m.dependenciesModal = nil
+		m.modalManager.PopModal()
+		if selected := m.FocusedIssueList().SelectedItem(); selected.ID != "" {
+			m.setDetailIssueWithComments(selected.Issue)
+		}
+	case modal.ModalSelectDependency:
+		m.modalManager.PopModal()
+	case modal.ModalSelectRemoveDependency:
+		m.modalManager.PopModal()
 	}
 }
 
@@ -372,6 +399,43 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case modal.ModalCancelledMsg:
 		m.handleModalCancelled(msg)
 		return m, nil
+
+	case msgs.DependencyAddRequestedMsg:
+		issues := modal.EligibleDependencyIssues(m.app, msg.IssueID)
+		if len(issues) == 0 {
+			return m, nil
+		}
+		listModal := modal.NewDependencyListModal(issues, m.width, m.height)
+		return m, m.modalManager.PushModal(listModal)
+
+	case msgs.DependencyRemoveRequestedMsg:
+		deps, _ := m.app.Issues.GetDependencies(context.Background(), msg.IssueID)
+		if len(deps) == 0 {
+			return m, nil
+		}
+		listModal := modal.NewDependencyRemoveListModal(deps, m.width, m.height)
+		return m, m.modalManager.PushModal(listModal)
+
+	case msgs.DependencyAddedMsg:
+		if m.dependenciesModal != nil {
+			m.dependenciesModal.RefreshDeps()
+		}
+		if msg.Err != nil {
+			return m, nil
+		}
+		m.submitValidation()
+		return m, m.refreshIssueListsAndSelectIssue(msg.IssueID)
+
+	case msgs.DependencyRemovedMsg:
+		if m.dependenciesModal != nil {
+			m.dependenciesModal.RefreshDeps()
+		}
+		if msg.Err != nil {
+			return m, nil
+		}
+		m.submitValidation()
+		return m, m.refreshIssueListsAndSelectIssue(msg.IssueID)
+
 	case msgs.TitleUpdatedMsg:
 		m.modalManager.GetTextInputModal(modal.ModalEditTitle).Reset()
 		m.currentIssueID = ""

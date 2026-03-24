@@ -114,6 +114,10 @@ func (m *Model) handleKeyPressMsg(msg tea.KeyPressMsg) tea.Cmd {
 		if selected := m.FocusedIssueList().SelectedItem(); selected.ID != "" {
 			cmd = m.startEditAssignee(selected)
 		}
+	case m.notInModalMsgWithKey(msg, m.keyMap.ManageDependencies):
+		if selected := m.FocusedIssueList().SelectedItem(); selected.ID != "" {
+			cmd = m.startManageDependencies(selected)
+		}
 	case m.notInModalMsgWithKey(msg, m.keyMap.AddIssue):
 		cmd = m.startCreateIssue()
 

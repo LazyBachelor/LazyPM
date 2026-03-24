@@ -10,10 +10,11 @@ import (
 )
 
 type IssueDetail struct {
-	viewport viewport.Model
-	issue    models.Issue
-	comments []*models.Comment
-	focused  bool
+	viewport      viewport.Model
+	issue         models.Issue
+	comments      []*models.Comment
+	dependencies  []*models.Issue
+	focused       bool
 }
 
 func NewIssueDetail() IssueDetail {
@@ -31,6 +32,12 @@ func (i *IssueDetail) SetIssue(issue models.Issue) {
 // SetComments updates the list of comments displayed for the current issue.
 func (i *IssueDetail) SetComments(comments []*models.Comment) {
 	i.comments = comments
+	i.refreshContent()
+}
+
+// SetDependencies updates the list of dependencies displayed for the current issue.
+func (i *IssueDetail) SetDependencies(deps []*models.Issue) {
+	i.dependencies = deps
 	i.refreshContent()
 }
 
@@ -82,6 +89,7 @@ func (i *IssueDetail) refreshContent() {
 		style.LabelStyle.Render("Assignee:") + style.ValueStyle.Render(i.issue.Assignee),
 	)
 
+	dependenciesParts := i.renderDependencies()
 	descLabel := style.LabelStyle.Render("Description:")
 	descStyle := style.ValueStyle.Width(contentWidth)
 	descContent := descStyle.Render(i.issue.Description)
@@ -89,7 +97,9 @@ func (i *IssueDetail) refreshContent() {
 	commentsLabel := style.LabelStyle.MarginTop(1).Render("Comments:")
 
 	var parts []string
-	parts = append(parts, titleRow, idRow, typeRow, statusRow, closingReasonRow, priorityRow, assigneeRow, descLabel, descContent, commentsLabel)
+	parts = append(parts, titleRow, idRow, typeRow, statusRow, closingReasonRow, priorityRow, assigneeRow)
+	parts = append(parts, dependenciesParts...)
+	parts = append(parts, descLabel, descContent, commentsLabel)
 	parts = append(parts, i.renderComments()...)
 
 	content := lipgloss.JoinVertical(lipgloss.Left, parts...)
@@ -126,6 +136,29 @@ func (i *IssueDetail) ScrollUp(lines int) {
 
 func (i *IssueDetail) ScrollDown(lines int) {
 	i.viewport.ScrollDown(lines)
+}
+
+func (i *IssueDetail) renderDependencies() []string {
+	depsLabel := style.LabelStyle.Render("Dependencies:")
+	if len(i.dependencies) == 0 {
+		return []string{
+			depsLabel,
+			style.ValueStyle.Render(" "),
+		}
+	}
+	var lines []string
+	lines = append(lines, depsLabel)
+	for _, d := range i.dependencies {
+		if d == nil {
+			continue
+		}
+		depText := d.ID
+		if d.Title != "" {
+			depText += " — " + d.Title
+		}
+		lines = append(lines, style.ValueStyle.MarginLeft(1).Render(depText))
+	}
+	return lines
 }
 
 func (i *IssueDetail) renderComments() []string {

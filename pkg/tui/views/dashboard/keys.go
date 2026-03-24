@@ -123,6 +123,12 @@ func (m *Model) handleKeyPressMsg(msg tea.KeyPressMsg) tea.Cmd {
 			m.logAction("tui started editing assignee")
 		}
 
+	case m.notInModalMsgWithKey(msg, m.keyMap.ManageDependencies):
+		if selected := m.issueList.SelectedItem(); selected.ID != "" {
+			cmd = m.startManageDependencies(selected)
+			m.logAction("tui opened dependencies management")
+		}
+
 	case m.notInModalMsgWithKey(msg, m.keyMap.AddComment):
 		if selected := m.issueList.SelectedItem(); selected.ID != "" {
 			cmd = m.startAddComment(selected)

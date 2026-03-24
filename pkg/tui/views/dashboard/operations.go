@@ -114,6 +114,13 @@ func (m *Model) startAddComment(selected ListIssue) tea.Cmd {
 	return nil
 }
 
+func (m *Model) startManageDependencies(selected ListIssue) tea.Cmd {
+	m.currentIssueID = selected.ID
+	depModal := modal.NewDependenciesModal(m.app, selected.ID)
+	m.dependenciesModal = depModal
+	return m.modalManager.PushModal(depModal)
+}
+
 // handleModalCompleted handles all modal completion messages
 func (m *Model) handleModalCompleted(msg modal.ModalCompletedMsg) tea.Cmd {
 	switch msg.ModalID {
@@ -198,6 +205,18 @@ func (m *Model) handleModalCompleted(msg modal.ModalCompletedMsg) tea.Cmd {
 			cmd := msgs.UpdateIssueTypeCmd(m.app, m.currentIssueID, issueType)
 			return func() tea.Msg { return cmd() }
 		}
+	case modal.ModalSelectDependency:
+		if r, ok := msg.Value.(modal.SelectResult); ok && r.SelectedValue != "" {
+			m.logAction("tui added dependency")
+			m.modalManager.PopModal()
+			return msgs.AddDependencyCmd(m.app, m.currentIssueID, r.SelectedValue)
+		}
+	case modal.ModalSelectRemoveDependency:
+		if r, ok := msg.Value.(modal.SelectResult); ok && r.SelectedValue != "" {
+			m.logAction("tui removed dependency")
+			m.modalManager.PopModal()
+			return msgs.RemoveDependencyCmd(m.app, m.currentIssueID, r.SelectedValue)
+		}
 	}
 	return nil
 }
@@ -239,6 +258,19 @@ func (m *Model) handleModalCancelled(msg modal.ModalCancelledMsg) {
 	case modal.ModalSelectType:
 		m.currentIssueID = ""
 		m.logAction("tui canceled type picker")
+	case modal.ModalManageDependencies:
+		m.dependenciesModal = nil
+		m.modalManager.PopModal()
+		if selected := m.issueList.SelectedItem(); selected.ID != "" {
+			m.setDetailIssueWithComments(selected.Issue)
+		}
+		m.logAction("tui closed dependencies management")
+	case modal.ModalSelectDependency:
+		m.modalManager.PopModal()
+		m.logAction("tui canceled add dependency")
+	case modal.ModalSelectRemoveDependency:
+		m.modalManager.PopModal()
+		m.logAction("tui canceled remove dependency")
 	}
 }
 
@@ -254,6 +286,48 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case modal.ModalCancelledMsg:
 		m.handleModalCancelled(msg)
 		return m, nil
+
+	case msgs.DependencyAddRequestedMsg:
+		issues := modal.EligibleDependencyIssues(m.app, msg.IssueID)
+		if len(issues) == 0 {
+			m.logAction("tui no issues available to add as dependency")
+			return m, nil
+		}
+		listModal := modal.NewDependencyListModal(issues, m.width, m.height)
+		return m, m.modalManager.PushModal(listModal)
+
+	case msgs.DependencyRemoveRequestedMsg:
+		deps, _ := m.app.Issues.GetDependencies(context.Background(), msg.IssueID)
+		if len(deps) == 0 {
+			m.logAction("tui no dependencies to remove")
+			return m, nil
+		}
+		listModal := modal.NewDependencyRemoveListModal(deps, m.width, m.height)
+		return m, m.modalManager.PushModal(listModal)
+
+	case msgs.DependencyAddedMsg:
+		if m.dependenciesModal != nil {
+			m.dependenciesModal.RefreshDeps()
+		}
+		if msg.Err != nil {
+			m.logAction("tui failed to add dependency")
+			return m, nil
+		}
+		m.logAction("tui added dependency")
+		m.submitValidation()
+		return m, m.refreshIssueListsAndSelectIssue(msg.IssueID)
+
+	case msgs.DependencyRemovedMsg:
+		if m.dependenciesModal != nil {
+			m.dependenciesModal.RefreshDeps()
+		}
+		if msg.Err != nil {
+			m.logAction("tui failed to remove dependency")
+			return m, nil
+		}
+		m.logAction("tui removed dependency")
+		m.submitValidation()
+		return m, m.refreshIssueListsAndSelectIssue(msg.IssueID)
 
 	case msgs.TitleUpdatedMsg:
 		m.modalManager.GetTextInputModal(modal.ModalEditTitle).Reset()
