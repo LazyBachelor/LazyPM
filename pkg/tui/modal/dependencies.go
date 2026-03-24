@@ -4,8 +4,8 @@ import (
 	"context"
 	"io"
 
-	tea "charm.land/bubbletea/v2"
 	"charm.land/bubbles/v2/list"
+	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
 	"github.com/LazyBachelor/LazyPM/internal/app"
 	"github.com/LazyBachelor/LazyPM/internal/models"
@@ -301,7 +301,8 @@ func (m *DependencyListModal) SetSize(width, height int) {
 	m.BaseModal.SetSize(width, height)
 	m.width = width
 	m.height = height
-	m.list.SetSize(width-4, height-6)
+	listHeight := min(max(len(m.list.Items())+2, 3), 20)
+	m.list.SetSize(width-4, listHeight)
 }
 
 // DependencyRemoveListModal is a list-based modal for selecting a dependency to remove.
@@ -403,7 +404,8 @@ func (m *DependencyRemoveListModal) SetSize(width, height int) {
 	m.BaseModal.SetSize(width, height)
 	m.width = width
 	m.height = height
-	m.list.SetSize(width-4, height-6)
+	listHeight := min(max(len(m.list.Items())+2, 3), 20)
+	m.list.SetSize(width-4, listHeight)
 }
 
 // EligibleDependencyIssues returns issues that can be added as dependencies:
