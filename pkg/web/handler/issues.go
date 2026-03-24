@@ -20,17 +20,17 @@ const commentsKey = "comments"
 type IssueForm struct {
 	Title       string           `form:"title" validate:"required,max=255"`
 	Description string           `form:"description" validate:"max=2000"`
-	Status      models.Status    `form:"status" validate:"required,oneof=open in_progress blocked closed"`
-	IssueType   models.IssueType `form:"issue_type" validate:"required,oneof=task bug feature chore"`
+	Status      models.Status    `form:"status" validate:"required,oneof=open in_progress blocked deferred closed"`
+	IssueType   models.IssueType `form:"issue_type" validate:"required,oneof=task bug feature chore epic"`
 	Priority    int              `form:"priority" validate:"gte=0,lte=4"`
 }
 
 type UpdateIssueForm struct {
 	Title       *string           `form:"title" validate:"omitempty,max=255"`
 	Description *string           `form:"description" validate:"omitempty,max=2000"`
-	Status      *models.Status    `form:"status" validate:"omitempty,oneof=open in_progress blocked closed"`
+	Status      *models.Status    `form:"status" validate:"omitempty,oneof=open in_progress blocked deferred closed"`
 	CloseReason *string           `form:"close_reason" validate:"omitempty,max=2000"`
-	IssueType   *models.IssueType `form:"issue_type" validate:"omitempty,oneof=task bug feature chore"`
+	IssueType   *models.IssueType `form:"issue_type" validate:"omitempty,oneof=task bug feature chore epic"`
 	Priority    *int              `form:"priority" validate:"omitempty,gte=0,lte=4"`
 	Assignee    *string           `form:"assignee" validate:"omitempty,max=100"`
 }

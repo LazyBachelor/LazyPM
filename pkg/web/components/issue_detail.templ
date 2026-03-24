@@ -70,15 +70,13 @@ templ IssueDetail(props IssueDetailProps) {
 }
 
 templ StatusBadge(status models.Status) {
-	switch status {
-		case "open":
-			<span class="badge badge-info badge-sm whitespace-nowrap">Open</span>
-		case "in_progress":
-			<span class="badge badge-warning badge-sm whitespace-nowrap">In Progress</span>
-		case "ready_to_sprint":
-			<span class="badge badge-primary badge-sm whitespace-nowrap">Ready to sprint</span>
-		case "closed":
-			<span class="badge badge-success badge-sm whitespace-nowrap">Closed</span>
+		switch status {
+			case "open":
+				<span class="badge badge-info badge-sm whitespace-nowrap">Open</span>
+			case "in_progress":
+				<span class="badge badge-warning badge-sm whitespace-nowrap">In Progress</span>
+			case "closed":
+				<span class="badge badge-success badge-sm whitespace-nowrap">Closed</span>
 		case "blocked":
 			<span class="badge badge-error badge-sm whitespace-nowrap">Blocked</span>
 		case "deferred":

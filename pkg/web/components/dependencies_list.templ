@@ -31,10 +31,9 @@ templ DependenciesList(props DependenciesListProps) {
 							</span>
 							<button
 								class="btn btn-xs btn-ghost text-error"
-								hx-delete={ "/issues/" + props.IssueID + "/dependencies?container_id=" + url.QueryEscape(props.ContainerID) }
+								hx-delete={ "/issues/" + props.IssueID + "/dependencies?container_id=" + url.QueryEscape(props.ContainerID) + "&depends_on_id=" + url.QueryEscape(d.ID) }
 								hx-target={ "#" + props.ContainerID }
-								hx-swap="innerHTML"
-								hx-vals={ `{"depends_on_id":"` + d.ID + `"}` }
+								hx-swap="outerHTML"
 							>
 								Remove
 							</button>

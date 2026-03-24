@@ -23,8 +23,12 @@ templ Dashboard(props DashboardProps) {
 
 templ DashboardContent(props DashboardProps) {
 	{{
+		selectedID := ""
+		if props.SelectedIssue != nil {
+			selectedID = props.SelectedIssue.ID
+		}
 		issuesJSON, _ := templ.JSONString(props.Issues)
-		xData := fmt.Sprintf(`{ selectedId: '%s', issues: %s }`, props.SelectedIssue.ID, issuesJSON)
+		xData := fmt.Sprintf(`{ selectedId: %q, issues: %s }`, selectedID, issuesJSON)
 	}}
 	<div class="flex flex-col h-full" x-data={ xData }>
 		<div class="flex flex-col border-b border-base-200">
@@ -101,7 +105,7 @@ templ DashboardContent(props DashboardProps) {
 				:style="`width: ${listWidth}%`"
 			>
 				<div id="issue-list-container" class="p-2">
-					@DashboardIssueList(props.Issues, props.SelectedIssue.ID)
+					@DashboardIssueList(props.Issues, selectedID)
 				</div>
 			</div>
 			<div
@@ -118,6 +122,22 @@ templ DashboardContent(props DashboardProps) {
 			<div
 				class="flex-1 p-4 overflow-auto bg-base-50"
 			>
+				<template x-if="issues.length === 0">
+					<div class="max-w-2xl mx-auto mt-12">
+						<div class="card bg-base-100 shadow-sm border border-base-200">
+							<div class="card-body items-center text-center">
+								<h3 class="text-xl font-semibold">No issues yet</h3>
+								<p class="text-base-content/70">Create your first issue to get started.</p>
+								<button class="btn btn-primary btn-sm mt-2" hx-get="/issues/create" hx-target="#modal-container" hx-swap="innerHTML">New Issue</button>
+							</div>
+						</div>
+					</div>
+				</template>
+				<template x-if="issues.length > 0 && !selectedId">
+					<div class="max-w-2xl mx-auto mt-12">
+						<div class="alert alert-info">Select an issue from the list to view details.</div>
+					</div>
+				</template>
 				<template x-for="issue in issues" :key="issue.id">
 					<div x-show="issue.id === selectedId" class="issue-detail max-w-3xl mx-auto" x-data="{ editing: null, saving: false, newComment: '', async addComment() { if (!this.newComment.trim()) return; const author = issue.created_by || 'Anonymous'; const response = await fetch('/issues/' + issue.id + '/comments', { method: 'POST', body: new URLSearchParams({text: this.newComment, author: author}) }); const newComment = await response.json(); if (!issue.comments) issue.comments = []; issue.comments.push(newComment); this.newComment = ''; } }">
 						<div class="card bg-base-100 shadow-md">
@@ -368,6 +388,10 @@ templ DashboardIssueRows(issues []*models.Issue, selectedID string) {
 			:class={ fmt.Sprintf(`{ 'bg-primary/10': selectedId === '%s' }`, issue.ID) }
 			class="hover cursor-pointer min-h-full w-full select-none"
 			data-issue-id={ issue.ID }
+			hx-get={ "/issues/" + issue.ID + "/edit" }
+			hx-trigger="dblclick"
+			hx-target="#modal-container"
+			hx-swap="innerHTML"
 		>
 			<td class="min-w-20 truncate">{ issue.ID }</td>
 			<td class="truncate max-w-60" x-text={ fmt.Sprintf(`issues.find(i => i.id === '%s')?.title || %q`, issue.ID, issue.Title) }></td>
