@@ -37,6 +37,8 @@ type Model struct {
 	currentIssueID string
 	deleteIndex    int
 
+	dependenciesModal *modal.DependenciesModal
+
 	feedbackChan    chan models.ValidationFeedback
 	quitChan        chan bool
 	currentFeedback models.ValidationFeedback
@@ -93,15 +95,19 @@ func (m *Model) registerModals() {
 	modal.RegisterCommonModals(m.modalManager)
 }
 
-// setDetailIssueWithComments sets the issue in the detail pane and loads its comments.
+// setDetailIssueWithComments sets the issue in the detail pane and loads its comments and dependencies.
 func (m *Model) setDetailIssueWithComments(issue models.Issue) {
 	m.issueDetail.SetIssue(issue)
 	if issue.ID == "" {
 		m.issueDetail.SetComments(nil)
+		m.issueDetail.SetDependencies(nil)
 		return
 	}
-	comments, _ := m.app.Issues.GetIssueComments(context.Background(), issue.ID)
+	ctx := context.Background()
+	comments, _ := m.app.Issues.GetIssueComments(ctx, issue.ID)
 	m.issueDetail.SetComments(comments)
+	deps, _ := m.app.Issues.GetDependencies(ctx, issue.ID)
+	m.issueDetail.SetDependencies(deps)
 }
 
 func (m *Model) logAction(action string) {

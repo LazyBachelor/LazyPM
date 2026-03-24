@@ -62,7 +62,10 @@ const (
 	ModalSelectCloseReason = "select-close-reason"
 	ModalSelectPriority    = "select-priority"
 	ModalSelectType        = "select-type"
-	ModalSelectSprint      = "select-sprint"
+	ModalSelectSprint       = "select-sprint"
+	ModalManageDependencies   = "manage-dependencies"
+	ModalSelectDependency     = "select-dependency"
+	ModalSelectRemoveDependency = "select-remove-dependency"
 )
 
 // ModalStack manages a stack of active modals with priority handling

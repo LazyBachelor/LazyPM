@@ -62,6 +62,26 @@ type (
 		Err     error
 	}
 
+	DependencyAddedMsg struct {
+		IssueID     string
+		DependsOnID string
+		Err         error
+	}
+
+	DependencyAddRequestedMsg struct {
+		IssueID string
+	}
+
+	DependencyRemovedMsg struct {
+		IssueID     string
+		DependsOnID string
+		Err         error
+	}
+
+	DependencyRemoveRequestedMsg struct {
+		IssueID string
+	}
+
 	ModalCompletedMsg struct {
 		ModalID string
 		Result  interface{}
@@ -159,5 +179,24 @@ func AddIssueCommentCmd(app *app.App, issueID, author, text string) tea.Cmd {
 	return func() tea.Msg {
 		_, err := app.Issues.AddIssueComment(context.Background(), issueID, author, text)
 		return IssueCommentAddedMsg{IssueID: issueID, Err: err}
+	}
+}
+
+func AddDependencyCmd(app *app.App, issueID, dependsOnID string) tea.Cmd {
+	return func() tea.Msg {
+		dep := &models.Dependency{
+			IssueID:     issueID,
+			DependsOnID: dependsOnID,
+			Type:        models.DepBlocks,
+		}
+		err := app.Issues.AddDependency(context.Background(), dep, "tui")
+		return DependencyAddedMsg{IssueID: issueID, DependsOnID: dependsOnID, Err: err}
+	}
+}
+
+func RemoveDependencyCmd(app *app.App, issueID, dependsOnID string) tea.Cmd {
+	return func() tea.Msg {
+		err := app.Issues.RemoveDependency(context.Background(), issueID, dependsOnID, "tui")
+		return DependencyRemovedMsg{IssueID: issueID, DependsOnID: dependsOnID, Err: err}
 	}
 }
