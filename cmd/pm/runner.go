@@ -8,12 +8,15 @@ import (
 	"os"
 	"time"
 
+	tea "charm.land/bubbletea/v2"
 	"charm.land/huh/v2"
+	"charm.land/lipgloss/v2"
 	"github.com/LazyBachelor/LazyPM/cmd/pm/tasks"
 	"github.com/LazyBachelor/LazyPM/internal/commands/survey"
 	"github.com/LazyBachelor/LazyPM/internal/storage"
 	"github.com/LazyBachelor/LazyPM/internal/style"
 	"github.com/LazyBachelor/LazyPM/pkg/task"
+	"github.com/charmbracelet/x/term"
 	"github.com/spf13/cobra"
 )
 
@@ -148,9 +151,21 @@ func runStartCmd(cmd *cobra.Command, args []string) error {
 		return returnIfUserQuit(err, "task loop failed")
 	}
 
-	//clear the terminal after the survey is done
 	fmt.Println("\033[H\033[2J")
-	cmd.Println(style.TitleStyle.Render("Thank you for completing the survey! You are now finished and can safely close the terminal."))
+
+	width, height, err := term.GetSize(os.Stdin.Fd())
+	if err != nil {
+		return fmt.Errorf("failed to get terminal size: %w", err)
+	}
+
+	content := lipgloss.NewStyle().Align(lipgloss.Center).Bold(true).
+		Render("You have completed all the tasks!\nThank you for participating in the survey.")
+
+	centered := lipgloss.Place(width, height, lipgloss.Center, lipgloss.Center, content)
+	v := tea.NewView(centered)
+	fmt.Println(v.Content)
+	_, _ = fmt.Fscanf(os.Stdin, "%s")
+
 	return nil
 }
 
