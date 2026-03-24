@@ -13,7 +13,7 @@ import (
 	"github.com/LazyBachelor/LazyPM/internal/style"
 	"github.com/LazyBachelor/LazyPM/pkg/task"
 	"github.com/c-bata/go-prompt"
-	"golang.org/x/term"
+	"github.com/charmbracelet/x/term"
 )
 
 type App = models.App
@@ -50,9 +50,9 @@ func (r *REPL) Run(ctx context.Context, config app.Config) error {
 	r.currentFeedback = ValidationFeedback{}
 
 	// Save terminal state to restore on exit
-	oldState, err := term.GetState(int(os.Stdin.Fd()))
+	oldState, err := term.GetState(uintptr(os.Stdin.Fd()))
 	if err == nil {
-		defer term.Restore(int(os.Stdin.Fd()), oldState)
+		defer term.Restore(uintptr(os.Stdin.Fd()), oldState)
 	}
 
 	// Initialize services for beads, config and stats.

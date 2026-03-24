@@ -6,9 +6,9 @@ import (
 	"log/slog"
 	"os"
 
-	"charm.land/bubbletea/v2"
+	tea "charm.land/bubbletea/v2"
 	"github.com/LazyBachelor/LazyPM/internal/models"
-	"golang.org/x/term"
+	"github.com/charmbracelet/x/term"
 )
 
 type App = models.App
@@ -125,8 +125,8 @@ func (r *TaskRunner) Run(ctx context.Context, t Tasker, i Interface, iType Inter
 		}
 	}
 
-	if oldState, err := term.GetState(int(os.Stdin.Fd())); err == nil {
-		term.Restore(int(os.Stdin.Fd()), oldState)
+	if oldState, err := term.GetState(uintptr(os.Stdin.Fd())); err == nil {
+		term.Restore(uintptr(os.Stdin.Fd()), oldState)
 	}
 
 	fmt.Print("\033[0m\033[?25h")

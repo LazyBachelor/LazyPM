@@ -4,13 +4,13 @@ go 1.26.1
 
 require (
 	github.com/c-bata/go-prompt v0.2.7-0.20250812090649-d000795a4f93
+	github.com/charmbracelet/x/term v0.2.2
 	github.com/go-git/go-git/v6 v6.0.0-20260317113930-fb0d09929504
 	github.com/joho/godotenv v1.5.1
 	github.com/muesli/reflow v0.3.0
 	github.com/spf13/pflag v1.0.10
 	github.com/steveyegge/beads v0.49.6
 	go.mongodb.org/mongo-driver/v2 v2.5.0
-	golang.org/x/term v0.41.0
 )
 
 // Terminal dependencies
@@ -48,7 +48,6 @@ require (
 	github.com/charmbracelet/x/exp/charmtone v0.0.0-20260316093931-f2fb44ab3145 // indirect
 	github.com/charmbracelet/x/exp/ordered v0.1.0 // indirect
 	github.com/charmbracelet/x/exp/strings v0.1.0 // indirect
-	github.com/charmbracelet/x/term v0.2.2 // indirect
 	github.com/charmbracelet/x/termios v0.1.1 // indirect
 	github.com/charmbracelet/x/windows v0.2.2 // indirect
 	github.com/cli/browser v1.3.0 // indirect

@@ -151,20 +151,9 @@ func runStartCmd(cmd *cobra.Command, args []string) error {
 		return returnIfUserQuit(err, "task loop failed")
 	}
 
-	fmt.Println("\033[H\033[2J")
-
-	width, height, err := term.GetSize(os.Stdin.Fd())
-	if err != nil {
-		return fmt.Errorf("failed to get terminal size: %w", err)
+	if err := endingMessage(); err != nil {
+		return fmt.Errorf("failed to display ending message: %w", err)
 	}
-
-	content := lipgloss.NewStyle().Align(lipgloss.Center).Bold(true).
-		Render("You have completed all the tasks!\nThank you for participating in the survey.")
-
-	centered := lipgloss.Place(width, height, lipgloss.Center, lipgloss.Center, content)
-	v := tea.NewView(centered)
-	fmt.Println(v.Content)
-	_, _ = fmt.Fscanf(os.Stdin, "%s")
 
 	return nil
 }
@@ -213,6 +202,25 @@ func taskLoop(ctx context.Context, application *task.App, surveyTasks map[string
 		}
 		idx++
 	}
+	return nil
+}
+
+func endingMessage() error {
+	fmt.Println("\033[H\033[2J")
+
+	width, height, err := term.GetSize(os.Stdin.Fd())
+	if err != nil {
+		fmt.Printf("Failed to get terminal size: %v\n", err)
+		return err
+	}
+
+	content := lipgloss.NewStyle().Align(lipgloss.Center).Bold(true).
+		Render("You have completed all the tasks!\nThank you for participating in the survey.")
+
+	centered := lipgloss.Place(width, height, lipgloss.Center, lipgloss.Center, content)
+	v := tea.NewView(centered)
+	fmt.Println(v.Content)
+	_, _ = fmt.Fscanf(os.Stdin, "%s")
 	return nil
 }
 
