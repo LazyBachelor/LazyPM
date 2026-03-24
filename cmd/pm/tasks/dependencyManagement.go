@@ -15,10 +15,11 @@ Several issues in your project have dependencies on other issues.
 
 You need to:
 1. Find 2 issues that mention dependencies in their description.
+   - Set their status to "Blocked".
 2. Find the issue that is mentioned by the other issues:
-   - Set priority to 3 (high).
+   - Set priority to 3.
    - Set status to in-progress.
-   - Assign the to yourself as "Me".`
+   - Assign to yourself as "Me".`
 
 type DependencyManagementTask struct {
 	done      bool
@@ -119,7 +120,7 @@ func (t *DependencyManagementTask) Validate(ctx context.Context) ValidationFeedb
 			if issue.Title == foundationalIssue.Title {
 				expect.Equal(issue.Priority, 3,
 					fmt.Sprintf("%s priority", issue.Title))
-				expect.Equal(issue.Assignee, "Me",
+				expect.NotEmptyAndEqual(issue.Assignee, "Me",
 					fmt.Sprintf("%s assignee", issue.Title))
 				expect.Equal(issue.Status, models.StatusInProgress,
 					fmt.Sprintf("%s status", issue.Title))
