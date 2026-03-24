@@ -39,12 +39,27 @@ func buildTaskStatsSummary(runs []models.TaskRunMetrics) models.TaskStatsSummary
 			summary.IncompleteRuns++
 		}
 
+		switch run.RunOutcome {
+		case models.RunOutcomeInfraError:
+			summary.InfraFailures++
+		case models.RunOutcomeUserQuit:
+			summary.UserQuits++
+		}
+
 		// Validation
 		summary.ValidationAttempts += run.ValidationAttempts
+		summary.ValidationManualAttempts += run.ValidationManualAttempts
+		summary.ValidationAutoRefreshes += run.ValidationAutoRefreshes
+		summary.ValidationRefreshes += run.ValidationRefreshes
 		summary.ValidationSuccesses += run.ValidationSuccesses
 		summary.ValidationFailures += run.ValidationFailures
 		summary.ValidationChecksPassed += run.ValidationChecksPassed
 		summary.ValidationChecksFailed += run.ValidationChecksFailed
+		if run.AttemptsToFirstSuccess > 0 {
+			summary.RunsWithFirstSuccess++
+			summary.TotalAttemptsToFirstSuccess += run.AttemptsToFirstSuccess
+			summary.TotalTimeToFirstSuccessMs += run.TimeToFirstSuccessMs
+		}
 
 		// Questionnaire
 		if run.QuestionnaireCompleted {
