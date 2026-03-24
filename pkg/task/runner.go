@@ -70,7 +70,7 @@ func (r *TaskRunner) Run(ctx context.Context, t Tasker, i Interface, iType Inter
 	// Validation
 	feedbackChan := make(chan ValidationFeedback, 10)
 	quitChan := make(chan bool, 1)
-	submitChan := make(chan struct{}, 1)
+	submitChan := make(chan models.ValidationTrigger, 1)
 
 	if validated, ok := i.(ValidatedInterface); ok {
 		validated.SetChannels(feedbackChan, quitChan)
@@ -82,8 +82,8 @@ func (r *TaskRunner) Run(ctx context.Context, t Tasker, i Interface, iType Inter
 	}
 
 	engine := &ValidationEngine{task: t}
-	doneChan, stopChan := engine.Start(ctx, submitChan, func(feedback ValidationFeedback) {
-		collector.recordValidation(feedback)
+	doneChan, stopChan := engine.Start(ctx, submitChan, func(feedback ValidationFeedback, source models.ValidationTriggerSource) {
+		collector.recordValidation(feedback, source)
 
 		if feedback.Success {
 			collector.setCompleted(true)

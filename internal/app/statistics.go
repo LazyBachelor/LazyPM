@@ -64,7 +64,9 @@ func (s *StatisticsService) RecordTaskRun(ctx context.Context, run models.TaskRu
 	}
 
 	stats := s.storage.Data
-	now := time.Now()
+	if stats.MetricsVersion == 0 {
+		stats.MetricsVersion = models.CurrentMetricsVersion
+	}
 
 	if stats.StartTime.IsZero() {
 		stats.StartTime = run.StartedAt
@@ -73,18 +75,37 @@ func (s *StatisticsService) RecordTaskRun(ctx context.Context, run models.TaskRu
 		stats.StartTime = run.StartedAt
 	}
 
-	stats.EndTime = now
+	stats.EndTime = run.EndedAt
+	if stats.EndTime.IsZero() {
+		stats.EndTime = time.Now()
+	}
+	if run.StartedAt.IsZero() || run.EndedAt.IsZero() || run.EndedAt.Before(run.StartedAt) {
+		stats.SessionClockAnomaly = true
+	}
+	if stats.EndTime.Before(stats.StartTime) {
+		stats.SessionClockAnomaly = true
+	}
 	stats.DurationMs = stats.EndTime.Sub(stats.StartTime).Milliseconds()
 	stats.LastInterfaceType = run.InterfaceType
 
 	stats.TaskRuns++
 	stats.LastTaskName = run.TaskName
 	stats.LastRunID = run.RunID
+	if stats.LastRunID <= 0 {
+		stats.LastRunID = stats.TaskRuns
+	}
 
 	if run.Completed {
 		stats.TasksCompleted++
 	} else {
 		stats.TasksFailed++
+	}
+
+	switch run.RunOutcome {
+	case models.RunOutcomeInfraError:
+		stats.InfraFailures++
+	case models.RunOutcomeUserQuit:
+		stats.UserQuits++
 	}
 
 	stats.TotalDurationMs += run.DurationMs
@@ -93,6 +114,9 @@ func (s *StatisticsService) RecordTaskRun(ctx context.Context, run models.TaskRu
 	}
 
 	stats.ValidationAttempts += run.ValidationAttempts
+	stats.ValidationManualAttempts += run.ValidationManualAttempts
+	stats.ValidationAutoRefreshes += run.ValidationAutoRefreshes
+	stats.ValidationRefreshes += run.ValidationRefreshes
 	stats.ValidationSuccesses += run.ValidationSuccesses
 	stats.ValidationFailures += run.ValidationFailures
 	stats.ValidationChecksPassed += run.ValidationChecksPassed

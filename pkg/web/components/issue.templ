@@ -59,7 +59,7 @@ templ IssueForm(props IssueFormProps) {
 					{Label: "Open", Value: "open", Selected: props.Status == "open"},
 					{Label: "In Progress", Value: "in_progress", Selected: props.Status == "in_progress"},
 					{Label: "Blocked", Value: "blocked", Selected: props.Status == "blocked"},
-					{Label: "Ready to sprint", Value: "ready_to_sprint", Selected: props.Status == "ready_to_sprint"},
+					{Label: "Deferred", Value: "deferred", Selected: props.Status == "deferred"},
 					{Label: "Closed", Value: "closed", Selected: props.Status == "closed"},
 				},
 				Size:  "md",
@@ -87,6 +87,7 @@ templ IssueForm(props IssueFormProps) {
 					{Label: "Bug", Value: "bug", Selected: props.IssueType == "bug"},
 					{Label: "Feature", Value: "feature", Selected: props.IssueType == "feature"},
 					{Label: "Chore", Value: "chore", Selected: props.IssueType == "chore"},
+					{Label: "Epic", Value: "epic", Selected: props.IssueType == "epic"},
 				},
 				Size: "md",
 			})
@@ -113,6 +114,7 @@ templ IssueForm(props IssueFormProps) {
 								id="dependency-select"
 								hx-get={ "/issues/" + props.IssueID + "/dependencies/options" }
 								hx-trigger="load, dependencies-updated from:body"
+								hx-target="this"
 								hx-swap="innerHTML"
 							>
 								<option>Loading…</option>
@@ -133,6 +135,7 @@ templ IssueForm(props IssueFormProps) {
 					id="edit-dependencies-list-container"
 					hx-get={ "/issues/" + props.IssueID + "/dependencies?container_id=edit-dependencies-list" }
 					hx-trigger="load, dependencies-updated from:body"
+					hx-target="this"
 					hx-swap="innerHTML"
 				>
 					<div id="edit-dependencies-list" class="animate-pulse">

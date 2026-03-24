@@ -3,24 +3,30 @@ package task
 import (
 	"context"
 	"time"
+
+	"github.com/LazyBachelor/LazyPM/internal/models"
 )
 
 type ValidationEngine struct {
 	task Tasker
 }
 
-func (v *ValidationEngine) Start(ctx context.Context, submitChan <-chan struct{}, onFeedback func(ValidationFeedback)) (done <-chan struct{}, stop chan<- struct{}) {
+func (v *ValidationEngine) Start(ctx context.Context, submitChan <-chan models.ValidationTrigger, onFeedback func(ValidationFeedback, models.ValidationTriggerSource)) (done <-chan struct{}, stop chan<- struct{}) {
 	doneChan := make(chan struct{}, 1)
 	stopChan := make(chan struct{}, 1)
 
 	go func() {
 		for {
 			select {
-			case <-submitChan:
+			case trigger := <-submitChan:
 				feedback := v.task.Validate(ctx)
+				source := trigger.Source
+				if source == "" {
+					source = models.ValidationTriggerUnknown
+				}
 
 				if onFeedback != nil {
-					onFeedback(feedback)
+					onFeedback(feedback, source)
 				}
 
 				if feedback.Success {

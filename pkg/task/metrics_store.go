@@ -44,10 +44,11 @@ func (s *FileMetricsStore) Append(ctx context.Context, taskName string, run mode
 	}
 
 	metrics := models.TaskMetricsFile{
-		ID:            bson.NewObjectID(),
-		ParticipantID: s.participantID,
-		TaskName:      taskName,
-		Runs:          []models.TaskRunMetrics{},
+		MetricsVersion: models.CurrentMetricsVersion,
+		ID:             bson.NewObjectID(),
+		ParticipantID:  s.participantID,
+		TaskName:       taskName,
+		Runs:           []models.TaskRunMetrics{},
 	}
 
 	if err := readMetrics(&metrics, s.path); err != nil {
@@ -56,6 +57,12 @@ func (s *FileMetricsStore) Append(ctx context.Context, taskName string, run mode
 
 	if metrics.TaskName == "" {
 		metrics.TaskName = taskName
+	}
+	if metrics.MetricsVersion == 0 {
+		metrics.MetricsVersion = models.CurrentMetricsVersion
+	}
+	if run.MetricsVersion == 0 {
+		run.MetricsVersion = models.CurrentMetricsVersion
 	}
 
 	run.RunID = len(metrics.Runs) + 1

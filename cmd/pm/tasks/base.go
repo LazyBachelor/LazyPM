@@ -120,9 +120,6 @@ func ClearIssues(app *App) error {
 func BaseQuestions(interfaceType InterfaceType) Questions {
 	return Questions{
 		huh.NewGroup(
-			huh.NewConfirm().Key("task_completed").
-				Title("Were you able to complete the task?")),
-		huh.NewGroup(
 			huh.NewSelect[int]().Key("interface_difficulty").
 				Title("How difficult was it to use the interface?").
 				Description("By interface we mean the method of interaction with the task.").
@@ -150,7 +147,7 @@ func BaseQuestions(interfaceType InterfaceType) Questions {
 type Keys []string
 
 func BaseKeys() Keys {
-	return []string{"task_completed", "interface_difficulty", "task_difficulty"}
+	return []string{"interface_difficulty", "task_difficulty"}
 }
 
 func (k Keys) With(keys ...string) Keys {

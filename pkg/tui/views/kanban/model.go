@@ -47,10 +47,10 @@ type Model struct {
 	quitChan        chan bool
 	currentFeedback models.ValidationFeedback
 	showComplete    bool
-	submitChan      chan<- struct{}
+	submitChan      chan<- models.ValidationTrigger
 }
 
-func NewDashboard(app *app.App, feedbackChan chan models.ValidationFeedback, quitChan chan bool, submitChan chan<- struct{}) *Model {
+func NewDashboard(app *app.App, feedbackChan chan models.ValidationFeedback, quitChan chan bool, submitChan chan<- models.ValidationTrigger) *Model {
 	m := &Model{
 		header:       components.NewHeader("Kanban Board"),
 		keyMap:       defaultKanbanKeyMap,
@@ -118,7 +118,7 @@ func NewDashboard(app *app.App, feedbackChan chan models.ValidationFeedback, qui
 
 func (m *Model) Init() tea.Cmd {
 	if m.submitChan != nil {
-		m.submitChan <- struct{}{}
+		m.submitChan <- models.ValidationTrigger{Source: models.ValidationTriggerInitCheck}
 		m.logAction("tui submitted validation")
 	}
 	return components.ListenForValidation(m.feedbackChan)
@@ -140,7 +140,7 @@ func (m *Model) logAction(action string) {
 func (m *Model) submitValidation() {
 	if m.submitChan != nil {
 		select {
-		case m.submitChan <- struct{}{}:
+		case m.submitChan <- models.ValidationTrigger{Source: models.ValidationTriggerManualSubmit}:
 			m.logAction("tui submitted validation")
 		default:
 		}

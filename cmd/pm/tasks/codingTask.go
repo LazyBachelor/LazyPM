@@ -13,17 +13,19 @@ import (
 const codingDescription = `You are tasked with fixing a logical error in the code.
 
 Your task:
-1. A text file will appear in the this directory:
+1. A text file will appear in this directory(your desktop):
    - Open it and follow the instructions inside.
    - Save the file after you are done.
-2. When you are done, mark this task as "Closed".`
+2. Change status of the Issue "Fix major error" to Closed.`
+
+const desc = `There is a major logical error in this code, you need to fix it.
+Change the function logic so that it correctly adds two numbers together instead of subtracting them.`
 
 var textFileDescription = `
 
 # Instructions for the coding task
 
-There is a major logical error in this code, you need to fix it.
-Change the function logic so that it correctly adds two numbers together instead of subtracting them.
+` + desc + `
 ############################################################`
 
 var code = `
@@ -89,7 +91,7 @@ func (t *CodingTask) Setup(ctx context.Context) error {
 
 	t.issue = NewIssueBuilder().
 		WithTitle("Fix major error").
-		WithDescription(codingDescription).
+		WithDescription(desc).
 		WithStatus(models.StatusInProgress).
 		WithPriority(4).
 		Build()

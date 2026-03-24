@@ -20,7 +20,7 @@ type App struct {
 	CurrentFeedback *ValidationFeedback
 	ActionLogger    func(string)
 
-	SubmitChan chan<- struct{}
+	SubmitChan chan<- ValidationTrigger
 }
 
 func (a *App) LogAction(action string) {

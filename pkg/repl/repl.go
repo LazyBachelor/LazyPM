@@ -30,7 +30,7 @@ Type 'status' to check task progress.`
 type REPL struct {
 	feedbackChan chan ValidationFeedback
 	quitChan     chan bool
-	submitChan   chan<- struct{}
+	submitChan   chan<- models.ValidationTrigger
 	app          *App
 
 	currentFeedback ValidationFeedback
@@ -135,7 +135,7 @@ replLoop:
 		// Send submit signal to trigger validation after any command
 		if r.submitChan != nil {
 			select {
-			case r.submitChan <- struct{}{}:
+			case r.submitChan <- models.ValidationTrigger{Source: models.ValidationTriggerManualSubmit}:
 			default:
 			}
 		}
@@ -192,7 +192,7 @@ func (r *REPL) SetChannels(feedbackChan chan task.ValidationFeedback, quitChan c
 	r.quitChan = quitChan
 }
 
-func (r *REPL) SetSubmitChan(submitChan chan<- struct{}) {
+func (r *REPL) SetSubmitChan(submitChan chan<- models.ValidationTrigger) {
 	r.submitChan = submitChan
 }
 

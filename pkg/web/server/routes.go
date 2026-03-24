@@ -90,11 +90,21 @@ func shouldLogWebAction(path string) bool {
 	if strings.HasPrefix(path, "/assets/") {
 		return false
 	}
+	if strings.HasPrefix(path, "/.well-known/") {
+		return false
+	}
 
 	switch path {
 	case "/status":
 		return false
+	case "/status/modal":
+		return false
+	case "/favicon.ico":
+		return false
 	default:
+		if strings.HasSuffix(path, "/dependencies") || strings.HasSuffix(path, "/dependencies/options") {
+			return false
+		}
 		return true
 	}
 }

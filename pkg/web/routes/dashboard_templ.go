@@ -91,8 +91,12 @@ func DashboardContent(props DashboardProps) templ.Component {
 			templ_7745c5c3_Var3 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
+		selectedID := ""
+		if props.SelectedIssue != nil {
+			selectedID = props.SelectedIssue.ID
+		}
 		issuesJSON, _ := templ.JSONString(props.Issues)
-		xData := fmt.Sprintf(`{ selectedId: '%s', issues: %s }`, props.SelectedIssue.ID, issuesJSON)
+		xData := fmt.Sprintf(`{ selectedId: %q, issues: %s }`, selectedID, issuesJSON)
 		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div class=\"flex flex-col h-full\" x-data=\"")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
@@ -100,7 +104,7 @@ func DashboardContent(props DashboardProps) templ.Component {
 		var templ_7745c5c3_Var4 string
 		templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinStringErrs(xData)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/web/routes/dashboard.templ`, Line: 29, Col: 49}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/web/routes/dashboard.templ`, Line: 33, Col: 49}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var4))
 		if templ_7745c5c3_Err != nil {
@@ -110,11 +114,11 @@ func DashboardContent(props DashboardProps) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = DashboardIssueList(props.Issues, props.SelectedIssue.ID).Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = DashboardIssueList(props.Issues, selectedID).Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "</div></div><div class=\"w-1 bg-base-300 hover:bg-primary cursor-col-resize transition-colors relative z-10\" :class=\"{ 'bg-primary': isResizing }\" @mousedown=\"startResize($event)\" @touchstart=\"startResize($event)\" title=\"Drag to resize\"><div class=\"absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-4 h-8 bg-base-300 rounded-full flex items-center justify-center\"><div class=\"w-0.5 h-4 bg-base-content/30 rounded-full\"></div></div></div><div class=\"flex-1 p-4 overflow-auto bg-base-50\"><template x-for=\"issue in issues\" :key=\"issue.id\"><div x-show=\"issue.id === selectedId\" class=\"issue-detail max-w-3xl mx-auto\" x-data=\"{ editing: null, saving: false, newComment: '', async addComment() { if (!this.newComment.trim()) return; const author = issue.created_by || 'Anonymous'; const response = await fetch('/issues/' + issue.id + '/comments', { method: 'POST', body: new URLSearchParams({text: this.newComment, author: author}) }); const newComment = await response.json(); if (!issue.comments) issue.comments = []; issue.comments.push(newComment); this.newComment = ''; } }\"><div class=\"card bg-base-100 shadow-md\"><div class=\"card-body p-2\"><div class=\"m-2\"><template x-if=\"editing !== 'title'\"><h2 class=\"text-2xl font-bold cursor-pointer hover:text-primary\" x-text=\"issue.title\" @click=\"editing = 'title'\"></h2></template><template x-if=\"editing === 'title'\"><div class=\"flex gap-2\"><input type=\"text\" name=\"title\" x-model=\"issue.title\" class=\"input input-bordered flex-1\" @keydown.enter=\"fetch('/issues/' + issue.id, { method: 'PATCH', body: new URLSearchParams({title: issue.title}) }).then(() => editing = null)\" @keydown.escape=\"editing = null\" x-init=\"$el.focus()\"> <button class=\"btn btn-sm btn-primary\" @click=\"fetch('/issues/' + issue.id, { method: 'PATCH', body: new URLSearchParams({title: issue.title}) }).then(() => editing = null)\">Save</button> <button class=\"btn btn-sm\" @click=\"editing = null\">Cancel</button></div></template></div><div class=\"flex gap-2 flex-wrap items-center\"><template x-if=\"editing !== 'status'\"><span class=\"badge badge-info badge-sm cursor-pointer hover:badge-primary whitespace-nowrap shrink-0\" x-text=\"issue.status.replace(/_/g, ' ').replace(/\\\\b\\\\w/g, l => l.toUpperCase())\" @click=\"editing = 'status'\"></span></template><template x-if=\"editing === 'status'\"><div class=\"flex items-center gap-2\"><select name=\"status\" x-model=\"issue.status\" class=\"select select-sm select-bordered\" @change=\"fetch('/issues/' + issue.id, { method: 'PATCH', body: new URLSearchParams({status: issue.status}) }).then(() => editing = null)\" x-init=\"$nextTick(() => $el.focus())\"><option value=\"open\">Open</option> <option value=\"in_progress\">In Progress</option> <option value=\"blocked\">Blocked</option> <option value=\"closed\">Closed</option></select> <button class=\"btn btn-xs\" @click=\"editing = null\">Cancel</button></div></template><template x-if=\"editing !== 'type'\"><span class=\"badge badge-outline badge-sm cursor-pointer hover:badge-primary whitespace-nowrap\" x-text=\"issue.issue_type\" @click=\"editing = 'type'\"></span></template><template x-if=\"editing === 'type'\"><div class=\"flex items-center gap-2\"><select name=\"issue_type\" x-model=\"issue.issue_type\" class=\"select select-sm select-bordered\" @change=\"fetch('/issues/' + issue.id, { method: 'PATCH', body: new URLSearchParams({issue_type: issue.issue_type}) }).then(() => editing = null)\" x-init=\"$nextTick(() => $el.focus())\"><option value=\"task\">Task</option> <option value=\"bug\">Bug</option> <option value=\"feature\">Feature</option> <option value=\"chore\">Chore</option></select> <button class=\"btn btn-xs\" @click=\"editing = null\">Cancel</button></div></template><template x-if=\"editing !== 'priority'\"><span class=\"badge badge-ghost badge-sm cursor-pointer hover:badge-primary whitespace-nowrap\" x-text=\"'P' + issue.priority\" @click=\"editing = 'priority'\"></span></template><template x-if=\"editing === 'priority'\"><div class=\"flex items-center gap-2\"><select name=\"priority\" x-model=\"issue.priority\" class=\"select select-sm select-bordered\" @change=\"fetch('/issues/' + issue.id, { method: 'PATCH', body: new URLSearchParams({priority: issue.priority}) }).then(() => editing = null)\" x-init=\"$nextTick(() => $el.focus())\"><option value=\"0\">Irrelevant (P0)</option> <option value=\"1\">Low (P1)</option> <option value=\"2\">Normal (P2)</option> <option value=\"3\">High (P3)</option> <option value=\"4\">Critical (P4)</option></select> <button class=\"btn btn-xs\" @click=\"editing = null\">Cancel</button></div></template></div><div class=\"mt-4\"><h3 class=\"text-sm font-semibold opacity-70 mb-1\">Description</h3><template x-if=\"editing !== 'description'\"><p class=\"whitespace-pre-wrap text-sm cursor-pointer hover:text-primary min-h-[20px]\" x-text=\"issue.description || 'Click to add description...'\" @click=\"editing = 'description'\"></p></template><template x-if=\"editing === 'description'\"><div class=\"flex flex-col gap-2\"><textarea name=\"description\" x-model=\"issue.description\" class=\"textarea textarea-bordered\" rows=\"4\" @keydown.escape=\"editing = null\" x-init=\"$el.focus()\"></textarea><div class=\"flex gap-2\"><button class=\"btn btn-sm btn-primary\" @click=\"fetch('/issues/' + issue.id, { method: 'PATCH', body: new URLSearchParams({description: issue.description || ''}) }); editing = null\">Save</button> <button class=\"btn btn-sm\" @click=\"editing = null\">Cancel</button></div></div></template></div><div class=\"divider my-2\"></div><div class=\"grid grid-cols-2 gap-2 text-sm\"><div class=\"bg-base-200 rounded-lg p-2\"><span class=\"text-xs opacity-70 block\">Created</span><p x-text=\"new Date(issue.created_at).toLocaleDateString()\"></p></div><div class=\"bg-base-200 rounded-lg p-2\"><span class=\"text-xs opacity-70 block\">Updated</span><p x-text=\"new Date(issue.updated_at).toLocaleDateString()\"></p></div><div class=\"flex flex-row gap-1 bg-base-200 rounded-lg p-2\"><span class=\"text-xs opacity-70 block\">Created by</span><p class=\"text-xs opacity-70\" x-text=\"issue.created_by\"></p></div><div class=\"bg-base-200 rounded-lg p-2 cursor-pointer hover:bg-base-300\" @click=\"editing = 'assignee'\"><template x-if=\"editing !== 'assignee'\"><div><span class=\"text-xs opacity-70 block\">Assignee</span><p class=\"text-sm\" x-text=\"issue.assignee || 'Unassigned (click to assign)'\"></p></div></template><template x-if=\"editing === 'assignee'\"><div class=\"flex flex-col gap-1\"><span class=\"text-xs opacity-70 block\">Assignee</span> <input type=\"text\" name=\"assignee\" x-model=\"issue.assignee\" class=\"input input-sm input-bordered\" placeholder=\"Enter assignee name\" @keydown.enter=\"fetch('/issues/' + issue.id, { method: 'PATCH', body: new URLSearchParams({assignee: issue.assignee || ''}) }); editing = null\" @keydown.escape=\"editing = null\" x-init=\"$el.focus()\"><div class=\"flex gap-1 mt-1\"><button class=\"btn btn-xs btn-primary\" @click=\"fetch('/issues/' + issue.id, { method: 'PATCH', body: new URLSearchParams({assignee: issue.assignee || ''}) }); editing = null\">Save</button> <button class=\"btn btn-xs\" @click=\"editing = null\">Cancel</button></div></div></template></div></div><div class=\"mt-6 w-full\"><h3 class=\"text-lg font-semibold mb-4\">Comments</h3><div class=\"card bg-base-100 shadow-sm mb-3\"><div class=\"card-body p-3\"><textarea x-model=\"newComment\" class=\"textarea textarea-bordered textarea-sm w-full\" rows=\"2\" placeholder=\"Add a comment...\" @keydown.enter.prevent=\"addComment()\"></textarea><div class=\"card-actions justify-end mt-2\"><button class=\"btn btn-primary btn-xs\" @click=\"addComment()\" :disabled=\"!newComment.trim()\">Add</button></div></div></div><div class=\"space-y-4\"><template x-for=\"comment in issue.comments\" :key=\"comment.id\"><div class=\"card bg-base-200\"><div class=\"card-body py-3\"><div class=\"flex justify-between items-start mb-2\"><span class=\"font-semibold text-sm\" x-text=\"comment.author\"></span> <span class=\"text-xs opacity-50\" x-text=\"new Date(comment.created_at).toLocaleString()\"></span></div><p class=\"whitespace-pre-wrap text-sm\" x-text=\"comment.text\"></p></div></div></template></div></div></div></div></div></template></div></div></div>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "</div></div><div class=\"w-1 bg-base-300 hover:bg-primary cursor-col-resize transition-colors relative z-10\" :class=\"{ 'bg-primary': isResizing }\" @mousedown=\"startResize($event)\" @touchstart=\"startResize($event)\" title=\"Drag to resize\"><div class=\"absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-4 h-8 bg-base-300 rounded-full flex items-center justify-center\"><div class=\"w-0.5 h-4 bg-base-content/30 rounded-full\"></div></div></div><div class=\"flex-1 p-4 overflow-auto bg-base-50\"><template x-if=\"issues.length === 0\"><div class=\"max-w-2xl mx-auto mt-12\"><div class=\"card bg-base-100 shadow-sm border border-base-200\"><div class=\"card-body items-center text-center\"><h3 class=\"text-xl font-semibold\">No issues yet</h3><p class=\"text-base-content/70\">Create your first issue to get started.</p><button class=\"btn btn-primary btn-sm mt-2\" hx-get=\"/issues/create\" hx-target=\"#modal-container\" hx-swap=\"innerHTML\">New Issue</button></div></div></div></template><template x-if=\"issues.length > 0 && !selectedId\"><div class=\"max-w-2xl mx-auto mt-12\"><div class=\"alert alert-info\">Select an issue from the list to view details.</div></div></template><template x-for=\"issue in issues\" :key=\"issue.id\"><div x-show=\"issue.id === selectedId\" class=\"issue-detail max-w-3xl mx-auto\" x-data=\"{ editing: null, saving: false, newComment: '', async addComment() { if (!this.newComment.trim()) return; const author = issue.created_by || 'Anonymous'; const response = await fetch('/issues/' + issue.id + '/comments', { method: 'POST', body: new URLSearchParams({text: this.newComment, author: author}) }); const newComment = await response.json(); if (!issue.comments) issue.comments = []; issue.comments.push(newComment); this.newComment = ''; } }\"><div class=\"card bg-base-100 shadow-md\"><div class=\"card-body p-2\"><div class=\"m-2\"><template x-if=\"editing !== 'title'\"><h2 class=\"text-2xl font-bold cursor-pointer hover:text-primary\" x-text=\"issue.title\" @click=\"editing = 'title'\"></h2></template><template x-if=\"editing === 'title'\"><div class=\"flex gap-2\"><input type=\"text\" name=\"title\" x-model=\"issue.title\" class=\"input input-bordered flex-1\" @keydown.enter=\"fetch('/issues/' + issue.id, { method: 'PATCH', body: new URLSearchParams({title: issue.title}) }).then(() => editing = null)\" @keydown.escape=\"editing = null\" x-init=\"$el.focus()\"> <button class=\"btn btn-sm btn-primary\" @click=\"fetch('/issues/' + issue.id, { method: 'PATCH', body: new URLSearchParams({title: issue.title}) }).then(() => editing = null)\">Save</button> <button class=\"btn btn-sm\" @click=\"editing = null\">Cancel</button></div></template></div><div class=\"flex gap-2 flex-wrap items-center\"><template x-if=\"editing !== 'status'\"><span class=\"badge badge-info badge-sm cursor-pointer hover:badge-primary whitespace-nowrap shrink-0\" x-text=\"issue.status.replace(/_/g, ' ').replace(/\\\\b\\\\w/g, l => l.toUpperCase())\" @click=\"editing = 'status'\"></span></template><template x-if=\"editing === 'status'\"><div class=\"flex items-center gap-2\"><select name=\"status\" x-model=\"issue.status\" class=\"select select-sm select-bordered\" @change=\"fetch('/issues/' + issue.id, { method: 'PATCH', body: new URLSearchParams({status: issue.status}) }).then(() => editing = null)\" x-init=\"$nextTick(() => $el.focus())\"><option value=\"open\">Open</option> <option value=\"in_progress\">In Progress</option> <option value=\"blocked\">Blocked</option> <option value=\"closed\">Closed</option></select> <button class=\"btn btn-xs\" @click=\"editing = null\">Cancel</button></div></template><template x-if=\"editing !== 'type'\"><span class=\"badge badge-outline badge-sm cursor-pointer hover:badge-primary whitespace-nowrap\" x-text=\"issue.issue_type\" @click=\"editing = 'type'\"></span></template><template x-if=\"editing === 'type'\"><div class=\"flex items-center gap-2\"><select name=\"issue_type\" x-model=\"issue.issue_type\" class=\"select select-sm select-bordered\" @change=\"fetch('/issues/' + issue.id, { method: 'PATCH', body: new URLSearchParams({issue_type: issue.issue_type}) }).then(() => editing = null)\" x-init=\"$nextTick(() => $el.focus())\"><option value=\"task\">Task</option> <option value=\"bug\">Bug</option> <option value=\"feature\">Feature</option> <option value=\"chore\">Chore</option></select> <button class=\"btn btn-xs\" @click=\"editing = null\">Cancel</button></div></template><template x-if=\"editing !== 'priority'\"><span class=\"badge badge-ghost badge-sm cursor-pointer hover:badge-primary whitespace-nowrap\" x-text=\"'P' + issue.priority\" @click=\"editing = 'priority'\"></span></template><template x-if=\"editing === 'priority'\"><div class=\"flex items-center gap-2\"><select name=\"priority\" x-model=\"issue.priority\" class=\"select select-sm select-bordered\" @change=\"fetch('/issues/' + issue.id, { method: 'PATCH', body: new URLSearchParams({priority: issue.priority}) }).then(() => editing = null)\" x-init=\"$nextTick(() => $el.focus())\"><option value=\"0\">Irrelevant (P0)</option> <option value=\"1\">Low (P1)</option> <option value=\"2\">Normal (P2)</option> <option value=\"3\">High (P3)</option> <option value=\"4\">Critical (P4)</option></select> <button class=\"btn btn-xs\" @click=\"editing = null\">Cancel</button></div></template></div><div class=\"mt-4\"><h3 class=\"text-sm font-semibold opacity-70 mb-1\">Description</h3><template x-if=\"editing !== 'description'\"><p class=\"whitespace-pre-wrap text-sm cursor-pointer hover:text-primary min-h-[20px]\" x-text=\"issue.description || 'Click to add description...'\" @click=\"editing = 'description'\"></p></template><template x-if=\"editing === 'description'\"><div class=\"flex flex-col gap-2\"><textarea name=\"description\" x-model=\"issue.description\" class=\"textarea textarea-bordered\" rows=\"4\" @keydown.escape=\"editing = null\" x-init=\"$el.focus()\"></textarea><div class=\"flex gap-2\"><button class=\"btn btn-sm btn-primary\" @click=\"fetch('/issues/' + issue.id, { method: 'PATCH', body: new URLSearchParams({description: issue.description || ''}) }); editing = null\">Save</button> <button class=\"btn btn-sm\" @click=\"editing = null\">Cancel</button></div></div></template></div><div class=\"divider my-2\"></div><div class=\"grid grid-cols-2 gap-2 text-sm\"><div class=\"bg-base-200 rounded-lg p-2\"><span class=\"text-xs opacity-70 block\">Created</span><p x-text=\"new Date(issue.created_at).toLocaleDateString()\"></p></div><div class=\"bg-base-200 rounded-lg p-2\"><span class=\"text-xs opacity-70 block\">Updated</span><p x-text=\"new Date(issue.updated_at).toLocaleDateString()\"></p></div><div class=\"flex flex-row gap-1 bg-base-200 rounded-lg p-2\"><span class=\"text-xs opacity-70 block\">Created by</span><p class=\"text-xs opacity-70\" x-text=\"issue.created_by\"></p></div><div class=\"bg-base-200 rounded-lg p-2 cursor-pointer hover:bg-base-300\" @click=\"editing = 'assignee'\"><template x-if=\"editing !== 'assignee'\"><div><span class=\"text-xs opacity-70 block\">Assignee</span><p class=\"text-sm\" x-text=\"issue.assignee || 'Unassigned (click to assign)'\"></p></div></template><template x-if=\"editing === 'assignee'\"><div class=\"flex flex-col gap-1\"><span class=\"text-xs opacity-70 block\">Assignee</span> <input type=\"text\" name=\"assignee\" x-model=\"issue.assignee\" class=\"input input-sm input-bordered\" placeholder=\"Enter assignee name\" @keydown.enter=\"fetch('/issues/' + issue.id, { method: 'PATCH', body: new URLSearchParams({assignee: issue.assignee || ''}) }); editing = null\" @keydown.escape=\"editing = null\" x-init=\"$el.focus()\"><div class=\"flex gap-1 mt-1\"><button class=\"btn btn-xs btn-primary\" @click=\"fetch('/issues/' + issue.id, { method: 'PATCH', body: new URLSearchParams({assignee: issue.assignee || ''}) }); editing = null\">Save</button> <button class=\"btn btn-xs\" @click=\"editing = null\">Cancel</button></div></div></template></div></div><div class=\"mt-6 w-full\"><h3 class=\"text-lg font-semibold mb-4\">Comments</h3><div class=\"card bg-base-100 shadow-sm mb-3\"><div class=\"card-body p-3\"><textarea x-model=\"newComment\" class=\"textarea textarea-bordered textarea-sm w-full\" rows=\"2\" placeholder=\"Add a comment...\" @keydown.enter.prevent=\"addComment()\"></textarea><div class=\"card-actions justify-end mt-2\"><button class=\"btn btn-primary btn-xs\" @click=\"addComment()\" :disabled=\"!newComment.trim()\">Add</button></div></div></div><div class=\"space-y-4\"><template x-for=\"comment in issue.comments\" :key=\"comment.id\"><div class=\"card bg-base-200\"><div class=\"card-body py-3\"><div class=\"flex justify-between items-start mb-2\"><span class=\"font-semibold text-sm\" x-text=\"comment.author\"></span> <span class=\"text-xs opacity-50\" x-text=\"new Date(comment.created_at).toLocaleString()\"></span></div><p class=\"whitespace-pre-wrap text-sm\" x-text=\"comment.text\"></p></div></div></template></div></div></div></div></div></template></div></div></div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -206,7 +210,7 @@ func DashboardIssueRows(issues []*models.Issue, selectedID string) templ.Compone
 			var templ_7745c5c3_Var7 string
 			templ_7745c5c3_Var7, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf(`selectedId = '%s'`, issue.ID))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/web/routes/dashboard.templ`, Line: 367, Col: 54}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/web/routes/dashboard.templ`, Line: 387, Col: 54}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var7))
 			if templ_7745c5c3_Err != nil {
@@ -219,7 +223,7 @@ func DashboardIssueRows(issues []*models.Issue, selectedID string) templ.Compone
 			var templ_7745c5c3_Var8 string
 			templ_7745c5c3_Var8, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf(`{ 'bg-primary/10': selectedId === '%s' }`, issue.ID))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/web/routes/dashboard.templ`, Line: 368, Col: 77}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/web/routes/dashboard.templ`, Line: 388, Col: 77}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var8))
 			if templ_7745c5c3_Err != nil {
@@ -232,39 +236,52 @@ func DashboardIssueRows(issues []*models.Issue, selectedID string) templ.Compone
 			var templ_7745c5c3_Var9 string
 			templ_7745c5c3_Var9, templ_7745c5c3_Err = templ.JoinStringErrs(issue.ID)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/web/routes/dashboard.templ`, Line: 370, Col: 27}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/web/routes/dashboard.templ`, Line: 390, Col: 27}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var9))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 10, "\"><td class=\"min-w-20 truncate\">")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 10, "\" hx-get=\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var10 string
-			templ_7745c5c3_Var10, templ_7745c5c3_Err = templ.JoinStringErrs(issue.ID)
+			templ_7745c5c3_Var10, templ_7745c5c3_Err = templ.JoinStringErrs("/issues/" + issue.ID + "/edit")
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/web/routes/dashboard.templ`, Line: 372, Col: 43}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/web/routes/dashboard.templ`, Line: 391, Col: 43}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var10))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 11, "</td><td class=\"truncate max-w-60\" x-text=\"")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 11, "\" hx-trigger=\"dblclick\" hx-target=\"#modal-container\" hx-swap=\"innerHTML\"><td class=\"min-w-20 truncate\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var11 string
-			templ_7745c5c3_Var11, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf(`issues.find(i => i.id === '%s')?.title || %q`, issue.ID, issue.Title))
+			templ_7745c5c3_Var11, templ_7745c5c3_Err = templ.JoinStringErrs(issue.ID)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/web/routes/dashboard.templ`, Line: 373, Col: 124}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/web/routes/dashboard.templ`, Line: 396, Col: 43}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var11))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 12, "\"></td><td>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 12, "</td><td class=\"truncate max-w-60\" x-text=\"")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			var templ_7745c5c3_Var12 string
+			templ_7745c5c3_Var12, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf(`issues.find(i => i.id === '%s')?.title || %q`, issue.ID, issue.Title))
+			if templ_7745c5c3_Err != nil {
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/web/routes/dashboard.templ`, Line: 397, Col: 124}
+			}
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var12))
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 13, "\"></td><td>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -272,7 +289,7 @@ func DashboardIssueRows(issues []*models.Issue, selectedID string) templ.Compone
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 13, "</td><td>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 14, "</td><td>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -280,7 +297,7 @@ func DashboardIssueRows(issues []*models.Issue, selectedID string) templ.Compone
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 14, "</td><td>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 15, "</td><td>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -288,7 +305,7 @@ func DashboardIssueRows(issues []*models.Issue, selectedID string) templ.Compone
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 15, "</td></tr>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 16, "</td></tr>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
