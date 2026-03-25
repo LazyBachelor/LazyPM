@@ -23,6 +23,7 @@ type IssueForm struct {
 	Status      models.Status    `form:"status" validate:"required,oneof=open in_progress blocked deferred closed"`
 	IssueType   models.IssueType `form:"issue_type" validate:"required,oneof=task bug feature chore epic"`
 	Priority    int              `form:"priority" validate:"gte=0,lte=4"`
+	Assignee    string           `form:"assignee" validate:"omitempty,max=100"`
 }
 
 type UpdateIssueForm struct {
@@ -56,6 +57,7 @@ func CreateIssue(w http.ResponseWriter, r *http.Request) {
 
 	issue := form.toIssue()
 	issue.CreatedBy = "Me"
+	issue.Assignee = strings.TrimSpace(form.Assignee)
 	if err := app.Issues.CreateIssue(r.Context(), issue, "Me"); err != nil {
 		http.Error(w, "Failed to create issue: "+err.Error(), http.StatusInternalServerError)
 		return
@@ -154,6 +156,9 @@ func UpdateIssue(w http.ResponseWriter, r *http.Request) {
 		}
 		return
 	}
+
+	a := strings.TrimSpace(r.FormValue("assignee"))
+	form.Assignee = &a
 
 	changes := form.toChanges()
 
