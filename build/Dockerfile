@@ -15,3 +15,5 @@ RUN chmod +x /usr/local/bin/pm
 
 COPY setup-desktop.sh /custom-cont-init.d/01-setup-desktop.sh
 RUN chmod +x /custom-cont-init.d/01-setup-desktop.sh
+
+COPY PARTICIPANT_README.md /config/Desktop/README.md

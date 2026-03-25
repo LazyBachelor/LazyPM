@@ -48,9 +48,23 @@ func NewBeadsIssueStorage(ctx context.Context, storage beads.Storage, prefix str
 		storage.SetConfig(ctx, "backlog_sprint", fmt.Sprintf("%d", backlogNum))
 	}
 
-	return &BeadsService{
+	svc := &BeadsService{
 		Storage: storage,
-	}, nil
+	}
+
+	// Ensure at least one sprint exists
+	sprints, err := svc.GetSprints(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to verify sprints: %w", err)
+	}
+
+	if len(sprints) == 0 {
+		if _, err := svc.AddSprint(ctx); err != nil {
+			return nil, fmt.Errorf("failed to add initial sprint: %w", err)
+		}
+	}
+
+	return svc, nil
 }
 
 func (s *BeadsService) CreateIssue(ctx context.Context, issue *models.Issue, actor string) error {
