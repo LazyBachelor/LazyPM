@@ -139,7 +139,7 @@ templ DashboardContent(props DashboardProps) {
 					</div>
 				</template>
 				<template x-for="issue in issues" :key="issue.id">
-					<div x-show="issue.id === selectedId" class="issue-detail max-w-3xl mx-auto" x-data="{ editing: null, saving: false, newComment: '', async addComment() { if (!this.newComment.trim()) return; const author = issue.created_by || 'Anonymous'; const response = await fetch('/issues/' + issue.id + '/comments', { method: 'POST', body: new URLSearchParams({text: this.newComment, author: author}) }); const newComment = await response.json(); if (!issue.comments) issue.comments = []; issue.comments.push(newComment); this.newComment = ''; } }">
+					<div x-show="issue.id === selectedId" class="issue-detail max-w-3xl mx-auto" x-data="{ editing: null, saving: false, newComment: '', async saveField(field, value) { const formData = new URLSearchParams(); formData.append(field, value || ''); await fetch('/issues/' + issue.id, { method: 'PATCH', body: formData, headers: { 'HX-Request': 'true' } }); this.editing = null; }, async addComment() { if (!this.newComment.trim()) return; const author = issue.created_by || 'Anonymous'; const response = await fetch('/issues/' + issue.id + '/comments', { method: 'POST', body: new URLSearchParams({text: this.newComment, author: author}) }); const newComment = await response.json(); if (!issue.comments) issue.comments = []; issue.comments.push(newComment); this.newComment = ''; } }">
 						<div class="card bg-base-100 shadow-md">
 							<div class="card-body p-2">
 								<div class="m-2">
@@ -161,12 +161,12 @@ templ DashboardContent(props DashboardProps) {
 												@keydown.escape="editing = null"
 												x-init="$el.focus()"
 											/>
-											<button class="btn btn-sm btn-primary" @click="fetch('/issues/' + issue.id, { method: 'PATCH', body: new URLSearchParams({title: issue.title}) }).then(() => editing = null)">Save</button>
-											<button class="btn btn-sm" @click="editing = null">Cancel</button>
-										</div>
-									</template>
-								</div>
-								<div class="flex gap-2 flex-wrap items-center">
+																<button class="btn btn-sm btn-primary" @click="fetch('/issues/' + issue.id, { method: 'PATCH', body: new URLSearchParams({title: issue.title}) }).then(() => editing = null)">Save</button>
+																	<button class="btn btn-sm" @click.stop="editing = null">Cancel</button>
+															</div>
+															</template>
+														</div>
+														<div class="flex gap-2 flex-wrap items-center">
 									<template x-if="editing !== 'status'">
 										<span
 											class="badge badge-info badge-sm cursor-pointer hover:badge-primary whitespace-nowrap shrink-0"
@@ -187,11 +187,11 @@ templ DashboardContent(props DashboardProps) {
 												<option value="in_progress">In Progress</option>
 												<option value="blocked">Blocked</option>
 												<option value="closed">Closed</option>
-											</select>
-											<button class="btn btn-xs" @click="editing = null">Cancel</button>
-										</div>
-									</template>
-									<template x-if="editing !== 'type'">
+																</select>
+																	<button class="btn btn-xs" @click.stop="editing = null">Cancel</button>
+																</div>
+															</template>
+															<template x-if="editing !== 'type'">
 										<span
 											class="badge badge-outline badge-sm cursor-pointer hover:badge-primary whitespace-nowrap"
 											x-text="issue.issue_type"
@@ -235,13 +235,13 @@ templ DashboardContent(props DashboardProps) {
 												<option value="1">Low (P1)</option>
 												<option value="2">Normal (P2)</option>
 												<option value="3">High (P3)</option>
-												<option value="4">Critical (P4)</option>
-											</select>
-											<button class="btn btn-xs" @click="editing = null">Cancel</button>
-										</div>
-									</template>
-								</div>
-								<div class="mt-4">
+																<option value="4">Critical (P4)</option>
+																</select>
+																<button class="btn btn-xs" @click.stop="editing = null">Cancel</button>
+															</div>
+														</template>
+													</div>
+													<div class="mt-4">
 									<h3 class="text-sm font-semibold opacity-70 mb-1">Description</h3>
 									<template x-if="editing !== 'description'">
 										<p
@@ -261,11 +261,11 @@ templ DashboardContent(props DashboardProps) {
 												x-init="$el.focus()"
 											></textarea>
 											<div class="flex gap-2">
-												<button
-													class="btn btn-sm btn-primary"
-													@click="fetch('/issues/' + issue.id, { method: 'PATCH', body: new URLSearchParams({description: issue.description || ''}) }); editing = null"
-												>Save</button>
-												<button class="btn btn-sm" @click="editing = null">Cancel</button>
+															<button
+																class="btn btn-sm btn-primary"
+																@click="saveField('description', issue.description)"
+															>Save</button>
+														<button class="btn btn-sm" @click.stop="editing = null">Cancel</button>
 											</div>
 										</div>
 									</template>
@@ -300,16 +300,16 @@ templ DashboardContent(props DashboardProps) {
 													x-model="issue.assignee"
 													class="input input-sm input-bordered"
 													placeholder="Enter assignee name"
-													@keydown.enter="fetch('/issues/' + issue.id, { method: 'PATCH', body: new URLSearchParams({assignee: issue.assignee || ''}) }); editing = null"
+																@keydown.enter="saveField('assignee', issue.assignee)"
 													@keydown.escape="editing = null"
 													x-init="$el.focus()"
 												/>
 												<div class="flex gap-1 mt-1">
-													<button
-														class="btn btn-xs btn-primary"
-														@click="fetch('/issues/' + issue.id, { method: 'PATCH', body: new URLSearchParams({assignee: issue.assignee || ''}) }); editing = null"
-													>Save</button>
-													<button class="btn btn-xs" @click="editing = null">Cancel</button>
+																<button
+																	class="btn btn-xs btn-primary"
+																	@click="saveField('assignee', issue.assignee)"
+																>Save</button>
+															<button class="btn btn-xs" @click.stop="editing = null">Cancel</button>
 												</div>
 											</div>
 										</template>
