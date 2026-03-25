@@ -14,9 +14,9 @@ const dependencyManagementDescription = `You are tasked with managing issue depe
 Several issues in your project have dependencies on other issues. 
 
 You need to:
-1. Find 2 issues that mention dependencies in their description.
+1. Find 2 issues that have dependencies on other issues.
    - Set their status to "Blocked".
-2. Find the issue that is mentioned by the other issues:
+2. Find the issue that is depended on by the other issues:
    - Set priority to 3.
    - Set status to in-progress.
    - Assign to yourself as "Me".`
@@ -93,7 +93,23 @@ func (t *DependencyManagementTask) Setup(ctx context.Context) error {
 			Build(),
 	}
 
-	return t.app.Issues.CreateIssues(ctx, t.depIssues, "")
+	if err := t.app.Issues.CreateIssues(ctx, t.depIssues, ""); err != nil {
+		return err
+	}
+
+	base := t.depIssues[0]
+	for _, child := range t.depIssues[1:] {
+		dep := &models.Dependency{
+			IssueID:     child.ID,
+			DependsOnID: base.ID,
+			Type:        models.DepBlocks,
+		}
+		if err := t.app.Issues.AddDependency(ctx, dep, ""); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 func (t *DependencyManagementTask) Validate(ctx context.Context) ValidationFeedback {
