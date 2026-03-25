@@ -22,7 +22,7 @@ type IssueFormProps struct {
 }
 
 templ IssueForm(props IssueFormProps) {
-	<div class={ "w-full max-w-lg mx-auto ", props.Class } x-data="{ status: $el.dataset.status }" data-status={ props.Status }>
+	<div class={ "w-full max-w-lg mx-auto ", props.Class } x-data="{ status: $el.dataset.status, assignee: '' }" data-status={ props.Status }>
 		<form
 			class="form space-y-1"
 			if props.PatchAction != "" {
@@ -98,6 +98,21 @@ templ IssueForm(props IssueFormProps) {
 				Value: props.Priority,
 				Step:  1,
 			})
+			if props.PostAction != "" {
+				<button
+					type="button"
+					class="btn btn-ghost w-full mt-2"
+					@click="assignee = assignee === '' ? 'Me' : ''"
+				>
+					<span x-show="assignee === ''" x-cloak>
+						Unassigned (click to assign to Me)
+					</span>
+					<span x-show="assignee !== ''">
+						Assignee: <span x-text="assignee"></span> (click to unassign)
+					</span>
+				</button>
+				<input type="hidden" name="assignee" :value="assignee" />
+			}
 			<button type="submit" class="btn btn-primary w-full mt-4">
 				Submit Issue
 			</button>

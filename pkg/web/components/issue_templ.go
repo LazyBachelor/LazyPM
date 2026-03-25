@@ -68,7 +68,7 @@ func IssueForm(props IssueFormProps) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "\" x-data=\"{ status: $el.dataset.status }\" data-status=\"")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "\" x-data=\"{ status: $el.dataset.status, assignee: '' }\" data-status=\"")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -237,6 +237,12 @@ func IssueForm(props IssueFormProps) templ.Component {
 		}).Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
+		}
+		if props.PostAction != "" {
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 14, "<button type=\"button\" class=\"btn btn-ghost w-full mt-2\" @click=\"assignee = assignee === '' ? 'Me' : ''\"><span x-show=\"assignee === ''\" x-cloak>Unassigned (click to assign to Me)</span><span x-show=\"assignee !== ''\">Assignee: <span x-text=\"assignee\"></span> (click to unassign)</span></button><input type=\"hidden\" name=\"assignee\" :value=\"assignee\" />")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
 		}
 		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 14, "<button type=\"submit\" class=\"btn btn-primary w-full mt-4\">Submit Issue</button></form>")
 		if templ_7745c5c3_Err != nil {
