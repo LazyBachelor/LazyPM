@@ -23,6 +23,7 @@ func CreateIssueFormModal(w http.ResponseWriter, r *http.Request) {
 		Status:     "open",
 		IssueType:  "task",
 		Priority:   0,
+		Assignee:   "",
 	})
 
 	modal := components.Modal(components.ModalProps{
@@ -65,6 +66,7 @@ func EditIssueFormModal(w http.ResponseWriter, r *http.Request) {
 		CloseReason:  issue.CloseReason,
 		IssueType:    string(issue.IssueType),
 		Priority:     issue.Priority,
+		Assignee:     issue.Assignee,
 	})
 
 	modal := components.Modal(components.ModalProps{
