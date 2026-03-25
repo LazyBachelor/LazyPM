@@ -101,4 +101,23 @@ chown -R abc:abc /config/Desktop /config/.config
 git config --global user.name "LazyPM"
 git config --global user.email "lazy@pm.com"
 
+mkdir -p /config/.config/xfce4
+mkdir -p /usr/share/xfce4/helpers
+
+cat > /usr/share/xfce4/helpers/chromium.desktop <<'EOF'
+[Desktop Entry]
+Version=1.0
+Type=X-XFCE-Helper
+Name=Chromium
+X-XFCE-Category=WebBrowser
+X-XFCE-Commands=chromium;
+X-XFCE-CommandsWithParameter=chromium "%s";
+Icon=chromium
+EOF
+
+cat > /config/.config/xfce4/helpers.rc <<'EOF'
+WebBrowser=chromium
+EOF
+
+chown abc:abc /config/.config/xfce4/helpers.rc
 echo "**** Desktop setup complete ****"
