@@ -70,7 +70,7 @@ func runStartCmd(cmd *cobra.Command, args []string) error {
 		}
 
 		if mongoStorage != nil {
-			cmd.Println("Connected to Database Successfully. Starting survey...")
+			cmd.Println("Connected to Database Successfully.\n Starting survey...")
 			time.Sleep(2 * time.Second)
 
 			defer mongoStorage.Close()
@@ -104,7 +104,7 @@ func runStartCmd(cmd *cobra.Command, args []string) error {
 			}()
 
 		} else {
-			cmd.Println("Starting survey without database connection. Your responses will not be submitted...")
+			cmd.Println("Starting survey without database connection.\n Your responses will not be submitted...")
 			time.Sleep(2 * time.Second)
 		}
 	}
