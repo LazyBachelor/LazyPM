@@ -14,12 +14,12 @@ const sprintPlanningDescription = `You are tasked with sprint planning.
 A new sprint is starting and you need to organize the backlog.
 You will be given a list of issues with different priorities and dependencies.
 
+A sprint is a time-boxed period during which a team works to complete a set of tasks.
+A print is composed of tasks that are selected from the backlog, which is a list of all pending work items.
+
 Your task:
-1. Review the backlog issues
-2. Select which issues to include in the sprint
-3. Add issues to the sprint
-4. Address any blocked or dependent issues
-5. Prioritize high-priority items
+1. View the backlog in the kanban/board/sprint view.
+2. Move the three highest-priority issues to the sprint.
 
 The goal is to create a realistic sprint plan that delivers value while respecting team capacity.`
 
@@ -72,44 +72,38 @@ func (t *SprintPlanningTask) Setup(ctx context.Context) error {
 		return err
 	}
 
-	sprintNum, err := t.app.Issues.AddSprint(ctx)
-	if err != nil {
-		return err
-	}
-	t.sprintNum = sprintNum
-
 	backlogIssues := []*models.Issue{
 		NewIssueBuilder().
 			WithTitle("Implement user authentication").
-			WithDescription("Add login/logout functionality. Priority: High").
+			WithDescription("Add login/logout functionality.").
 			WithPriority(4).
 			WithStatus(models.StatusOpen).
 			WithIssueType(models.TypeTask).
 			Build(),
 		NewIssueBuilder().
 			WithTitle("Design database schema").
-			WithDescription("Create tables for users and orders. Priority: High").
+			WithDescription("Create tables for users and orders.").
 			WithPriority(4).
 			WithStatus(models.StatusOpen).
 			WithIssueType(models.TypeTask).
 			Build(),
 		NewIssueBuilder().
 			WithTitle("Setup CI/CD pipeline").
-			WithDescription("Configure automated testing and deployment. Currently blocked by server setup").
+			WithDescription("Configure automated testing and deployment.").
 			WithPriority(3).
 			WithStatus(models.StatusBlocked).
 			WithIssueType(models.TypeTask).
 			Build(),
 		NewIssueBuilder().
 			WithTitle("Create API documentation").
-			WithDescription("Document all REST endpoints. Priority: Low").
+			WithDescription("Document all REST endpoints.").
 			WithPriority(1).
 			WithStatus(models.StatusOpen).
 			WithIssueType(models.TypeTask).
 			Build(),
 		NewIssueBuilder().
 			WithTitle("Implement search functionality").
-			WithDescription("Depends on database schema. Priority: Medium").
+			WithDescription("Depends on database schema.").
 			WithPriority(2).
 			WithStatus(models.StatusOpen).
 			WithIssueType(models.TypeTask).
@@ -122,11 +116,7 @@ func (t *SprintPlanningTask) Setup(ctx context.Context) error {
 func (t *SprintPlanningTask) Validate(ctx context.Context) ValidationFeedback {
 	expect := check.NewExpector()
 
-	if t.sprintNum == 0 {
-		return expect.Fatal("No sprint was created. Create a sprint first.")
-	}
-
-	sprintIssues, err := t.app.Issues.GetIssuesBySprint(ctx, t.sprintNum)
+	sprintIssues, err := t.app.Issues.GetIssuesBySprint(ctx, 1)
 	if err != nil {
 		return expect.Fatal("Could not fetch sprint issues")
 	}
@@ -136,7 +126,7 @@ func (t *SprintPlanningTask) Validate(ctx context.Context) ValidationFeedback {
 		return expect.Fatal("Could not fetch issues")
 	}
 
-	expect.Assert(len(sprintIssues) > 0, fmt.Sprintf("Sprint %d has no issues. Move issues from Backlog to the sprint.", t.sprintNum))
+	expect.Assert(len(sprintIssues) > 0, fmt.Sprintf("Sprint %d has no issues. Move issues from Backlog to the sprint.", 1))
 
 	sorted := make([]*models.Issue, len(allIssues))
 	copy(sorted, allIssues)
@@ -167,7 +157,7 @@ func (t *SprintPlanningTask) Validate(ctx context.Context) ValidationFeedback {
 
 	expect.Assert(len(sprintIssues) >= 3,
 		fmt.Sprintf("Sprint %d only has %d issues. Add at least %d more from backlog.",
-			t.sprintNum, len(sprintIssues), 3-len(sprintIssues)))
+			1, len(sprintIssues), 3-len(sprintIssues)))
 
 	return expect.Complete()
 }

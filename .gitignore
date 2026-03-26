@@ -22,3 +22,6 @@ dist/
 
 # Dolt database files (added by bd init)
 .dolt/
+
+Task\ Details.txt
+code.txt
