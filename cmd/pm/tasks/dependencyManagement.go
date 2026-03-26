@@ -14,12 +14,9 @@ const dependencyManagementDescription = `You are tasked with managing issue depe
 Several issues in your project have dependencies on other issues. 
 
 You need to:
-1. Find 2 issues that mention dependencies in their description.
-   - Set their status to "Blocked".
-2. Find the issue that is mentioned by the other issues:
-   - Set priority to 3.
-   - Set status to in-progress.
-   - Assign to yourself as "Me".`
+1. Find the 2 issues that depend on 'Setup database connection'.
+2. Add the 'Setup database connection' issue as a dependency to the 2 issues.
+3. Set the 2 issues' status to "Blocked".`
 
 type DependencyManagementTask struct {
 	done      bool
@@ -73,27 +70,33 @@ func (t *DependencyManagementTask) Setup(ctx context.Context) error {
 		NewIssueBuilder().
 			WithTitle("Setup database connection").
 			WithDescription("Configure database connection pool.").
-			WithPriority(2).
-			WithStatus(models.StatusOpen).
+			WithPriority(3).
+			WithStatus(models.StatusInProgress).
 			WithIssueType(models.TypeTask).
 			Build(),
 		NewIssueBuilder().
 			WithTitle("Implement Authentication System").
-			WithDescription("Add login/logout functionality. Depends on 'Setup database connection' issue.").
+			WithDescription("Add login/logout functionality.").
 			WithPriority(2).
 			WithStatus(models.StatusOpen).
 			WithIssueType(models.TypeTask).
 			Build(),
 		NewIssueBuilder().
 			WithTitle("Add user management operations").
-			WithDescription("Add operations for user management. Depends on 'Setup database connection' issue.").
-			WithPriority(3).
+			WithDescription("Add operations for user management.").
+			WithPriority(2).
 			WithStatus(models.StatusOpen).
 			WithIssueType(models.TypeTask).
 			Build(),
 	}
 
-	return t.app.Issues.CreateIssues(ctx, t.depIssues, "")
+	if err := t.app.Issues.CreateIssues(ctx, t.depIssues, ""); err != nil {
+		return err
+	}
+
+
+
+	return nil
 }
 
 func (t *DependencyManagementTask) Validate(ctx context.Context) ValidationFeedback {
@@ -108,24 +111,28 @@ func (t *DependencyManagementTask) Validate(ctx context.Context) ValidationFeedb
 		for _, depIssue := range t.depIssues[1:] {
 			if issue.Title == depIssue.Title {
 				expect.Equal(issue.Status, models.StatusBlocked,
-					fmt.Sprintf("%s status", issue.Title))
+					fmt.Sprintf("%s status", issue.Title,))
 			}
 		}
 	}
+
+	for _, depIssue := range t.depIssues[1:] {
+
+		deps, _ := t.app.Issues.GetDependencies(ctx, depIssue.ID)
+		expect.Equal(len(deps), 1,
+			fmt.Sprintf("%s - %d dependencies", depIssue.Title, len(deps)))
+		if len(deps) == 1 {
+			expect.Equal(deps[0].ID, t.depIssues[0].ID,
+				fmt.Sprintf("%s dependency", depIssue.Title))
+		}
+	
+	}
+
+
+
+
 	if !expect.Valid() {
 		return expect.ValidationFeedback
-	}
-	for _, issue := range issues {
-		for _, foundationalIssue := range t.depIssues[:1] {
-			if issue.Title == foundationalIssue.Title {
-				expect.Equal(issue.Priority, 3,
-					fmt.Sprintf("%s priority", issue.Title))
-				expect.NotEmptyAndEqual(issue.Assignee, "Me",
-					fmt.Sprintf("%s assignee", issue.Title))
-				expect.Equal(issue.Status, models.StatusInProgress,
-					fmt.Sprintf("%s status", issue.Title))
-			}
-		}
 	}
 
 	return expect.Complete()
