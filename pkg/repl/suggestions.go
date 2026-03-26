@@ -23,6 +23,7 @@ var rootSuggestions = []prompt.Suggest{
 var baseSuggestions = []prompt.Suggest{
 	{Text: "help", Description: "Show help information"},
 	{Text: "sprint", Description: "Manage sprints"},
+	{Text: "dep", Description: "Manage dependencies"},
 	{Text: "create", Description: "Create a new issue with title"},
 	{Text: "list", Description: "List all issues"},
 	{Text: "read", Description: "Read issue details by ID"},
@@ -31,7 +32,6 @@ var baseSuggestions = []prompt.Suggest{
 	{Text: "delete", Description: "Delete an issue by ID"},
 	{Text: "comment", Description: "Add a comment on an issue by ID"},
 	{Text: "comments", Description: "List comments on an issue by ID"},
-	{Text: "dep", Description: "Manage dependencies for an issue"},
 
 	{Text: "new", Description: "Alias for create command"},
 	{Text: "ls", Description: "Alias for list command"},
@@ -42,6 +42,7 @@ var baseSuggestions = []prompt.Suggest{
 	{Text: "rm", Description: "Alias for delete command"},
 	{Text: "del", Description: "Alias for delete command"},
 	{Text: "get", Description: "Alias for read command"},
+	{Text: "dependencies", Description: "Alias for dep"},
 }
 
 // createFlags is a list of prompt suggestions for the create command flags.
@@ -126,7 +127,6 @@ var sprintSubcommands = []prompt.Suggest{
 
 var depSubcommands = []prompt.Suggest{
 	{Text: "view", Description: "View dependencies of an issue"},
-	{Text: "list", Description: "Alias for view"},
 	{Text: "show", Description: "Alias for view"},
 	{Text: "add", Description: "Add a dependency"},
 	{Text: "remove", Description: "Remove a dependency"},
@@ -223,7 +223,7 @@ func flagSuggestions(cmd string, words []string, text string) []prompt.Suggest {
 			if strings.HasSuffix(text, " ") {
 				sub := words[1]
 				switch sub {
-				case "view", "list", "show", "add", "remove", "rm":
+				case "view", "show", "add", "remove", "rm":
 					// After a valid subcommand we expect the issue id next.
 					return issueIDSuggestions("", true)
 				default:

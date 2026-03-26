@@ -15,9 +15,10 @@ pm dep remove ISSUE-1 ISSUE-2`
 // DepCmd manages dependencies for issues.
 // Default behavior: view dependencies of an issue.
 var DepCmd = &cobra.Command{
-	Use:     "dep [subcommand] [issue id]",
+	Use:     "dep [issue id]",
 	Short:   "Manage dependencies for an issue",
 	Long:    `Manage dependencies between issues.`,
+	Aliases: []string{"dependencies"},
 	Example: depCmdExample,
 
 	// This command runs only when no subcommand is provided.
@@ -29,14 +30,14 @@ var DepCmd = &cobra.Command{
 var DepViewCmd = &cobra.Command{
 	Use:               "view [issue id]",
 	Short:             "View dependencies of an issue",
-	Aliases:          []string{"list", "show"},
+	Aliases:           []string{"show"},
 	Args:              cobra.ExactArgs(1),
 	ValidArgsFunction: completeIssues,
 	RunE:              runDepViewCmd,
 }
 
 var DepAddCmd = &cobra.Command{
-	Use:               "add <issue id> <depends-on id>",
+	Use:               "add [issue id] [depends-on id]",
 	Short:             "Add a dependency: issue depends on depends-on issue",
 	Args:              cobra.ExactArgs(2),
 	ValidArgsFunction: completeIssues,
@@ -44,17 +45,15 @@ var DepAddCmd = &cobra.Command{
 }
 
 var DepRemoveCmd = &cobra.Command{
-	Use:               "remove <issue id> <depends-on id>",
+	Use:               "remove [issue id] [depends-on id]",
 	Short:             "Remove an existing dependency",
-	Aliases:          []string{"rm"},
+	Aliases:           []string{"rm"},
 	Args:              cobra.ExactArgs(2),
 	ValidArgsFunction: completeIssues,
 	RunE:              runDepRemoveCmd,
 }
 
 func init() {
-	DepCmd.Aliases = []string{"dependencies"}
-
 	DepCmd.AddCommand(DepViewCmd)
 	DepCmd.AddCommand(DepAddCmd)
 	DepCmd.AddCommand(DepRemoveCmd)
@@ -122,4 +121,3 @@ func runDepRemoveCmd(cmd *cobra.Command, args []string) error {
 	cmd.Printf("Removed dependency: %s no longer depends on %s\n", issueID, dependsOnID)
 	return runDepViewCmd(cmd, []string{issueID})
 }
-

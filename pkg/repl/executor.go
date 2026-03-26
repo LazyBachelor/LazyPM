@@ -28,12 +28,6 @@ func (r *REPL) execute(input string) (string, error) {
 	if after, ok := strings.CutPrefix(input, "pm"); ok {
 
 		if strings.Contains(strings.Split(after, " ")[1], "start") {
-		//trimmedAfter := strings.TrimSpace(after)
-		//parts := shellSplit(trimmedAfter)
-
-		// Prevent accidental attempts to run "pm start ..." inside the REPL.
-		// (The REPL uses `status/title/help` and shell execution instead.)
-		//if len(parts) > 1 && strings.Contains(parts[1], "start") {
 			return "Nice try👻", nil
 		}
 
