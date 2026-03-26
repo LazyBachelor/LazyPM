@@ -23,6 +23,7 @@ var rootSuggestions = []prompt.Suggest{
 var baseSuggestions = []prompt.Suggest{
 	{Text: "help", Description: "Show help information"},
 	{Text: "sprint", Description: "Manage sprints"},
+	{Text: "dep", Description: "Manage dependencies"},
 	{Text: "create", Description: "Create a new issue with title"},
 	{Text: "list", Description: "List all issues"},
 	{Text: "read", Description: "Read issue details by ID"},
@@ -41,6 +42,7 @@ var baseSuggestions = []prompt.Suggest{
 	{Text: "rm", Description: "Alias for delete command"},
 	{Text: "del", Description: "Alias for delete command"},
 	{Text: "get", Description: "Alias for read command"},
+	{Text: "dependencies", Description: "Alias for dep"},
 }
 
 // createFlags is a list of prompt suggestions for the create command flags.
@@ -123,6 +125,14 @@ var sprintSubcommands = []prompt.Suggest{
 	{Text: "del", Description: "Alias for delete subcommand"},
 }
 
+var depSubcommands = []prompt.Suggest{
+	{Text: "view", Description: "View dependencies of an issue"},
+	{Text: "show", Description: "Alias for view"},
+	{Text: "add", Description: "Add a dependency"},
+	{Text: "remove", Description: "Remove a dependency"},
+	{Text: "rm", Description: "Alias for remove"},
+}
+
 // statusValues is a list of prompt suggestions for status types
 var statusValues = []prompt.Suggest{
 	{Text: "open", Description: "Open status"},
@@ -194,6 +204,73 @@ func commandSuggestions(words []string) []prompt.Suggest {
 // flagSuggestions returns a list of prompt suggestions for command flags based on the current input.
 func flagSuggestions(cmd string, words []string, text string) []prompt.Suggest {
 	lastWord, prevWord := parseWords(words, text)
+
+	// Custom completion logic for `pm dep ...`
+	if cmd == "dep" {
+		switch len(words) {
+		case 1:
+			// `pm dep ` => next token could be a subcommand; default view is handled
+			// once the user types an issue id
+			if strings.HasSuffix(text, " ") {
+				return depSubcommands
+			}
+			return nil
+
+		case 2:
+			// either:
+			// - pm dep <issueID> (default view)
+			// - pm dep <subcommand>
+			if strings.HasSuffix(text, " ") {
+				sub := words[1]
+				switch sub {
+				case "view", "show", "add", "remove", "rm":
+					// After a valid subcommand we expect the issue id next.
+					return issueIDSuggestions("", true)
+				default:
+					// Treat it as an issue id already; no more suggestions.
+					return nil
+				}
+			}
+
+			// Typing the 2nd token: suggest subcommands and issue IDs that match.
+			suggests := make([]prompt.Suggest, 0, len(depSubcommands))
+			suggests = append(suggests, filterByPrefix(depSubcommands, lastWord)...)
+			//suggests = append(suggests, issueIDSuggestions(lastWord, true)...)
+			return suggests
+
+		case 3:
+			// If subcommand is `add/remove`, third token is the issue id.
+			// If subcommand is show/list, third token is the issue id.
+			sub := words[1]
+			switch sub {
+			case "add", "remove", "rm":
+				if strings.HasSuffix(text, " ") {
+					// `pm dep add <issueID> ` => next token is dependsOnID.
+					return issueIDSuggestions("", true)
+				}
+				return issueIDSuggestions(lastWord, true)
+			default:
+				// show/list/show => completing the issue id.
+				if strings.HasSuffix(text, " ") {
+					return nil
+				}
+				return issueIDSuggestions(lastWord, true)
+			}
+
+		case 4:
+			// add/remove/rm have a 4th token: dependsOnID.
+			sub := words[1]
+			if sub == "add" || sub == "remove" || sub == "rm" {
+				if strings.HasSuffix(text, " ") {
+					return nil
+				}
+				return issueIDSuggestions(lastWord, true)
+			}
+			return nil
+		}
+
+		return nil
+	}
 
 	if values := getFlagValues(prevWord); values != nil {
 		return filterByPrefix(values, lastWord)
