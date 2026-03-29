@@ -79,18 +79,8 @@ You will complete tasks using different interfaces. Here's what to expect:
 
 You will complete 8 tasks in sequential order with different interfaces:
 
-### 1. Create Issue Task
-**Difficulty**: Medium | **Time**: ~3 minutes
 
-Create a new issue with specific details:
-1. Create an issue titled: **"My first Issue"**
-2. Add description: **"I need to do some coding"**
-3. Assign to: **"Me"**
-4. Mark as: **"In Progress"**
-
-
-
-### 2. Backlog Refinement Task
+### 1. Backlog Refinement Task
 **Difficulty**: Easy | **Time**: ~2 minutes
 
 Clean up duplicate issues in the backlog:
@@ -103,7 +93,31 @@ Clean up duplicate issues in the backlog:
 
 
 
-### 3. Sprint Planning Task
+### 2. Create Issue Task
+**Difficulty**: Medium | **Time**: ~3 minutes
+
+Create a new issue with specific details:
+1. Create an issue titled: **"My first Issue"**
+2. Add description: **"I need to do some coding"**
+3. Assign to: **"Me"**
+4. Mark as: **"In Progress"**
+
+
+
+### 3. Coding Task
+**Difficulty**: Hard | **Time**: ~5 minutes
+
+Fix a logical error while managing an issue:
+
+1. A text file (**code.txt**) will appear in your directory
+2. Open it and follow the instructions inside
+3. Fix the code: change the function to add two numbers (`a + b`) instead of subtract (`a - b`)
+4. Save the file
+5. Change the status of the issue **"Fix major error"** to **"Closed"**
+
+
+
+### 4. Sprint Planning Task
 **Difficulty**: Medium | **Time**: ~3 minutes
 
 Organize the backlog for a new sprint:
@@ -117,7 +131,7 @@ Organize the backlog for a new sprint:
 
 
 
-### 4. Priority Management Task
+### 5. Priority Management Task
 **Difficulty**: Medium | **Time**: ~4 minutes
 
 Rebalance sprint priorities due to a critical production issue:
@@ -129,7 +143,7 @@ A database connection issue needs urgent attention:
 
 
 
-### 5. Dependency Management Task
+### 6. Dependency Management Task
 **Difficulty**: Medium | **Time**: ~3 minutes
 
 Manage issue dependencies:
@@ -142,7 +156,7 @@ Manage issue dependencies:
 
 
 
-### 6. Issue Review and Cleanup Task
+### 7. Issue Review and Cleanup Task
 **Difficulty**: Medium | **Time**: ~3 minutes
 
 Review and maintain project issues:
@@ -151,16 +165,6 @@ Review and maintain project issues:
 
 
 
-### 7. Coding Task
-**Difficulty**: Hard | **Time**: ~5 minutes
-
-Fix a logical error while managing an issue:
-
-1. A text file (**code.txt**) will appear in your directory
-2. Open it and follow the instructions inside
-3. Fix the code: change the function to add two numbers (`a + b`) instead of subtract (`a - b`)
-4. Save the file
-5. Change the status of the issue **"Fix major error"** to **"Closed"**
 
 ### 8. Git Task
 **Difficulty**: Hard | **Time**: ~5 minutes
