@@ -60,30 +60,19 @@ func (t *GitTask) Questions(interfaceType InterfaceType) Questions {
 	return BaseQuestions(interfaceType).
 		With(
 			huh.NewGroup(
-				huh.NewSelect[string]().Key("git_interface_used").
-					Title("What Git Interface did you use for the task?").
-					Description("If you used multiple interfaces, select the one you relied on most for this task.").
+				huh.NewSelect[string]().Key("git_interface_normally").
+					Title("What Git Interface do you normally use?").
+					Description("If you regularly use multiple interfaces, select the one you prefer most.").
 					Options(
 						huh.Option[string]{Value: "cli", Key: "Command Line Interface"},
 						huh.Option[string]{Value: "tui", Key: "Terminal User Interface"},
 						huh.Option[string]{Value: "gui", Key: "Graphical User Interface"},
 					),
-			),
-		).With(
-		huh.NewGroup(
-			huh.NewSelect[string]().Key("git_interface_normally").
-				Title("What Git Interface do you normally use?").
-				Description("If you regularly use multiple interfaces, select the one you prefer most.").
-				Options(
-					huh.Option[string]{Value: "cli", Key: "Command Line Interface"},
-					huh.Option[string]{Value: "tui", Key: "Terminal User Interface"},
-					huh.Option[string]{Value: "gui", Key: "Graphical User Interface"},
-				),
-		))
+			))
 }
 
 func (t *GitTask) QuestionnaireKeys(_ InterfaceType) []string {
-	return BaseKeys().With("git_interface_used", "git_interface_normally")
+	return BaseKeys().With("git_interface_normally")
 }
 
 func (t *GitTask) Setup(ctx context.Context) error {
