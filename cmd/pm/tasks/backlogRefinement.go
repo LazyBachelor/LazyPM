@@ -2,7 +2,6 @@ package tasks
 
 import (
 	"context"
-	"fmt"
 
 	"charm.land/huh/v2"
 	"github.com/LazyBachelor/LazyPM/internal/models"
@@ -126,18 +125,14 @@ func (t *BacklogRefinementTask) Validate(ctx context.Context) ValidationFeedback
 		return expect.Fatal("Could not fetch issues")
 	}
 
-	fmt.Printf("DEBUG: Found %d issues\n", len(issues))
-
 	var closedDuplicate *models.Issue
 	for _, issue := range issues {
-		fmt.Printf("DEBUG: Issue '%s' has status: %v\n", issue.Title, issue.Status)
 		if issue.Status == models.StatusClosed {
 			closedDuplicate = issue
 			break
 		}
 	}
 
-	fmt.Printf("DEBUG: closedDuplicate is nil: %v\n", closedDuplicate == nil)
 	if closedDuplicate == nil {
 		expect.Fail("Closed duplicate issue is wrong")
 	} else {
@@ -147,10 +142,5 @@ func (t *BacklogRefinementTask) Validate(ctx context.Context) ValidationFeedback
 		expect.Assert(isDuplicate, "Closed issue was one of the duplicates")
 	}
 
-	feedback := expect.Complete()
-	fmt.Printf("DEBUG: Validation Success=%v, Checks=%d\n", feedback.Success, len(feedback.Checks))
-	for i, check := range feedback.Checks {
-		fmt.Printf("DEBUG: Check[%d]: Valid=%v, Message=%s\n", i, check.Valid, check.Message)
-	}
-	return feedback
+	return expect.Complete()
 }
