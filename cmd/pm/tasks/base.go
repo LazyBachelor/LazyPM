@@ -77,15 +77,19 @@ func BaseDetails(interfaceType InterfaceType) TaskDetails {
 	case InterfaceTypeTUI:
 		interfaceDesc = `About our TUI Interface?
 
-- TUI stands for Terminal User Interface. It is a user interface that uses text-based elements to allow users to interact with the application.
+- TUI stands for Terminal User Interface.
+  It is a user interface that uses text-based elements to interact with the application.
 
-- The main way to interact with a TUI is through keyboard inputs, where you can navigate through menus, select options, and input data using the keyboard.
+- The main way to interact with a TUI is through keyboard inputs,
+  where you can navigate through menus, select options, and input data using the keyboard.
 
 - At the bottom of the interface you will find the help menu, which lists available keybinds.
 
 - The interface has parts:
-  - List View: This view shows the available issues in a list format, allowing you to browse through them and select one to work on.
-  - Kanban: This view allowtwos you to manage and track the progress of different of issues.
+  - List View: This view shows the available issues in a list format,
+    allowing you to browse through them and select one to work on.
+  - Kanban: This view allows you to manage and track the progress of different issues,
+    this also they main way of creating and managing sprints.
 
 - Press "q" to quit task during the survey.`
 	case InterfaceTypeWeb:
