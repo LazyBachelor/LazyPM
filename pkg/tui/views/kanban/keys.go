@@ -27,20 +27,20 @@ var defaultKanbanKeyMap = KeyMap{
 		key.WithHelp("v", "dashboard"),
 	),
 	MoveColumnLeft: key.NewBinding(
-		key.WithKeys("h"),
-		key.WithHelp("h", "prev column"),
+		key.WithKeys("left"),
+		key.WithHelp("←", "prev column"),
 	),
 	MoveColumnRight: key.NewBinding(
-		key.WithKeys("l"),
-		key.WithHelp("l", "next column"),
+		key.WithKeys("right"),
+		key.WithHelp("→", "next column"),
 	),
 	MoveIssueLeft: key.NewBinding(
-		key.WithKeys("left", "["),
-		key.WithHelp("←/[", "move issue left"),
+		key.WithKeys("h", "["),
+		key.WithHelp("h/[", "move issue left"),
 	),
 	MoveIssueRight: key.NewBinding(
-		key.WithKeys("right", "]"),
-		key.WithHelp("→/]", "move issue right"),
+		key.WithKeys("l", "]"),
+		key.WithHelp("l/]", "move issue right"),
 	),
 	AddComment: key.NewBinding(
 		key.WithKeys("c"),
