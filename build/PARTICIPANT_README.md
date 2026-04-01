@@ -15,7 +15,7 @@ We do this to ensure no unwanted actors are interfering with our data collecting
 - Responses are anonymized before analysis
 - We collect task results, questionnaire answers, and interaction events during the survey
 - We do not collect personally identifying information
-- You may exit at any time by pressing Esc between tasks or closing the terminal
+- You may exit at any time by pressing Ctrl+C between tasks or closing the terminal
 - Data is collected continuously, so exiting early still contributes valuable insights
 
 ## After Each Task
@@ -31,7 +31,7 @@ You'll answer a short questionnaire about:
    You can have this open throughout the survey and go back to it any time you need.
 2. **Take Your Time**: There's no time limit, focus on completing the task correctly
 3. **Read Carefully**: Each task has specific requirements that will be validated
-4. **Exit Anytime**: Press Esc or q (depending on interface) to exit early if needed
+4. **Exit Anytime**: Press q (depending on interface) to skip a task early if needed
 5. **Interface Help**: Each interface has built-in help - look for it!
 
 ## Troubleshooting

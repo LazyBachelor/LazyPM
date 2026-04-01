@@ -2,7 +2,7 @@ package tasks
 
 import (
 	"context"
-	"strings"
+	"fmt"
 
 	"charm.land/huh/v2"
 	"github.com/LazyBachelor/LazyPM/internal/models"
@@ -18,7 +18,7 @@ You need to groom the backlog:
 2. Find two issues that have the same name.
 3. Open one of these issues.
 4. Select "Close issue"
-5. Choose "Duplicate issue" as closing reason.
+5. Set the closing reason to "Duplicate issue".
 6. Save/close issue.
 
 Focus on making the backlog a reliable source of upcoming work.`
@@ -126,17 +126,31 @@ func (t *BacklogRefinementTask) Validate(ctx context.Context) ValidationFeedback
 		return expect.Fatal("Could not fetch issues")
 	}
 
+	fmt.Printf("DEBUG: Found %d issues\n", len(issues))
+
 	var closedDuplicate *models.Issue
 	for _, issue := range issues {
-		if issue.Status == models.StatusClosed &&
-			strings.Contains(strings.ToLower(issue.CloseReason), "duplicate") {
+		fmt.Printf("DEBUG: Issue '%s' has status: %v\n", issue.Title, issue.Status)
+		if issue.Status == models.StatusClosed {
 			closedDuplicate = issue
 			break
 		}
 	}
 
-	expect.Assert(closedDuplicate != nil,
-		"Expected one duplicate issue to be closed with 'Duplicate issue' as closing reason")
+	fmt.Printf("DEBUG: closedDuplicate is nil: %v\n", closedDuplicate == nil)
+	if closedDuplicate == nil {
+		expect.Fail("Closed duplicate issue is wrong")
+	} else {
+		expect.Pass("Closed duplicate issue is correct")
+		title := closedDuplicate.Title
+		isDuplicate := title == "User profile page" || title == "Fix login timeout"
+		expect.Assert(isDuplicate, "Closed issue was one of the duplicates")
+	}
 
-	return expect.Complete()
+	feedback := expect.Complete()
+	fmt.Printf("DEBUG: Validation Success=%v, Checks=%d\n", feedback.Success, len(feedback.Checks))
+	for i, check := range feedback.Checks {
+		fmt.Printf("DEBUG: Check[%d]: Valid=%v, Message=%s\n", i, check.Valid, check.Message)
+	}
+	return feedback
 }

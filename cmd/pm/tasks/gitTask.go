@@ -5,6 +5,7 @@ import (
 	"errors"
 	"os"
 	"strings"
+	"time"
 
 	"charm.land/huh/v2"
 	"github.com/LazyBachelor/LazyPM/internal/models"
@@ -33,10 +34,11 @@ The repository is in the task folder (./task).`
 const gitTaskReadmeContent = "This is a Git task. Add your name or a short note below this line to complete it, then commit your change."
 
 type GitTask struct {
-	app        *App
-	done       bool
-	repo       *git.Repository
-	setupIssue *Issue
+	app          *App
+	done         bool
+	repo         *git.Repository
+	setupIssue   *Issue
+	lastModified time.Time
 }
 
 var gitTaskInProgress = false
@@ -102,7 +104,44 @@ func (t *GitTask) Setup(ctx context.Context) error {
 		return err
 	}
 
+	// Initialize lastModified and start file watcher
+	if stat, err := os.Stat("./task/README.md"); err == nil {
+		t.lastModified = stat.ModTime()
+	}
+	t.startFileWatcher(ctx)
+
 	return nil
+}
+
+func (t *GitTask) startFileWatcher(ctx context.Context) {
+	go func() {
+		ticker := time.NewTicker(2 * time.Second)
+		defer ticker.Stop()
+
+		for {
+			select {
+			case <-ctx.Done():
+				return
+			case <-ticker.C:
+				if t.app.SubmitChan == nil {
+					continue
+				}
+
+				stat, err := os.Stat("./task/README.md")
+				if err != nil {
+					continue
+				}
+
+				if stat.ModTime().After(t.lastModified) {
+					t.lastModified = stat.ModTime()
+					select {
+					case t.app.SubmitChan <- models.ValidationTrigger{Source: models.ValidationTriggerAutoPoll}:
+					default:
+					}
+				}
+			}
+		}
+	}()
 }
 
 func (t *GitTask) Validate(ctx context.Context) ValidationFeedback {
@@ -117,7 +156,7 @@ func (t *GitTask) Validate(ctx context.Context) ValidationFeedback {
 		return expect.ValidationFeedback
 	}
 
-	expect.Equal(issue.Assignee, "Me", "Issue Assignee")
+	expect.NotEmptyAndEqual(issue.Assignee, "Me", "Issue Assignee")
 
 	if !expect.Valid() {
 		return expect.ValidationFeedback
