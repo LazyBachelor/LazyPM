@@ -180,7 +180,7 @@ func helpBarConfig(view ViewKind) HelpBarConfig {
 				{Key: "/", Desc: "search"},
 				{Key: "a", Desc: "add"},
 				{Key: "c", Desc: "comment"},
-				{Key: "e/d/s/p/t/A/D", Desc: "edit"},
+				{Key: "e/d/s/p/t/A/D", Desc: `edit("?" for details)`},
 				{Key: "x", Desc: "delete"},
 				{Key: "q", Desc: "quit"},
 				{Key: "?", Desc: "help"},

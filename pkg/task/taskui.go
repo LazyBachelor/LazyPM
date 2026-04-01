@@ -28,16 +28,16 @@ type TaskHelpKeys struct {
 
 var DefaultTaskKeys = TaskHelpKeys{
 	Quit: key.NewBinding(
-		key.WithKeys("q", "ctrl+c"),
-		key.WithHelp("q", "Quit"),
+		key.WithKeys("ctrl+c"),
+		key.WithHelp("ctrl+c", "quit"),
 	),
 	Start: key.NewBinding(
 		key.WithKeys("enter"),
-		key.WithHelp("enter", "Start"),
+		key.WithHelp("enter", "start"),
 	),
 	About: key.NewBinding(
 		key.WithKeys("?"),
-		key.WithHelp("?", "Learn interface"),
+		key.WithHelp("?", "interface info"),
 	),
 }
 
@@ -129,7 +129,7 @@ func (m TaskModel) View() tea.View {
 	var body string
 	if m.aboutVisible {
 		about := style.TextStyle.
-			Width(textWidth).
+			Width(bodyWidth - 2).
 			Align(lipgloss.Left).
 			Render(m.InterfaceDescription)
 
@@ -147,9 +147,9 @@ func (m TaskModel) View() tea.View {
 
 	card := cardStyle.Render(body)
 
-	helpText := "Press " + m.keys.Start.Help().Key + " " + m.keys.Start.Help().Desc +
-		"  • " + m.keys.Quit.Help().Key + " " + m.keys.Quit.Help().Desc +
-		" • " + m.keys.About.Help().Key + " " + m.keys.About.Help().Desc
+	helpText := "Press " + m.keys.Start.Help().Key + " to " + m.keys.Start.Help().Desc +
+		"  • " + m.keys.Quit.Help().Key + " to " + m.keys.Quit.Help().Desc +
+		" • " + m.keys.About.Help().Key + " for " + m.keys.About.Help().Desc
 
 	view := lipgloss.JoinVertical(
 		lipgloss.Center,
@@ -176,11 +176,13 @@ func (m TaskModel) View() tea.View {
 func (m TaskModel) getQuitHelpText() string {
 	switch m.InterfaceType {
 	case models.InterfaceTypeWeb:
-		return "Press esc/q in the terminal to skip the task"
+		return "Press 'q' in the server terminal to skip the task"
 	case models.InterfaceTypeTUI:
 		return "Press 'q' to skip task during the survey"
 	case models.InterfaceTypeCLI, models.InterfaceTypeREPL:
-		return "Write 'exit' to skip task during the survey"
+		return `Write 'exit' to skip task during the survey
+
+Note: Use 'tab' to scroll through suggestions`
 	default:
 		return m.keys.Quit.Help().Key + " to quit"
 	}
