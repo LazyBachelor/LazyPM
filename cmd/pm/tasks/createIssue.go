@@ -16,7 +16,8 @@ Your task:
 3. Assign the issue to yourself as "Me"
 4. Mark the issue as In Progress when you are done.
 
-Make sure to fill out all the necessary details to help others understand the work item.`
+Make sure to fill out all the necessary details to help others understand the work item.
+Note: The test is not case sensitive, so you can use "me" instead of "Me".`
 
 type CreateIssueTask struct {
 	done       bool

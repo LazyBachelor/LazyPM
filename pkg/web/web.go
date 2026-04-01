@@ -56,7 +56,7 @@ func (m tuiModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m, nil
 	case tea.KeyPressMsg:
 		switch msg.String() {
-		case "q", "esc", "ctrl+c":
+		case "q":
 			select {
 			case <-m.quitChan:
 			default:
@@ -71,7 +71,7 @@ func (m tuiModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 func (m tuiModel) View() tea.View {
 	content := lipgloss.Place(m.width, m.height, lipgloss.Center, lipgloss.Center, fmt.Sprintf(
-		"Web server running at %s\n\nPress q, esc, or Ctrl+C to stop the task and server.\n",
+		"Web server running at %s\n\nPress q to stop the task and server.\n",
 		m.address,
 	))
 	v := tea.NewView(content)

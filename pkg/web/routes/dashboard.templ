@@ -3,7 +3,6 @@ package routes
 import (
 	"fmt"
 	"github.com/LazyBachelor/LazyPM/internal/models"
-	"github.com/LazyBachelor/LazyPM/pkg/web/components"
 	"github.com/LazyBachelor/LazyPM/pkg/web/components/base"
 )
 
@@ -28,7 +27,7 @@ templ DashboardContent(props DashboardProps) {
 			selectedID = props.SelectedIssue.ID
 		}
 		issuesJSON, _ := templ.JSONString(props.Issues)
-		xData := fmt.Sprintf(`{ selectedId: %q, issues: %s }`, selectedID, issuesJSON)
+		xData := fmt.Sprintf(`{ selectedId: %q, issues: %s, getStatusClass(s) { switch(s) { case 'open': return 'badge-info'; case 'in_progress': return 'badge-warning'; case 'closed': return 'badge-success'; case 'blocked': return 'badge-error'; default: return 'badge-ghost'; } }, getTypeClass(t) { switch(t) { case 'bug': return 'badge-outline badge-error'; case 'feature': return 'badge-outline badge-success'; case 'task': return 'badge-outline badge-info'; case 'chore': return 'badge-outline badge-warning'; case 'epic': return 'badge-outline badge-secondary'; default: return 'badge-outline'; } }, getPriorityClass(p) { p = parseInt(p); switch(p) { case 0: case 1: return 'badge-ghost'; case 2: return 'badge-info'; case 3: return 'badge-warning'; case 4: return 'badge-error'; default: return 'badge-ghost'; } }, formatStatus(s) { return (s || '').replace(/_/g, ' ').replace(/\\b\\w/g, l => l.toUpperCase()); }, formatType(t) { return (t || '').charAt(0).toUpperCase() + (t || '').slice(1); }, formatPriority(p) { p = parseInt(p); switch(p) { case 0: return 'Irrelevant'; case 1: return 'Low'; case 2: return 'Normal'; case 3: return 'High'; case 4: return 'Critical'; default: return 'P'+p; } } }`, selectedID, issuesJSON)
 	}}
 	<div class="flex flex-col h-full" x-data={ xData }>
 		<div class="flex flex-col border-b border-base-200">
@@ -315,6 +314,41 @@ templ DashboardContent(props DashboardProps) {
 										</template>
 									</div>
 								</div>
+								<div class="mt-4">
+									<h3 class="text-sm font-semibold opacity-70 mb-2">Dependencies</h3>
+									<form class="flex gap-2 items-end mb-3">
+										<div class="flex-1">
+											<select
+												class="select select-bordered select-sm w-full"
+												name="depends_on_id"
+												x-bind:hx-get="'/issues/' + issue.id + '/dependencies/options'"
+												hx-trigger="load, dependencies-updated from:body"
+												hx-target="this"
+												hx-swap="innerHTML"
+											>
+												<option>Loading...</option>
+											</select>
+										</div>
+										<button
+											type="button"
+											class="btn btn-sm btn-secondary"
+											x-bind:hx-post="'/issues/' + issue.id + '/dependencies?container_id=deps-' + issue.id"
+											x-bind:hx-target="'#deps-' + issue.id"
+											hx-swap="innerHTML"
+											hx-include="closest form"
+										>
+											Add
+										</button>
+									</form>
+									<div 
+										x-bind:id="'deps-' + issue.id"
+										x-bind:hx-get="'/issues/' + issue.id + '/dependencies?container_id=deps-' + issue.id"
+										hx-trigger="load, dependencies-updated from:body"
+										hx-swap="innerHTML"
+									>
+										<div class="text-sm text-base-content/60">Loading dependencies...</div>
+									</div>
+								</div>
 								<div class="mt-6 w-full">
 									<h3 class="text-lg font-semibold mb-4">Comments</h3>
 									<div class="card bg-base-100 shadow-sm mb-3">
@@ -395,15 +429,9 @@ templ DashboardIssueRows(issues []*models.Issue, selectedID string) {
 		>
 			<td class="min-w-20 truncate">{ issue.ID }</td>
 			<td class="truncate max-w-60" x-text={ fmt.Sprintf(`issues.find(i => i.id === '%s')?.title || %q`, issue.ID, issue.Title) }></td>
-			<td>
-				@components.StatusBadge(issue.Status)
-			</td>
-			<td>
-				@components.TypeBadge(issue.IssueType)
-			</td>
-			<td>
-				@components.PriorityBadge(issue.Priority)
-			</td>
+			<td x-html={ fmt.Sprintf(`'<span class="badge ' + getStatusClass(issues.find(i => i.id === '%s')?.status) + ' badge-sm whitespace-nowrap">' + formatStatus(issues.find(i => i.id === '%s')?.status || '%s') + '</span>'`, issue.ID, issue.ID, issue.Status) }></td>
+			<td x-html={ fmt.Sprintf(`'<span class="badge ' + getTypeClass(issues.find(i => i.id === '%s')?.issue_type) + ' badge-sm whitespace-nowrap">' + formatType(issues.find(i => i.id === '%s')?.issue_type || '%s') + '</span>'`, issue.ID, issue.ID, issue.IssueType) }></td>
+			<td x-html={ fmt.Sprintf(`'<span class="badge ' + getPriorityClass(issues.find(i => i.id === '%s')?.priority) + ' badge-sm whitespace-nowrap">' + formatPriority(issues.find(i => i.id === '%s')?.priority || %d) + '</span>'`, issue.ID, issue.ID, issue.Priority) }></td>
 		</tr>
 	}
 }

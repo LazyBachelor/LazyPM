@@ -4,7 +4,7 @@ Welcome! This survey evaluates how people use different project management inter
 
 ## Overview
 
-**Duration**: 15-20 minutes
+**Duration**: 15-25 minutes
 **Goal**: Complete 8 task-based exercises using different interfaces and provide feedback on your experience
 
 ## Data Collection Notice
@@ -14,10 +14,9 @@ We do this to ensure no unwanted actors are interfering with our data collecting
 
 - Responses are anonymized before analysis
 - We collect task results, questionnaire answers, and interaction events during the survey
-- We do not intentionally collect personally identifying information
-- You may exit at any time by pressing Esc between tasks or closing the terminal
+- We do not collect personally identifying information
+- You may exit at any time by pressing Ctrl+C between tasks or closing the terminal
 - Data is collected continuously, so exiting early still contributes valuable insights
-- Contact us if you want your data deleted.
 
 ## After Each Task
 
@@ -32,7 +31,7 @@ You'll answer a short questionnaire about:
    You can have this open throughout the survey and go back to it any time you need.
 2. **Take Your Time**: There's no time limit, focus on completing the task correctly
 3. **Read Carefully**: Each task has specific requirements that will be validated
-4. **Exit Anytime**: Press Esc or q (depending on interface) to exit early if needed
+4. **Exit Anytime**: Press q (depending on interface) to skip a task early if needed
 5. **Interface Help**: Each interface has built-in help - look for it!
 
 ## Troubleshooting
@@ -43,7 +42,6 @@ You'll answer a short questionnaire about:
 - **Terminal too small**: Resize your terminal window to at least 55x16 characters,
    we recommend to keeping the terminal as large as possible for best experience.
 - **Interface not responding**: Press Ctrl+C to exit, then restart the survey
-
 
 
 ## Interfaces You'll Use
@@ -71,8 +69,7 @@ You will complete tasks using different interfaces. Here's what to expect:
 - Mouse-driven interaction only
 - For task progress press the red button in the upper right corner.
 - Two views: Issues (list format) and Kanban (sprint tracking)
-- Press `esc` or `q` in the terminal to skip the task
-
+- Press `q` in the server terminal to skip the task
 
 
 ## The Tasks
@@ -102,6 +99,7 @@ Create a new issue with specific details:
 3. Assign to: **"Me"**
 4. Mark as: **"In Progress"**
 
+**Note**: The test is not case sensitive.
 
 
 ### 3. Coding Task

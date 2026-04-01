@@ -4,7 +4,7 @@ import (
 	"strings"
 
 	"charm.land/bubbles/v2/key"
-	"charm.land/bubbletea/v2"
+	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
 	"github.com/LazyBachelor/LazyPM/internal/models"
 	"github.com/LazyBachelor/LazyPM/internal/style"
@@ -15,17 +15,16 @@ const stages = 2
 const (
 	IntroTitle       = "Project Management Interface Survey"
 	IntroductionText = `This survey evaluates how people use different project management interfaces to complete common tasks.
-You will complete a short set of task-based exercises and answer a few follow-up questions about the experience.
-Your feedback helps us compare interface design and usability.
+You will complete a short set of task-based exercises and answer a few follow-up questions about the experience. Your feedback helps us compare interface design and usability.
 
-The survey takes around 15-20 minutes to complete.`
+The survey takes around 15-25 minutes to complete.`
 
 	Disclaimer = `Data Collection Notice
 
 • Responses are anonymized before analysis
+• We do not collect personally identifying information
+• You may exit at any time by pressing Ctrl+C between tasks or closing the terminal.
 • We collect task results, questionnaire answers, and interaction events during the survey
-• We do not intentionally collect personally identifying information
-• You may exit at any time by pressing Esc between tasks or closing the terminal.
 • Data is collected continuously during the survey, so exiting early will still contribute valuable insights.`
 )
 
@@ -58,7 +57,7 @@ func newIntroModel() introModel {
 			key.WithHelp("b", "back"),
 		),
 		Quit: key.NewBinding(
-			key.WithKeys("esc", "ctrl+c", "q"),
+			key.WithKeys("esc", "ctrl+c"),
 			key.WithHelp("esc", "quit"),
 		),
 	}

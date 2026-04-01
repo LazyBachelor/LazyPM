@@ -103,9 +103,10 @@ func (e *Expector) Nil(value any, message string) *Expector {
 }
 
 func (e *Expector) NotNil(value any, message string) *Expector {
-	check := NewCheck(message, value != nil)
-	e.Checks = append(e.Checks, check)
-	return e
+	if value == nil {
+		return e.Fail(message + " is wrong")
+	}
+	return e.Pass(message + " is correct")
 }
 
 func (e *Expector) Contains(s, substr, message string) *Expector {

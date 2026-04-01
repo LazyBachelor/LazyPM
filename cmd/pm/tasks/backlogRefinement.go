@@ -2,7 +2,6 @@ package tasks
 
 import (
 	"context"
-	"strings"
 
 	"charm.land/huh/v2"
 	"github.com/LazyBachelor/LazyPM/internal/models"
@@ -18,7 +17,7 @@ You need to groom the backlog:
 2. Find two issues that have the same name.
 3. Open one of these issues.
 4. Select "Close issue"
-5. Choose "Duplicate issue" as closing reason.
+5. Set the closing reason to "Duplicate issue".
 6. Save/close issue.
 
 Focus on making the backlog a reliable source of upcoming work.`
@@ -128,15 +127,20 @@ func (t *BacklogRefinementTask) Validate(ctx context.Context) ValidationFeedback
 
 	var closedDuplicate *models.Issue
 	for _, issue := range issues {
-		if issue.Status == models.StatusClosed &&
-			strings.Contains(strings.ToLower(issue.CloseReason), "duplicate") {
+		if issue.Status == models.StatusClosed {
 			closedDuplicate = issue
 			break
 		}
 	}
 
-	expect.Assert(closedDuplicate != nil,
-		"Expected one duplicate issue to be closed with 'Duplicate issue' as closing reason")
+	if closedDuplicate == nil {
+		expect.Fail("Closed duplicate issue is wrong")
+	} else {
+		expect.Pass("Closed duplicate issue is correct")
+		title := closedDuplicate.Title
+		isDuplicate := title == "User profile page" || title == "Fix login timeout"
+		expect.Assert(isDuplicate, "Closed issue was one of the duplicates")
+	}
 
 	return expect.Complete()
 }

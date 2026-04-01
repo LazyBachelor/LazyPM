@@ -43,7 +43,7 @@ func (q *QuestionnaireModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		q.form.WithWidth(msg.Width)
 	case tea.KeyPressMsg:
 		switch msg.String() {
-		case "q", "ctrl+c":
+		case "ctrl+c":
 			q.userQuit = true
 			return q, tea.Quit
 		}

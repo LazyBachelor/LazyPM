@@ -4,6 +4,7 @@ import (
 	"context"
 	"os"
 	"strings"
+	"time"
 
 	"charm.land/huh/v2"
 	"github.com/LazyBachelor/LazyPM/internal/models"
@@ -37,9 +38,10 @@ function Add(a, b int) int {
 var textFileContent = codingDescription + textFileDescription + "\n" + code
 
 type CodingTask struct {
-	done  bool
-	app   *App
-	issue *Issue
+	done         bool
+	app          *App
+	issue        *Issue
+	lastModified time.Time
 }
 
 func NewCodingTask(app *App) *CodingTask {
@@ -89,6 +91,10 @@ func (t *CodingTask) Setup(ctx context.Context) error {
 		return err
 	}
 
+	if stat, err := os.Stat("./code.txt"); err == nil {
+		t.lastModified = stat.ModTime()
+	}
+
 	t.issue = NewIssueBuilder().
 		WithTitle("Fix major error").
 		WithDescription(desc).
@@ -96,7 +102,45 @@ func (t *CodingTask) Setup(ctx context.Context) error {
 		WithPriority(4).
 		Build()
 
-	return t.app.Issues.CreateIssue(ctx, t.issue, "")
+	if err := t.app.Issues.CreateIssue(ctx, t.issue, ""); err != nil {
+		return err
+	}
+
+	// Start file watcher goroutine
+	t.startFileWatcher(ctx)
+
+	return nil
+}
+
+func (t *CodingTask) startFileWatcher(ctx context.Context) {
+	go func() {
+		ticker := time.NewTicker(2 * time.Second)
+		defer ticker.Stop()
+
+		for {
+			select {
+			case <-ctx.Done():
+				return
+			case <-ticker.C:
+				if t.app.SubmitChan == nil {
+					continue
+				}
+
+				stat, err := os.Stat("./code.txt")
+				if err != nil {
+					continue
+				}
+
+				if stat.ModTime().After(t.lastModified) {
+					t.lastModified = stat.ModTime()
+					select {
+					case t.app.SubmitChan <- models.ValidationTrigger{Source: models.ValidationTriggerAutoPoll}:
+					default:
+					}
+				}
+			}
+		}
+	}()
 }
 
 func (t *CodingTask) Validate(ctx context.Context) ValidationFeedback {

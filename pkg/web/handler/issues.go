@@ -158,7 +158,9 @@ func UpdateIssue(w http.ResponseWriter, r *http.Request) {
 	}
 
 	a := strings.TrimSpace(r.FormValue("assignee"))
-	form.Assignee = &a
+	if r.Form.Has("assignee") {
+		form.Assignee = &a
+	}
 
 	changes := form.toChanges()
 
@@ -192,6 +194,7 @@ func UpdateIssue(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if hx.IsHxRequest() {
+		w.Header().Set("HX-Trigger", "task-status-check")
 		from := r.URL.Query().Get("from")
 		referer := r.Header.Get("Referer")
 		boardView := from == "board" || strings.Contains(referer, "board=true")

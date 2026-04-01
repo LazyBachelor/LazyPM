@@ -59,14 +59,19 @@ func BaseDetails(interfaceType InterfaceType) TaskDetails {
 	case InterfaceTypeREPL:
 		interfaceDesc = `About our REPL Interface?
 
-- REPL stands for Read-Eval-Print Loop. It is an interactive programming environment that takes single user inputs (reads), executes them (eval), and returns the result to the user (print), then waits for the next input (loop).
+- REPL stands for Read-Eval-Print Loop.
+  It's an interactive programming environment that takes single user inputs (reads),
+  executes them (eval), and returns the result to the user (print),
+  then waits for the next input (loop).
 
-- In a traditional CLI, you would use the help command to see available commands and their descriptions.
-  In this REPL interface, you can also type 'pm help' to get a list of available commands and their descriptions.
+- In a traditional CLI, you would use the help command to see available commands.
 
-- You can also run shell commands directly from the REPL, like "git" or "ls".
+- You can type 'pm help' to get a list of available commands and their descriptions.
 
-- When you type commands in this interface, suggestions will appear as you type, which you can select to auto-complete your command.
+- You can run shell commands directly from the REPL, like "git" or "ls".
+
+- When you type commands in this interface, suggestions will appear as you type,
+  which you can select to auto-complete your command.
 
 - Write "exit" to skip task during the survey.`
 	case InterfaceTypeTUI:
@@ -87,7 +92,7 @@ func BaseDetails(interfaceType InterfaceType) TaskDetails {
 		interfaceDesc = `About our Web Interface?
 
 - A Web Interface is a user interface that is accessed through a web browser.
-  It allows users to interact with the application using graphical elements such as buttons, forms, and menus.
+  Users to interact with the application using graphical elements such as buttons and forms.
 
 - We designed this interface to only be interactive through mouse clicks.
 
@@ -95,7 +100,8 @@ func BaseDetails(interfaceType InterfaceType) TaskDetails {
   - Issues: This view shows the available issues in a list format.
   - Kanban: This view allows you to manage and track the progress of different issues.
 
-- Press esc/q in the terminal to skip the task.`
+- Press q in the server terminal to skip the task.`
+	default:
 		interfaceDesc = "Unknown Interface"
 	}
 
