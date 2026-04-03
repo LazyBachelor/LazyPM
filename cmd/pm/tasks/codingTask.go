@@ -104,42 +104,9 @@ func (t *CodingTask) Setup(ctx context.Context) error {
 		return err
 	}
 
-	// Start file watcher goroutine
-	t.startFileWatcher(ctx)
-
 	return nil
 }
 
-func (t *CodingTask) startFileWatcher(ctx context.Context) {
-	go func() {
-		ticker := time.NewTicker(2 * time.Second)
-		defer ticker.Stop()
-
-		for {
-			select {
-			case <-ctx.Done():
-				return
-			case <-ticker.C:
-				if t.app.SubmitChan == nil {
-					continue
-				}
-
-				stat, err := os.Stat("./code.txt")
-				if err != nil {
-					continue
-				}
-
-				if stat.ModTime().After(t.lastModified) {
-					t.lastModified = stat.ModTime()
-					select {
-					case t.app.SubmitChan <- models.ValidationTrigger{Source: models.ValidationTriggerAutoPoll}:
-					default:
-					}
-				}
-			}
-		}
-	}()
-}
 
 func (t *CodingTask) Validate(ctx context.Context) ValidationFeedback {
 	expect := check.NewExpector()
