@@ -117,7 +117,11 @@ func IssueDetailPage(issue *models.Issue, comments []*models.Comment) templ.Comp
 					headers: { 'HX-Request': 'true' }
 				})
 				this.editing = null
-				// Check if server wants to redirect back to list
+				// Check status after 1 second
+				setTimeout(() => {
+					document.body.dispatchEvent(new CustomEvent('check-status'))
+				}, 1000)
+				// Handle redirect if needed
 				const redirectUrl = response.headers.get('HX-Redirect')
 				if (redirectUrl) {
 					window.location.href = redirectUrl
@@ -157,7 +161,7 @@ func IssueDetailPage(issue *models.Issue, comments []*models.Comment) templ.Comp
 			var templ_7745c5c3_Var4 string
 			templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinStringErrs(xData)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/web/routes/issue_detail.templ`, Line: 82, Col: 51}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/web/routes/issue_detail.templ`, Line: 86, Col: 51}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var4))
 			if templ_7745c5c3_Err != nil {
@@ -183,7 +187,7 @@ func IssueDetailPage(issue *models.Issue, comments []*models.Comment) templ.Comp
 				var templ_7745c5c3_Var5 string
 				templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.JoinStringErrs(comment.Author)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/web/routes/issue_detail.templ`, Line: 282, Col: 61}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/web/routes/issue_detail.templ`, Line: 286, Col: 61}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var5))
 				if templ_7745c5c3_Err != nil {
@@ -196,7 +200,7 @@ func IssueDetailPage(issue *models.Issue, comments []*models.Comment) templ.Comp
 				var templ_7745c5c3_Var6 string
 				templ_7745c5c3_Var6, templ_7745c5c3_Err = templ.JoinStringErrs(comment.CreatedAt.Format("Jan 2, 2006 15:04"))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/web/routes/issue_detail.templ`, Line: 283, Col: 89}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/web/routes/issue_detail.templ`, Line: 287, Col: 89}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var6))
 				if templ_7745c5c3_Err != nil {
@@ -209,7 +213,7 @@ func IssueDetailPage(issue *models.Issue, comments []*models.Comment) templ.Comp
 				var templ_7745c5c3_Var7 string
 				templ_7745c5c3_Var7, templ_7745c5c3_Err = templ.JoinStringErrs(comment.Text)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/web/routes/issue_detail.templ`, Line: 285, Col: 61}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/web/routes/issue_detail.templ`, Line: 289, Col: 61}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var7))
 				if templ_7745c5c3_Err != nil {

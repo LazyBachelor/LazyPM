@@ -138,7 +138,7 @@ templ DashboardContent(props DashboardProps) {
 					</div>
 				</template>
 				<template x-for="issue in issues" :key="issue.id">
-					<div x-show="issue.id === selectedId" class="issue-detail max-w-3xl mx-auto" x-data="{ editing: null, saving: false, newComment: '', async saveField(field, value) { const formData = new URLSearchParams(); formData.append(field, value || ''); await fetch('/issues/' + issue.id, { method: 'PATCH', body: formData, headers: { 'HX-Request': 'true' } }); this.editing = null; }, async addComment() { if (!this.newComment.trim()) return; const author = issue.created_by || 'Anonymous'; const response = await fetch('/issues/' + issue.id + '/comments', { method: 'POST', body: new URLSearchParams({text: this.newComment, author: author}) }); const newComment = await response.json(); if (!issue.comments) issue.comments = []; issue.comments.push(newComment); this.newComment = ''; } }">
+					<div x-show="issue.id === selectedId" class="issue-detail max-w-3xl mx-auto" x-data="{ editing: null, saving: false, newComment: '', async saveField(field, value) { const formData = new URLSearchParams(); formData.append(field, value || ''); await fetch('/issues/' + issue.id, { method: 'PATCH', body: formData, headers: { 'HX-Request': 'true' } }); this.editing = null; setTimeout(() => { document.body.dispatchEvent(new CustomEvent('check-status')); }, 1000); }, async addComment() { if (!this.newComment.trim()) return; const author = issue.created_by || 'Anonymous'; const response = await fetch('/issues/' + issue.id + '/comments', { method: 'POST', body: new URLSearchParams({text: this.newComment, author: author}) }); const newComment = await response.json(); if (!issue.comments) issue.comments = []; issue.comments.push(newComment); this.newComment = ''; } }">
 						<div class="card bg-base-100 shadow-md">
 							<div class="card-body p-2">
 								<div class="m-2">
@@ -179,7 +179,7 @@ templ DashboardContent(props DashboardProps) {
 												name="status"
 												x-model="issue.status"
 												class="select select-sm select-bordered"
-												@change="fetch('/issues/' + issue.id, { method: 'PATCH', body: new URLSearchParams({status: issue.status}) }).then(() => editing = null)"
+												@change="fetch('/issues/' + issue.id, { method: 'PATCH', body: new URLSearchParams({status: issue.status}), headers: { 'HX-Request': 'true' } }).then(() => { editing = null; setTimeout(() => { document.body.dispatchEvent(new CustomEvent('check-status')); }, 1000); })"
 												x-init="$nextTick(() => $el.focus())"
 											>
 												<option value="open">Open</option>

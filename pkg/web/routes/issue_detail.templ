@@ -56,7 +56,11 @@ templ IssueDetailPage(issue *models.Issue, comments []*models.Comment) {
 					headers: { 'HX-Request': 'true' }
 				})
 				this.editing = null
-				// Check if server wants to redirect back to list
+				// Check status after 1 second
+				setTimeout(() => {
+					document.body.dispatchEvent(new CustomEvent('check-status'))
+				}, 1000)
+				// Handle redirect if needed
 				const redirectUrl = response.headers.get('HX-Redirect')
 				if (redirectUrl) {
 					window.location.href = redirectUrl

@@ -30,6 +30,7 @@ func (s *Server) RegisterRoutes(assets embed.FS) http.Handler {
 	r.Use(handler.HTMXMiddleware)
 	r.Use(handler.AppMiddleware(s.App))
 	r.Use(actionLoggingMiddleware(s.App))
+	r.Use(handler.SubmissionMiddleware)
 
 	s.handleAssets(r, assets)
 

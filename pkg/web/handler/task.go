@@ -24,23 +24,32 @@ func SetSubmitChan(ch chan<- models.ValidationTrigger) {
 	submitChan = ch
 }
 
-func HandleTaskStatus(w http.ResponseWriter, r *http.Request) {
-	if submitChan != nil {
-		select {
-		case submitChan <- models.ValidationTrigger{Source: models.ValidationTriggerAutoPoll}:
-		default:
+func SubmissionMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		next.ServeHTTP(w, r)
+		if submitChan != nil {
+			select {
+			case submitChan <- models.ValidationTrigger{Source: models.ValidationTriggerAutoPoll}:
+			default:
+			}
 		}
-	}
+	})
+}
+
+func HandleTaskStatus(w http.ResponseWriter, r *http.Request) {
 	time.Sleep(100 * time.Millisecond)
 
 	hx := HTMX(r)
 	if hx.IsHxRequest() {
 		if taskFeedback.Success {
 			w.Header().Set("HX-Trigger", "task-status-success")
-			w.WriteHeader(http.StatusNoContent)
+			hx.WriteString(`
+		<div id="status" hx-get="/status" hx-trigger="click, check-status from:body" hx-target="#status" hx-swap="outerHTML">
+				<button class="btn btn-success btn-sm" hx-get="/status/modal" hx-target="#modal-container" hx-swap="innerHTML" hx-trigger="intersect once">` + taskFeedback.Message + `</button>
+		</div>`)
 		} else {
 			hx.WriteString(`
-		<div id="status" type="button" hx-get="/status" hx-target="#status" hx-swap="outerHTML">
+		<div id="status" hx-get="/status" hx-trigger="click, check-status from:body" hx-target="#status" hx-swap="outerHTML">
 				<button class="btn btn-error btn-sm" hx-get="/status/modal" hx-target="#modal-container" hx-swap="innerHTML">` + taskFeedback.Message + `</button>
 		</div>`)
 		}

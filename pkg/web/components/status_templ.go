@@ -29,7 +29,7 @@ func Status(msg string) templ.Component {
 			templ_7745c5c3_Var1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div id=\"status\" hx-get=\"/status\" hx-trigger=\"load, click, task-status-check from:body\" hx-target=\"#status\" hx-swap=\"outerHTML\"><button type=\"button\" class=\"btn btn-outline btn-sm\" hx-get=\"/status/modal\" hx-target=\"#modal-container\" hx-swap=\"innerHTML\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div id=\"status\" hx-get=\"/status\" hx-trigger=\"load, click, check-status from:body\" hx-target=\"#status\" hx-swap=\"outerHTML\"><button type=\"button\" class=\"btn btn-outline btn-sm\" hx-get=\"/status/modal\" hx-target=\"#modal-container\" hx-swap=\"innerHTML\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
