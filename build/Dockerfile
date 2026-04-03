@@ -1,5 +1,11 @@
 FROM lscr.io/linuxserver/webtop:latest
 
+ENV SELKIES_MANUAL_WIDTH=1920
+ENV SELKIES_MANUAL_HEIGHT=1080
+ENV MAX_RESOLUTION=1920x1080
+ENV PIXELFLUX_WAYLAND=true
+ENV TITLE="LazyOS - Project Management Survey"
+
 RUN apk add --no-cache \
 	ca-certificates \
 	exo \
