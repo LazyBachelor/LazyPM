@@ -158,7 +158,12 @@ func runStartCmd(cmd *cobra.Command, args []string) error {
 	return nil
 }
 
-func taskLoop(ctx context.Context, application *task.App, surveyTasks map[string]task.Tasker, interfaces map[string]task.Interface) error {
+func taskLoop(
+	ctx context.Context,
+	application *task.App,
+	surveyTasks map[string]task.Tasker,
+	interfaces map[string]task.Interface,
+) error {
 	var iNames []string
 	for name := range interfaces {
 		iNames = append(iNames, name)
@@ -194,6 +199,15 @@ func taskLoop(ctx context.Context, application *task.App, surveyTasks map[string
 
 		if err := os.WriteFile("Task Details.txt", []byte(t.Details(tasks.InterfaceToType(selected)).Description), 0644); err != nil {
 			return fmt.Errorf("failed to write task details: %w", err)
+		}
+
+		if tasks.InterfaceToType(selected) == tasks.InterfaceTypeREPL {
+			survey.StartCmd.Hidden = true
+			survey.StatusCmd.Hidden = true
+			survey.SubmitCmd.Hidden = true
+			replCmd.Hidden = true
+			tuiCmd.Hidden = true
+			webCmd.Hidden = true
 		}
 
 		fmt.Println("\033[H\033[2J")

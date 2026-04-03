@@ -317,6 +317,4 @@ func init() {
 	SprintCmd.AddCommand(SprintAddCmd)
 	SprintCmd.AddCommand(SprintRemoveCmd)
 	SprintCmd.AddCommand(SprintDeleteCmd)
-
-	RootCmd.AddCommand(SprintCmd)
 }

@@ -25,12 +25,11 @@ func (r *REPL) execute(input string) (string, error) {
 		return executePMCommand("status")
 	}
 
+	if input == "pm" {
+		return executePMCommand("help")
+	}
+
 	if after, ok := strings.CutPrefix(input, "pm"); ok {
-
-		if strings.Contains(strings.Split(after, " ")[1], "start") {
-			return "Nice try👻", nil
-		}
-
 		return executePMCommand(after)
 	}
 	return executeShellCommand(input)

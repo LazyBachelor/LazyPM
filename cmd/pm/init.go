@@ -73,6 +73,7 @@ func init() {
 	issues.CloseCmd.GroupID = "issues"
 	issues.DeleteCmd.GroupID = "issues"
 	issues.DepCmd.GroupID = "issues"
+	issues.SprintCmd.GroupID = "issues"
 
 	RootCmd.AddCommand(issues.CreateCmd)
 	RootCmd.AddCommand(issues.GetCmd)
@@ -81,6 +82,7 @@ func init() {
 	RootCmd.AddCommand(issues.CloseCmd)
 	RootCmd.AddCommand(issues.DeleteCmd)
 	RootCmd.AddCommand(issues.DepCmd)
+	RootCmd.AddCommand(issues.SprintCmd)
 
 	RootCmd.AddGroup(&cobra.Group{ID: "comment", Title: "Comment Management"})
 	issues.CommentCmd.GroupID = "comment"

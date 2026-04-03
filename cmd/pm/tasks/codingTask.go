@@ -15,6 +15,7 @@ const codingDescription = `You are tasked with fixing a logical error in the cod
 
 Your task:
 1. A text file will appear in this directory(your desktop):
+   - Name: code.txt
    - Open it and follow the instructions inside.
    - Save the file after you are done.
 2. Change status of the Issue "Fix major error" to Closed.`
@@ -165,7 +166,7 @@ func (t *CodingTask) Validate(ctx context.Context) ValidationFeedback {
 		return expect.ValidationFeedback
 	}
 
-	code, ok := strings.CutPrefix(string(fileContent), codingDescription+textFileDescription+"\n")
+	code, ok := strings.CutPrefix(string(fileContent), textFileDescription+"\n")
 	if !ok {
 		expect.Fail("The content of code.txt does not match the expected format.")
 		return expect.ValidationFeedback

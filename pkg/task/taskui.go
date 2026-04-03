@@ -120,7 +120,7 @@ func (m TaskModel) View() tea.View {
 	}
 
 	detailsText := fmt.Sprintf(
-		"Interface Type: %s | Time to complete: %s | Difficulty: %s",
+		"Interface Type: %s | Time to complete: %s | Difficulty: %s\n",
 		m.InterfaceType,
 		m.TimeToComplete,
 		m.Difficulty,
@@ -140,6 +140,7 @@ func (m TaskModel) View() tea.View {
 			centerInCard(descStyle.Render(m.Description)),
 			"",
 			centerInCard(detailsStyle.Render(detailsText)),
+			centerInCard(style.TextStyle.Render(`On your desktop "Task Details.txt" will contain the same details`)),
 			centerInCard(infoStyle.Render(m.interfaceHelpText())),
 			centerInCard(infoStyle.Render(m.getQuitHelpText())),
 		)
