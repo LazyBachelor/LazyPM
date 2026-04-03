@@ -33,6 +33,8 @@ You'll answer a short questionnaire about:
 3. **Read Carefully**: Each task has specific requirements that will be validated
 4. **Exit Anytime**: Press q (depending on interface) to skip a task early if needed
 5. **Interface Help**: Each interface has built-in help - look for it!
+6. **Resume Later**: If you need to stop a task you can resume to the latest task when running 
+   `pm start` again or opening the file on the desktop.
 
 ## Troubleshooting
 
@@ -41,7 +43,8 @@ You'll answer a short questionnaire about:
 - **No database connection**: You can continue without submitting responses and submit later with `pm submit`
 - **Terminal too small**: Resize your terminal window to at least 55x16 characters,
    we recommend to keeping the terminal as large as possible for best experience.
-- **Interface not responding**: Press Ctrl+C to exit, then restart the survey
+- **Interface not responding**: Press Ctrl+C to exit, then restart the "PM Survey" executable,
+   you can then resume the latest task.
 
 
 ## Interfaces You'll Use

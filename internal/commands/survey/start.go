@@ -15,7 +15,10 @@ var (
 // StartCmd is the start command - RunE is set in cmd/survey/
 var StartCmd = &cobra.Command{
 	Use:   "start",
-	Short: "Start the user survey",
+	Short: "Start the user survey, or resume latest session",
+	Long: `Start the survey.
+
+If you have a previous started session, it will resume to the latest task.`,
 }
 
 func init() {
@@ -23,5 +26,6 @@ func init() {
 	StartCmd.Flags().StringVarP(&InterfaceType, "interface", "i", "", "Specify interface.")
 	StartCmd.RegisterFlagCompletionFunc("task", shellcomp.CompletionFunc(task.ListTasks()))
 	StartCmd.RegisterFlagCompletionFunc("interface", shellcomp.CompletionFunc(task.ListInterfaces()))
-	StartCmd.Flags().BoolVar(&DevFlag, "dev", false, "Enable development mode, which skips database connection, submission and intro")
+	StartCmd.Flags().
+		BoolVar(&DevFlag, "dev", false, "Enable development mode, which skips database connection, submission and intro")
 }
