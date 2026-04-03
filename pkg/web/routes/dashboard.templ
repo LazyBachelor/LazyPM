@@ -203,7 +203,7 @@ templ DashboardContent(props DashboardProps) {
 												name="issue_type"
 												x-model="issue.issue_type"
 												class="select select-sm select-bordered"
-												@change="fetch('/issues/' + issue.id, { method: 'PATCH', body: new URLSearchParams({issue_type: issue.issue_type}) }).then(() => editing = null)"
+												@change="fetch('/issues/' + issue.id, { method: 'PATCH', body: new URLSearchParams({issue_type: issue.issue_type}), headers: { 'HX-Request': 'true' } }).then(() => { editing = null; setTimeout(() => { document.body.dispatchEvent(new CustomEvent('check-status')); }, 1000); })"
 												x-init="$nextTick(() => $el.focus())"
 											>
 												<option value="task">Task</option>
@@ -227,7 +227,7 @@ templ DashboardContent(props DashboardProps) {
 												name="priority"
 												x-model="issue.priority"
 												class="select select-sm select-bordered"
-												@change="fetch('/issues/' + issue.id, { method: 'PATCH', body: new URLSearchParams({priority: issue.priority}) }).then(() => editing = null)"
+												@change="fetch('/issues/' + issue.id, { method: 'PATCH', body: new URLSearchParams({priority: issue.priority}), headers: { 'HX-Request': 'true' } }).then(() => { editing = null; setTimeout(() => { document.body.dispatchEvent(new CustomEvent('check-status')); }, 1000); })"
 												x-init="$nextTick(() => $el.focus())"
 											>
 												<option value="0">Irrelevant (P0)</option>
