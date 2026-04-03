@@ -18,8 +18,14 @@ type StatisticsService struct {
 	mu      sync.Mutex
 }
 
-func NewStatisticsService(storage *storage.Storage[models.Statistics], logger *slog.Logger) (*StatisticsService, error) {
+func NewStatisticsService(
+	storage *storage.Storage[models.Statistics],
+	logger *slog.Logger,
+) (*StatisticsService, error) {
 	if err := storage.Init(); err != nil {
+		return nil, err
+	}
+	if err := storage.Load(); err != nil {
 		return nil, err
 	}
 	return &StatisticsService{

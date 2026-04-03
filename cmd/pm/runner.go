@@ -130,6 +130,45 @@ func runStartCmd(cmd *cobra.Command, args []string) error {
 			survey.Task: surveyTasks[survey.Task],
 		}
 	}
+
+	startIndex := 0
+	var resumeFromLast bool
+	if !cmd.Flags().Changed("task") && !cmd.Flags().Changed("interface") && app.Stats != nil {
+		stats, err := app.Stats.GetStatistics()
+		if err == nil && stats.LastTaskName != "" {
+			taskNames := task.ListTasks()
+			lastTaskIndex := -1
+			for i, name := range taskNames {
+				if t, ok := surveyTasks[name]; ok {
+					var title string
+					for _, iface := range interfaces {
+						title = t.Details(tasks.InterfaceToType(iface)).Title
+						break
+					}
+					if title == stats.LastTaskName {
+						lastTaskIndex = i
+						break
+					}
+				}
+			}
+
+			if lastTaskIndex >= 0 {
+				tasksCompleted := lastTaskIndex + 1
+				if err := huh.NewConfirm().
+					Title(fmt.Sprintf("Resume from last task? (completed %d/%d tasks)", tasksCompleted, len(taskNames))).
+					Description("You have uncompleted tasks from a previous session. Would you like to resume where you left off?").
+					Value(&resumeFromLast).
+					WithTheme(style.Base16Theme{}).
+					RunAccessible(cmd.OutOrStdout(), cmd.InOrStdin()); err != nil {
+					return fmt.Errorf("failed to read user input: %w", err)
+				}
+				if resumeFromLast {
+					startIndex = lastTaskIndex
+				}
+			}
+		}
+	}
+
 	if !cmd.Flags().Changed("dev") {
 		if err := newIntroModel().Run(); err != nil {
 			return returnIfUserQuit(err, "failed to run intro")
@@ -147,7 +186,7 @@ func runStartCmd(cmd *cobra.Command, args []string) error {
 		}
 	}
 
-	if err := taskLoop(cmd.Context(), app, surveyTasks, interfaces); err != nil {
+	if err := taskLoop(cmd.Context(), app, surveyTasks, interfaces, startIndex); err != nil {
 		return returnIfUserQuit(err, "task loop failed")
 	}
 
@@ -163,6 +202,7 @@ func taskLoop(
 	application *task.App,
 	surveyTasks map[string]task.Tasker,
 	interfaces map[string]task.Interface,
+	startIndex int,
 ) error {
 	var iNames []string
 	for name := range interfaces {
@@ -182,8 +222,12 @@ func taskLoop(
 		iNames[i], iNames[j] = iNames[j], iNames[i]
 	})
 
-	idx := 0
-	for _, taskName := range taskNames {
+	idx := startIndex
+	for taskIdx, taskName := range taskNames {
+		if taskIdx < startIndex {
+			continue
+		}
+
 		t, ok := surveyTasks[taskName]
 		if !ok {
 			continue
@@ -214,8 +258,10 @@ func taskLoop(
 		if err := runner.Run(ctx, t, selected, tasks.InterfaceToType(selected)); err != nil {
 			return err
 		}
+
 		idx++
 	}
+
 	return nil
 }
 
