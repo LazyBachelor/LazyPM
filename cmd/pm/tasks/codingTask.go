@@ -3,7 +3,6 @@ package tasks
 import (
 	"context"
 	"os"
-	"strings"
 	"time"
 
 	"charm.land/huh/v2"
@@ -23,9 +22,7 @@ Your task:
 const desc = `There is a major logical error in this code, you need to fix it.
 Change the function logic so that it correctly adds two numbers together instead of subtracting them.`
 
-var textFileDescription = `
-
-# Instructions for the coding task
+var textFileDescription = `# Instructions for the coding task
 
 ` + desc + `
 ############################################################`
@@ -36,7 +33,7 @@ function Add(a, b int) int {
 }
 `
 
-var textFileContent = codingDescription + textFileDescription + "\n" + code
+var textFileContent = textFileDescription + "\n" + code
 
 type CodingTask struct {
 	done         bool
@@ -160,19 +157,13 @@ func (t *CodingTask) Validate(ctx context.Context) ValidationFeedback {
 		return expect.ValidationFeedback
 	}
 
-	fileContent, err := os.ReadFile("./code.txt")
+	code, err := os.ReadFile("./code.txt")
 	if err != nil {
 		expect.Fail("Error reading code.txt file: " + err.Error())
 		return expect.ValidationFeedback
 	}
 
-	code, ok := strings.CutPrefix(string(fileContent), textFileDescription+"\n")
-	if !ok {
-		expect.Fail("The content of code.txt does not match the expected format.")
-		return expect.ValidationFeedback
-	}
-
-	expect.Contains(code, "a + b", "Function logic")
+	expect.Contains(string(code), "a + b", "Function logic")
 	if !expect.Valid() {
 		return expect.ValidationFeedback
 	}
