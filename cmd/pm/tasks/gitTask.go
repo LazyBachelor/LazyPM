@@ -104,6 +104,35 @@ func (t *GitTask) Setup(ctx context.Context) error {
 		return err
 	}
 
+	go func() {
+		ticker := time.NewTicker(1 * time.Second)
+		defer ticker.Stop()
+		var lastMod time.Time
+
+		if stat, err := os.Stat("./task/.git/index"); err == nil {
+			lastMod = stat.ModTime()
+		}
+
+		for {
+			select {
+			case <-ticker.C:
+				if stat, err := os.Stat("./task/.git/index"); err == nil {
+					if stat.ModTime().After(lastMod) {
+						lastMod = stat.ModTime()
+						if t.app.SubmitChan != nil {
+							select {
+							case t.app.SubmitChan <- models.ValidationTrigger{Source: models.ValidationTriggerAutoPoll}:
+							default:
+							}
+						}
+					}
+				}
+			case <-ctx.Done():
+				return
+			}
+		}
+	}()
+
 	return nil
 }
 
