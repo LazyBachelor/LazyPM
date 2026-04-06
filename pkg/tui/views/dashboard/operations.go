@@ -440,7 +440,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	case tea.KeyPressMsg:
 		if msg.String() == "ctrl+c" {
-			return m, tea.Quit
+			return m, nil
 		}
 
 		if m.issueList.FilterState() == list.Filtering {

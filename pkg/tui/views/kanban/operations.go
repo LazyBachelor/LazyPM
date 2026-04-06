@@ -641,11 +641,12 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		})
 
 	case tea.KeyPressMsg:
+		fl := m.FocusedIssueList()
+
 		if msg.String() == "ctrl+c" {
-			return m, tea.Quit
+			return m, nil
 		}
 
-		fl := m.FocusedIssueList()
 		if fl.FilterState() == list.Filtering {
 			cmd, _ := fl.Update(msg)
 			return m, cmd
