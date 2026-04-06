@@ -15,7 +15,7 @@ A new sprint is starting and you need to organize the backlog.
 You will be given a list of issues with different priorities and dependencies.
 
 A sprint is a time-boxed period during which a team works to complete a set of tasks.
-A print is composed of tasks that are selected from the backlog, which is a list of all pending work items.
+A sprint is composed of tasks that are selected from the backlog, which is a list of all pending work items.
 
 Your task:
 1. View the backlog in the kanban/board/sprint view.
